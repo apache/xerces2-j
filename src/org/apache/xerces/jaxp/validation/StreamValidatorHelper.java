@@ -17,23 +17,31 @@
 
 package org.apache.xerces.jaxp.validation;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.util.Locale;
-import java.io.IOException;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xml.serialize.Method;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.Serializer;
+import org.apache.xml.serialize.SerializerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -89,6 +97,13 @@ final class StreamValidatorHelper implements ValidatorHelper {
     /** Component manager. **/
     private final XMLSchemaValidatorComponentManager fComponentManager;
 
+    /**
+     * The parser maintains a reference to the configuration, so it must be a SoftReference too.
+     */
+    private SoftReference fParser = new SoftReference(null);
+    
+    private SerializerFactory fSerializerFactory;
+    
     public StreamValidatorHelper(XMLSchemaValidatorComponentManager componentManager) {
         fComponentManager = componentManager;
         fSchemaValidator = (XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
@@ -96,17 +111,20 @@ final class StreamValidatorHelper implements ValidatorHelper {
 
     public void validate(Source source, Result result) 
         throws SAXException, IOException {
-        if (result == null) {
+        if (result instanceof StreamResult || result == null) {
             final StreamSource streamSource = (StreamSource) source;
+            final StreamResult streamResult = (StreamResult) result;
             XMLInputSource input = new XMLInputSource(streamSource.getPublicId(), streamSource.getSystemId(), null);
             input.setByteStream(streamSource.getInputStream());
             input.setCharacterStream(streamSource.getReader());
             
             // Gets the parser configuration. We'll create and initialize a new one, if we 
             // haven't created one before or if the previous one was garbage collected.
+            boolean newConfig = false;
             XMLParserConfiguration config = (XMLParserConfiguration) fConfiguration.get();
             if (config == null) {
                 config = initialize();
+                newConfig = true;
             }
             // If settings have changed on the component manager, refresh the error handler and entity resolver.
             else if (fComponentManager.getFeature(PARSER_SETTINGS)) {
@@ -116,7 +134,48 @@ final class StreamValidatorHelper implements ValidatorHelper {
             
             // prepare for parse
             fComponentManager.reset();
-            fSchemaValidator.setDocumentHandler(null);
+            
+            if (streamResult != null) {
+                if (fSerializerFactory == null) {
+                    fSerializerFactory = SerializerFactory.getSerializerFactory(Method.XML);
+                }
+
+                // there doesn't seem to be a way to reset a serializer, so we need to make
+                // a new one each time.
+                Serializer ser;
+                if (streamResult.getWriter() != null) {
+                    ser = fSerializerFactory.makeSerializer(streamResult.getWriter(), new OutputFormat());
+                }
+                else if (streamResult.getOutputStream() != null) {
+                    ser = fSerializerFactory.makeSerializer(streamResult.getOutputStream(), new OutputFormat());
+                }
+                else if (streamResult.getSystemId() != null) {
+                    String uri = streamResult.getSystemId();
+                    OutputStream out = XMLEntityManager.createOutputStream(uri);
+                    ser = fSerializerFactory.makeSerializer(out, new OutputFormat());
+                }
+                else {
+                    throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "StreamResultNotInitialized", null));
+                }
+
+                // we're using the parser only as an XNI-to-SAX converter,
+                // so that we can use the SAX-based serializer
+                SAXParser parser = (SAXParser) fParser.get();
+                if (newConfig || parser == null) {
+                    parser = new SAXParser(config);
+                    fParser = new SoftReference(parser);
+                }
+                else {
+                    parser.reset();
+                }
+                config.setDocumentHandler(fSchemaValidator);
+                fSchemaValidator.setDocumentHandler(parser);
+                parser.setContentHandler(ser.asContentHandler());
+            }
+            else {
+                fSchemaValidator.setDocumentHandler(null);
+            }
             
             try {
                 config.parse(input);
@@ -127,6 +186,11 @@ final class StreamValidatorHelper implements ValidatorHelper {
             catch (XNIException e) {
                 throw Util.toSAXException(e);
             }
+            finally {
+                // release the references to the SAXParser and Serializer
+                fSchemaValidator.setDocumentHandler(null);
+            }
+            
             return;
         }
         throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
@@ -154,5 +218,5 @@ final class StreamValidatorHelper implements ValidatorHelper {
         fConfiguration = new SoftReference(config);
         return config;
     }
-
+    
 } // StreamValidatorHelper
