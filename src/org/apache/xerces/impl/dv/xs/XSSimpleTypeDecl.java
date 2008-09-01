@@ -591,6 +591,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         return fFinalSet;
     }
 
+    public TypeValidator getTypeValidator() {
+        return fDVs[fValidationDV];
+    }
+
     public boolean isFinal(short derivation) {
         return (fFinalSet & derivation) != 0;
     }

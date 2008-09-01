@@ -320,6 +320,9 @@ public final class Constants {
     
     /** Feature to ignore errors caused by identity constraints ("validation/identity-constraint-checking") */
     public static final String IDC_CHECKING_FEATURE = "validation/identity-constraint-checking";
+
+    /** Feature to ignore errors caused by type alternatives */
+    public static final String TYPE_ALTERNATIVES_CHEKING_FEATURE = "validation/type-alternative-checking";
     
     /** Feature to ignore errors caused by unparsed entities ("validation/unparsed-entity-checking") */
     public static final String UNPARSED_ENTITY_CHECKING_FEATURE = "validation/unparsed-entity-checking";
@@ -516,6 +519,7 @@ public final class Constants {
             ID_IDREF_CHECKING_FEATURE,
             IDC_CHECKING_FEATURE,
             UNPARSED_ENTITY_CHECKING_FEATURE,
+            TYPE_ALTERNATIVES_CHEKING_FEATURE,
     };
     
     /** Xerces properties. */

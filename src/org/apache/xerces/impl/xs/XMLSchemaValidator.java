@@ -36,6 +36,8 @@ import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.validation.ConfigurableValidationState;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xs.alternative.Test;
+import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.FieldActivator;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
@@ -187,6 +189,10 @@ public class XMLSchemaValidator
     protected static final String IDENTITY_CONSTRAINT_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.IDC_CHECKING_FEATURE;
 
+    /** Feature identifier: whether to ignore type alternatives */
+    protected static final String TYPE_ALTERNATIVES_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -255,6 +261,7 @@ public class XMLSchemaValidator
             ID_IDREF_CHECKING,
             IDENTITY_CONSTRAINT_CHECKING,
             UNPARSED_ENTITY_CHECKING,
+            TYPE_ALTERNATIVES_CHECKING,
         };
 
 
@@ -275,6 +282,7 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
+        null,
         null,
         null,
         null,
@@ -1224,6 +1232,8 @@ public class XMLSchemaValidator
     
     private boolean fIDCChecking;
 
+    private boolean fTypeAlternativesChecking;
+
     /** temporary validated info */
     private ValidatedInfo fValidatedInfo = new ValidatedInfo();
 
@@ -1449,6 +1459,13 @@ public class XMLSchemaValidator
         }
         catch (XMLConfigurationException e) {
             fValidationState.setUnparsedEntityChecking(true);
+        }
+
+        try {
+            fTypeAlternativesChecking = componentManager.getFeature(TYPE_ALTERNATIVES_CHECKING);
+        }
+        catch (XMLConfigurationException e) {
+            fTypeAlternativesChecking = true;
         }
         
         // get schema location properties
@@ -2157,6 +2174,29 @@ public class XMLSchemaValidator
         for (int i = 0; i < count; i++) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
             matcher.startElement( element, attributes);
+        }
+
+        //process type alternatives
+        if (fTypeAlternativesChecking) {
+            boolean typeSelected = false;
+            XSTypeAlternativeImpl[] alternatives = fCurrentElemDecl.getTypeAlternatives();
+            if (alternatives != null) {
+                for (int i = 0; i < alternatives.length; i++) {
+                    Test test = alternatives[i].getTest();
+                    if (test != null && test.evaluateTest(element, attributes)) {
+                        fCurrentType = alternatives[i].getTypeDefinition();
+                        typeSelected = true;
+                        break;
+                    }
+                }
+                //if a type is not selected try to assign the default type
+                if (!typeSelected) {
+                    XSTypeAlternativeImpl defType = fCurrentElemDecl.getDefaultTypeDefinition();
+                    if (defType != null) {
+                        fCurrentType = defType.getTypeDefinition();
+                    }
+                }
+            }
         }
 
         if (fAugPSVI) {

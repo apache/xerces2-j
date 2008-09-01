@@ -18,12 +18,14 @@
 package org.apache.xerces.impl.xs.alternative;
 
 import org.apache.xerces.impl.xpath.XPath20;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
 
 /**
  * XML schema type alternative test attribute
  * 
  * @author Hiranya Jayathilaka, University of Moratuwa
- * @version $Id:$
+ * @version $Id$
  */
 public class Test {
 
@@ -46,6 +48,16 @@ public class Test {
     /** Returns the test XPath */
     public XPath20 getXPath() {
         return fXPath;
+    }
+
+    /** Evaluate the test expression with respect to the specified element and its attributes */
+    public boolean evaluateTest(QName element, XMLAttributes attributes) {
+        if (fXPath != null) {
+            return fXPath.traverseTree(element, attributes);
+        }
+        else {
+            return false;
+        }
     }
 
     public String toString() {
