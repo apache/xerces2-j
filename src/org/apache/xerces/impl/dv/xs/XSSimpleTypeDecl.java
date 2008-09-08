@@ -1755,23 +1755,27 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         } else if (fVariety == VARIETY_LIST) {
 
             ListDV.ListData values = (ListDV.ListData)ob;
+            XSSimpleType memberType = validatedInfo.memberType;
             int len = values.getLength();
-            if (fItemType.fVariety == VARIETY_UNION) {
-                XSSimpleTypeDecl[] memberTypes = (XSSimpleTypeDecl[])validatedInfo.memberTypes;
-                XSSimpleType memberType = validatedInfo.memberType;
-                for (int i = len-1; i >= 0; i--) {
-                    validatedInfo.actualValue = values.item(i);
-                    validatedInfo.memberType = memberTypes[i];
-                    fItemType.checkExtraRules(context, validatedInfo);
-                }
-                validatedInfo.memberType = memberType;
-            } else { // (fVariety == VARIETY_ATOMIC)
-                for (int i = len-1; i >= 0; i--) {
-                    validatedInfo.actualValue = values.item(i);
-                    fItemType.checkExtraRules(context, validatedInfo);
+            try {
+                if (fItemType.fVariety == VARIETY_UNION) {
+                    XSSimpleTypeDecl[] memberTypes = (XSSimpleTypeDecl[])validatedInfo.memberTypes;
+                    for (int i = len-1; i >= 0; i--) {
+                        validatedInfo.actualValue = values.item(i);
+                        validatedInfo.memberType = memberTypes[i];
+                        fItemType.checkExtraRules(context, validatedInfo);
+                    }
+                } else { // (fVariety == VARIETY_ATOMIC)
+                    for (int i = len-1; i >= 0; i--) {
+                        validatedInfo.actualValue = values.item(i);
+                        fItemType.checkExtraRules(context, validatedInfo);
+                    }
                 }
             }
-            validatedInfo.actualValue = values;
+            finally {
+                validatedInfo.actualValue = values;
+                validatedInfo.memberType = memberType;
+            }
 
         } else { // (fVariety == VARIETY_UNION)
 
