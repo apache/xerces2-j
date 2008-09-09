@@ -24,6 +24,8 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -52,6 +54,7 @@ import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.DOMInputSource;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.SAXInputSource;
+import org.apache.xerces.util.StAXInputSource;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
@@ -343,6 +346,7 @@ public class XSDHandler {
     
     SchemaDOMParser fSchemaParser;
     SchemaContentHandler fXSContentHandler;
+    StAXSchemaParser fStAXSchemaParser;
     XML11Configuration fAnnotationValidator;
     XSAnnotationGrammarPool fGrammarBucketAdapter;
     
@@ -525,7 +529,30 @@ public class XSDHandler {
                 return null;
             }
         	schemaRoot = DOMUtil.getRoot(schemaRootDoc);          
-        }            
+        }
+        else if (is instanceof StAXInputSource) {
+            StAXInputSource sis = (StAXInputSource)is;
+            if (fStAXSchemaParser == null) {
+                fStAXSchemaParser = new StAXSchemaParser();
+            }
+            fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
+            try {
+                if (sis.getXMLEventReader() != null) {
+                    fStAXSchemaParser.parse(sis.getXMLEventReader());
+                }
+                else {
+                    fStAXSchemaParser.parse(sis.getXMLStreamReader());
+                }
+            }
+            catch (XMLStreamException e) {
+                return null;
+            }
+            schemaRootDoc = fStAXSchemaParser.getDocument();
+            if (schemaRootDoc == null) {
+                return null;
+            }
+            schemaRoot = DOMUtil.getRoot(schemaRootDoc);
+        }
         else {
         	schemaRoot = getSchemaDocument(schemaNamespace, is,
                   referType == XSDDescription.CONTEXT_PREPARSE,
@@ -1760,7 +1787,30 @@ public class XSDHandler {
                 return null;
             }
             return DOMUtil.getRoot(root);          
-        }       
+        }
+        else if (schemaSource instanceof StAXInputSource) {
+            StAXInputSource sis = (StAXInputSource)schemaSource;
+            if (fStAXSchemaParser == null) {
+                fStAXSchemaParser = new StAXSchemaParser();
+            }
+            fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
+            try {
+                if (sis.getXMLEventReader() != null) {
+                    fStAXSchemaParser.parse(sis.getXMLEventReader());
+                }
+                else {
+                    fStAXSchemaParser.parse(sis.getXMLStreamReader());
+                }
+            }
+            catch (XMLStreamException e) {
+                return null;
+            }
+            Document root = fStAXSchemaParser.getDocument();
+            if (root == null) {
+                return null;
+            }
+            return DOMUtil.getRoot(root);
+        }
         return getSchemaDocument(desc.getTargetNamespace(), schemaSource, mustResolve, desc.getContextType(), referElement);
     } // getSchema(String, String, String, boolean, short):  Document
     

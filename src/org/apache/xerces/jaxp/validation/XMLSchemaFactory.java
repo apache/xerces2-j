@@ -23,9 +23,11 @@ import java.io.Reader;
 import java.util.Locale;
 
 import javax.xml.XMLConstants;
+import javax.xml.stream.XMLEventReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -38,6 +40,7 @@ import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXInputSource;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.util.StAXInputSource;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
@@ -201,6 +204,16 @@ public final class XMLSchemaFactory extends SchemaFactory {
                 Node node = domSource.getNode();
                 String systemID = domSource.getSystemId();          
                 xmlInputSources[i] = new DOMInputSource(node, systemID);
+            }
+            else if (source instanceof StAXSource) {
+                StAXSource staxSource = (StAXSource) source;
+                XMLEventReader eventReader = staxSource.getXMLEventReader();
+                if (eventReader != null) {
+                    xmlInputSources[i] = new StAXInputSource(eventReader);
+                }
+                else {
+                    xmlInputSources[i] = new StAXInputSource(staxSource.getXMLStreamReader());
+                }
             }
             else if (source == null) {
                 throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
