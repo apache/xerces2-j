@@ -667,9 +667,10 @@ public class XMLDTDValidator
 
         // call handlers
         // get initial grammars
-        if(fGrammarPool != null) {
+        if (fGrammarPool != null) {
             Grammar [] grammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_DTD);
-            for(int i = 0; i<grammars.length; i++) {
+            final int length = (grammars != null) ? grammars.length : 0;
+            for (int i = 0; i < length; ++i) {
                 fGrammarBucket.putGrammar((DTDGrammar)grammars[i]);
             }
         }
