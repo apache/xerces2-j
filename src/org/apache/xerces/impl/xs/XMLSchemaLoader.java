@@ -1057,7 +1057,8 @@ XSLoader, DOMConfiguration {
     private void initGrammarBucket(){
         if(fGrammarPool != null) {
             Grammar [] initialGrammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-            for (int i = 0; i < initialGrammars.length; i++) {
+            final int length = (initialGrammars != null) ? initialGrammars.length : 0;
+            for (int i = 0; i < length; ++i) {
                 // put this grammar into the bucket, along with grammars
                 // imported by it (directly or indirectly)
                 if (!fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]), true)) {
