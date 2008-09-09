@@ -872,12 +872,13 @@ public class XPath20 {
         private static boolean isBuiltInType(String qname, NamespaceContext context,
                 SymbolTable symbolTable) {
             boolean builtIn = false;
-            if (qname.indexOf(':') != -1) {
-                String[] qnameElements = qname.split(":");
-                String prefix = symbolTable.addSymbol(qnameElements[0]);
-                String uri = context.getURI(prefix);
+            final int colonIndex = qname.indexOf(':');
+            if (colonIndex != -1) {
+                final String prefix = symbolTable.addSymbol(qname.substring(0, colonIndex));
+                final String uri = context.getURI(prefix);
                 if (SchemaSymbols.URI_SCHEMAFORSCHEMA == uri) {
-                    XSSimpleType type = SchemaDVFactory.getInstance().getBuiltInType(qnameElements[1]);
+                    final String local = qname.substring(colonIndex + 1);
+                    XSSimpleType type = SchemaDVFactory.getInstance().getBuiltInType(local);
                     if (type != null) {
                         builtIn = true;
                     }
@@ -1736,8 +1737,12 @@ public class XPath20 {
             int start = castExpr.indexOf(" cast as ", 0) + 9;
             int end = castExpr.indexOf(" ?", start);
             String qname = castExpr.substring(start, end);
-            String[] qnameElements = qname.split(":");
-            return (XSSimpleTypeDecl) SchemaDVFactory.getInstance().getBuiltInType(qnameElements[1]);
+            String local = qname;
+            int colonIndex = qname.indexOf(':');
+            if (colonIndex != -1) {
+                local = qname.substring(colonIndex + 1);
+            }
+            return (XSSimpleTypeDecl) SchemaDVFactory.getInstance().getBuiltInType(local);
         }
 
         private String getCastedValue(String castExpr) {
