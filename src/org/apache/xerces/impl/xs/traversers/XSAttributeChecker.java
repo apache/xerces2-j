@@ -145,7 +145,7 @@ public class XSAttributeChecker {
     // used to store the map from element name to attribute list
     // for 14 global elements
     private static final Hashtable fEleAttrsMapG = new Hashtable(29);
-    // for 39 local elememnts
+    // for 39 local elements
     private static final Hashtable fEleAttrsMapL = new Hashtable(79);
 
     // used to initialize fEleAttrsMap
@@ -942,6 +942,16 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
         // TODO: use 1.1 map
         fEleAttrsMapL.put(SchemaSymbols.ELT_ALTERNATIVE, attrList);
+        
+        // for element "assert" - local // mukul
+        attrList = Container.getContainer(3);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // test = an XPath expression
+        attrList.put(SchemaSymbols.ATT_TEST, allAttrs[ATT_TEST_XPATH_R]);
+        // xpathDefaultNamespace = (anyURI | (##defaultNamespace | ##targetNamespace | ##local))
+        attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ASSERT, attrList);
     }
 
     // used to resolver namespace prefixes

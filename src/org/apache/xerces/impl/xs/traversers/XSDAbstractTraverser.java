@@ -23,6 +23,8 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xpath.XPath20;
+import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -32,6 +34,8 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.impl.xs.assertion.Test;
+import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
@@ -52,6 +56,7 @@ import org.w3c.dom.Element;
  * @author Elena Litani, IBM
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Neeraj Bajaj, Sun Microsystems Inc.
+ * @author Mukul Gandhi, IBM, modified to support XML Schema 1.1 'assertions'
  *
  * @version $Id$
  */
@@ -278,6 +283,7 @@ abstract class XSDAbstractTraverser {
         String facet;
         boolean hasQName = containsQName(baseValidator);
         Vector enumData = null;
+        Vector assertData = null;
         XSObjectListImpl enumAnnotations = null;
         XSObjectListImpl patternAnnotations = null;
         Vector enumNSDecls = hasQName ? new Vector() : null;       
@@ -369,7 +375,75 @@ abstract class XSDAbstractTraverser {
                     reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                 }
             }
-            else {
+            // process 'assert' facet. introduced in XML Schema 1.1
+            else if (facet.equals(SchemaSymbols.ELT_ASSERT)) {                
+                attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
+                String test = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
+                String defaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+
+                if (test != null) {                    
+                    // get 'annotation'
+                    Element childNode = DOMUtil.getFirstChildElement(content);
+                    XSAnnotationImpl annotation = null;
+                    // first child could be an annotation
+                    if (childNode != null
+                            && DOMUtil.getLocalName(childNode).equals(
+                                    SchemaSymbols.ELT_ANNOTATION)) {
+                        annotation = traverseAnnotationDecl(childNode, attrs,
+                                false, schemaDoc);
+                        // now move on to the next child element
+                        childNode = DOMUtil.getNextSiblingElement(childNode);
+                        
+                        if (childNode != null) {
+                         // it's an error to have something after the annotation, in 'assert'
+                         reportSchemaError("xxx-define this",
+                               new Object[] { DOMUtil.getLocalName(childNode) },
+                                              childNode);    
+                        }
+                    } else {
+                        String text = DOMUtil.getSyntheticAnnotation(childNode);
+                        if (text != null) {
+                            annotation = traverseSyntheticAnnotation(childNode,
+                                    text, attrs, false, schemaDoc);
+                        }                        
+                    }
+                    
+                    XSObjectList annotations = null;
+                    if (annotation != null) {
+                        annotations = new XSObjectListImpl();
+                        ((XSObjectListImpl)annotations).add(annotation);
+                    }
+                    else {
+                        //if no annotations are present add an empty list to the assertion
+                        annotations = XSObjectListImpl.EMPTY_LIST;
+                    }
+                    
+                    XSAssertImpl assertImpl = new XSAssertImpl(baseValidator, annotations);
+                    Test testExpr = null;
+                    //set the test attribute value
+                    try {
+                        testExpr = new Test(new XPath20(test, fSymbolTable, 
+                                       schemaDoc.fNamespaceSupport), assertImpl);
+                    }
+                    catch (XPathException e) {
+                        //if the xpath is invalid create a Test without an expression
+                        reportSchemaError(e.getKey(), new Object[] { test }, content);
+                        testExpr = new Test(null, assertImpl);
+                    }
+                    
+                    assertImpl.setTest(testExpr);
+                    assertImpl.setXPathDefauleNamespace(defaultNamespace);
+                    if (assertData == null) {
+                        assertData = new Vector();
+                    }
+                    assertData.addElement(assertImpl);
+                } else {
+                    // 'test' attribute is mandatory in assert element
+                    reportSchemaError("src-assert.3.13.1",
+                            new Object[] { DOMUtil.getLocalName(content) },
+                            content);
+                }
+            } else {
                 if (facet.equals(SchemaSymbols.ELT_MINLENGTH)) {
                     currentFacet = XSSimpleType.FACET_MINLENGTH;
                 }
@@ -512,6 +586,10 @@ abstract class XSDAbstractTraverser {
             facetsPresent |= XSSimpleType.FACET_PATTERN;
             xsFacets.pattern = fPattern.toString();
             xsFacets.patternAnnotations = patternAnnotations;
+        }
+        if (assertData != null) {
+           facetsPresent |= XSSimpleType.FACET_ASSERT;
+           xsFacets.assertFacets = assertData;
         }
         
         fPattern.setLength(0);

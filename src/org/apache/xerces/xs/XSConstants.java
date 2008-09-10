@@ -84,6 +84,11 @@ public interface XSConstants {
      * The object describes a XML schema type alternative
      */
     public static final short TYPE_ALTERNATIVE          = 15;
+    
+    /**
+     * The object describes a XML Schema assertion
+     */
+    public static final short ASSERTION                 = 16;
 
     // Derivation constants
     /**

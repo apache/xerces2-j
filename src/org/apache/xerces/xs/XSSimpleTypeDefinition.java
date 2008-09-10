@@ -97,6 +97,8 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * 4.3.5 enumeration.
      */
     public static final short FACET_ENUMERATION         = 2048;
+    
+    public static final short FACET_ASSERT              = 4096;
 
     /**
      * A constant defined for the 'ordered' fundamental facet: not ordered.

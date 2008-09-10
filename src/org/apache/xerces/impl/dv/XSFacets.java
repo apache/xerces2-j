@@ -19,9 +19,9 @@ package org.apache.xerces.impl.dv;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The class used to pass all facets to {@link XSSimpleType#applyFacets}.
@@ -29,6 +29,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
  * @xerces.internal 
  *
  * @author Sandy Gao, IBM
+ * @author Mukul Gandhi, IBM, modified to support XML Schema 1.1 'assertions'
  *
  * @version $Id$
  */
@@ -102,7 +103,10 @@ public class XSFacets {
      */
     public String minExclusive;
     
-    
+    /*
+     * Vector containing reference to the assert facets. introduced in XML Schema 1.1
+     */
+    public Vector assertFacets;
    
     public XSAnnotation lengthAnnotation;
     public XSAnnotation minLengthAnnotation;
@@ -117,6 +121,9 @@ public class XSFacets {
     public XSAnnotation minInclusiveAnnotation;
     public XSAnnotation minExclusiveAnnotation;
     
+    // the annotations of the assertions are stored in XSAssertImpl objects
+    // stored in the 'assertFacets' Vector. 
+    
     public void reset(){
         lengthAnnotation = null;
         minLengthAnnotation = null;
@@ -130,5 +137,6 @@ public class XSFacets {
         maxExclusiveAnnotation = null;
         minInclusiveAnnotation = null;
         minExclusiveAnnotation = null;
+        assertFacets = null;
     }
 }

@@ -50,6 +50,7 @@ public final class SchemaSymbols {
 
     // all possible schema element names
     public static final String ELT_ALL                  = "all".intern();
+    public static final String ELT_ASSERT               = "assert".intern();
     public static final String ELT_ALTERNATIVE          = "alternative".intern();
     public static final String ELT_ANNOTATION           = "annotation".intern();
     public static final String ELT_ANY                  = "any".intern();
