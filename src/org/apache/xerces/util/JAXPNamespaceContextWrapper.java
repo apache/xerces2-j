@@ -17,8 +17,11 @@
 
 package org.apache.xerces.util;
 
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.xml.XMLConstants;
 
@@ -36,7 +39,11 @@ public final class JAXPNamespaceContextWrapper implements NamespaceContext {
     private javax.xml.namespace.NamespaceContext fNamespaceContext;
     private SymbolTable fSymbolTable;
     private List fPrefixes;
-
+    private final Vector fAllPrefixes = new Vector();
+    
+    private int[] fContext = new int[8];
+    private int fCurrentContext;
+    
     public JAXPNamespaceContextWrapper(SymbolTable symbolTable) {
         setSymbolTable(symbolTable);
     }
@@ -94,21 +101,28 @@ public final class JAXPNamespaceContextWrapper implements NamespaceContext {
     }
     
     public Enumeration getAllPrefixes() {
-        // It's not possible to get the list of all prefixes from the NamespaceContext
-        // so the best we can do is return an empty enumeration.
-        return new Enumeration () {
-            public boolean hasMoreElements() {
-                return false;
-            }
-            public Object nextElement() {
-                return null;
-            }
-        };
+        // There may be duplicate prefixes in the list so we 
+        // first transfer them to a set to ensure uniqueness.
+        return Collections.enumeration(new TreeSet(fAllPrefixes));
     }
 
-    public void pushContext() {}
+    public void pushContext() {
+        // extend the array, if necessary
+        if (fCurrentContext + 1 == fContext.length) {
+            int[] contextarray = new int[fContext.length * 2];
+            System.arraycopy(fContext, 0, contextarray, 0, fContext.length);
+            fContext = contextarray;
+        }
+        // push context
+        fContext[++fCurrentContext] = fAllPrefixes.size();
+        if (fPrefixes != null) {
+            fAllPrefixes.addAll(fPrefixes);
+        }
+    }
 
-    public void popContext() {}
+    public void popContext() {
+        fAllPrefixes.setSize(fContext[fCurrentContext--]);
+    }
 
     public boolean declarePrefix(String prefix, String uri) {
         return true;
@@ -122,6 +136,10 @@ public final class JAXPNamespaceContextWrapper implements NamespaceContext {
         return (String) fPrefixes.get(index);
     }
 
-    public void reset() {}
+    public void reset() {
+        fCurrentContext = 0;
+        fContext[fCurrentContext] = 0;
+        fAllPrefixes.clear();
+    }
 
 } // JAXPNamespaceContextWrapper
