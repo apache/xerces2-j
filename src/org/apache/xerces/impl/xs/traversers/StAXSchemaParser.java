@@ -84,10 +84,15 @@ final class StAXSchemaParser {
     private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
     private int fDepth;
     
+    public StAXSchemaParser() {
+        fNamespaceContext.setDeclaredPrefixes(fDeclaredPrefixes);
+    }
+    
     public void reset(SchemaDOMParser schemaDOMParser, SymbolTable symbolTable) {
         fSchemaDOMParser = schemaDOMParser;
         fSymbolTable = symbolTable;
         fNamespaceContext.setSymbolTable(fSymbolTable);
+        fNamespaceContext.reset();
     }
 
     public Document getDocument() {
@@ -116,6 +121,7 @@ final class StAXSchemaParser {
                     fillXMLAttributes(start);
                     fillDeclaredPrefixes(start);
                     addNamespaceDeclarations();
+                    fNamespaceContext.pushContext();
                     fSchemaDOMParser.startElement(fElementQName, fAttributes, null);
                     break;
                 case XMLStreamConstants.END_ELEMENT:
@@ -124,6 +130,7 @@ final class StAXSchemaParser {
                     fillDeclaredPrefixes(end);
                     fLocationWrapper.setLocation(end.getLocation());
                     fSchemaDOMParser.endElement(fElementQName, null);
+                    fNamespaceContext.popContext();
                     --fDepth;
                     if (fDepth <= 0) {
                         break loop;
@@ -195,6 +202,7 @@ final class StAXSchemaParser {
                     fillXMLAttributes(input);
                     fillDeclaredPrefixes(input);
                     addNamespaceDeclarations();
+                    fNamespaceContext.pushContext();
                     fSchemaDOMParser.startElement(fElementQName, fAttributes, null);
                     break;
                 case XMLStreamConstants.END_ELEMENT:
@@ -204,6 +212,7 @@ final class StAXSchemaParser {
                         input.getLocalName(), input.getPrefix());
                     fillDeclaredPrefixes(input);
                     fSchemaDOMParser.endElement(fElementQName, null);
+                    fNamespaceContext.popContext();
                     --fDepth;
                     if (fDepth <= 0) {
                         break loop;
