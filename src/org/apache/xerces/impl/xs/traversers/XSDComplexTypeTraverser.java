@@ -193,8 +193,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         final short ocMode = modeAttr.shortValue();
         
         if (isDefault) {
-        	final Boolean appliesToEmptyAttr = ((Boolean) attrValues[XSAttributeChecker.ATTIDX_APPLIESTOEMPTY]);
-        	ocDecl.fAppliesToEmpty = appliesToEmptyAttr.booleanValue();
+            final Boolean appliesToEmptyAttr = ((Boolean) attrValues[XSAttributeChecker.ATTIDX_APPLIESTOEMPTY]);
+            ocDecl.fAppliesToEmpty = appliesToEmptyAttr.booleanValue();
         }
         ocDecl.fMode = ocMode;
 
@@ -900,7 +900,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         else {
             
             // This is an EXTENSION
-            
+
             // Create the particle
             if (fParticle == null) {
                 fContentType = baseType.getContentType();
@@ -930,37 +930,81 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.1.b",
                             new Object[]{fName}, complexContent);
                 }
-                
+
                 // if the content of either type is an "all" model group, error.
-                if (fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
-                        ((XSModelGroupImpl)fParticle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL ||
-                        ((XSParticleDecl)baseType.getParticle()).fType == XSParticleDecl.PARTICLE_MODELGROUP &&
-                        ((XSModelGroupImpl)(((XSParticleDecl)baseType.getParticle())).fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL) {
-                    fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
-                    fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
-                    throw new ComplexTypeRecoverableError("cos-all-limited.1.2",
-                            new Object[]{}, complexContent);
+                boolean baseIsAll = (((XSParticleDecl)baseType.getParticle()).fType == XSParticleDecl.PARTICLE_MODELGROUP
+                                    && ((XSModelGroupImpl)(((XSParticleDecl)baseType.getParticle())).fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL);
+                boolean derivedIsAll = (fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP
+                                       && ((XSModelGroupImpl)fParticle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL);
+
+                if (baseIsAll || derivedIsAll) {
+                    // XML Schema 1.1
+                    //
+                    // 4.2.3.2 If the {term} of the base particle has {compositor} all
+                    //   and the {term} of the effective content also has {compositor}
+                    //   all, then a Particle whose properties are as follows:
+                    // {min occurs}
+                    //      the {min occurs} of the effective content.
+                    // {max occurs}
+                    //      1
+                    // {term}
+                    //      a model group whose {compositor} is all and whose {particles}
+                    //        are the {particles} of the {term} of the base particle followed
+                    //        by the {particles} of the {term} of the effective content.
+                    if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && baseIsAll && derivedIsAll) {
+                        // Schema Component Constraint: Particle Valid (Extension)
+                        //   3.1 E's {min occurs} is the same as B's {min occurs}.
+                        if (fParticle.fMinOccurs != baseContent.fMinOccurs) {
+                            throw new ComplexTypeRecoverableError("cos-particle-extends.3.1",
+                                    new Object[]{}, complexContent);
+                        }
+
+                        XSModelGroupImpl group = new XSModelGroupImpl();
+                        group.fCompositor = XSModelGroupImpl.MODELGROUP_ALL;
+                        group.fParticleCount = ((XSModelGroupImpl)baseContent.fValue).fParticleCount + ((XSModelGroupImpl)fParticle.fValue).fParticleCount;
+                        group.fParticles = new XSParticleDecl[group.fParticleCount];
+                        System.arraycopy(((XSModelGroupImpl)baseContent.fValue).fParticles, 0, group.fParticles, 0, ((XSModelGroupImpl)baseContent.fValue).fParticleCount);
+                        System.arraycopy(((XSModelGroupImpl)fParticle.fValue).fParticles, 0, group.fParticles, ((XSModelGroupImpl)baseContent.fValue).fParticleCount, ((XSModelGroupImpl)fParticle.fValue).fParticleCount);
+                        group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+                        // the particle to contain the above all
+                        XSParticleDecl particle = new XSParticleDecl();
+                        particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+                        particle.fValue = group;
+                        particle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+                        particle.fMinOccurs = fParticle.fMinOccurs;
+
+                        fParticle = particle;
+                        explicitOpenContent = (XSOpenContentDecl) baseType.getOpenContent();
+                    }
+                    else {
+                        fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                        fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
+                        throw new ComplexTypeRecoverableError("cos-all-limited.1.2",
+                                new Object[]{}, complexContent);
+                    }
                 }
                 // the "sequence" model group to contain both particles
-                XSModelGroupImpl group = new XSModelGroupImpl();
-                group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-                group.fParticleCount = 2;
-                group.fParticles = new XSParticleDecl[2];
-                group.fParticles[0] = (XSParticleDecl)baseType.getParticle();
-                group.fParticles[1] = fParticle;
-                group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-                // the particle to contain the above sequence
-                XSParticleDecl particle = new XSParticleDecl();
-                particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-                particle.fValue = group;
-                particle.fAnnotations = XSObjectListImpl.EMPTY_LIST; 
+                else {
+                    XSModelGroupImpl group = new XSModelGroupImpl();
+                    group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+                    group.fParticleCount = 2;
+                    group.fParticles = new XSParticleDecl[2];
+                    group.fParticles[0] = (XSParticleDecl)baseType.getParticle();
+                    group.fParticles[1] = fParticle;
+                    group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+                    // the particle to contain the above sequence
+                    XSParticleDecl particle = new XSParticleDecl();
+                    particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+                    particle.fValue = group;
+                    particle.fAnnotations = XSObjectListImpl.EMPTY_LIST; 
                 
-                fParticle = particle;
-                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                    explicitOpenContent = (XSOpenContentDecl) baseType.getOpenContent();
+                    fParticle = particle;
+                    if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                        explicitOpenContent = (XSOpenContentDecl) baseType.getOpenContent();
+                    }
                 }
             }
-            
+
             // Remove prohibited uses.   Must be done before merge for EXTENSION.
             fAttrGrp.removeProhibitedAttrs();
             try {
@@ -1027,7 +1071,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
             if (fDerivedBy == XSConstants.DERIVATION_EXTENSION && baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
 
-            	// 1.4.3.2.2.3  One or more of the following is true:
+                // 1.4.3.2.2.3  One or more of the following is true:
                 //    1.4.3.2.2.3.1 B.{content type}.{open content} (call it BOT) is absent.
                 //    1.4.3.2.2.3.2 T.{content type}.{open content} (call it EOT) has {mode} interleave.
                 //    1.4.3.2.2.3.3 Both BOT and EOT have {mode} suffix.
@@ -1037,28 +1081,28 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (baseOpenContent != null && fOpenContent != baseOpenContent) {
                     // {open content} had a mode of 'none'
                     if (fOpenContent == null) {
-                    	fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                        fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
                         fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
-                    	throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3",
+                        throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3",
                                 new Object[]{fName}, complexContent);
                     }
                     else {
-                    	// 1.4.3.2.2.3.2
-                    	// 1.4.3.2.2.3.3
+                        // 1.4.3.2.2.3.2
+                        // 1.4.3.2.2.3.3
                         if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
                             if (baseOpenContent.fMode != XSOpenContentDecl.MODE_SUFFIX) {
-                            	fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                                fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
                                 fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
-                            	throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.3",
+                                throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.3",
                                         new Object[]{fName}, complexContent);
                             }
                         }
 
                         // 1.4.3.2.2.4
                         if (!baseOpenContent.fWildcard.isSubsetOf(fOpenContent.fWildcard)) {
-                        	fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                            fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
                             fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
-                        	throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.4",
+                            throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.4",
                                     new Object[]{fName}, complexContent);
                         }
                     }
