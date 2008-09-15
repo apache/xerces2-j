@@ -90,6 +90,11 @@ public interface XSConstants {
      */
     public static final short ASSERTION                 = 16;
 
+    /**
+     * The object describes an openContent
+     */
+    public static final short OPEN_CONTENT              = 17;
+
     // Derivation constants
     /**
      * No constraint is available.

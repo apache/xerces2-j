@@ -84,6 +84,9 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     // of the complex type definition, if it is globally declared; or null otherwise.
     private XSNamespaceItem fNamespaceItem = null;
 
+    // the open content
+    XSOpenContentDecl fOpenContent = null;
+
     // DOM Level 3 TypeInfo Derivation Method constants
     static final int DERIVATION_ANY = 0;
     static final int DERIVATION_RESTRICTION = 1;
@@ -100,7 +103,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
             short block, short contentType,
             boolean isAbstract, XSAttributeGroupDecl attrGrp, 
             XSSimpleType simpleType, XSParticleDecl particle,
-            XSObjectListImpl annotations) {
+            XSObjectListImpl annotations, XSOpenContentDecl openContent) {
         fTargetNamespace = targetNamespace;
         fBaseType = baseType;
         fDerivedBy = derivedBy;
@@ -113,6 +116,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         fXSSimpleType = simpleType;
         fParticle = particle;
         fAnnotations = annotations;
+        fOpenContent = openContent;
    }
 
    public void setName(String name) {
@@ -719,6 +723,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
 
     public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, int derivationMethod) {
         return isDOMDerivedFrom(typeNamespaceArg, typeNameArg, derivationMethod);
+    }
+
+    public XSOpenContent getOpenContent() {
+        return fOpenContent;
     }
 
 } // class XSComplexTypeDecl

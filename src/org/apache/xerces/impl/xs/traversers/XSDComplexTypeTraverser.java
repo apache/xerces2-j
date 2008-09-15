@@ -16,6 +16,7 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
@@ -29,6 +30,7 @@ import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -65,7 +67,7 @@ import org.w3c.dom.Element;
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
     // size of stack to hold globals:
-    private final static int GLOBAL_NUM = 11;
+    private final static int GLOBAL_NUM = 12;
     
     // globals for building XSComplexTypeDecls
     private String fName = null;
@@ -81,6 +83,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private boolean fIsAbstract = false;
     private XSComplexTypeDecl fComplexTypeDecl = null;
     private XSAnnotationImpl [] fAnnotations = null;
+    private XSOpenContentDecl fOpenContent = null;
     
     private XSParticleDecl fEmptyParticle = null;
     
@@ -173,8 +176,74 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         
         return type;
     }
-    
-    
+
+    XSOpenContentDecl traverseOpenContent(Element elmNode,
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar,
+            boolean isDefault) {
+
+        // General Attribute Checking for elmNode
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
+
+        // Create open content declaration
+        XSOpenContentDecl ocDecl = new XSOpenContentDecl();
+
+        // get attribute values
+        final XInt modeAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_MODE];
+        final short ocMode = modeAttr.shortValue();
+        
+        if (isDefault) {
+        	final Boolean appliesToEmptyAttr = ((Boolean) attrValues[XSAttributeChecker.ATTIDX_APPLIESTOEMPTY]);
+        	ocDecl.fAppliesToEmpty = appliesToEmptyAttr.booleanValue();
+        }
+        ocDecl.fMode = ocMode;
+
+        // ---------------------------------------------------------------
+        // First, handle any ANNOTATION declaration and get next child
+        // ---------------------------------------------------------------
+        Element child = DOMUtil.getFirstChildElement(elmNode);
+        if (child != null) {
+            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                addAnnotation(traverseAnnotationDecl(child, attrValues, false, schemaDoc));
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+            else {
+                String text = DOMUtil.getSyntheticAnnotation(elmNode);
+                if (text != null) {
+                    addAnnotation(traverseSyntheticAnnotation(elmNode, text, attrValues, false, schemaDoc));
+                }
+            }
+            if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                reportSchemaError("s4s-elt-invalid-content.1",
+                        new Object[]{SchemaSymbols.ELT_OPENCONTENT,SchemaSymbols.ELT_ANNOTATION}, child);
+            }
+        }
+        else {
+            String text = DOMUtil.getSyntheticAnnotation(elmNode);
+            if (text != null) {
+                addAnnotation(traverseSyntheticAnnotation(elmNode, text, attrValues, false, schemaDoc));
+            }
+        }
+
+        // ---------------------------------------------------------------
+        // Process the wildcard
+        // ---------------------------------------------------------------
+        if (child == null) {
+            if (ocMode != XSOpenContentDecl.MODE_NONE) {
+                reportSchemaError("src-ct.6", new Object[]{fName}, elmNode);
+            }
+        }
+        else {
+            Object[] wcAttrValues = fAttrChecker.checkAttributes(child, false, schemaDoc);
+            ocDecl.fWildcard = fSchemaHandler.fWildCardTraverser.traverseWildcardDecl(child, wcAttrValues, schemaDoc, grammar);
+            fAttrChecker.returnAttrArray(wcAttrValues, schemaDoc);
+        }
+
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+
+        return ocDecl;
+    }
+
     private XSComplexTypeDecl traverseComplexTypeDecl(Element complexTypeDecl,
             String complexTypeName,
             Object[] attrValues,
@@ -200,6 +269,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         
         fIsAbstract = (abstractAtt != null && abstractAtt.booleanValue());
         fAnnotations = null;
+        fOpenContent = null;
         
         Element child = null;
         
@@ -297,7 +367,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fComplexTypeDecl.setValues(fName, fTargetNamespace, fBaseType,
                 fDerivedBy, fFinal, fBlock, fContentType, fIsAbstract,
                 fAttrGrp, fXSSimpleType, fParticle, new XSObjectListImpl(fAnnotations, 
-                        fAnnotations == null? 0 : fAnnotations.length));
+                        fAnnotations == null? 0 : fAnnotations.length), fOpenContent);
         return fComplexTypeDecl;
     }
     
@@ -634,12 +704,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             boolean mixedOnType, XSDocumentInfo schemaDoc,
             SchemaGrammar grammar)
     throws ComplexTypeRecoverableError {
-        
-        
+
         Object[] complexContentAttrValues = fAttrChecker.checkAttributes(complexContentElement, false,
                 schemaDoc);
-        
-        
+
         // -----------------------------------------------------------------------
         // Determine if this is mixed content
         // -----------------------------------------------------------------------
@@ -647,15 +715,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         Boolean mixedAtt     = (Boolean) complexContentAttrValues[XSAttributeChecker.ATTIDX_MIXED];
         if (mixedAtt != null) {
             mixedContent = mixedAtt.booleanValue();
-        }
-        
-        
+        }        
+
         // -----------------------------------------------------------------------
         // Since the type must have complex content, set the simple type validators
         // to null
         // -----------------------------------------------------------------------
         fXSSimpleType = null;
-        
+
         Element complexContent = DOMUtil.getFirstChildElement(complexContentElement);
         if (complexContent != null && DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
             addAnnotation(traverseAnnotationDecl(complexContent, complexContentAttrValues, false, schemaDoc));
@@ -667,7 +734,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 addAnnotation(traverseSyntheticAnnotation(complexContentElement, text, complexContentAttrValues, false, schemaDoc));
             }
         }
-        
+
         // If there are no children, return
         if (complexContent==null) {
             fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
@@ -675,7 +742,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     new Object[]{fName,SchemaSymbols.ELT_COMPLEXCONTENT},
                     complexContentElement);
         }
-        
+
         // -----------------------------------------------------------------------
         // The content should be either "restriction" or "extension"
         // -----------------------------------------------------------------------
@@ -696,12 +763,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
                     new Object[]{fName, siblingName}, elemTmp);
         }
-        
+
         Object[] derivationTypeAttrValues = fAttrChecker.checkAttributes(complexContent, false,
                 schemaDoc);
         QName baseTypeName = (QName)  derivationTypeAttrValues[XSAttributeChecker.ATTIDX_BASE];
-        
-        
+
         // -----------------------------------------------------------------------
         // Need a base type.  Check that it's a complex type
         // -----------------------------------------------------------------------
@@ -711,18 +777,18 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             throw new ComplexTypeRecoverableError("s4s-att-must-appear",
                     new Object[]{complexContentName, "base"}, complexContent);
         }
-        
+
         XSTypeDefinition type = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc,
                 XSDHandler.TYPEDECL_TYPE,
                 baseTypeName,
                 complexContent);
-        
+
         if (type==null) {
             fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
             fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
             throw new ComplexTypeRecoverableError();
         }
-        
+
         if (! (type instanceof XSComplexTypeDecl)) {
             fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
             fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
@@ -731,7 +797,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         XSComplexTypeDecl baseType = (XSComplexTypeDecl)type;
         fBaseType = baseType;
-        
+
         // -----------------------------------------------------------------------
         // Check that the base permits the derivation
         // -----------------------------------------------------------------------
@@ -743,12 +809,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             throw new ComplexTypeRecoverableError(errorKey,
                     new Object[]{fName, fBaseType.getName()}, complexContent);
         }
-        
+
         // -----------------------------------------------------------------------
         // Skip over any potential annotations
         // -----------------------------------------------------------------------
         complexContent = DOMUtil.getFirstChildElement(complexContent);
-        
+
         if (complexContent != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -787,20 +853,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
             throw e;
         }
-        
+
         // -----------------------------------------------------------------------
         // Compose the final content and attribute uses
         // -----------------------------------------------------------------------
         XSParticleDecl baseContent = (XSParticleDecl)baseType.getParticle();
+        // XML Schema 1.1
+        XSOpenContentDecl explicitOpenContent = null;
+
         if (fDerivedBy==XSConstants.DERIVATION_RESTRICTION) {
-            
+
             // This is an RESTRICTION
-            
+
             // N.B. derivation-ok-restriction.5.3 is checked under schema
             // full checking.   That's because we need to wait until locals are
             // traversed so that occurrence information is correct.
-            
-            
             if (fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED &&
                     baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                 fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
@@ -809,7 +876,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                         new Object[]{fName, baseType.getName()},
                         complexContent);
             }
-            
+
             try {
                 mergeAttributes(baseType.getAttrGrp(), fAttrGrp, fName, false, complexContent);
             } catch (ComplexTypeRecoverableError e) {
@@ -819,7 +886,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             // Remove prohibited uses.   Must be done after merge for RESTRICTION.
             fAttrGrp.removeProhibitedAttrs();
-            
+
             if (baseType != SchemaGrammar.fAnyType) {
                 Object[] errArgs = fAttrGrp.validRestrictionOf(fName, baseType.getAttrGrp());
                 if (errArgs != null) {
@@ -839,6 +906,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fContentType = baseType.getContentType();
                 fXSSimpleType = (XSSimpleType)baseType.getSimpleType();
                 fParticle = baseContent;
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    explicitOpenContent = (XSOpenContentDecl) baseType.getOpenContent();
+                }
             }
             else if (baseType.getContentType() == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
             }
@@ -886,6 +956,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 particle.fAnnotations = XSObjectListImpl.EMPTY_LIST; 
                 
                 fParticle = particle;
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    explicitOpenContent = (XSOpenContentDecl) baseType.getOpenContent();
+                }
             }
             
             // Remove prohibited uses.   Must be done before merge for EXTENSION.
@@ -897,15 +970,107 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                 throw e;
             }
-            
         }
-        
+
+        //------------------------------------------------------------------------
+        // XML Schema 1.1
+        // Applies open content, if present
+        //------------------------------------------------------------------------
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            XSOpenContentDecl baseOpenContent = (XSOpenContentDecl) baseType.getOpenContent();
+
+            // Let the wildcard element be  the appropriate case among the following:
+            //    5.1 If the <openContent> [child] is present , then the <openContent> [child].
+            //    5.2 If the <openContent> [child] is not present, the <schema> ancestor has an <defaultOpenContent> [child], and one of the following is true
+            //      5.2.1 the {variety} of the explicit content type is not empty
+            //      5.2.2 the {variety} of the explicit content type is empty and the actual value of the appliesToEmpty [attribute] is true
+            //      , then the <defaultOpenContent> [child] of the <schema>.
+            //    5.3 otherwise absent.
+            if (fOpenContent == null) {
+                if (schemaDoc.fDefaultOpenContent != null) {
+                    if (fContentType != XSComplexTypeDecl.CONTENTTYPE_EMPTY || schemaDoc.fDefaultOpenContent.fAppliesToEmpty) {
+                        fOpenContent = schemaDoc.fDefaultOpenContent;
+                    }
+                }
+            }
+
+            // If the wildcard element is not absent
+            if (fOpenContent != null) {
+                // 6.2 If the actual value of its mode [attribute] is 'none', then an absent {open content}
+                if (fOpenContent.fMode == XSOpenContentDecl.MODE_NONE) {
+                    fOpenContent = null;
+                }
+                // 6.3 If the {variety} is empty, then a Particle as follows:
+                //   {min occurs} 1
+                //   {max occurs} 1
+                //   {term}       a model group whose {compositor} is sequence and whose {particles} is empty.
+                else if (fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
+                    if (fEmptyParticle == null) {
+                        XSModelGroupImpl group = new XSModelGroupImpl();
+                        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+                        group.fParticleCount = 0;
+                        group.fParticles = null;
+                        group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+                        fEmptyParticle = new XSParticleDecl();
+                        fEmptyParticle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+                        fEmptyParticle.fValue = group;
+                        fEmptyParticle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+                    }
+                    fParticle = fEmptyParticle;
+                    fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
+                }
+            }
+            // 6.1 If the wildcard element is absent, then the explicit open content.
+            else {
+                fOpenContent = explicitOpenContent;
+            }
+
+            if (fDerivedBy == XSConstants.DERIVATION_EXTENSION && baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
+
+            	// 1.4.3.2.2.3  One or more of the following is true:
+                //    1.4.3.2.2.3.1 B.{content type}.{open content} (call it BOT) is absent.
+                //    1.4.3.2.2.3.2 T.{content type}.{open content} (call it EOT) has {mode} interleave.
+                //    1.4.3.2.2.3.3 Both BOT and EOT have {mode} suffix.
+                //    1.4.3.2.2.4 If neither BOT nor EOT is absent, then BOT.{wildcard}.{namespace constraint} is a subset
+                //                of EOT.{wildcard}.{namespace constraint}, as defined by Wildcard Subset (3.10.6.2).
+
+                if (baseOpenContent != null && fOpenContent != baseOpenContent) {
+                    // {open content} had a mode of 'none'
+                    if (fOpenContent == null) {
+                    	fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                        fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
+                    	throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3",
+                                new Object[]{fName}, complexContent);
+                    }
+                    else {
+                    	// 1.4.3.2.2.3.2
+                    	// 1.4.3.2.2.3.3
+                        if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
+                            if (baseOpenContent.fMode != XSOpenContentDecl.MODE_SUFFIX) {
+                            	fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                                fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
+                            	throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.3",
+                                        new Object[]{fName}, complexContent);
+                            }
+                        }
+
+                        // 1.4.3.2.2.4
+                        if (!baseOpenContent.fWildcard.isSubsetOf(fOpenContent.fWildcard)) {
+                        	fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                            fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
+                        	throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.4",
+                                    new Object[]{fName}, complexContent);
+                        }
+                    }
+                }
+            }
+        } // end of fSchema11Support
+
         // and *finally* we can legitimately return the attributes!
         fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
         fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
         
     } // end of traverseComplexContent
-    
     
     // This method merges attribute uses from the base, into the derived set.
     // The first duplicate attribute, if any, is returned.
@@ -971,13 +1136,20 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         boolean emptyParticle = false;
         if (complexContentChild != null) {
             // -------------------------------------------------------------
-            // GROUP, ALL, SEQUENCE or CHOICE, followed by attributes, if specified.
+            // OPENCONTENT?, followed by GROUP, ALL, SEQUENCE or CHOICE, 
+            //   followed by attributes, if specified, followed by
+            //   assertions if specified.
             // Note that it's possible that only attributes are specified.
             // -------------------------------------------------------------
-            
-            
             String childName = DOMUtil.getLocalName(complexContentChild);
-            
+
+            // XML Schema 1.1
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && childName.equals(SchemaSymbols.ELT_OPENCONTENT)) {
+                fOpenContent = traverseOpenContent(complexContentChild, schemaDoc, grammar, false);
+                complexContentChild = DOMUtil.getNextSiblingElement(complexContentChild);
+                childName = DOMUtil.getLocalName(complexContentChild);
+            }
+
             if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 
                 particle = fSchemaHandler.fGroupTraverser.traverseLocal(complexContentChild,
@@ -1199,9 +1371,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fGlobalStore[fGlobalStorePos++] = fParticle;
         fGlobalStore[fGlobalStorePos++] = fXSSimpleType;
         fGlobalStore[fGlobalStorePos++] = fAnnotations;
+        fGlobalStore[fGlobalStorePos++] = fOpenContent;
     }
     
     private void contentRestore() {
+        fOpenContent = (XSOpenContentDecl)fGlobalStore[--fGlobalStorePos];
         fAnnotations = (XSAnnotationImpl [])fGlobalStore[--fGlobalStorePos];
         fXSSimpleType = (XSSimpleType)fGlobalStore[--fGlobalStorePos];
         fParticle = (XSParticleDecl)fGlobalStore[--fGlobalStorePos];

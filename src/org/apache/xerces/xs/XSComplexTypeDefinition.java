@@ -110,4 +110,9 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
      */
     public XSObjectList getAnnotations();
 
+    /**
+     * An open content
+     */
+    public XSOpenContent getOpenContent();
+
 }

@@ -24,6 +24,7 @@ import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.Element;
@@ -83,6 +84,9 @@ class XSDocumentInfo {
     // list of annotations contained in the schema document. This is null
     // once removeAnnotations has been called.
     protected XSAnnotationInfo fAnnotations = null;
+
+    // defaultOpenContent
+    XSOpenContentDecl fDefaultOpenContent = null;
 
     // note that the caller must ensure to call returnSchemaAttrs()
     // to avoid memory leaks!

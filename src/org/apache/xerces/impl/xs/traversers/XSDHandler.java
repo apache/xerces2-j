@@ -45,6 +45,7 @@ import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaDOMParser;
@@ -1194,14 +1195,25 @@ public class XSDHandler {
                     //DOMUtil.setHidden(globalComp);
                 }
                 else {
-                    dependenciesCanOccur = false;
                     String lName = DOMUtil.getAttrValue(globalComp, SchemaSymbols.ATT_NAME);
+                    String componentType = DOMUtil.getLocalName(globalComp);
+
+                    // In XML Schema 1.1, a defaultOpenContent element may occur
+                    if (componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
+                        if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1 || !dependenciesCanOccur) {
+                            reportSchemaError("s4s-elt-invalid-content.3", new Object [] {componentType}, globalComp);
+                        }
+                        // skip it; traverse it later
+                        dependenciesCanOccur = false;
+                        continue;
+                    }
+                    
+                    dependenciesCanOccur = false;
                     if (lName.length() == 0) // an error we'll catch later
                         continue;
                     String qName = currSchemaDoc.fTargetNamespace == null?
                             ","+lName:
                                 currSchemaDoc.fTargetNamespace +","+lName;
-                    String componentType = DOMUtil.getLocalName(globalComp);
                     if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                         checkForDuplicateNames(qName, fUnparsedAttributeRegistry, fUnparsedAttributeRegistrySub, globalComp, currSchemaDoc);
                     }
@@ -1330,6 +1342,9 @@ public class XSDHandler {
                 else if (componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
                     currSG.addAnnotation(fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
                     sawAnnotation = true;
+                }
+                else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
+                    currSchemaDoc.fDefaultOpenContent = fComplexTypeTraverser.traverseOpenContent(globalComp, currSchemaDoc, currSG, true);
                 }
                 else {
                     reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
