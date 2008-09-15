@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -91,8 +92,15 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL, parent);
             }
             else {
-                Object[] args = {"all", "(annotation?, element*)", DOMUtil.getLocalName(child)};
-                reportSchemaError("s4s-elt-must-match.1", args, child);
+            	// XML Schema 1.1 - allow wildcard
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                    childName.equals(SchemaSymbols.ELT_ANY)) {
+                    particle = fSchemaHandler.fWildCardTraverser.traverseAny(child, schemaDoc, grammar);
+                }
+                else {
+                    Object[] args = {"all", "(annotation?, element*)", DOMUtil.getLocalName(child)};
+                    reportSchemaError("s4s-elt-must-match.1", args, child);
+                }
             }
             
             if (particle != null)

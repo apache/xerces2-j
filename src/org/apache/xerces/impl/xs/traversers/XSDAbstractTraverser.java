@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.traversers;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -791,7 +792,8 @@ abstract class XSDAbstractTraverser {
         // reference a <group> whose model group is an all model group,
         // minOccurs and maxOccurs must be one.
         if (processingAllEl) {
-            if (max != 1) {
+        	// XML Schema 1.1 - maxOccurs can have a value > 1
+            if (max != 1 && fSchemaHandler.fSchemaVersion != Constants.SCHEMA_VERSION_1_1) {
                 reportSchemaError("cos-all-limited.2", new Object[]{new Integer(max),
                         ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;

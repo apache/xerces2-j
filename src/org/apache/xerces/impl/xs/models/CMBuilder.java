@@ -98,7 +98,12 @@ public class CMBuilder {
         XSCMValidator cmValidator = null;
         if (particle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
             ((XSModelGroupImpl)particle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL) {
-            cmValidator = createAllCM(particle);
+            if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
+                cmValidator = createAllCM(particle);
+            }
+            else {
+                cmValidator = createAll11CM(particle, (XSOpenContentDecl) typeDecl.getOpenContent());
+            }
         }
         else {
             cmValidator = createDFACM(particle, forUPA, (XSOpenContentDecl) typeDecl.getOpenContent());
@@ -129,6 +134,24 @@ public class CMBuilder {
             // add the element decl to the all content model
             allContent.addElement((XSElementDecl)group.fParticles[i].fValue,
             group.fParticles[i].fMinOccurs == 0);
+        }
+        return allContent;
+    }
+
+    XSCMValidator createAll11CM(XSParticleDecl particle, XSOpenContentDecl openContent) {
+        if (particle.fMaxOccurs == 0)
+            return null;
+
+        // get the model group, and add all children of it to the content model
+        XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
+        // create an all content model. the parameter indicates whether
+        // the <all> itself is optional
+        XS11AllCM allContent = new XS11AllCM(particle.fMinOccurs == 0, group.fParticleCount, openContent);
+        for (int i = 0; i < group.fParticleCount; i++) {
+            // add the element/wildcard decl to the all content model
+            XSParticleDecl groupParticle = group.fParticles[i];
+            allContent.addElement(groupParticle.fValue, groupParticle.fType,
+                group.fParticles[i].fMinOccurs, group.fParticles[i].fMaxOccurs);
         }
         return allContent;
     }
