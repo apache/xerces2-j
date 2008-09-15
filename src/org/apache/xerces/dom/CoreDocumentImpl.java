@@ -17,9 +17,15 @@
 
 package org.apache.xerces.dom;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.apache.xerces.util.URI;
 
 import org.w3c.dom.DOMConfiguration;
@@ -124,10 +130,8 @@ extends ParentNode implements Document  {
     /**Experimental DOM Level 3 feature: documentURI */
     protected String fDocumentURI;
 
-	//Revisit :: change to a better data structure.
     /** Table for user data attached to this document nodes. */
-    protected Hashtable userData;
-
+    protected Map userData;
 
     /** Identifiers. */
     protected Hashtable identifiers;
@@ -1765,26 +1769,28 @@ extends ParentNode implements Document  {
         
         // Return null if the source is null
         
-        if (source == null ) {
+        if (source == null) {
         	return null;
-        } else if (source != null && source.getOwnerDocument() != null) {
+        } 
+        else if (source != null && source.getOwnerDocument() != null) {
 
             DOMImplementation thisImpl = this.getImplementation();
             DOMImplementation otherImpl = source.getOwnerDocument().getImplementation();
             
             // when the source node comes from a different implementation.
             if (thisImpl != otherImpl) {
-            
-                // Adopting from a DefferedDOM to DOM
+                // Adopting from a deferred DOM to a non-deferred DOM
                 if (thisImpl instanceof org.apache.xerces.dom.DOMImplementationImpl &&
                         otherImpl instanceof org.apache.xerces.dom.DeferredDOMImplementationImpl) {
-                    // traverse the DOM and expand deffered nodes and then allow adoption
+                    // traverse the DOM and expand deferred nodes and then allow adoption
                     undeferChildren (node);
-                } else if ( thisImpl instanceof org.apache.xerces.dom.DeferredDOMImplementationImpl
+                } 
+                else if ( thisImpl instanceof org.apache.xerces.dom.DeferredDOMImplementationImpl
                         && otherImpl instanceof org.apache.xerces.dom.DOMImplementationImpl) {
-                    // Adopting from a DOM into a DefferedDOM, this should be okay
-                } else {
-                    // Adopting between two dissimilar DOM's is not allowed
+                    // Adopting from a non-deferred DOM into a deferred DOM, this should be okay
+                } 
+                else {
+                    // Adopting between two dissimilar DOMs is not allowed
                     return null;  
                 }
         	}
@@ -2332,7 +2338,7 @@ extends ParentNode implements Document  {
         else {
             Hashtable t;
             if (userData == null) {
-                userData = new Hashtable();
+                userData = new WeakHashMap();
                 t = new Hashtable();
                 userData.put(n, t);
             }
@@ -2408,8 +2414,9 @@ extends ParentNode implements Document  {
      * @param data The user data table.
      */
     void setUserDataTable(Node n, Hashtable data) {
-		if (userData == null)
-			userData = new Hashtable();
+        if (userData == null) {
+            userData = new WeakHashMap();
+        }
         if (data != null) {
             userData.put(n, data);
         }
@@ -2753,6 +2760,38 @@ extends ParentNode implements Document  {
      * A method to be called when an element has been renamed
      */
     void renamedElement(Element oldEl, Element newEl) {
+    }
+    
+    /**
+     * Serialized form of user data is a Hashtable. 
+     * Convert it into a WeakHashMap on load.
+     */
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (userData != null) {
+            userData = new WeakHashMap(userData);
+        }
+    }
+    
+    /**
+     * To allow DOM trees serialized by newer versions of Xerces
+     * to be read by older versions briefly move the user data
+     * into a Hashtable.
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        final Map oldUserData = this.userData;
+        try {
+            if (oldUserData != null) {
+                this.userData = new Hashtable(oldUserData);
+            } 
+            out.defaultWriteObject();
+        }
+        // If the write fails for some reason ensure 
+        // that we restore the original object.
+        finally {
+            this.userData = oldUserData;
+        }
     }
 
 } // class CoreDocumentImpl
