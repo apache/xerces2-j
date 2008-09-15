@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs.models;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -28,6 +29,7 @@ import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xni.QName;
@@ -57,6 +59,9 @@ public class XSDFACM
 
     /** Set to true to debug content model validation. */
     private static final boolean DEBUG_VALIDATE_CONTENT = false;
+
+    // open content - suffix mode
+    private static final short STATE_SUFFIX = 1;
 
     //
     // Data
@@ -137,6 +142,16 @@ public class XSDFACM
     private int fTransTable[][] = null;
     
     /**
+     * The open content model
+     */
+    private XSOpenContentDecl fOpenContent = null;
+    
+    /**
+     * The XML Schema version
+     */
+    private short fSchemaVersion;
+
+    /**
      * Array containing occurence information for looping states 
      * which use counters to check minOccurs/maxOccurs.
      */
@@ -181,11 +196,17 @@ public class XSDFACM
      * @exception RuntimeException Thrown if DFA can't be built.
      */
 
-   public XSDFACM(CMNode syntaxTree, int leafCount) {
+   public XSDFACM(CMNode syntaxTree, int leafCount, short schemaVersion, XSOpenContentDecl openContent) {
    
         // Store away our index and pools in members
         fLeafCount = leafCount;
         fIsCompactedForUPA = syntaxTree.isCompactedForUPA();
+
+        // Store the XML Schema version
+        fSchemaVersion = schemaVersion;
+
+        // Store open content
+        fOpenContent = openContent;
 
         //
         //  Create some string pool indexes that represent the names of some
@@ -253,15 +274,28 @@ public class XSDFACM
         if(curState == XSCMValidator.FIRST_ERROR || curState == XSCMValidator.SUBSEQUENT_ERROR) {
             // there was an error last time; so just go find correct Object in fElemmMap.
             // ... after resetting state[0].
-            if(curState == XSCMValidator.FIRST_ERROR)
+            if (curState == XSCMValidator.FIRST_ERROR) {
                 state[0] = XSCMValidator.SUBSEQUENT_ERROR;
+            }
 
             return findMatchingDecl(curElem, subGroupHandler);
+        }
+        // apply open content - suffix mode 
+        else if (state[3] == STATE_SUFFIX) {
+            if (fOpenContent.fWildcard.allowQName(curElem)) {
+                return fOpenContent;
+            }
+            else {
+                state[1] = curState;
+                state[0] = XSCMValidator.FIRST_ERROR;
+                return findMatchingDecl(curElem, subGroupHandler);
+            }
         }
 
         int nextState = 0;
         int elemIndex = 0;
         Object matchingDecl = null;
+        boolean toMatchElementDecl = false;
 
         for (; elemIndex < fElemMapSize; elemIndex++) {
             nextState = fTransTable[curState][elemIndex];
@@ -277,14 +311,69 @@ public class XSDFACM
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
                 if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
                     matchingDecl = fElemMap[elemIndex];
+                    // XML Schema 1.1 - and element has precedence over a wildcard
+                    // if no occurences or we reached minOccurs, keep looking for
+                    // and element declaration
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                        if (fCountingStates == null || fCountingStates[curState] == null || state[2] == fCountingStates[curState].minOccurs) {
+                            toMatchElementDecl = true;
+                        }
+                    }
                     break;
+                }
+            }
+        }
+
+        // XML Schema 1.1
+        // We matched against a wildcard, but need to also check
+        // if we can find a matching element declaration
+        if (toMatchElementDecl) {
+            int newState = 0;
+            Object newMatchingDecl = null;
+            while (++elemIndex < fElemMapSize) {
+                newState = fTransTable[curState][elemIndex];
+                if (newState != -1 && fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
+                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                    if (newMatchingDecl != null) {
+                        matchingDecl = newMatchingDecl;
+                        nextState = newState;
+                        break;
+                    }
                 }
             }
         }
 
         // if we still can't find a match, set the state to first_error
         // and return null
-        if (elemIndex == fElemMapSize) {
+        if (matchingDecl == null) {
+            // XML Schema 1.1
+            // Validate against Open Content
+            if (fOpenContent != null) {
+                // if suffix mode, we should have reached a final state
+                if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
+                    if (fFinalStateFlags[curState]) {
+                        if (fCountingStates != null) {
+                            Occurence o = fCountingStates[curState];
+                            if (o != null && state[2] < o.minOccurs) {
+                                // not enough loops on the current state to be considered final.
+                                state[1] = state[0];
+                                state[0] = XSCMValidator.FIRST_ERROR;
+                                return findMatchingDecl(curElem, subGroupHandler);
+                            }
+                        }
+                        state[3] = STATE_SUFFIX;
+                    }
+                    else {
+                        state[1] = state[0];
+                        state[0] = XSCMValidator.FIRST_ERROR;
+                        return findMatchingDecl(curElem, subGroupHandler);
+                    }
+                }
+                if (fOpenContent.fWildcard.allowQName(curElem)) {
+                    return fOpenContent;
+                }
+            }
+
             state[1] = state[0];
             state[0] = XSCMValidator.FIRST_ERROR;
             return findMatchingDecl(curElem, subGroupHandler);
@@ -366,8 +455,9 @@ public class XSDFACM
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri))
+                if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
                     return fElemMap[elemIndex];
+                }
             }
         }
 
@@ -422,14 +512,15 @@ public class XSDFACM
         // [1] : if [0] is an error state then the 
         //       last valid state before the error
         // [2] : occurence counter for counting states
-        return new int [3];
+        // [3] : suffix state of open conten
+        return new int [4];
     } // startContentModel():int[]
 
     // this method returns whether the last state was a valid final state
     public boolean endContentModel(int[] state) {
         final int curState = state[0];
         if (fFinalStateFlags[curState]) {
-            if (fCountingStates != null) {
+            if (fCountingStates != null && state[3] != STATE_SUFFIX) {
                 Occurence o = fCountingStates[curState];
                 if (o != null && state[2] < o.minOccurs) {
                     // not enough loops on the current state to be considered final.

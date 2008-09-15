@@ -24,6 +24,7 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 
 /**
@@ -100,7 +101,7 @@ public class CMBuilder {
             cmValidator = createAllCM(particle);
         }
         else {
-            cmValidator = createDFACM(particle, forUPA);
+            cmValidator = createDFACM(particle, forUPA, (XSOpenContentDecl) typeDecl.getOpenContent());
         }
 
         //now we are throught building content model and have passed sucessfully of the nodecount check
@@ -132,7 +133,7 @@ public class CMBuilder {
         return allContent;
     }
 
-    XSCMValidator createDFACM(XSParticleDecl particle, boolean forUPA) {
+    XSCMValidator createDFACM(XSParticleDecl particle, boolean forUPA, XSOpenContentDecl openContent) {
         fLeafCount = 0;
         fParticleCount = 0;
         // convert particle tree to CM tree
@@ -140,7 +141,7 @@ public class CMBuilder {
         if (node == null)
             return null;
         // build DFA content model from the CM tree
-        return new XSDFACM(node, fLeafCount);
+        return new XSDFACM(node, fLeafCount, fSchemaVersion, openContent);
     }
 
     // 1. convert particle tree to CM tree:

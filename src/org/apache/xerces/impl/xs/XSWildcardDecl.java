@@ -25,6 +25,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.xni.QName;
 
 /**
  * The XML representation for a wildcard declaration
@@ -109,6 +110,16 @@ public class XSWildcardDecl implements XSWildcard {
 
         // none of the above conditions applied, so return false.
         return false;
+    }
+
+    /**
+     * XML Schema 1.1
+     * 
+     * Validation Rule: Wildcard allows QName
+     */
+    public boolean allowQName(QName name) {
+        // TODO: apply 1.1 rules
+        return allowNamespace(name.uri);
     }
 
     /**

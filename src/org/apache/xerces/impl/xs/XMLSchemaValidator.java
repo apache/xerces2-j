@@ -1834,7 +1834,7 @@ public class XMLSchemaValidator
         if (fSkipValidationDepth >= 0) {
             fElementDepth++;
             if (fAugPSVI)
-            	augs = getEmptyAugs(augs);
+                augs = getEmptyAugs(augs);
             return augs;
         }
 
@@ -1908,6 +1908,8 @@ public class XMLSchemaValidator
         if (decl != null) {
             if (decl instanceof XSElementDecl) {
                 fCurrentElemDecl = (XSElementDecl) decl;
+            } else if (decl instanceof XSOpenContentDecl) {
+                wildcard = (XSWildcardDecl) ((XSOpenContentDecl)decl).getWildcard();
             } else {
                 wildcard = (XSWildcardDecl) decl;
             }
