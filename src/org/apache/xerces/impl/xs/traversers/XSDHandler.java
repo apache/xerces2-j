@@ -24,7 +24,9 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -45,17 +47,15 @@ import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
-import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaDOMParser;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
-
-import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.DOMInputSource;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.SAXInputSource;
 import org.apache.xerces.util.StAXInputSource;
@@ -566,11 +566,24 @@ public class XSDHandler {
             }
             fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
             try {
-                if (sis.getXMLEventReader() != null) {
-                    fStAXSchemaParser.parse(sis.getXMLEventReader());
+                final boolean consumeRemainingContent = sis.shouldConsumeRemainingContent();
+                final XMLStreamReader streamReader = sis.getXMLStreamReader();
+                if (streamReader != null) {
+                    fStAXSchemaParser.parse(streamReader);
+                    if (consumeRemainingContent) {
+                        while (streamReader.hasNext()) {
+                            streamReader.next();
+                        }
+                    }
                 }
                 else {
-                    fStAXSchemaParser.parse(sis.getXMLStreamReader());
+                    final XMLEventReader eventReader = sis.getXMLEventReader();
+                    fStAXSchemaParser.parse(eventReader);
+                    if (consumeRemainingContent) {
+                        while (eventReader.hasNext()) {
+                            eventReader.nextEvent();
+                        }
+                    }
                 }
             }
             catch (XMLStreamException e) {
@@ -1838,11 +1851,24 @@ public class XSDHandler {
             }
             fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
             try {
-                if (sis.getXMLEventReader() != null) {
-                    fStAXSchemaParser.parse(sis.getXMLEventReader());
+                final boolean consumeRemainingContent = sis.shouldConsumeRemainingContent();
+                final XMLStreamReader streamReader = sis.getXMLStreamReader();
+                if (streamReader != null) {
+                    fStAXSchemaParser.parse(streamReader);
+                    if (consumeRemainingContent) {
+                        while (streamReader.hasNext()) {
+                            streamReader.next();
+                        }
+                    }
                 }
                 else {
-                    fStAXSchemaParser.parse(sis.getXMLStreamReader());
+                    final XMLEventReader eventReader = sis.getXMLEventReader();
+                    fStAXSchemaParser.parse(eventReader);
+                    if (consumeRemainingContent) {
+                        while (eventReader.hasNext()) {
+                            eventReader.nextEvent();
+                        }
+                    }
                 }
             }
             catch (XMLStreamException e) {
