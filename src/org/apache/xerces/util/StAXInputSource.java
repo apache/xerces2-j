@@ -40,6 +40,9 @@ public final class StAXInputSource extends XMLInputSource {
     
     public StAXInputSource(XMLStreamReader source, boolean consumeRemainingContent) {
         super(null, source.getLocation().getSystemId(), null);
+        if (source == null) {
+            throw new IllegalArgumentException("XMLStreamReader parameter cannot be null.");
+        }
         fStreamReader = source;
         fEventReader = null;
         fConsumeRemainingContent = consumeRemainingContent;
@@ -51,6 +54,9 @@ public final class StAXInputSource extends XMLInputSource {
     
     public StAXInputSource(XMLEventReader source, boolean consumeRemainingContent) {
         super(null, getEventReaderSystemId(source), null);
+        if (source == null) {
+            throw new IllegalArgumentException("XMLEventReader parameter cannot be null.");
+        }
         fStreamReader = null;
         fEventReader = source;
         fConsumeRemainingContent = consumeRemainingContent;
@@ -74,11 +80,12 @@ public final class StAXInputSource extends XMLInputSource {
     
     private static String getEventReaderSystemId(XMLEventReader reader) {
         try {
-            return reader.peek().getLocation().getSystemId();
+            if (reader != null) {
+                return reader.peek().getLocation().getSystemId();
+            }
         }
-        catch (XMLStreamException e) {
-            return null;
-        }
+        catch (XMLStreamException e) {}
+        return null;
     }
     
 } // StAXInputSource
