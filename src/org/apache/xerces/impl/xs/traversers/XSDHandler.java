@@ -24,7 +24,9 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -537,11 +539,24 @@ public class XSDHandler {
             }
             fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
             try {
-                if (sis.getXMLEventReader() != null) {
-                    fStAXSchemaParser.parse(sis.getXMLEventReader());
+                final boolean consumeRemainingContent = sis.shouldConsumeRemainingContent();
+                final XMLStreamReader streamReader = sis.getXMLStreamReader();
+                if (streamReader != null) {
+                    fStAXSchemaParser.parse(streamReader);
+                    if (consumeRemainingContent) {
+                        while (streamReader.hasNext()) {
+                            streamReader.next();
+                        }
+                    }
                 }
                 else {
-                    fStAXSchemaParser.parse(sis.getXMLStreamReader());
+                    final XMLEventReader eventReader = sis.getXMLEventReader();
+                    fStAXSchemaParser.parse(eventReader);
+                    if (consumeRemainingContent) {
+                        while (eventReader.hasNext()) {
+                            eventReader.nextEvent();
+                        }
+                    }
                 }
             }
             catch (XMLStreamException e) {
@@ -1795,11 +1810,24 @@ public class XSDHandler {
             }
             fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
             try {
-                if (sis.getXMLEventReader() != null) {
-                    fStAXSchemaParser.parse(sis.getXMLEventReader());
+                final boolean consumeRemainingContent = sis.shouldConsumeRemainingContent();
+                final XMLStreamReader streamReader = sis.getXMLStreamReader();
+                if (streamReader != null) {
+                    fStAXSchemaParser.parse(streamReader);
+                    if (consumeRemainingContent) {
+                        while (streamReader.hasNext()) {
+                            streamReader.next();
+                        }
+                    }
                 }
                 else {
-                    fStAXSchemaParser.parse(sis.getXMLStreamReader());
+                    final XMLEventReader eventReader = sis.getXMLEventReader();
+                    fStAXSchemaParser.parse(eventReader);
+                    if (consumeRemainingContent) {
+                        while (eventReader.hasNext()) {
+                            eventReader.nextEvent();
+                        }
+                    }
                 }
             }
             catch (XMLStreamException e) {

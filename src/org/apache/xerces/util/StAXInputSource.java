@@ -30,17 +30,30 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  */
 public final class StAXInputSource extends XMLInputSource {
     
-    private XMLStreamReader fStreamReader;
-    private XMLEventReader fEventReader;
+    private final XMLStreamReader fStreamReader;
+    private final XMLEventReader fEventReader;
+    private final boolean fConsumeRemainingContent;
     
     public StAXInputSource(XMLStreamReader source) {
+        this(source, false);
+    }
+    
+    public StAXInputSource(XMLStreamReader source, boolean consumeRemainingContent) {
         super(null, source.getLocation().getSystemId(), null);
         fStreamReader = source;
+        fEventReader = null;
+        fConsumeRemainingContent = consumeRemainingContent;
     }
     
     public StAXInputSource(XMLEventReader source) {
+        this(source, false);
+    }
+    
+    public StAXInputSource(XMLEventReader source, boolean consumeRemainingContent) {
         super(null, getEventReaderSystemId(source), null);
+        fStreamReader = null;
         fEventReader = source;
+        fConsumeRemainingContent = consumeRemainingContent;
     }
     
     public XMLStreamReader getXMLStreamReader() {
@@ -49,6 +62,10 @@ public final class StAXInputSource extends XMLInputSource {
     
     public XMLEventReader getXMLEventReader() {
         return fEventReader;
+    }
+    
+    public boolean shouldConsumeRemainingContent() {
+        return fConsumeRemainingContent;
     }
     
     public void setSystemId(String systemId){
