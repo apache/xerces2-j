@@ -204,4 +204,8 @@ public class XSSimpleTypeDelegate
         throws InvalidDatatypeValueException {
         return type.validate(content, context, validatedInfo);
     }
+    
+    public String toString() {
+        return type.toString();
+    }
 }
