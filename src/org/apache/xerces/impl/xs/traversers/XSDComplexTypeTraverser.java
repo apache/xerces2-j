@@ -274,6 +274,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         Element child = null;
         
         try {
+            // XML Schema 1.1 - {attribute uses}
+            //
+            // If the defaultAttributesApply [attribute] of the <complexType> element is not present
+            // or has actual value 'true', and the <schema> ancestor has an defaultAttributes attribute,
+            // then properties {attribute uses} and {attribute wildcard} are computed as if there were
+            // an <attributeGroup> [child] with empty content and a ref [attribute] whose actual value is
+            // the same as that of the defaultAttributes [attribute].
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                /* NOTE: default value is true; i.e. if attribute is missing its value defaults to true */
+                Boolean defaultAttributeAppliesAttr = (Boolean) attrValues[XSAttributeChecker.ATTIDX_DEFAULTATTRAPPLY];
+                if (defaultAttributeAppliesAttr.booleanValue() == true && schemaDoc.fDefaultAGroup != null) {
+                    mergeAttributes(schemaDoc.fDefaultAGroup, fAttrGrp, fName, true, complexTypeDecl);
+                }
+            }
+
             // ---------------------------------------------------------------
             // First, handle any ANNOTATION declaration and get next child
             // ---------------------------------------------------------------

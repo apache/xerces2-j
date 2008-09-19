@@ -39,6 +39,7 @@ import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
+import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
@@ -1292,6 +1293,16 @@ public class XSDHandler {
             }
             Element currRoot = currDoc;
             boolean sawAnnotation = false;
+
+            // if XML Schema 1.1, set default attribute group 
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                // Check that we have a 'defaultAttributes' and that we have not already processed it
+                if (currSchemaDoc.fDefaultAttributes != null && currSchemaDoc.fDefaultAGroup != null) {
+                    currSchemaDoc.fDefaultAGroup = (XSAttributeGroupDecl) getGlobalDecl(
+                            currSchemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, currSchemaDoc.fDefaultAttributes, currRoot);
+                }
+            }
+
             // traverse this schema's global decls
             for (Element globalComp =
                 DOMUtil.getFirstVisibleChildElement(currRoot, fHiddenNodes);

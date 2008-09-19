@@ -24,9 +24,11 @@ import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 
 /**
@@ -85,6 +87,10 @@ class XSDocumentInfo {
     // once removeAnnotations has been called.
     protected XSAnnotationInfo fAnnotations = null;
 
+    // defaultAttributes and its corresponding attribute group
+    QName fDefaultAttributes = null;
+    XSAttributeGroupDecl fDefaultAGroup = null;
+
     // defaultOpenContent
     XSOpenContentDecl fDefaultOpenContent = null;
 
@@ -124,6 +130,8 @@ class XSDocumentInfo {
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
+
+            fDefaultAttributes = (QName) fSchemaAttrs[XSAttributeChecker.ATTIDX_DEFAULTATTRAPPLY];
 
             //set namespace support
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
