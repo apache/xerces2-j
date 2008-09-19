@@ -2502,20 +2502,25 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     public boolean derivedFromType(XSTypeDefinition ancestor, short derivation) {
         // REVISIT: implement according to derivation
 
-        // ancestor is null, retur false
-        if (ancestor == null)
+        // ancestor is null, return false
+        if (ancestor == null) {
             return false;
+        }
+        // extract the actual XSTypeDefinition if the given ancestor is a delegate.
+        while (ancestor instanceof XSSimpleTypeDelegate) {
+            ancestor = ((XSSimpleTypeDelegate) ancestor).type;
+        }
         // ancestor is anyType, return true
         // anyType is the only type whose base type is itself
-        if (ancestor.getBaseType() == ancestor)
+        if (ancestor.getBaseType() == ancestor) {
             return true;
+        }
         // recursively get base, and compare it with ancestor
         XSTypeDefinition type = this;
         while (type != ancestor &&                      // compare with ancestor
                 type != fAnySimpleType) {  // reached anySimpleType
             type = type.getBaseType();
         }
-
         return type == ancestor;
     }
 
