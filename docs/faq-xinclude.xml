@@ -163,7 +163,7 @@ spf.setXIncludeAware(true);
      <p>
       No. The namespace for XInclude was changed back to <code>http://www.w3.org/2001/XInclude</code>
       in the <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/">Candidate Recommendation (April 2004)</jump>.
-      The <code>http://www.w3.org/2003/XInclude</code> is no longer recognized.
+      The <code>http://www.w3.org/2003/XInclude</code> namespace is no longer recognized.
      </p>
     </a>
   </faq>
