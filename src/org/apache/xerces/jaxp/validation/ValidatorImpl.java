@@ -162,7 +162,8 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public boolean getFeature(String name) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "FeatureNameNull", null));
         }
         if (name.startsWith(JAXP_SOURCE_RESULT_FEATURE_PREFIX)) {
             // Indicates to the caller that this Validator supports a specific JAXP Source or Result.
@@ -193,7 +194,8 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public void setFeature(String name, boolean value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "FeatureNameNull", null));
         }
         if (name.startsWith(JAXP_SOURCE_RESULT_FEATURE_PREFIX)) {
             if (name.equals(StreamSource.FEATURE) ||
@@ -226,7 +228,8 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "ProperyNameNull", null));
         }
         if (CURRENT_ELEMENT_NODE.equals(name)) {
             return (fDOMValidatorHelper != null) ? 
@@ -248,7 +251,8 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public void setProperty(String name, Object object)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "ProperyNameNull", null));
         }
         if (CURRENT_ELEMENT_NODE.equals(name)) {
             throw new SAXNotSupportedException(
