@@ -244,11 +244,16 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         }
         catch (XMLConfigurationException e) {
             final String identifier = e.getIdentifier();
-            final String key = e.getType() == XMLConfigurationException.NOT_RECOGNIZED ?
-                    "feature-not-recognized" : "feature-not-supported";
-            throw new SAXNotRecognizedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
-                    key, new Object [] {identifier}));
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-not-recognized", new Object [] {identifier}));
+            }
+            else {
+                throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-not-supported", new Object [] {identifier}));
+            }
         }
     }
     
@@ -263,11 +268,16 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         }
         catch (XMLConfigurationException e) {
             final String identifier = e.getIdentifier();
-            final String key = e.getType() == XMLConfigurationException.NOT_RECOGNIZED ?
-                    "feature-not-recognized" : "feature-not-supported";
-            throw new SAXNotRecognizedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
-                    key, new Object [] {identifier}));
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-not-recognized", new Object [] {identifier}));
+            }
+            else {
+                throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-not-supported", new Object [] {identifier}));
+            }
         }
     }
     
@@ -282,11 +292,16 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         }
         catch (XMLConfigurationException e) {
             final String identifier = e.getIdentifier();
-            final String key = e.getType() == XMLConfigurationException.NOT_RECOGNIZED ?
-                    "property-not-recognized" : "property-not-supported";
-            throw new SAXNotRecognizedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
-                    key, new Object [] {identifier}));
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "property-not-recognized", new Object [] {identifier}));
+            }
+            else {
+                throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "property-not-supported", new Object [] {identifier}));
+            }
         }
     }
     
@@ -301,11 +316,16 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         }
         catch (XMLConfigurationException e) {
             final String identifier = e.getIdentifier();
-            final String key = e.getType() == XMLConfigurationException.NOT_RECOGNIZED ?
-                    "property-not-recognized" : "property-not-supported";
-            throw new SAXNotRecognizedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
-                    key, new Object [] {identifier}));
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "property-not-recognized", new Object [] {identifier}));
+            }
+            else {
+                throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "property-not-supported", new Object [] {identifier}));
+            }
         }
     }
     
