@@ -22,9 +22,13 @@ import java.util.Locale;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXResult;
 import javax.xml.transform.stax.StAXSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
 
@@ -49,6 +53,11 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 final class ValidatorImpl extends Validator implements PSVIProvider {
+    
+    // feature identifiers
+    
+    /** JAXP Source/Result feature prefix. */
+    private static final String JAXP_SOURCE_RESULT_FEATURE_PREFIX = "http://javax.xml.transform";
     
     // property identifiers
     
@@ -155,6 +164,19 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
         if (name == null) {
             throw new NullPointerException();
         }
+        if (name.startsWith(JAXP_SOURCE_RESULT_FEATURE_PREFIX)) {
+            // Indicates to the caller that this Validator supports a specific JAXP Source or Result.
+            if (name.equals(StreamSource.FEATURE) ||
+                name.equals(SAXSource.FEATURE) ||
+                name.equals(DOMSource.FEATURE) ||
+                name.equals(StAXSource.FEATURE) ||
+                name.equals(StreamResult.FEATURE) ||
+                name.equals(SAXResult.FEATURE) ||
+                name.equals(DOMResult.FEATURE) ||
+                name.equals(StAXResult.FEATURE)) {
+                return true;
+            }
+        }
         try {
             return fComponentManager.getFeature(name);
         }
@@ -172,6 +194,20 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
             throw new NullPointerException();
+        }
+        if (name.startsWith(JAXP_SOURCE_RESULT_FEATURE_PREFIX)) {
+            if (name.equals(StreamSource.FEATURE) ||
+                name.equals(SAXSource.FEATURE) ||
+                name.equals(DOMSource.FEATURE) ||
+                name.equals(StAXSource.FEATURE) ||
+                name.equals(StreamResult.FEATURE) ||
+                name.equals(SAXResult.FEATURE) ||
+                name.equals(DOMResult.FEATURE) ||
+                name.equals(StAXResult.FEATURE)) {
+                throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-read-only", new Object [] {name}));
+            }
         }
         try {
             fComponentManager.setFeature(name, value);
