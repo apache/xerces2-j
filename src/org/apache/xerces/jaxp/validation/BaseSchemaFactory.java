@@ -71,6 +71,9 @@ import org.xml.sax.SAXParseException;
 abstract class BaseSchemaFactory extends SchemaFactory {
 	
     // feature identifiers
+    
+    /** JAXP Source feature prefix. */
+    private static final String JAXP_SOURCE_FEATURE_PREFIX = "http://javax.xml.transform";
 
     /** Feature identifier: schema full checking. */
     private static final String SCHEMA_FULL_CHECKING =
@@ -287,6 +290,15 @@ abstract class BaseSchemaFactory extends SchemaFactory {
             throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
                     "FeatureNameNull", null));
         }
+        if (name.startsWith(JAXP_SOURCE_FEATURE_PREFIX)) {
+            // Indicates to the caller that this SchemaFactory supports a specific JAXP Source.
+            if (name.equals(StreamSource.FEATURE) ||
+                name.equals(SAXSource.FEATURE) ||
+                name.equals(DOMSource.FEATURE) ||
+                name.equals(StAXSource.FEATURE)) {
+                return true;
+            }
+        }
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             return (fSecurityManager != null);
         }
@@ -351,6 +363,16 @@ abstract class BaseSchemaFactory extends SchemaFactory {
         if (name == null) {
             throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
                     "FeatureNameNull", null));
+        }
+        if (name.startsWith(JAXP_SOURCE_FEATURE_PREFIX)) {
+            if (name.equals(StreamSource.FEATURE) ||
+                name.equals(SAXSource.FEATURE) ||
+                name.equals(DOMSource.FEATURE) ||
+                name.equals(StAXSource.FEATURE)) {
+                throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-read-only", new Object [] {name}));
+            }
         }
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             fSecurityManager = value ? new SecurityManager() : null;
