@@ -236,7 +236,8 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public boolean getFeature(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "FeatureNameNull", null));
         }
         try {
             return fComponentManager.getFeature(name);
@@ -254,7 +255,8 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public void setFeature(String name, boolean value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "FeatureNameNull", null));
         }
         try {
             fComponentManager.setFeature(name, value);
@@ -272,7 +274,8 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "ProperyNameNull", null));
         }
         try {
             return fComponentManager.getProperty(name);
@@ -290,7 +293,8 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public void setProperty(String name, Object object)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException();
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "ProperyNameNull", null));
         }
         try {
             fComponentManager.setProperty(name, object);
