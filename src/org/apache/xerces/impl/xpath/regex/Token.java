@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.xpath.regex;
 
-import java.util.Vector;
 import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * This class represents a node in parse tree.

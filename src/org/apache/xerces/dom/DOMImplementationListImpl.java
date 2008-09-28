@@ -18,8 +18,9 @@
 package org.apache.xerces.dom;
 
 import java.util.Vector;
-import org.w3c.dom.DOMImplementationList;
+
 import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DOMImplementationList;
 
 /**
  * <p>This class implements the DOM Level 3 Core interface DOMImplementationList.</p>

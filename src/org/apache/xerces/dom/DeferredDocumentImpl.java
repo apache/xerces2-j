@@ -17,11 +17,11 @@
 
 package org.apache.xerces.dom;
 
+import java.util.Vector;
+
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import java.util.Vector;
 
 /**
  * The Document interface represents the entire HTML or XML document.

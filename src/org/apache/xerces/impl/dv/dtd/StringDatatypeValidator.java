@@ -17,7 +17,9 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import org.apache.xerces.impl.dv.*;
+import org.apache.xerces.impl.dv.DatatypeValidator;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * <P>StringValidator validates that XML content is a W3C string type.</P>

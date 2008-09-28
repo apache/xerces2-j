@@ -18,19 +18,18 @@
 package org.apache.xerces.util;
 
 
-import org.apache.xerces.xni.XNIException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
-import org.w3c.dom.ls.LSResourceResolver;
 import org.w3c.dom.ls.LSInput;
-
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import org.w3c.dom.ls.LSResourceResolver;
 
 
 /**

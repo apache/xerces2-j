@@ -17,7 +17,6 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.util.XSGrammarPool;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;

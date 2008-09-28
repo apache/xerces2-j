@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.dtd;
 
-import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
+import org.apache.xerces.xni.QName;
 
 /**
  * @xerces.internal

@@ -17,11 +17,12 @@
 
 package org.apache.xerces.dom;
 
+import java.util.Hashtable;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
-import java.util.Hashtable;
+import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
 
 /**

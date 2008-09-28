@@ -43,6 +43,7 @@ import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMError;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

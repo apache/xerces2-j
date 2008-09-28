@@ -33,14 +33,13 @@
 
 package org.apache.xml.serialize;
 
-import org.apache.xerces.dom.DOMMessageFormatter;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Enumeration;
 import java.util.Locale;
 
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;

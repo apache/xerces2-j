@@ -59,7 +59,6 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ls.LSException;
-import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.ls.LSSerializerFilter;
 import org.w3c.dom.traversal.NodeFilter;
 import org.xml.sax.ContentHandler;

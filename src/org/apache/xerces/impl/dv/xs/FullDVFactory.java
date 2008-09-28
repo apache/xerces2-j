@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.dv.xs;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xs.XSConstants;
 

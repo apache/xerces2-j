@@ -23,8 +23,8 @@ import java.lang.ref.SoftReference;
 
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 
 /**
  * <p>This grammar pool is a memory sensitive cache. The grammars

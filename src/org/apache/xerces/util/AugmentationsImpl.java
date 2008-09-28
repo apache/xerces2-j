@@ -17,8 +17,8 @@
 
 package org.apache.xerces.util;
 
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.apache.xerces.xni.Augmentations;
 

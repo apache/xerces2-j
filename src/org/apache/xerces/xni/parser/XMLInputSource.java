@@ -17,10 +17,10 @@
 
 package org.apache.xerces.xni.parser;
 
-import org.apache.xerces.xni.XMLResourceIdentifier;
-
 import java.io.InputStream;
 import java.io.Reader;
+
+import org.apache.xerces.xni.XMLResourceIdentifier;
 
 /**
  * This class represents an input source for an XML document. The

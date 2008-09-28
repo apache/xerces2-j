@@ -21,9 +21,15 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
-import org.w3c.dom.*;
 
 /**
  * Our own document implementation, which knows how to create an element

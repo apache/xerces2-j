@@ -17,9 +17,10 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
+import java.util.Hashtable;
+
 import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.dv.DatatypeValidator;
-import java.util.Hashtable;
 
 /**
  * the factory to create/return built-in schema DVs and create user-defined DVs

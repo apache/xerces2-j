@@ -17,9 +17,9 @@
 
 package org.apache.xerces.impl.dv;
 
-import java.util.ResourceBundle;
-import java.util.PropertyResourceBundle;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 /**
  * Base class for datatype exceptions. For DTD types, the exception can be

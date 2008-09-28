@@ -17,10 +17,10 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.ls.LSInput;
-
-import java.io.Reader;
 import java.io.InputStream;
+import java.io.Reader;
+
+import org.w3c.dom.ls.LSInput;
 
 /**
  * This Class <code>DOMInputImpl</code> represents a single input source for an XML entity.

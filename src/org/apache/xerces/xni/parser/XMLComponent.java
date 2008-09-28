@@ -17,6 +17,8 @@
 
 package org.apache.xerces.xni.parser;
 
+import org.apache.xerces.xni.XNIException;
+
 /**
  * The component interface defines methods that must be implemented
  * by components in a parser configuration. The component methods allow

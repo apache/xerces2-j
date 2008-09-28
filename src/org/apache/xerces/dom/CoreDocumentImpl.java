@@ -27,15 +27,13 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.apache.xerces.util.URI;
-
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.UserDataHandler;
-import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XML11Char;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -50,6 +48,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Notation;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.ls.DOMImplementationLS;

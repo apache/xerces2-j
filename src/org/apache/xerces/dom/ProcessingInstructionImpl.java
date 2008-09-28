@@ -17,6 +17,7 @@
 
 package org.apache.xerces.dom;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 

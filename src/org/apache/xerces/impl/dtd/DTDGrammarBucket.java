@@ -17,8 +17,9 @@
 
 package org.apache.xerces.impl.dtd;
 
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import java.util.Hashtable;
+
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 /**
  * This very simple class is the skeleton of what the DTDValidator could use

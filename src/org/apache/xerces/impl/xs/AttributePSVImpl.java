@@ -17,14 +17,14 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.xs.AttributePSVI;
-import org.apache.xerces.xs.XSConstants;
 
 /**
  * Attribute PSV infoset augmentations implementation.

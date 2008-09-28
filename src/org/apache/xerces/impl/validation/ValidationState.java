@@ -17,12 +17,12 @@
 
 package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.dv.ValidationContext;
-
-import org.apache.xerces.xni.NamespaceContext;
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
+
+import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.NamespaceContext;
 
 /**
  * Implementation of ValidationContext inteface. Used to establish an

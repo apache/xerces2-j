@@ -19,28 +19,23 @@ package org.apache.xerces.util;
 
 import java.io.IOException;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
-
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
-
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.xerces.dom.DOMInputImpl;
 import org.apache.xerces.jaxp.SAXParserFactoryImpl;
-
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLResourceIdentifier;
-
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.readers.OASISXMLCatalogReader;
 import org.apache.xml.resolver.readers.SAXCatalogReader;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.EntityResolver2;
 
 /**
  * <p>The catalog resolver handles the resolution of external

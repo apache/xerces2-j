@@ -17,13 +17,14 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.Hashtable;
+import java.util.Vector;
+
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.xni.QName;
-import java.util.Hashtable;
-import java.util.Vector;
 
 /**
  * To store and validate information about substitutionGroup

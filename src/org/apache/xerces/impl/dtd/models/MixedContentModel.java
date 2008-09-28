@@ -17,9 +17,8 @@
 
 package org.apache.xerces.impl.dtd.models;
 
-import org.apache.xerces.xni.QName;
-
 import org.apache.xerces.impl.dtd.XMLContentSpec;
+import org.apache.xerces.xni.QName;
 
 /**
  * MixedContentModel is a derivative of the abstract content model base

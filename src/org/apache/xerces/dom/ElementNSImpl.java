@@ -17,12 +17,11 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
-import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.util.URI;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 

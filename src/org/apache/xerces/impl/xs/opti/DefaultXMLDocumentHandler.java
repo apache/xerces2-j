@@ -17,21 +17,20 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
-import org.apache.xerces.xni.parser.XMLDTDSource;
-import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
-
+import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
+import org.apache.xerces.xni.parser.XMLDTDSource;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 
 /**
  * @xerces.internal 

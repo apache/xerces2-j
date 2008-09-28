@@ -16,7 +16,7 @@
  */
 package org.apache.wml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMImplementation;
 
 /**
  * <p>The interface is modeled after DOM1 Spec for HTML from W3C.

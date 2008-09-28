@@ -29,7 +29,6 @@ import org.apache.xerces.xinclude.XIncludeNamespaceSupport;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;

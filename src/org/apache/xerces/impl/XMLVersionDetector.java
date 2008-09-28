@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;

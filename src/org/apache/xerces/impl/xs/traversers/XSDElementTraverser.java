@@ -27,18 +27,18 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.xs.XSConstants;
-import org.apache.xerces.xs.XSObject;
-import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
-import org.w3c.dom.Element;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 
 /**
  * The element declaration schema component traverser.

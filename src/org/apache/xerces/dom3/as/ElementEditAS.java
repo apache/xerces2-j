@@ -12,9 +12,9 @@
 
 package org.apache.xerces.dom3.as;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Attr;
 
 /**
  * @deprecated

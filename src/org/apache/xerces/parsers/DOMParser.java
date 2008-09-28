@@ -22,8 +22,8 @@ import java.io.IOException;
 
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.EntityResolver2Wrapper;
+import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SymbolTable;

@@ -23,7 +23,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.apache.xerces.xs.AttributePSVI;
-import org.apache.xerces.xs.*;
+import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * Attribute namespace implementation; stores PSVI attribute items.

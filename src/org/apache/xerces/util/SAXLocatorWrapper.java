@@ -17,10 +17,9 @@
 
 package org.apache.xerces.util;
 
+import org.apache.xerces.xni.XMLLocator;
 import org.xml.sax.Locator;
 import org.xml.sax.ext.Locator2;
-
-import org.apache.xerces.xni.XMLLocator;
 
 /**
  * <p>A light wrapper around a SAX locator. This is useful

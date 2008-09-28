@@ -17,10 +17,10 @@
 
 package org.apache.xerces.dom;
 
+import java.util.Vector;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.Vector;
 
 /**
  * This class implements the DOM's NodeList behavior for

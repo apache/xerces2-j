@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import org.w3c.dom.Text;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Text;
 
 /**
  * The <code>Text</code> interface inherits from <code>CharacterData</code> 

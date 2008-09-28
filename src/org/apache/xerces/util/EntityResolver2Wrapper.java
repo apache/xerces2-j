@@ -17,8 +17,8 @@
 
 package org.apache.xerces.util;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 
 import org.apache.xerces.impl.ExternalSubsetResolver;
@@ -27,10 +27,9 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLDTDDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
-import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.EntityResolver2;
 
 /**
  * <p>This class wraps a SAX entity resolver (EntityResolver2) in an XNI entity resolver.</p>

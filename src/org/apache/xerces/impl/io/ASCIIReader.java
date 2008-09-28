@@ -17,12 +17,13 @@
 
 package org.apache.xerces.impl.io;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.Locale;
-import org.apache.xerces.util.MessageFormatter;
+
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.MessageFormatter;
 
 /**
  * A simple ASCII byte reader. This is an optimized reader for reading

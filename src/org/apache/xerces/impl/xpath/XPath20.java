@@ -20,9 +20,9 @@ package org.apache.xerces.impl.xpath;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
-import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.AttributePSVImpl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.util.IntStack;
@@ -32,10 +32,10 @@ import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
-import org.apache.xerces.xni.XMLAttributes;
 
 /**
  * Bare minimal XPath 2.0 implementation for schema

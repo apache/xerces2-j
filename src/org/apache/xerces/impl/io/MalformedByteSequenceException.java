@@ -19,6 +19,7 @@ package org.apache.xerces.impl.io;
 
 import java.io.CharConversionException;
 import java.util.Locale;
+
 import org.apache.xerces.util.MessageFormatter;
 
 /**

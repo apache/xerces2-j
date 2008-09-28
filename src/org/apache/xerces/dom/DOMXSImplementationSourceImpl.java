@@ -17,10 +17,11 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.impl.xs.XSImplementationImpl;
-import org.w3c.dom.DOMImplementationList;
-import org.w3c.dom.DOMImplementation;
 import java.util.Vector;
+
+import org.apache.xerces.impl.xs.XSImplementationImpl;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DOMImplementationList;
 
 /**
  * Allows to retrieve <code>XSImplementation</code>, DOM Level 3 Core and LS implementations

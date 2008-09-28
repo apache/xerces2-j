@@ -17,10 +17,10 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.ls.LSOutput;
-
-import java.io.Writer;
 import java.io.OutputStream;
+import java.io.Writer;
+
+import org.w3c.dom.ls.LSOutput;
 
 /**
  * This class represents an output destination for data.

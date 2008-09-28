@@ -16,9 +16,9 @@
  */
 package org.apache.html.dom;
 
+import org.w3c.dom.Node;
 import org.w3c.dom.html.HTMLCollection;
 import org.w3c.dom.html.HTMLMapElement;
-import org.w3c.dom.Node;
 
 /**
  * @xerces.internal

@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.xs;
 
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
 
 /**

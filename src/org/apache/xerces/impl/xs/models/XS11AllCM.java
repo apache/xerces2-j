@@ -17,16 +17,16 @@
 
 package org.apache.xerces.impl.xs.models;
 
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.xs.XSElementDecl;
+import java.util.Vector;
+
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.impl.xs.XSOpenContentDecl;
-
-import java.util.Vector;
+import org.apache.xerces.xni.QName;
 
 /**
  * XSAll11CM implements XSCMValidator and handles &lt;all&gt;.

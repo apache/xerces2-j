@@ -20,8 +20,9 @@ package org.apache.xml.serialize;
 
 
 import java.io.OutputStream;
-import java.io.Writer;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
 import org.apache.xerces.dom.DOMMessageFormatter;
 
 /**
