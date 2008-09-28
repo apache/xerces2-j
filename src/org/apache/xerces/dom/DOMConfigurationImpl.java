@@ -147,9 +147,13 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
-    /** Property id: Grammar pool*/
+    /** Property id: Grammar pool. */
     protected static final String GRAMMAR_POOL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+    
+    /** property identifier: security manager. */
+    protected static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
@@ -328,6 +332,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             ENTITY_MANAGER,
             VALIDATION_MANAGER,
             GRAMMAR_POOL,
+            SECURITY_MANAGER,
             JAXP_SCHEMA_SOURCE,
             JAXP_SCHEMA_LANGUAGE,
             SCHEMA_LOCATION,
@@ -852,7 +857,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
             }
-            else if (name.equalsIgnoreCase(SYMBOL_TABLE)){
+            else if (name.equalsIgnoreCase(SYMBOL_TABLE)) {
                 // Xerces Symbol Table
                 if (value instanceof SymbolTable){
                     setProperty(SYMBOL_TABLE, value);
@@ -867,7 +872,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
             }
-            else if (name.equalsIgnoreCase (GRAMMAR_POOL)){
+            else if (name.equalsIgnoreCase (GRAMMAR_POOL)) {
                 if (value instanceof XMLGrammarPool || value == null) {
                     setProperty(GRAMMAR_POOL, value);
                 }
@@ -880,7 +885,20 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             new Object[] { name });
                     throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
-
+            }
+            else if (name.equalsIgnoreCase (SECURITY_MANAGER)) {
+                if (value instanceof org.apache.xerces.util.SecurityManager || value == null) {
+                    setProperty(SECURITY_MANAGER, value);
+                }
+                else {
+                    // REVISIT: type mismatch
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "TYPE_MISMATCH_ERR",
+                            new Object[] { name });
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                }
             }
             else {
                 // REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.
@@ -972,11 +990,14 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         else if (name.equalsIgnoreCase(ENTITY_RESOLVER)) {
             return getEntityResolver();
         }
-        else if (name.equalsIgnoreCase(SYMBOL_TABLE)){
+        else if (name.equalsIgnoreCase(SYMBOL_TABLE)) {
             return getProperty(SYMBOL_TABLE);
         }
-        else if (name.equalsIgnoreCase(GRAMMAR_POOL)){
+        else if (name.equalsIgnoreCase(GRAMMAR_POOL)) {
             return getProperty(GRAMMAR_POOL);
+        }
+        else if (name.equalsIgnoreCase(SECURITY_MANAGER)) {
+            return getProperty(SECURITY_MANAGER);
         }
 		else {
 			String msg =
@@ -1065,12 +1086,15 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         else if (name.equalsIgnoreCase(ENTITY_RESOLVER)) {
             return (value instanceof XMLEntityResolver) ? true : false;
         }
-        else if (name.equalsIgnoreCase(SYMBOL_TABLE)){
+        else if (name.equalsIgnoreCase(SYMBOL_TABLE)) {
             // Xerces Symbol Table
-            return (value instanceof SymbolTable) ? true : false ;
+            return (value instanceof SymbolTable) ? true : false;
         }
-        else if (name.equalsIgnoreCase (GRAMMAR_POOL)){
-            return (value instanceof XMLGrammarPool) ? true : false ;
+        else if (name.equalsIgnoreCase (GRAMMAR_POOL)) {
+            return (value instanceof XMLGrammarPool) ? true : false;
+        }
+        else if (name.equalsIgnoreCase(SECURITY_MANAGER)) {
+            return (value instanceof org.apache.xerces.util.SecurityManager) ? true : false;
         }
         else {
             //false if the parameter is not recognized or the requested value is not supported.
@@ -1120,6 +1144,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 	        //Add recognized xerces features and properties
 	        parameters.add(ENTITY_RESOLVER);
 	        parameters.add(GRAMMAR_POOL);
+	        parameters.add(SECURITY_MANAGER);
 	        parameters.add(SYMBOL_TABLE);
 	        parameters.add(SEND_PSVI);
 
