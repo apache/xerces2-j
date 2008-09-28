@@ -102,6 +102,7 @@ final class StreamValidatorHelper implements ValidatorHelper {
      */
     private SoftReference fParser = new SoftReference(null);
     
+    /** Serializer factory. **/
     private SerializerFactory fSerializerFactory;
     
     public StreamValidatorHelper(XMLSchemaValidatorComponentManager componentManager) {

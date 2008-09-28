@@ -96,22 +96,22 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     //
     
     /** Error reporter. */
-    private XMLErrorReporter fErrorReporter;
+    private final XMLErrorReporter fErrorReporter;
     
     /** Schema validator. **/
-    private XMLSchemaValidator fSchemaValidator;
+    private final XMLSchemaValidator fSchemaValidator;
     
     /** Symbol table **/
-    private SymbolTable fSymbolTable;
+    private final SymbolTable fSymbolTable;
     
     /** Validation manager. **/
-    private ValidationManager fValidationManager;
+    private final ValidationManager fValidationManager;
     
     /** Component manager. **/
-    private XMLSchemaValidatorComponentManager fComponentManager;
+    private final XMLSchemaValidatorComponentManager fComponentManager;
     
     /** The namespace context of this document: stores namespaces in scope. **/
-    private JAXPNamespaceContextWrapper fNamespaceContext;
+    private final JAXPNamespaceContextWrapper fNamespaceContext;
     
     /** XML Locator wrapper for StAX. **/
     private final StAXLocationWrapper fStAXLocationWrapper = new StAXLocationWrapper();
@@ -444,7 +444,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
         //
         
         /** Array for holding character data. **/
-        private char [] fCharBuffer = new char[CHUNK_SIZE];
+        private final char [] fCharBuffer = new char[CHUNK_SIZE];
         
         EventHelper() {}
         

@@ -148,32 +148,32 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     //
     
     /** Entity manager. */
-    private XMLEntityManager fEntityManager;
+    private final XMLEntityManager fEntityManager;
     
     /** Error reporter. */
-    private XMLErrorReporter fErrorReporter;
+    private final XMLErrorReporter fErrorReporter;
     
     /** Namespace context. */
-    private NamespaceContext fNamespaceContext;
+    private final NamespaceContext fNamespaceContext;
     
     /** XML Schema validator. */
-    private XMLSchemaValidator fSchemaValidator;
+    private final XMLSchemaValidator fSchemaValidator;
        
     /** Validation manager. */
-    private ValidationManager fValidationManager;
+    private final ValidationManager fValidationManager;
     
     //
     // Configuration
     //
     
     /** Stores initial feature values for validator reset. */
-    private HashMap fInitFeatures = new HashMap();
+    private final HashMap fInitFeatures = new HashMap();
     
     /** Stores initial property values for validator reset. */
-    private HashMap fInitProperties = new HashMap();
+    private final HashMap fInitProperties = new HashMap();
     
     /** Stores the initial security manager. */
-    private SecurityManager fInitSecurityManager = null;
+    private final SecurityManager fInitSecurityManager;
     
     //
     // User Objects
@@ -226,6 +226,9 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         Boolean secureProcessing = grammarContainer.getFeature(XMLConstants.FEATURE_SECURE_PROCESSING);
         if (Boolean.TRUE.equals(secureProcessing)) {
             fInitSecurityManager = new SecurityManager();
+        }
+        else {
+            fInitSecurityManager = null;
         }
         fComponents.put(SECURITY_MANAGER, fInitSecurityManager);
         

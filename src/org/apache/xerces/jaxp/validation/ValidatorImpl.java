@@ -70,7 +70,7 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     //
     
     /** Component manager. **/
-    private XMLSchemaValidatorComponentManager fComponentManager;
+    private final XMLSchemaValidatorComponentManager fComponentManager;
     
     /** SAX validator helper. **/
     private ValidatorHandlerImpl fSAXValidatorHelper;
