@@ -680,22 +680,12 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
                     ) {
                 if (state) { // true is not supported
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw newFeatureNotSupportedError(name);
                 }
             }
 			else if ( name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
                 if (!state) { // false is not supported
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
-                            new Object[] { name });
-                   throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw newFeatureNotSupportedError(name);
                 }
             }
             else if (name.equalsIgnoreCase(SEND_PSVI) ){
@@ -703,12 +693,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 // because in this case we won't be able to retrieve element
                 // default value.
                 if (!state) { // false is not supported
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw newFeatureNotSupportedError(name);
                 }
             }
             else if (name.equalsIgnoreCase(Constants.DOM_PSVI)){
@@ -736,15 +721,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     fErrorHandlerWrapper.setErrorHandler((DOMErrorHandler)value);
                     setErrorHandler(fErrorHandlerWrapper);
                 }
-
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
             }
             else if (name.equalsIgnoreCase(Constants.DOM_RESOURCE_RESOLVER)) {
@@ -755,15 +733,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
-
             }
             else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)) {
                 if (value instanceof String || value == null) {
@@ -799,15 +770,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
-
             }
             else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_TYPE)) {
                 if (value instanceof String || value == null) {
@@ -832,14 +796,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
-
             }
             else if (name.equalsIgnoreCase(ENTITY_RESOLVER)) {
                 if (value instanceof XMLEntityResolver || value == null) {
@@ -849,12 +807,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
             }
             else if (name.equalsIgnoreCase(SYMBOL_TABLE)) {
@@ -863,13 +816,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     setProperty(SYMBOL_TABLE, value);
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
             }
             else if (name.equalsIgnoreCase (GRAMMAR_POOL)) {
@@ -877,13 +824,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     setProperty(GRAMMAR_POOL, value);
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
             }
             else if (name.equalsIgnoreCase (SECURITY_MANAGER)) {
@@ -891,27 +832,15 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     setProperty(SECURITY_MANAGER, value);
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "TYPE_MISMATCH_ERR",
-                            new Object[] { name });
-                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
             }
             else {
                 // REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.
                 //parameter is not recognized
-                String msg =
-                    DOMMessageFormatter.formatMessage(
-                        DOMMessageFormatter.DOM_DOMAIN,
-                        "FEATURE_NOT_FOUND",
-                        new Object[] { name });
-                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+                throw newFeatureNotFoundError(name);
             }
         }
-
     }
 
 
@@ -1000,14 +929,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             return getProperty(SECURITY_MANAGER);
         }
 		else {
-			String msg =
-				DOMMessageFormatter.formatMessage(
-					DOMMessageFormatter.DOM_DOMAIN,
-					"FEATURE_NOT_FOUND",
-					new Object[] { name });
-			throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+		    throw newFeatureNotFoundError(name);
 		}
-
 	}
 
     /**
@@ -1251,5 +1174,32 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             setProperty(DTD_VALIDATOR_FACTORY_PROPERTY, fCurrentDVFactory);
         }
     }
+    
+    private static DOMException newFeatureNotSupportedError(String name) {
+        String msg =
+            DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.DOM_DOMAIN,
+                "FEATURE_NOT_SUPPORTED",
+                new Object[] { name });
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+    }
+    
+    private static DOMException newFeatureNotFoundError(String name) {
+        String msg =
+            DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.DOM_DOMAIN,
+                "FEATURE_NOT_FOUND",
+                new Object[] { name });
+        throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+    }
+    
+    private static DOMException newTypeMismatchError(String name) {
+        String msg =
+            DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.DOM_DOMAIN,
+                "TYPE_MISMATCH_ERR",
+                new Object[] { name });
+        return new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+    }
 
-} // class XMLParser
+} // class DOMConfigurationImpl
