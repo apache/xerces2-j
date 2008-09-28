@@ -17,10 +17,10 @@
 
 package schema;
 
+import org.apache.xerces.parsers.SAXParser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
-import org.apache.xerces.parsers.SAXParser;
 
 /**
  * Test Schema processing

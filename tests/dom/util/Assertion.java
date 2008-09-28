@@ -23,8 +23,8 @@
 
 package dom.util;
 
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class Assertion {
 
