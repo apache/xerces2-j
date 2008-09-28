@@ -18,8 +18,8 @@
 package xni;
 
 import org.apache.xerces.xni.Augmentations;
-import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;

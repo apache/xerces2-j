@@ -17,14 +17,11 @@
 
 package sax;
 
-import java.lang.reflect.Method;
-
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-
-import sax.helpers.AttributesImpl;
+import java.lang.reflect.Method;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
@@ -39,6 +36,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.ParserAdapter;
 import org.xml.sax.helpers.ParserFactory;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import sax.helpers.AttributesImpl;
 
 /**
  * A sample SAX2 writer. This sample program illustrates how to

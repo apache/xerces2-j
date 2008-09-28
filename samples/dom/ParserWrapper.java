@@ -19,7 +19,6 @@ package dom;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Text;
-
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 

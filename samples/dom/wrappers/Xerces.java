@@ -17,19 +17,17 @@
 
 package dom.wrappers;
 
-import dom.ParserWrapper;
-
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.parsers.DOMParser;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Text;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
+
+import dom.ParserWrapper;
 
 /**
  * Wraps the Xerces DOM parser.
