@@ -18,8 +18,9 @@
 
 package jaxp;
 
-import org.xml.sax.*;
-import java.io.*;
+import java.io.File;
+
+import org.xml.sax.InputSource;
 
 /**
  * Class to obtain source data for tests.  Allows test data to be moved w/o
