@@ -20,25 +20,22 @@ package socket;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
 
-import socket.io.WrappedInputStream;
-import socket.io.WrappedOutputStream;
-
 import org.apache.xerces.parsers.SAXParser;
-
 import org.xml.sax.AttributeList;
-import org.xml.sax.DocumentHandler;
 import org.xml.sax.HandlerBase;
 import org.xml.sax.InputSource;
-import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import socket.io.WrappedInputStream;
+import socket.io.WrappedOutputStream;
 
 /**
  * This sample provides a solution to the problem of 1) sending multiple
