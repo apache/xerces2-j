@@ -53,7 +53,7 @@ final class StAXStreamResultBuilder implements StAXDocumentHandler {
     //
 
     private XMLStreamWriter fStreamWriter;
-    private JAXPNamespaceContextWrapper fNamespaceContext;
+    private final JAXPNamespaceContextWrapper fNamespaceContext;
     private boolean fIgnoreChars;
     private boolean fInCDATA;
     private final QName fAttrName = new QName();

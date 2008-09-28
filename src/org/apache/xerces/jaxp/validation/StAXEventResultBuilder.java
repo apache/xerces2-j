@@ -58,12 +58,12 @@ final class StAXEventResultBuilder implements StAXDocumentHandler {
     //
     
     private XMLEventWriter fEventWriter;
-    XMLEventFactory fEventFactory;
-    private StAXValidatorHelper fStAXValidatorHelper;
-    private JAXPNamespaceContextWrapper fNamespaceContext;
+    private final XMLEventFactory fEventFactory;
+    private final StAXValidatorHelper fStAXValidatorHelper;
+    private final JAXPNamespaceContextWrapper fNamespaceContext;
     private boolean fIgnoreChars;
     private boolean fInCDATA;
-    final QName fAttrName = new QName();
+    private final QName fAttrName = new QName();
 
     public StAXEventResultBuilder(StAXValidatorHelper helper, JAXPNamespaceContextWrapper context) {
         fStAXValidatorHelper = helper;
