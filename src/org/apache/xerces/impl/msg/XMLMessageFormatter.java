@@ -19,8 +19,8 @@ package org.apache.xerces.impl.msg;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 import org.apache.xerces.util.MessageFormatter;
 

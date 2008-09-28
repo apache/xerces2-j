@@ -17,22 +17,22 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.xs.models.CMBuilder;
-import org.apache.xerces.impl.xs.models.XSCMValidator;
-import org.apache.xerces.impl.xs.util.SimpleLocator;
-import org.apache.xerces.xs.XSConstants;
-import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.impl.dv.ValidationContext;
-import org.apache.xerces.util.SymbolHash;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
+
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * Constraints shared by traversers and validator

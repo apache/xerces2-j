@@ -18,8 +18,8 @@ package org.apache.xerces.util;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 /**
  * Used to format SAX error messages using a specified locale.

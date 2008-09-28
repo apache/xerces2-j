@@ -19,15 +19,14 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.dtd.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
-
 import org.apache.xerces.xni.Augmentations;
-import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
-import org.apache.xerces.xni.XMLResourceIdentifier;
 
 /**
  * @version $Id$

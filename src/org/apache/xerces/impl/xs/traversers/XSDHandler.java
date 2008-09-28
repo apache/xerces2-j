@@ -49,11 +49,10 @@ import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaDOMParser;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
-
-import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.DOMInputSource;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.SAXInputSource;
 import org.apache.xerces.util.StAXInputSource;

@@ -18,8 +18,8 @@
 package org.apache.xml.serialize;
 
 import java.io.OutputStream;
-import java.io.Writer;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 

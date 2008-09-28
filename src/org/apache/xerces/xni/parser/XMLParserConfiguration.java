@@ -20,9 +20,9 @@ package org.apache.xerces.xni.parser;
 import java.io.IOException;
 import java.util.Locale;
 
-import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XNIException;
 
 /**

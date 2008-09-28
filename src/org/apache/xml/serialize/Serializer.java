@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DocumentHandler;
 

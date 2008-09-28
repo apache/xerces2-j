@@ -17,14 +17,14 @@
 
 package org.apache.xerces.xni.grammars;
 
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.XNIException;
-
 import java.io.IOException;
 import java.util.Locale;
+
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * The intention of this interface is to provide a generic means

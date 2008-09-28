@@ -17,28 +17,26 @@
 
 package org.apache.xerces.impl.dtd;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Locale;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLDTDScannerImpl;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-
-import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.DefaultErrorHandler;
-
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.XMLGrammarLoader;
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarLoader;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
-import java.util.Locale;
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.StringReader;
 
 /**
  * The DTD loader. The loader knows how to build grammars from XMLInputSources.

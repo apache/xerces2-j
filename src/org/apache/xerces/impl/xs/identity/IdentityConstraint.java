@@ -17,14 +17,14 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.xs.XSIDCDefinition;
-import org.apache.xerces.xs.StringList;
-import org.apache.xerces.xs.XSNamespaceItem;
-import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.impl.xs.XSAnnotationImpl;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSIDCDefinition;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
 
 /**
  * Base class of Schema identity constraint.

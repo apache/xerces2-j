@@ -45,7 +45,6 @@ import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLDocumentScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
-import org.w3c.dom.Document;
 
 /**
  * @xerces.internal  

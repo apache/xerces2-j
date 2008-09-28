@@ -17,14 +17,13 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
-
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
 /**
  * A parser pool that enables caching of grammars. The caching parser

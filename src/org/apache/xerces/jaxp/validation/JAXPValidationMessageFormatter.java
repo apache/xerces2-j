@@ -19,8 +19,8 @@ package org.apache.xerces.jaxp.validation;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 /**
  * <p>Used to format JAXP Validation API error messages using a specified locale.</p>

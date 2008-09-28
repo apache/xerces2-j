@@ -19,8 +19,8 @@ package org.apache.xerces.xni.parser;
 
 import java.io.IOException;
 
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
 
 /**
  * This interface is used to resolve external parsed entities. The

@@ -17,20 +17,19 @@
 
 package org.apache.xerces.util;
 
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLParseException;
-                             
-import org.w3c.dom.Node;
-import org.w3c.dom.DOMError;
-import org.w3c.dom.DOMLocator;
-import org.w3c.dom.DOMErrorHandler;
+import java.io.PrintWriter;
+import java.util.Hashtable;
+
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-
-import java.io.PrintWriter;
-import java.util.Hashtable;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLParseException;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.DOMLocator;
+import org.w3c.dom.Node;
 
 /**
  * This class handles DOM errors .

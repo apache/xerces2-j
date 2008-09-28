@@ -46,7 +46,6 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSTypeDefinition;
-
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;

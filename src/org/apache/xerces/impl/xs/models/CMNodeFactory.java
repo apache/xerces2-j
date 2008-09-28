@@ -18,13 +18,13 @@
 
 package org.apache.xerces.impl.xs.models;
 
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.util.SecurityManager ;
-import org.apache.xerces.impl.dtd.models.CMNode;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dtd.models.CMNode;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 
 /**
  *

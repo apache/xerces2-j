@@ -18,7 +18,6 @@ package org.apache.xerces.util;
 
 import java.io.InputStream;
 import java.io.Reader;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

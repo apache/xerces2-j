@@ -17,13 +17,13 @@
 
 package org.apache.xerces.impl.io;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
-
 import java.util.Locale;
-import org.apache.xerces.util.MessageFormatter;
+
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.MessageFormatter;
 
 /**
  * <p>A UTF-8 reader.</p>

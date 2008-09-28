@@ -17,9 +17,9 @@
 
 package org.apache.xerces.dom;
 
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMLocator;
-import org.apache.xerces.xni.parser.XMLParseException;
 
 
 /**

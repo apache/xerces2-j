@@ -17,14 +17,13 @@
 
 package org.apache.xerces.impl.dtd;
 
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.parser.XMLInputSource;
-
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
-
 import java.util.ArrayList;
 import java.util.Vector;
+
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * All information specific to DTD grammars.  

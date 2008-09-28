@@ -19,6 +19,8 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -28,8 +30,6 @@ import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an element declaration

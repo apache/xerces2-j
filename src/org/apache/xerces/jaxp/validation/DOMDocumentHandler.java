@@ -21,7 +21,6 @@ import javax.xml.transform.dom.DOMResult;
 
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XNIException;
-
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DocumentType;

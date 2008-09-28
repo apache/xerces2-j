@@ -17,10 +17,10 @@
 
 package org.apache.xerces.dom;
 
-import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;

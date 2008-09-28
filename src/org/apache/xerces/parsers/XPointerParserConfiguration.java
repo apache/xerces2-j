@@ -18,7 +18,6 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xpointer.XPointerHandler;
 import org.apache.xerces.xinclude.XIncludeHandler;
 import org.apache.xerces.xinclude.XIncludeNamespaceSupport;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -26,6 +25,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xpointer.XPointerHandler;
 
 /**
  * This parser configuration includes an <code>XPointerHandler</code> in the pipeline

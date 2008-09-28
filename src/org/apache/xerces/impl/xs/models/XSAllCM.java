@@ -17,13 +17,13 @@
 
 package org.apache.xerces.impl.xs.models;
 
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.xs.XSElementDecl;
+import java.util.Vector;
+
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
-
-import java.util.Vector;
+import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.xni.QName;
 
 /**
  * XSAllCM implements XSCMValidator and handles &lt;all&gt;.

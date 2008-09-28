@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.dv.util;
 
-import org.apache.xerces.xs.datatypes.ByteList;
 import org.apache.xerces.xs.XSException;
+import org.apache.xerces.xs.datatypes.ByteList;
 
 /**
  * Implementation of <code>org.apache.xerces.xs.datatypes.ByteList</code>.

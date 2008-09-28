@@ -16,21 +16,21 @@
  */
 package org.apache.xerces.impl.xs;
 
+import java.io.IOException;
+import java.io.StringReader;
+
+import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
-import org.apache.xerces.dom.CoreDocumentImpl;
-import org.apache.xerces.parsers.SAXParser;
-import org.apache.xerces.parsers.DOMParser;
-
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.InputSource;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
 import org.w3c.dom.Document;
-import java.io.StringReader;
-import java.io.IOException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * This is an implementation of the XSAnnotation schema component.

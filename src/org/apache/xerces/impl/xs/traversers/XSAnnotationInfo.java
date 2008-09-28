@@ -16,8 +16,8 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
-import org.w3c.dom.Element;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
+import org.w3c.dom.Element;
 
 /**
  * Objects of this class contain the textual representation of

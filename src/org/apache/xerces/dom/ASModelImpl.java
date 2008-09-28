@@ -19,9 +19,18 @@ package org.apache.xerces.dom;
 
 import java.util.Vector;
 
-import org.w3c.dom.DOMException;
-import org.apache.xerces.dom3.as.*;
+import org.apache.xerces.dom3.as.ASAttributeDeclaration;
+import org.apache.xerces.dom3.as.ASContentModel;
+import org.apache.xerces.dom3.as.ASElementDeclaration;
+import org.apache.xerces.dom3.as.ASEntityDeclaration;
+import org.apache.xerces.dom3.as.ASModel;
+import org.apache.xerces.dom3.as.ASNamedObjectMap;
+import org.apache.xerces.dom3.as.ASNotationDeclaration;
+import org.apache.xerces.dom3.as.ASObject;
+import org.apache.xerces.dom3.as.ASObjectList;
+import org.apache.xerces.dom3.as.DOMASException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.w3c.dom.DOMException;
 
 /**
  * To begin with, an abstract schema is a generic structure that could 
