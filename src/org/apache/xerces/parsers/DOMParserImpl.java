@@ -140,11 +140,11 @@ public class DOMParserImpl
 
     protected final static boolean DEBUG = false;
 
-    private Vector fSchemaLocations = new Vector ();
+    private final Vector fSchemaLocations = new Vector();
     private String fSchemaLocation = null;
 	private DOMStringList fRecognizedParameters;
     
-    private AbortHandler abortHandler = new AbortHandler();
+    private final AbortHandler abortHandler = new AbortHandler();
 
     //
     // Constructors
@@ -364,12 +364,7 @@ public class DOMParserImpl
                 || name.equalsIgnoreCase (Constants.DOM_CHECK_CHAR_NORMALIZATION)
                 || name.equalsIgnoreCase (Constants.DOM_CANONICAL_FORM)) {
                     if (state) { // true is not supported
-                        String msg =
-                        DOMMessageFormatter.formatMessage (
-                        DOMMessageFormatter.DOM_DOMAIN,
-                        "FEATURE_NOT_SUPPORTED",
-                        new Object[] { name });
-                        throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+                        throw newFeatureNotSupportedError(name);
                     }
                     // setting those features to false is no-op
                 }
@@ -403,12 +398,7 @@ public class DOMParserImpl
                 else if (name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
                 || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                     if (!state) { // false is not supported
-                        String msg =
-                        DOMMessageFormatter.formatMessage (
-                        DOMMessageFormatter.DOM_DOMAIN,
-                        "FEATURE_NOT_SUPPORTED",
-                        new Object[] { name });
-                        throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+                        throw newFeatureNotSupportedError(name);
                     }
                     // setting these features to true is no-op
                     // REVISIT: implement "namespace-declaration" feature
@@ -457,12 +447,7 @@ public class DOMParserImpl
 
             }
             catch (XMLConfigurationException e) {
-                String msg =
-                DOMMessageFormatter.formatMessage (
-                DOMMessageFormatter.DOM_DOMAIN,
-                "FEATURE_NOT_FOUND",
-                new Object[] { name });
-                throw new DOMException (DOMException.NOT_FOUND_ERR, msg);
+                throw newFeatureNotFoundError(name);
             }
         }
         else { // set properties
@@ -475,13 +460,7 @@ public class DOMParserImpl
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                    DOMMessageFormatter.formatMessage (
-                    DOMMessageFormatter.DOM_DOMAIN,
-                    "TYPE_MISMATCH_ERR",
-                    new Object[] { name });
-                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
 
             }
@@ -493,13 +472,7 @@ public class DOMParserImpl
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                    DOMMessageFormatter.formatMessage (
-                    DOMMessageFormatter.DOM_DOMAIN,
-                    "TYPE_MISMATCH_ERR",
-                    new Object[] { name });
-                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
 
             }
@@ -537,13 +510,7 @@ public class DOMParserImpl
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    // REVISIT: type mismatch
-                    String msg =
-                    DOMMessageFormatter.formatMessage (
-                    DOMMessageFormatter.DOM_DOMAIN,
-                    "TYPE_MISMATCH_ERR",
-                    new Object[] { name });
-                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
 
             }
@@ -584,12 +551,7 @@ public class DOMParserImpl
                     catch (XMLConfigurationException e) {}
                 }
                 else {
-                    String msg =
-                    DOMMessageFormatter.formatMessage (
-                    DOMMessageFormatter.DOM_DOMAIN,
-                    "TYPE_MISMATCH_ERR",
-                    new Object[] { name });
-                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                 }
 
             }
@@ -613,23 +575,13 @@ public class DOMParserImpl
                         normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
                     }
                     fConfiguration.getFeature(normalizedName);
-                    String msg =
-                        DOMMessageFormatter.formatMessage (
-                                DOMMessageFormatter.DOM_DOMAIN,
-                                "TYPE_MISMATCH_ERR",
-                                new Object[] { name });
-                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
+                    throw newTypeMismatchError(name);
                     
                 }
                 catch (XMLConfigurationException e) {}
                 
                 // Parameter is not recognized
-                String msg =
-                    DOMMessageFormatter.formatMessage (
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_FOUND",
-                            new Object[] { name });
-                throw new DOMException (DOMException.NOT_FOUND_ERR, msg);
+                throw newFeatureNotFoundError(name);
             }
         }
     }
@@ -767,12 +719,7 @@ public class DOMParserImpl
             }
             catch (XMLConfigurationException e) {}
             
-            String msg =
-                DOMMessageFormatter.formatMessage (
-                        DOMMessageFormatter.DOM_DOMAIN,
-                        "FEATURE_NOT_FOUND",
-                        new Object[] { name });
-            throw new DOMException (DOMException.NOT_FOUND_ERR, msg);
+            throw newFeatureNotFoundError(name);
         }
     }
 
@@ -929,10 +876,7 @@ public class DOMParserImpl
         //If DOMParser insstance is already busy parsing another document when this
         // method is called, then raise INVALID_STATE_ERR according to DOM L3 LS spec
         if ( fBusy ) {
-            String msg = DOMMessageFormatter.formatMessage (
-            DOMMessageFormatter.DOM_DOMAIN,
-            "INVALID_STATE_ERR",null);
-            throw new DOMException ( DOMException.INVALID_STATE_ERR,msg);
+            throw newInvalidStateError();
         }
 
         XMLInputSource source = new XMLInputSource (null, uri, null);
@@ -987,10 +931,7 @@ public class DOMParserImpl
         // need to wrap the LSInput with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource (is);
         if ( fBusy ) {
-            String msg = DOMMessageFormatter.formatMessage (
-            DOMMessageFormatter.DOM_DOMAIN,
-            "INVALID_STATE_ERR",null);
-            throw new DOMException ( DOMException.INVALID_STATE_ERR,msg);
+            throw newInvalidStateError();
         }
 
         try {
@@ -1377,8 +1318,42 @@ public class DOMParserImpl
 
         public XMLDTDContentModelSource getDTDContentModelSource() {
             return dtdContentSource;
-        }
-        
+        }  
+    }
+    
+    private static DOMException newInvalidStateError() {
+        String msg = 
+            DOMMessageFormatter.formatMessage (
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "INVALID_STATE_ERR", null);
+        throw new DOMException ( DOMException.INVALID_STATE_ERR, msg);
+    }
+    
+    private static DOMException newFeatureNotSupportedError(String name) {
+        String msg =
+            DOMMessageFormatter.formatMessage (
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "FEATURE_NOT_SUPPORTED",
+                    new Object[] { name });
+        return new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+    }
+    
+    private static DOMException newFeatureNotFoundError(String name) {
+        String msg =
+            DOMMessageFormatter.formatMessage (
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "FEATURE_NOT_FOUND",
+                    new Object[] { name });
+        return new DOMException (DOMException.NOT_FOUND_ERR, msg);
+    }
+    
+    private static DOMException newTypeMismatchError(String name) {
+        String msg =
+            DOMMessageFormatter.formatMessage (
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "TYPE_MISMATCH_ERR",
+                    new Object[] { name });
+        return new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
     }
 	
 } // class DOMParserImpl
