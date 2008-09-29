@@ -49,7 +49,6 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -286,19 +285,18 @@ public class XML11Configuration extends ParserConfigurationSettings
 
 	protected SymbolTable fSymbolTable;
     protected XMLInputSource fInputSource;
-    protected ValidationManager fValidationManager;
-	protected XMLVersionDetector fVersionDetector;
-    protected XMLLocator fLocator;
+    protected final ValidationManager fValidationManager;
+	protected final XMLVersionDetector fVersionDetector;
 	protected Locale fLocale;
 
 	/** XML 1.0 Components. */
-	protected ArrayList fComponents;
+	protected final ArrayList fComponents;
     
 	/** XML 1.1. Components. */
-	protected ArrayList fXML11Components = null;
+	protected final ArrayList fXML11Components;
 	
 	/** Common components: XMLEntityManager, XMLErrorReporter, XMLSchemaValidator */
-	protected ArrayList fCommonComponents = null;
+	protected final ArrayList fCommonComponents;
 
 	/** The document handler. */
 	protected XMLDocumentHandler fDocumentHandler;
@@ -329,20 +327,25 @@ public class XML11Configuration extends ParserConfigurationSettings
     //
 
     /** The XML 1.0 Datatype validator factory. */
-    protected DTDDVFactory fDatatypeValidatorFactory;
+    protected final DTDDVFactory fDatatypeValidatorFactory;
 
     /** The XML 1.0 Document scanner that does namespace binding. */
-    protected XMLNSDocumentScannerImpl fNamespaceScanner;
+    protected final XMLNSDocumentScannerImpl fNamespaceScanner;
+    
     /** The XML 1.0 Non-namespace implementation of scanner */
     protected XMLDocumentScannerImpl fNonNSScanner;
+    
     /** The XML 1.0 DTD Validator: binds namespaces */
-    protected XMLDTDValidator fDTDValidator;
+    protected final XMLDTDValidator fDTDValidator;
+    
     /** The XML 1.0 DTD Validator that does not bind namespaces */
     protected XMLDTDValidator fNonNSDTDValidator;
+    
     /** The XML 1.0 DTD scanner. */
-    protected XMLDTDScanner fDTDScanner;
+    protected final XMLDTDScanner fDTDScanner;
+    
     /** The XML 1.0 DTD Processor . */
-    protected XMLDTDProcessor fDTDProcessor;
+    protected final XMLDTDProcessor fDTDProcessor;
 
     //
     // XML 1.1 components
@@ -365,6 +368,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 
     /** The XML 1.1 DTD scanner. **/
     protected XML11DTDScannerImpl fXML11DTDScanner = null;
+    
     /** The XML 1.1 DTD processor. **/
     protected XML11DTDProcessor fXML11DTDProcessor = null;
 

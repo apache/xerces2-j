@@ -70,7 +70,7 @@ public abstract class XMLParser {
     //
 
     /** The parser configuration. */
-    protected XMLParserConfiguration fConfiguration;
+    protected final XMLParserConfiguration fConfiguration;
 
     //
     // Constructors

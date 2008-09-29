@@ -258,7 +258,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     // data
 
     /** Base uri stack*/
-    protected Stack fBaseURIStack = new Stack ();
+    protected final Stack fBaseURIStack = new Stack ();
 
     /** LSParserFilter: the QNAME of rejected element*/
     protected final QName fRejectedElement = new QName ();

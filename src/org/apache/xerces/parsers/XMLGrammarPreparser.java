@@ -97,15 +97,15 @@ public class XMLGrammarPreparser {
     };
 
     // Data
-    protected SymbolTable fSymbolTable;
-    protected XMLErrorReporter fErrorReporter;
+    protected final SymbolTable fSymbolTable;
+    protected final XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
     protected XMLGrammarPool fGrammarPool;
 
     protected Locale fLocale;
 
     // Hashtable holding our loaders
-    private Hashtable fLoaders;
+    private final Hashtable fLoaders;
     
     // The number of times the configuration has been modified.
     private int fModCount = 1;
