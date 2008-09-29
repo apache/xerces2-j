@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
@@ -140,7 +139,6 @@ public class DOMParserImpl
 
     protected final static boolean DEBUG = false;
 
-    private final Vector fSchemaLocations = new Vector();
     private String fSchemaLocation = null;
 	private DOMStringList fRecognizedParameters;
     
@@ -283,18 +281,17 @@ public class DOMParserImpl
      * @throws SAXException Thrown on initialization error.
      */
     public void reset () {
-        super.reset ();
+        super.reset();
         
         // get state of namespace-declarations parameter.
         fNamespaceDeclarations = 
             fConfiguration.getFeature(Constants.DOM_NAMESPACE_DECLARATIONS);
                 
         // DOM Filter
-        if (fSkippedElemStack!=null) {
-            fSkippedElemStack.removeAllElements ();
+        if (fSkippedElemStack != null) {
+            fSkippedElemStack.removeAllElements();
         }
-        fSchemaLocations.clear ();
-        fRejectedElement.clear ();
+        fRejectedElement.clear();
         fFilterReject = false;
         fSchemaType = null;
 
@@ -490,15 +487,15 @@ public class DOMParserImpl
                             // map DOM schema-location to JAXP schemaSource property
                             // tokenize location string
                             StringTokenizer t = new StringTokenizer (fSchemaLocation, " \n\t\r");
-                            if (t.hasMoreTokens ()){
-                                fSchemaLocations.clear ();
-                                fSchemaLocations.add (t.nextToken ());
-                                while (t.hasMoreTokens ()) {
-                                    fSchemaLocations.add (t.nextToken ());
+                            if (t.hasMoreTokens()) {
+                                ArrayList locations = new ArrayList();
+                                locations.add (t.nextToken());
+                                while (t.hasMoreTokens()) {
+                                    locations.add (t.nextToken());
                                 }
                                 fConfiguration.setProperty (
                                 Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
-                                fSchemaLocations.toArray ());
+                                locations.toArray ());
                             }
                             else {
                                 fConfiguration.setProperty (
