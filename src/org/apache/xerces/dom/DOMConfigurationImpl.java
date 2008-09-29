@@ -1181,7 +1181,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 DOMMessageFormatter.DOM_DOMAIN,
                 "FEATURE_NOT_SUPPORTED",
                 new Object[] { name });
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        return new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     private static DOMException newFeatureNotFoundError(String name) {
@@ -1190,7 +1190,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 DOMMessageFormatter.DOM_DOMAIN,
                 "FEATURE_NOT_FOUND",
                 new Object[] { name });
-        throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+        return new DOMException(DOMException.NOT_FOUND_ERR, msg);
     }
     
     private static DOMException newTypeMismatchError(String name) {
