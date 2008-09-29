@@ -493,7 +493,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 2 If there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in Element Default Valid (Immediate) (3.3.6).
         if (element.fDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-            if (XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault) == null) {
+            if (fSchemaHandler.fXSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault) == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue}, elmDecl);
                 element.setConstraintType(XSConstants.VC_NONE);
             }
@@ -501,7 +501,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // 4 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
-            if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
+            if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
                 reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
             }
         }

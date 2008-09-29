@@ -246,6 +246,9 @@ XSLoader, DOMConfiguration {
 
     /** XML Schema 1.1 flag */
     private short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
+
+    /** XML Schema Constraints checker */
+    private XSConstraints fXSConstraints = XSConstraints.XS_1_0_CONSTRAINTS;
     
     // default constructor.  Create objects we absolutely need:
     public XMLSchemaLoader() {
@@ -321,7 +324,7 @@ XSLoader, DOMConfiguration {
             builder = new CMBuilder(nodeFactory);
         }
         fCMBuilder = builder;
-        fSchemaHandler = new XSDHandler(fGrammarBucket);
+        fSchemaHandler = new XSDHandler(fGrammarBucket, fSchemaVersion, fXSConstraints);
         fDeclPool = new XSDeclarationPool();
         fJAXPCache = new WeakHashMap();
         
@@ -485,11 +488,13 @@ XSLoader, DOMConfiguration {
     void setSchemaVersion(String version) {
         if (version.equals(Constants.W3C_XML_SCHEMA11_NS_URI)) {
             fSchemaVersion = Constants.SCHEMA_VERSION_1_1;
+            fXSConstraints = XSConstraints.XS_1_1_CONSTRAINTS;
         }
         else {
             fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
+            fXSConstraints = XSConstraints.XS_1_0_CONSTRAINTS;
         }
-        fSchemaHandler.setSchemaVersion(fSchemaVersion);
+        fSchemaHandler.setSchemaVersionInfo(fSchemaVersion, fXSConstraints);
         fCMBuilder.setSchemaVersion(fSchemaVersion);
     }
 
@@ -498,6 +503,13 @@ XSLoader, DOMConfiguration {
      */
     short getSchemaVersion() {
     	return fSchemaVersion;
+    }
+
+    /**
+     * Return XML Schema Constraints
+     */
+    XSConstraints getXSConstraints() {
+    	return fXSConstraints;
     }
 
     /**
@@ -555,7 +567,7 @@ XSLoader, DOMConfiguration {
             // NOTE: we only need to verify full checking in case the schema was not provided via JAXP
             // since full checking already verified for all JAXP schemas
             if(fIsCheckedFully && fJAXPCache.get(grammar) != grammar) {
-                XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
+                fXSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
             }
         }
         return grammar;
@@ -750,7 +762,7 @@ XSLoader, DOMConfiguration {
                         fJAXPSource instanceof InputSource) {
                     fJAXPCache.put(fJAXPSource, g);
                     if (fIsCheckedFully) {
-                        XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
+                    	fXSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);                    	
                     }
                 }
                 fGrammarBucket.putGrammar(g);
@@ -804,7 +816,7 @@ XSLoader, DOMConfiguration {
             SchemaGrammar grammar = fSchemaHandler.parseSchema(xis,fXSDDescription, locationPairs);
             
             if (fIsCheckedFully) {
-                XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
+            	fXSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);            	
             }                                   
             if (grammar != null) {
                 targetNamespace = grammar.getTargetNamespace();

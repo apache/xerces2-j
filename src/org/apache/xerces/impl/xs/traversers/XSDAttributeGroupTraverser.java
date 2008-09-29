@@ -156,7 +156,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
                 new QName(XMLSymbols.EMPTY_STRING, nameAttr, nameAttr, schemaDoc.fTargetNamespace), 
                 schemaDoc, elmNode); 
         if(redefinedAttrGrp != null) {
-            Object[] errArgs = attrGrp.validRestrictionOf(nameAttr, redefinedAttrGrp);
+            Object[] errArgs = attrGrp.validRestrictionOf(nameAttr, redefinedAttrGrp, fSchemaHandler.fXSConstraints);
             if (errArgs != null) {
                 reportSchemaError((String)errArgs[errArgs.length-1], errArgs, child);            	
                 reportSchemaError("src-redefine.7.2.2", new Object [] {nameAttr, errArgs[errArgs.length-1]}, child);

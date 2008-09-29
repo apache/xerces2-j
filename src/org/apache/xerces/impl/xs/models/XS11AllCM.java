@@ -244,14 +244,14 @@ public class XS11AllCM implements XSCMValidator {
      * check whether this content violates UPA constraint.
      *
      * @param subGroupHandler the substitution group handler
+     * @param xsConstraints the XML Schema Constraint checker
      * @return true if this content model contains other or list wildcard
      */
-    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler, XSConstraints xsConstraints) throws XMLSchemaException {
         // check whether there is conflict between any two leaves
         for (int i = 0; i < fNumElements; i++) {
             for (int j = i+1; j < fNumElements; j++) {
-                // TODO: apply 1.1 rules
-                if (XSConstraints.overlapUPA((XSElementDecl)fAllDecls[i], (XSElementDecl)fAllDecls[j], subGroupHandler)) {
+                if (xsConstraints.overlapUPA((XSElementDecl)fAllDecls[i], (XSElementDecl)fAllDecls[j], subGroupHandler)) {
                     // REVISIT: do we want to report all errors? or just one?
                     throw new XMLSchemaException("cos-nonambig", new Object[]{fAllDecls[i].toString(),
                                                                               fAllDecls[j].toString()});
@@ -260,8 +260,7 @@ public class XS11AllCM implements XSCMValidator {
         }
         for (int i = fNumElements; i < fNumDecls; i++) {
             for (int j = i+1; j < fNumDecls; j++) {
-                // TODO: apply 1.1 rules
-                if (XSConstraints.overlapUPA((XSWildcardDecl)fAllDecls[i], (XSWildcardDecl)fAllDecls[j])) {
+                if (xsConstraints.overlapUPA((XSWildcardDecl)fAllDecls[i], (XSWildcardDecl)fAllDecls[j])) {
                     // REVISIT: do we want to report all errors? or just one?
                     throw new XMLSchemaException("cos-nonambig", new Object[]{fAllDecls[i].toString(),
                                                                               fAllDecls[j].toString()});

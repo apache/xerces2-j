@@ -43,7 +43,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  *
  * @version $Id$
  */
-public class XSConstraints {
+public abstract class XSConstraints {
 
     // IHR: Visited on 2006-11-17
     // Added a boolean return value to particleValidRestriction (it was a void function)
@@ -52,6 +52,11 @@ public class XSConstraints {
 
     static final int OCCURRENCE_UNKNOWN = SchemaSymbols.OCCURRENCE_UNBOUNDED-1;
     static final XSSimpleType STRING_TYPE = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+
+    static final XSConstraints XS_1_0_CONSTRAINTS = new XS10Constraints();
+    static final XSConstraints XS_1_1_CONSTRAINTS = new XS11Constraints();
+
+    private final XSComplexTypeDecl fAnyType;
 
     private static final Comparator ELEMENT_PARTICLE_COMPARATOR = new Comparator() {
 
@@ -87,18 +92,22 @@ public class XSConstraints {
         }
     };
 
+    protected XSConstraints(XSComplexTypeDecl anyType) {
+        fAnyType = anyType;
+    }
+
     /**
      * check whether derived is valid derived from base, given a subset
      * of {restriction, extension}.B
      */
-    public static boolean checkTypeDerivationOk(XSTypeDefinition derived, XSTypeDefinition base, short block) {
+    public boolean checkTypeDerivationOk(XSTypeDefinition derived, XSTypeDefinition base, short block) {
         // if derived is anyType, then it's valid only if base is anyType too
-        if (derived == SchemaGrammar.fAnyType)
+        if (derived == fAnyType)
             return derived == base;
         // if derived is anySimpleType, then it's valid only if the base
         // is ur-type
         if (derived == SchemaGrammar.fAnySimpleType) {
-            return (base == SchemaGrammar.fAnyType ||
+            return (base == fAnyType ||
                     base == SchemaGrammar.fAnySimpleType);
         }
 
@@ -108,7 +117,7 @@ public class XSConstraints {
             if (base.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
-                if (base == SchemaGrammar.fAnyType)
+                if (base == fAnyType)
                     base = SchemaGrammar.fAnySimpleType;
                 else
                     return false;
@@ -125,11 +134,11 @@ public class XSConstraints {
      * check whether simple type derived is valid derived from base,
      * given a subset of {restriction, extension}.
      */
-    public static boolean checkSimpleDerivationOk(XSSimpleType derived, XSTypeDefinition base, short block) {
+    public boolean checkSimpleDerivationOk(XSSimpleType derived, XSTypeDefinition base, short block) {
         // if derived is anySimpleType, then it's valid only if the base
         // is ur-type
         if (derived == SchemaGrammar.fAnySimpleType) {
-            return (base == SchemaGrammar.fAnyType ||
+            return (base == fAnyType ||
                     base == SchemaGrammar.fAnySimpleType);
         }
 
@@ -137,7 +146,7 @@ public class XSConstraints {
         if (base.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             // if base is anyType, change base to anySimpleType,
             // otherwise, not valid
-            if (base == SchemaGrammar.fAnyType)
+            if (base == fAnyType)
                 base = SchemaGrammar.fAnySimpleType;
             else
                 return false;
@@ -150,9 +159,9 @@ public class XSConstraints {
      * check whether complex type derived is valid derived from base,
      * given a subset of {restriction, extension}.
      */
-    public static boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDefinition base, short block) {
+    public boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDefinition base, short block) {
         // if derived is anyType, then it's valid only if base is anyType too
-        if (derived == SchemaGrammar.fAnyType)
+        if (derived == fAnyType)
             return derived == base;
         return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
     }
@@ -162,7 +171,7 @@ public class XSConstraints {
      *       anySimpleType, and base is not anyType. Another method will be
      *       introduced for public use, which will call this method.
      */
-    private static boolean checkSimpleDerivation(XSSimpleType derived, XSSimpleType base, short block) {
+    private boolean checkSimpleDerivation(XSSimpleType derived, XSSimpleType base, short block) {
         // 1 They are the same type definition.
         if (derived == base)
             return true;
@@ -212,7 +221,7 @@ public class XSConstraints {
      *       anyType. Another method will be introduced for public use,
      *       which will call this method.
      */
-    private static boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDefinition base, short block) {
+    private boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDefinition base, short block) {
         // 2.1 B and D must be the same type definition.
         if (derived == base)
             return true;
@@ -229,7 +238,7 @@ public class XSConstraints {
 
         // 2.3 All of the following must be true:
         // 2.3.1 D's {base type definition} must not be the ur-type definition.
-        if (directBase == SchemaGrammar.fAnyType ||
+        if (directBase == fAnyType ||
                 directBase == SchemaGrammar.fAnySimpleType) {
             return false;
         }
@@ -245,7 +254,7 @@ public class XSConstraints {
             if (base.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
-                if (base == SchemaGrammar.fAnyType)
+                if (base == fAnyType)
                     base = SchemaGrammar.fAnySimpleType;
                 else
                     return false;
@@ -262,7 +271,7 @@ public class XSConstraints {
      * returns the compiled form of the value
      * The parameter value could be either a String or a ValidatedInfo object
      */
-    public static Object ElementDefaultValidImmediate(XSTypeDefinition type, String value, ValidationContext context, ValidatedInfo vinfo) {
+    public Object ElementDefaultValidImmediate(XSTypeDefinition type, String value, ValidationContext context, ValidatedInfo vinfo) {
 
         XSSimpleType dv = null;
 
@@ -313,7 +322,7 @@ public class XSConstraints {
         return actualValue;
     }
 
-    static void reportSchemaError(XMLErrorReporter errorReporter,
+    void reportSchemaError(XMLErrorReporter errorReporter,
             SimpleLocator loc,
             String key, Object[] args) {
         if (loc != null) {
@@ -332,7 +341,7 @@ public class XSConstraints {
      * Unique Particle Attribution, Particle Derivation (Restriction),
      * Element Declrations Consistent.
      */
-    public static void fullSchemaChecking(XSGrammarBucket grammarBucket,
+    public void fullSchemaChecking(XSGrammarBucket grammarBucket,
             SubstitutionGroupHandler SGHandler,
             CMBuilder cmBuilder,
             XMLErrorReporter errorReporter) {
@@ -425,7 +434,7 @@ public class XSConstraints {
                 // 2. Particle Derivation
 
                 if (types[j].fBaseType != null &&
-                        types[j].fBaseType != SchemaGrammar.fAnyType &&
+                        types[j].fBaseType != fAnyType &&
                         types[j].fDerivedBy == XSConstants.DERIVATION_RESTRICTION &&
                         (types[j].fBaseType instanceof XSComplexTypeDecl)) {
 
@@ -466,7 +475,7 @@ public class XSConstraints {
                 further = false;
                 if (cm != null) {
                     try {
-                        further = cm.checkUniqueParticleAttribution(SGHandler);
+                        further = cm.checkUniqueParticleAttribution(SGHandler, this);
                     } catch (XMLSchemaException e) {
                         reportSchemaError(errorReporter, ctLocators[j],
                                 e.getKey(),
@@ -505,7 +514,7 @@ public class XSConstraints {
        Check that a given particle is a valid restriction of a base particle.
      */
 
-    public static void checkElementDeclsConsistent(XSComplexTypeDecl type,
+    public void checkElementDeclsConsistent(XSComplexTypeDecl type,
             XSParticleDecl particle,
             SymbolHash elemDeclHash,
             SubstitutionGroupHandler sgHandler)
@@ -537,7 +546,7 @@ public class XSConstraints {
             checkElementDeclsConsistent(type, group.fParticles[i], elemDeclHash, sgHandler);
     }
 
-    public static void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem,
+    public void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem,
             SymbolHash elemDeclHash)
         throws XMLSchemaException {
 
@@ -570,7 +579,7 @@ public class XSConstraints {
     // in the bParticle.
     // With this information the checkRecurseLax function knows when is
     // to keep the order and when to ignore it.
-    private static boolean particleValidRestriction(XSParticleDecl dParticle,
+    private boolean particleValidRestriction(XSParticleDecl dParticle,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl bParticle,
             SubstitutionGroupHandler bSGHandler)
@@ -578,7 +587,7 @@ public class XSConstraints {
         return particleValidRestriction(dParticle, dSGHandler, bParticle, bSGHandler, true);
     }
 
-    private static boolean particleValidRestriction(XSParticleDecl dParticle,
+    private boolean particleValidRestriction(XSParticleDecl dParticle,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl bParticle,
             SubstitutionGroupHandler bSGHandler,
@@ -963,7 +972,7 @@ public class XSConstraints {
         return bExpansionHappened;
     }
 
-    private static void addElementToParticleVector (Vector v, XSElementDecl d)  {
+    private void addElementToParticleVector (Vector v, XSElementDecl d)  {
 
         XSParticleDecl p = new XSParticleDecl();
         p.fValue = d;
@@ -972,7 +981,7 @@ public class XSConstraints {
 
     }
 
-    private static XSParticleDecl getNonUnaryGroup(XSParticleDecl p) {
+    private XSParticleDecl getNonUnaryGroup(XSParticleDecl p) {
 
         if (p.fType == XSParticleDecl.PARTICLE_ELEMENT ||
                 p.fType == XSParticleDecl.PARTICLE_WILDCARD)
@@ -1029,7 +1038,7 @@ public class XSConstraints {
 
     }
 
-    private static void checkNameAndTypeOK(XSElementDecl dElement, int dMin, int dMax,
+    private void checkNameAndTypeOK(XSElementDecl dElement, int dMin, int dMax,
             XSElementDecl bElement, int bMin, int bMax)
         throws XMLSchemaException {
 
@@ -1120,7 +1129,7 @@ public class XSConstraints {
     }
 
 
-    private static void checkIDConstraintRestriction(XSElementDecl derivedElemDecl,
+    private void checkIDConstraintRestriction(XSElementDecl derivedElemDecl,
             XSElementDecl baseElemDecl)
         throws XMLSchemaException {
         // TODO
@@ -1188,7 +1197,7 @@ public class XSConstraints {
     }
 
 
-    private static void checkNSRecurseCheckCardinality(Vector children, int min1, int max1,
+    private void checkNSRecurseCheckCardinality(Vector children, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl wildcard, int min2, int max2,
             boolean checkWCOccurrence)
@@ -1221,7 +1230,7 @@ public class XSConstraints {
 
     }
 
-    private static void checkRecurse(Vector dChildren, int min1, int max1,
+    private void checkRecurse(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
             SubstitutionGroupHandler bSGHandler)
@@ -1268,7 +1277,7 @@ public class XSConstraints {
 
     }
 
-    private static void checkRecurseUnordered(Vector dChildren, int min1, int max1,
+    private void checkRecurseUnordered(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
             SubstitutionGroupHandler bSGHandler)
@@ -1320,7 +1329,7 @@ public class XSConstraints {
 
     }
 
-    private static void checkRecurseLax(Vector dChildren, int min1, int max1,
+    private void checkRecurseLax(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
             SubstitutionGroupHandler  bSGHandler)
@@ -1362,7 +1371,7 @@ public class XSConstraints {
 
     }
 
-    private static void checkMapAndSum(Vector dChildren, int min1, int max1,
+    private void checkMapAndSum(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
             SubstitutionGroupHandler bSGHandler)
@@ -1411,7 +1420,7 @@ public class XSConstraints {
         }
     }
     // to check whether two element overlap, as defined in constraint UPA
-    public static boolean overlapUPA(XSElementDecl element1,
+    public boolean overlapUPA(XSElementDecl element1,
             XSElementDecl element2,
             SubstitutionGroupHandler sgHandler) {
         // if the two element have the same name and namespace,
@@ -1443,40 +1452,8 @@ public class XSConstraints {
         return false;
     }
 
-    // to check whether an element overlaps with a wildcard,
-    // as defined in constraint UPA
-    public static boolean overlapUPA(XSElementDecl element,
-            XSWildcardDecl wildcard,
-            SubstitutionGroupHandler sgHandler) {
-        // if the wildcard allows the element
-        if (wildcard.allowNamespace(element.fTargetNamespace))
-            return true;
-
-        // or if the wildcard allows any element in the substitution group
-        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element);
-        for (int i = subGroup.length-1; i >= 0; i--) {
-            if (wildcard.allowNamespace(subGroup[i].fTargetNamespace))
-                return true;
-        }
-
-        return false;
-    }
-
-    public static boolean overlapUPA(XSWildcardDecl wildcard1,
-            XSWildcardDecl wildcard2) {
-        // if the intersection of the two wildcard is not empty list
-        XSWildcardDecl intersect = wildcard1.performIntersectionWith(wildcard2, wildcard1.fProcessContents);
-        if (intersect == null ||
-                intersect.fType != XSWildcardDecl.NSCONSTRAINT_LIST ||
-                intersect.fNamespaceList.length != 0) {
-            return true;
-        }
-
-        return false;
-    }
-
     // call one of the above methods according to the type of decls
-    public static boolean overlapUPA(Object decl1, Object decl2,
+    public boolean overlapUPA(Object decl1, Object decl2,
             SubstitutionGroupHandler sgHandler) {
         if (decl1 instanceof XSElementDecl) {
             if (decl2 instanceof XSElementDecl) {
@@ -1502,5 +1479,14 @@ public class XSConstraints {
             }
         }
     }
+
+    // to check whether an element overlaps with a wildcard,
+    // as defined in constraint UPA
+    public abstract boolean overlapUPA(XSElementDecl element,
+            XSWildcardDecl wildcard,
+            SubstitutionGroupHandler sgHandler);
+
+    public abstract boolean overlapUPA(XSWildcardDecl wildcard1,
+            XSWildcardDecl wildcard2);
 
 } // class XSContraints

@@ -1121,9 +1121,10 @@ public class XSDFACM
      * check whether this content violates UPA constraint.
      *
      * @param subGroupHandler the substitution group handler
+     * @param xsConstraints the XML Schema Constraint checker
      * @return true if this content model contains other or list wildcard
      */
-    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler, XSConstraints xsConstraints) throws XMLSchemaException {
         // Unique Particle Attribution
         // store the conflict results between any two elements in fElemMap
         // 0: not compared; -1: no conflict; 1: conflict
@@ -1137,7 +1138,7 @@ public class XSDFACM
                     if (fTransTable[i][j] != -1 &&
                         fTransTable[i][k] != -1) {
                         if (conflictTable[j][k] == 0) {
-                            if (XSConstraints.overlapUPA
+                            if (xsConstraints.overlapUPA
                                     (fElemMap[j], fElemMap[k],
                                             subGroupHandler)) {
                                 if (fCountingStates != null) {

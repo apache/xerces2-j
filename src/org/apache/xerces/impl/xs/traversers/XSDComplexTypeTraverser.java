@@ -578,7 +578,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //according to derivation-ok-restriction 5.1.2.1
                 
                 if (baseValidator != null &&
-                        !XSConstraints.checkSimpleDerivationOk(dv, baseValidator,
+                        !fSchemaHandler.fXSConstraints.checkSimpleDerivationOk(dv, baseValidator,
                                 baseValidator.getFinal())) {
                     fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
@@ -659,7 +659,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // Prohibited uses must be removed after merge for RESTRICTION
             fAttrGrp.removeProhibitedAttrs();
             
-            Object[] errArgs=fAttrGrp.validRestrictionOf(fName, baseComplexType.getAttrGrp());
+            Object[] errArgs=fAttrGrp.validRestrictionOf(fName, baseComplexType.getAttrGrp(), fSchemaHandler.fXSConstraints);
             if (errArgs != null) {
                 fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                 fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
@@ -903,7 +903,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fAttrGrp.removeProhibitedAttrs();
 
             if (baseType != SchemaGrammar.fAnyType) {
-                Object[] errArgs = fAttrGrp.validRestrictionOf(fName, baseType.getAttrGrp());
+                Object[] errArgs = fAttrGrp.validRestrictionOf(fName, baseType.getAttrGrp(), fSchemaHandler.fXSConstraints);
                 if (errArgs != null) {
                     fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);

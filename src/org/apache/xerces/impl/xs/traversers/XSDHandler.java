@@ -41,6 +41,7 @@ import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
 import org.apache.xerces.impl.xs.XSElementDecl;
@@ -377,7 +378,10 @@ public class XSDHandler {
     XSAnnotationGrammarPool fGrammarBucketAdapter;
 
     // flag to indicate schema 1.1 support
-    short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
+    short fSchemaVersion;
+
+    // XML Schema constraint checker
+    XSConstraints fXSConstraints;
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -412,7 +416,9 @@ public class XSDHandler {
     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
     
     // Constructors
-    public XSDHandler(){
+    public XSDHandler(short schemaVersion, XSConstraints xsConstraints){
+    	fSchemaVersion = schemaVersion;
+    	fXSConstraints = xsConstraints;
         fHiddenNodes = new Hashtable();       
         fSchemaParser = new SchemaDOMParser(new SchemaParsingConfig());
         fSchemaParser.setSupportedVersion(fSupportedVersion); //REVISIT: pass to constructor?
@@ -421,8 +427,8 @@ public class XSDHandler {
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
-    public XSDHandler (XSGrammarBucket gBucket) {
-        this();
+    public XSDHandler (XSGrammarBucket gBucket, short schemaVersion, XSConstraints xsConstraints) {
+        this(schemaVersion, xsConstraints);
         fGrammarBucket = gBucket;
         
         // Note: don't use SchemaConfiguration internally
@@ -2839,8 +2845,9 @@ public class XSDHandler {
      *
      * @param state
      */
-    public void setSchemaVersion(short version) {
+    public void setSchemaVersionInfo(short version, XSConstraints xsConstraints) {
         fSchemaVersion = version;
+        fXSConstraints = xsConstraints;
         if (version < Constants.SCHEMA_VERSION_1_1) {
             fSupportedVersion = SUPPORTED_VERSION_1_0;
         }

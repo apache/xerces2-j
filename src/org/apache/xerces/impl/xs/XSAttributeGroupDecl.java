@@ -142,7 +142,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
      * @param typeName the name of the type containing this attribute group, used for error reporting purposes
      * @param baseGroup the XSAttributeGroupDecl that is the base we are checking against
      */
-    public Object[] validRestrictionOf(String typeName, XSAttributeGroupDecl baseGroup) {
+    public Object[] validRestrictionOf(String typeName, XSAttributeGroupDecl baseGroup, XSConstraints xsConstraints) {
 
         Object[] errorArgs = null;
         XSAttributeUseImpl attrUse = null;
@@ -179,7 +179,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                 //
                 // derivation-ok-restriction.  Constraint 2.1.1
                 //
-                if (! XSConstraints.checkSimpleDerivationOk(attrDecl.fType,
+                if (! xsConstraints.checkSimpleDerivationOk(attrDecl.fType,
                                                             baseAttrDecl.fType,
                                                             baseAttrDecl.fType.getFinal()) ) {
 					errorArgs = new Object[]{typeName, attrDecl.fName, attrDecl.fType.getName(),

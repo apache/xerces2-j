@@ -500,7 +500,10 @@ public class XMLSchemaValidator
     protected final Hashtable fLocationPairs = new Hashtable();
 
     /** XML Schema 1.1 Support */
-    short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
+    short fSchemaVersion;
+
+    /** XML Schema Constraints */
+    XSConstraints fXSConstraints;
 
     // handlers
 
@@ -569,8 +572,10 @@ public class XMLSchemaValidator
             fRootTypeQName = (javax.xml.namespace.QName)value;
         }
         else if (propertyId.equals(XML_SCHEMA_VERSION)) {
+        	// TODO: do we use fSchemaLoader.setProperty
             fSchemaLoader.setSchemaVersion((String)value);
             fSchemaVersion = fSchemaLoader.getSchemaVersion();
+            fXSConstraints = fSchemaLoader.getXSConstraints();
         }
     } // setProperty(String,Object)
 
@@ -1274,6 +1279,8 @@ public class XMLSchemaValidator
     public XMLSchemaValidator() {
         fState4XsiType.setExtraChecking(false);
         fState4ApplyDefault.setFacetChecking(false);
+        fSchemaVersion = fSchemaLoader.getSchemaVersion();
+        fXSConstraints = fSchemaLoader.getXSConstraints();
 
     } // <init>()
 
@@ -2260,7 +2267,7 @@ public class XMLSchemaValidator
 
             // check extra schema constraints on root element
             if (fElementDepth == -1 && fFullChecking && !fUseGrammarPoolOnly) {
-                XSConstraints.fullSchemaChecking(
+                fXSConstraints.fullSchemaChecking(
                     fGrammarBucket,
                     fSubGroupHandler,
                     fCMBuilder,
@@ -2357,7 +2364,7 @@ public class XMLSchemaValidator
             }
             // check extra schema constraints
             if (fFullChecking && !fUseGrammarPoolOnly) {
-                XSConstraints.fullSchemaChecking(
+                fXSConstraints.fullSchemaChecking(
                     fGrammarBucket,
                     fSubGroupHandler,
                     fCMBuilder,
@@ -2654,7 +2661,7 @@ public class XMLSchemaValidator
             if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 block |= ((XSComplexTypeDecl) fCurrentType).fBlock;
             }
-            if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block)) {
+            if (!fXSConstraints.checkTypeDerivationOk(type, fCurrentType, block)) {
                 reportSchemaError(
                         "cvc-elt.4.3",
                         new Object[] { element.rawname, xsiType, fCurrentType.getName()});
@@ -3139,7 +3146,7 @@ public class XMLSchemaValidator
             // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
             if (fCurrentType != fCurrentElemDecl.fType) {
                 //REVISIT:we should pass ValidatedInfo here.
-                if (XSConstraints
+                if (fXSConstraints
                     .ElementDefaultValidImmediate(
                         fCurrentType,
                         fCurrentElemDecl.fDefault.stringValue(),
