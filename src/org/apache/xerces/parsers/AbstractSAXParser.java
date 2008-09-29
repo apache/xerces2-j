@@ -196,12 +196,6 @@ public abstract class AbstractSAXParser
     private final AttributesProxy fAttributesProxy = new AttributesProxy();
     private Augmentations fAugmentations = null;
 
-
-    // temporary buffer for sending normalized values
-    // REVISIT: what should be the size of the buffer?
-    private static final int BUFFER_SIZE = 20;
-    private char[] fCharBuffer =  new char[BUFFER_SIZE];
-
     // allows us to keep track of whether an attribute has
     // been declared twice, so that we can avoid exposing the
     // second declaration to any registered DeclHandler
