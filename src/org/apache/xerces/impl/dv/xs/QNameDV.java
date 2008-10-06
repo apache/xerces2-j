@@ -96,7 +96,7 @@ public class QNameDV extends TypeValidator {
             return false;
         } // equals(Object):boolean
 
-        public synchronized String toString() {
+        public String toString() {
             return rawname;
         }
         public javax.xml.namespace.QName getJAXPQName() {
