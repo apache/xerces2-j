@@ -550,6 +550,8 @@ public class XSAttributeChecker {
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
         fEleAttrsMapL.put(ATTRIBUTE_N, attrList);
+        // TODO: XML Schema 1.1 - different list
+        fEleAttrs11MapL.put(ATTRIBUTE_N, attrList);
 
         // for element "attribute" - local ref
         attrList = Container.getContainer(5);
@@ -590,6 +592,8 @@ public class XSAttributeChecker {
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
         fEleAttrsMapG.put(SchemaSymbols.ELT_ELEMENT, attrList);
+        // REVISIT: XML Schema 1.1 - different list?
+        fEleAttrs11MapG.put(SchemaSymbols.ELT_ELEMENT, attrList);
 
         // for element "element" - local name
         attrList = Container.getContainer(10);
@@ -614,6 +618,8 @@ public class XSAttributeChecker {
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
         fEleAttrsMapL.put(ELEMENT_N, attrList);
+        // TODO: XML Schema 1.1 - different attribute list
+        fEleAttrs11MapL.put(ELEMENT_N, attrList);
 
         // for element "element" - local ref
         attrList = Container.getContainer(4);
@@ -714,6 +720,8 @@ public class XSAttributeChecker {
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         fEleAttrsMapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, attrList);
+        // TODO: XML Schema 1.1 different attribute list
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, attrList);
 
         // for element "complexContent" - local
         attrList = Container.getContainer(2);
@@ -801,6 +809,8 @@ public class XSAttributeChecker {
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         fEleAttrsMapL.put(SchemaSymbols.ELT_ANY, attrList);
+        // TODO: XML Schema 1.1 different attribute list
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_ANY, attrList);
 
         // for element "unique" - local
         attrList = Container.getContainer(2);
@@ -811,6 +821,11 @@ public class XSAttributeChecker {
         fEleAttrsMapL.put(SchemaSymbols.ELT_UNIQUE, attrList);
         // for element "key" - local
         fEleAttrsMapL.put(SchemaSymbols.ELT_KEY, attrList);
+        // XML Schema 1.1 - same list
+        // for element "unique" - local
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_UNIQUE, attrList);
+        // for element "key" - local
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_KEY, attrList);
 
         // for element "keyref" - local
         attrList = Container.getContainer(3);
@@ -821,6 +836,8 @@ public class XSAttributeChecker {
         // refer = QName
         attrList.put(SchemaSymbols.ATT_REFER, allAttrs[ATT_REFER_R]);
         fEleAttrsMapL.put(SchemaSymbols.ELT_KEYREF, attrList);
+        // XML Schema 1.1
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_KEYREF, attrList);
 
         // for element "selector" - local
         attrList = Container.getContainer(2);
