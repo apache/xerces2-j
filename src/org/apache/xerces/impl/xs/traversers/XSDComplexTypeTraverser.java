@@ -1114,7 +1114,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                         }
 
                         // 1.4.3.2.2.4
-                        if (!baseOpenContent.fWildcard.isSubsetOf(fOpenContent.fWildcard)) {
+                        if (!fSchemaHandler.fXSConstraints.isSubsetOf(baseOpenContent.fWildcard, fOpenContent.fWildcard)) {
                             fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
                             fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                             throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.3.4",
@@ -1171,7 +1171,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 toAttrGrp.fAttributeWC = fromAttrGrp.fAttributeWC;
             }
             else if (fromAttrGrp.fAttributeWC != null) {
-                toAttrGrp.fAttributeWC = toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC, toAttrGrp.fAttributeWC.fProcessContents);
+                toAttrGrp.fAttributeWC = fSchemaHandler.fXSConstraints.performUnionWith(toAttrGrp.fAttributeWC, fromAttrGrp.fAttributeWC, toAttrGrp.fAttributeWC.fProcessContents);
                 if (toAttrGrp.fAttributeWC == null) {
                     // REVISIT: XML Schema 1.0 2nd edition doesn't actually specify this constraint. It's a bug in the spec
                     // which will eventually be fixed. We're just guessing what the error code will be. If it turns out to be

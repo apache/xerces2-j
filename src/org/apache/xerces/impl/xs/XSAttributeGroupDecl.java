@@ -187,7 +187,6 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 					return errorArgs;
                 }
 
-
                 //
                 // derivation-ok-restriction.  Constraint 2.1.3
                 //
@@ -268,7 +267,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 				errorArgs = new Object[]{typeName, "derivation-ok-restriction.4.1"};
 				return errorArgs;
             }
-            if (! fAttributeWC.isSubsetOf(baseGroup.fAttributeWC)) {
+            if (! xsConstraints.isSubsetOf(fAttributeWC, baseGroup.fAttributeWC)) {
 				errorArgs = new Object[]{typeName, "derivation-ok-restriction.4.2"};
 				return errorArgs;
             }

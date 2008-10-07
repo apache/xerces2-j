@@ -25,7 +25,7 @@ package org.apache.xerces.impl.xs;
  * @author Sandy Gao, IBM
  * @author Khaled Noaman, IBM
  *
- * @version $Id:$
+ * @version $Id$
  *
  */
 class XS10Constraints extends XSConstraints {
@@ -54,7 +54,7 @@ class XS10Constraints extends XSConstraints {
     public boolean overlapUPA(XSWildcardDecl wildcard1,
             XSWildcardDecl wildcard2) {
         // if the intersection of the two wildcard is not empty list
-        XSWildcardDecl intersect = wildcard1.performIntersectionWith(wildcard2, wildcard1.fProcessContents);
+        XSWildcardDecl intersect = performIntersectionWith(wildcard1, wildcard2, wildcard1.fProcessContents);
         if (intersect == null ||
                 intersect.fType != XSWildcardDecl.NSCONSTRAINT_LIST ||
                 intersect.fNamespaceList.length != 0) {

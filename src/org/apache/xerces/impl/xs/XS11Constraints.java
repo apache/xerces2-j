@@ -24,7 +24,7 @@ package org.apache.xerces.impl.xs;
  *
  * @author Khaled Noaman, IBM
  *
- * @version $Id:$
+ * @version $Id$
  *
  */
 class XS11Constraints extends XSConstraints {
@@ -43,7 +43,7 @@ class XS11Constraints extends XSConstraints {
             XSWildcardDecl wildcard2) {
         // if the intersection of the two wildcards is not any and
     	// and the {namespaces} of such intersection is not the empty set
-        XSWildcardDecl intersect = wildcard1.performIntersectionWith(wildcard2, wildcard1.fProcessContents);
+        XSWildcardDecl intersect = performIntersectionWith(wildcard1, wildcard2, wildcard1.fProcessContents);
         if (intersect.fType != XSWildcardDecl.NSCONSTRAINT_ANY &&
                 intersect.fNamespaceList.length != 0) {
             return true;

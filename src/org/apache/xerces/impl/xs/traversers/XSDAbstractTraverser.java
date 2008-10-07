@@ -690,8 +690,8 @@ abstract class XSDAbstractTraverser {
                     }
                     // perform intersection of attribute wildcard
                     else {
-                        attrGrp.fAttributeWC = attrGrp.fAttributeWC.
-                        performIntersectionWith(tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
+                        attrGrp.fAttributeWC = fSchemaHandler.fXSConstraints.
+                        performIntersectionWith(attrGrp.fAttributeWC, tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
                         if (attrGrp.fAttributeWC == null) {
                             String code = (enclosingCT == null) ? "src-attribute_group.2" : "src-ct.4";
                             String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
@@ -714,8 +714,8 @@ abstract class XSDAbstractTraverser {
                 }
                 // perform intersection of attribute wildcard
                 else {
-                    attrGrp.fAttributeWC = tempAttrWC.
-                    performIntersectionWith(attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
+                    attrGrp.fAttributeWC = fSchemaHandler.fXSConstraints.
+                    performIntersectionWith(tempAttrWC, attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
                     if (attrGrp.fAttributeWC == null) {
                         String code = (enclosingCT == null) ? "src-attribute_group.2" : "src-ct.4";
                         String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
