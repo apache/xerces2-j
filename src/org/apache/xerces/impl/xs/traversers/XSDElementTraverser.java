@@ -517,7 +517,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // 4 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
-        	for (int i=0; i< element.fSubGroup.length; i++) {
+            for (int i=0; i< element.fSubGroup.length; i++) {
                 if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup[i].fType, element.fSubGroup[i].fFinal)) {
                     reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, ((QName)subGroupAtt.get(i)).prefix +":"+((QName)subGroupAtt.get(i)).localpart}, elmDecl);
                 }

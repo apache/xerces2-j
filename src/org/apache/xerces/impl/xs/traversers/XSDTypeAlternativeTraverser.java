@@ -49,12 +49,12 @@ import org.w3c.dom.Element;
  */
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
 
-	XSDTypeAlternativeTraverser (XSDHandler handler,
+    XSDTypeAlternativeTraverser (XSDHandler handler,
             XSAttributeChecker attrChecker) {
         super(handler, attrChecker);
     }
-	
-	/**
+
+    /**
      * Traverse the given alternative element and update the
      * schema grammar. Validate the content of the type alternative
      * element.
@@ -111,17 +111,17 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             XSTypeDefinition typeDef = null;
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 typeDef = fSchemaHandler.fComplexTypeTraverser.traverseLocal(childNode, schemaDoc, grammar);
-	            hasAnonType = true;
+                hasAnonType = true;
                 childNode = DOMUtil.getNextSiblingElement(childNode);
-	        }
+            }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-	            typeDef = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(childNode, schemaDoc, grammar);
-	            hasAnonType = true;
+                typeDef = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(childNode, schemaDoc, grammar);
+                hasAnonType = true;
                 childNode = DOMUtil.getNextSiblingElement(childNode);
             }
             
             if (alternativeType == null) {
-            	alternativeType = typeDef;
+                alternativeType = typeDef;
             }
             
             // type and either <simpleType> or <complexType> are mutually exclusive.
@@ -133,12 +133,12 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         // if the type definition component is not present..
         // i.e. test attr value is absent and no anonymous types are defined
         if (typeAtt == null && !hasAnonType) {
-        	reportSchemaError("src-type-alternative.3.12.13.2", null, altElement);
+            reportSchemaError("src-type-alternative.3.12.13.2", null, altElement);
         }
         
         // fall back to the element declaration's type
         if (alternativeType == null) {
-        	alternativeType= element.fType;
+            alternativeType= element.fType;
         }
 
         // not expecting any more children
