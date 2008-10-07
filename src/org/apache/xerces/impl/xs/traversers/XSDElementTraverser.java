@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Vector;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -266,7 +268,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         XInt    formAtt      = (XInt)    attrValues[XSAttributeChecker.ATTIDX_FORM];
         String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         Boolean nillableAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
-        QName   subGroupAtt  = (QName)   attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
+        Vector  subGroupAtt  = (Vector)  attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
         QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
         
         // Step 1: get declaration information
@@ -326,12 +328,26 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         } else {
             element.setConstraintType(XSConstants.VC_NONE);
         }
-        
+
         // get 'substitutionGroup affiliation'
-        if (subGroupAtt != null) {
-            element.fSubGroup = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt, elmDecl);
+        if (subGroupAtt != null && !subGroupAtt.isEmpty()) {
+            Vector elemDecl = new Vector();
+            for (int i=0; i<subGroupAtt.size(); i++) {
+                QName subGroup = (QName)subGroupAtt.get(i);
+
+                // returns null if element is already parsed
+                XSElementDecl globalDecl = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroup, elmDecl);
+                if (globalDecl != null) {
+                    elemDecl.add(globalDecl);
+                }
+            }
+
+            int validSubgroupElemDeclSize = elemDecl.size();
+            if (validSubgroupElemDeclSize > 0) {
+                element.fSubGroup = (XSElementDecl[])elemDecl.toArray(new XSElementDecl[validSubgroupElemDeclSize]);
+            }
         }
-        
+
         // get 'annotation'
         Element child = DOMUtil.getFirstChildElement(elmDecl);
         XSAnnotationImpl annotation = null;
@@ -382,7 +398,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // Get it from the substitutionGroup declaration
         if (elementType == null && element.fSubGroup != null) {
-            elementType = element.fSubGroup.fType;
+            elementType = element.fSubGroup[0].fType;
         }
         
         if (elementType == null) {
@@ -501,8 +517,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // 4 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
-            if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
-                reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
+        	for (int i=0; i< element.fSubGroup.length; i++) {
+                if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup[i].fType, element.fSubGroup[i].fFinal)) {
+                    reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, ((QName)subGroupAtt.get(i)).prefix +":"+((QName)subGroupAtt.get(i)).localpart}, elmDecl);
+                }
             }
         }
         

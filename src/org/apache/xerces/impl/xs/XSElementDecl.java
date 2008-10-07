@@ -68,8 +68,8 @@ public class XSElementDecl implements XSElementDeclaration {
     public XSObjectList fAnnotations = null;
     // value constraint value
     public ValidatedInfo fDefault = null;
-    // the substitution group affiliation of the element
-    public XSElementDecl fSubGroup = null;
+    // the substitution groups affiliation of the element
+    public XSElementDecl[] fSubGroup = null;
     // identity constraints
     static final int INITIAL_SIZE = 2;
     int fIDCPos = 0;
@@ -137,14 +137,14 @@ public class XSElementDecl implements XSElementDeclaration {
      * has no test attribute)
      */
     public boolean isTypeTableOK() {
-    	if (fTypeAlternativePos > 1) {
-    		for (int i=0; i<fTypeAlternativePos-1; i++) {
-    			if (fTypeAlternatives[i].getTest() == null) {
-    				return false;
-    			}
-    		}
-    	}
-    	return true;
+        if (fTypeAlternativePos > 1) {
+            for (int i=0; i<fTypeAlternativePos-1; i++) {
+                if (fTypeAlternatives[i].getTest() == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public void addTypeAlternative(XSTypeAlternativeImpl typeAlternative) {
@@ -345,7 +345,7 @@ public class XSElementDecl implements XSElementDeclaration {
      * {substitution group affiliation} Optional. A top-level element
      * definition.
      */
-    public XSElementDeclaration getSubstitutionGroupAffiliation() {
+    public XSElementDeclaration[] getSubstitutionGroupAffiliation() {
         return fSubGroup;
     }
 

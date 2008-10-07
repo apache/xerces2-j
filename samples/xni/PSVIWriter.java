@@ -1859,7 +1859,11 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             sendElementEvent("psv:substitutionGroupAffiliation");
         } else {
             sendIndentedElement("psv:substitutionGroupAffiliation");
-            processPSVIElementRef("psv:elementDeclaration", elem.getSubstitutionGroupAffiliation());
+            XSElementDeclaration[] subgroups = elem.getSubstitutionGroupAffiliation();
+            for (int i=0; i<subgroups.length; i++) {
+                XSElementDeclaration subgroup = subgroups[i];
+                processPSVIElementRef("psv:elementDeclaration", subgroup);
+            }
             sendUnIndentedElement("psv:substitutionGroupAffiliation");
         }
     }

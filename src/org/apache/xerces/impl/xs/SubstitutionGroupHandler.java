@@ -104,12 +104,8 @@ public class SubstitutionGroupHandler {
         }
 
         // 2.2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
-        XSElementDecl subGroup = element.fSubGroup;
-        while (subGroup != null && subGroup != exemplar) {
-            subGroup = subGroup.fSubGroup;
-        }
-
-        if (subGroup == null) {
+        XSElementDecl[] subGroup = element.fSubGroup;
+        if (subGroup == null || !checkSubstitutionGroupAffil(subGroup, exemplar)) {
             return false;
         }
 
@@ -117,6 +113,18 @@ public class SubstitutionGroupHandler {
         // prepare the combination of {derivation method} and
         // {disallowed substitution}
         return typeDerivationOK(element.fType, exemplar.fType, blockingConstraint);   
+    }
+    
+    // Recursively check if there is a element in substitution group matching exemplar
+    private boolean checkSubstitutionGroupAffil(XSElementDecl[] subGroupArray, XSElementDecl examplar) {
+        for (int i=0; i<subGroupArray.length; i++) {
+            XSElementDecl element = subGroupArray[i];
+            if (element == examplar) 
+                return true;
+            if (element.fSubGroup != null)
+                if (checkSubstitutionGroupAffil(element.fSubGroup, examplar)) return true;
+        }
+        return false;
     }
     
     private boolean typeDerivationOK(XSTypeDefinition derived, XSTypeDefinition base, short blockingConstraint) {
@@ -199,22 +207,27 @@ public class SubstitutionGroupHandler {
     /**
      * add a list of substitution group information.
      */
-    public void addSubstitutionGroup(XSElementDecl[] elements) {
-        XSElementDecl subHead, element;
+    public void addSubstitutionGroup(XSElementDecl[] elements) {        
+        XSElementDecl element;
+        XSElementDecl[] subHeads;
         Vector subGroup;
         // for all elements with substitution group affiliation
         for (int i = elements.length-1; i >= 0; i--) {
             element = elements[i];
-            subHead = element.fSubGroup;
+            subHeads = element.fSubGroup;
+
             // check whether this an entry for this element
-            subGroup = (Vector)fSubGroupsB.get(subHead);
-            if (subGroup == null) {
-                // if not, create a new one
-                subGroup = new Vector();
-                fSubGroupsB.put(subHead, subGroup);
+            for (int j=0; j<subHeads.length; j++) {
+                XSElementDecl subHead = subHeads[j];
+                subGroup = (Vector)fSubGroupsB.get(subHead);
+                if (subGroup == null) {
+                    // if not, create a new one
+                    subGroup = new Vector();
+                    fSubGroupsB.put(subHead, subGroup);
+                }
+                // add to the vector
+                subGroup.addElement(element);
             }
-            // add to the vactor
-            subGroup.addElement(element);
         }
     }
 

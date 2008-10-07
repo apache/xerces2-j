@@ -1385,14 +1385,35 @@ public class XSAttributeChecker {
                         oneAttr.dvIndex != DT_XPATH &&
                         oneAttr.dvIndex != DT_XPATH1) {
                         XSSimpleType dv = fExtraDVs[oneAttr.dvIndex];
-                        Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);
-                        // kludge to handle chameleon includes/redefines...
-                        if (oneAttr.dvIndex == DT_QNAME) {
-                            QName qname = (QName)avalue;
-                            if(qname.prefix == XMLSymbols.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
-                                qname.uri = schemaDoc.fTargetNamespace;
+
+                        // if version 1.1 and attr is subgroup, split the attrVal String and perform validation on each subgroup head
+                        // will end up with multiple avalue                                                  
+                        if (oneAttr.valueIndex == ATTIDX_SUBSGROUP) {
+                            if (attrValues[ATTIDX_SUBSGROUP] == null) {
+                                attrValues[ATTIDX_SUBSGROUP] = new Vector();
+                            }
+                            if (fSchemaHandler.fSchemaVersion==Constants.SCHEMA_VERSION_1_1) {
+                                StringTokenizer st = new StringTokenizer(attrVal, " ");
+                                while (st.hasMoreTokens()) {
+                                    Object avalue = dv.validate(st.nextToken(), schemaDoc.fValidationContext, null);
+                                    ((Vector)attrValues[ATTIDX_SUBSGROUP]).addElement(avalue);
+                                }
+                            }
+                            else {
+                                Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);
+                                ((Vector)attrValues[ATTIDX_SUBSGROUP]).addElement(avalue);
+                            }
                         }
-                        attrValues[oneAttr.valueIndex] = avalue;
+                        else {
+                            Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);
+                            // kludge to handle chameleon includes/redefines...
+                            if (oneAttr.dvIndex == DT_QNAME) {
+                                QName qname = (QName)avalue;
+                                if(qname.prefix == XMLSymbols.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
+                                    qname.uri = schemaDoc.fTargetNamespace;
+                            }
+                            attrValues[oneAttr.valueIndex] = avalue;
+                        }
                     } else {
                         attrValues[oneAttr.valueIndex] = attrVal;
                     }
@@ -1990,6 +2011,9 @@ public class XSAttributeChecker {
         // better clear nonschema vector
         if(attrArray[ATTIDX_NONSCHEMA] != null)
             ((Vector)attrArray[ATTIDX_NONSCHEMA]).clear();
+        // clear the subsgroup vector
+        if(attrArray[ATTIDX_SUBSGROUP] != null)
+            ((Vector)attrArray[ATTIDX_SUBSGROUP]).clear();
         // and put it into the pool
         fArrayPool[--fPoolPos] = attrArray;
     }

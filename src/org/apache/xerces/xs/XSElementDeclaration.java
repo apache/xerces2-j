@@ -117,7 +117,7 @@ public interface XSElementDeclaration extends XSTerm {
      * [substitution group affiliation]: a top-level element definition if it 
      * exists, otherwise <code>null</code>. 
      */
-    public XSElementDeclaration getSubstitutionGroupAffiliation();
+    public XSElementDeclaration[] getSubstitutionGroupAffiliation();
 
     /**
      * Convenience method that checks if <code>exclusion</code> is a 
