@@ -1386,10 +1386,11 @@ public class XMLEntityManager
 
         // copy declared entities
         if (fDeclaredEntities != null) {
-            java.util.Enumeration keys = fDeclaredEntities.keys();
-            while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
-                Object value = fDeclaredEntities.get(key);
+            Iterator entries = fDeclaredEntities.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                Object key = entry.getKey();
+                Object value = entry.getValue();
                 fEntities.put(key, value);
             }
         }
