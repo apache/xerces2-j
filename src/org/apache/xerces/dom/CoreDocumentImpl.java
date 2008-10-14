@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -332,11 +333,10 @@ extends ParentNode implements Document  {
         }
 
         if (deep) {
-            Hashtable reversedIdentifiers = null;
-
+            HashMap reversedIdentifiers = null;
             if (identifiers != null) {
                 // Build a reverse mapping from element to identifier.
-                reversedIdentifiers = new Hashtable();
+                reversedIdentifiers = new HashMap();
                 Enumeration elementIds = identifiers.keys();
                 while (elementIds.hasMoreElements()) {
                     Object elementId = elementIds.nextElement();
@@ -1502,14 +1502,14 @@ extends ParentNode implements Document  {
      * methods.
      *
      * The reversedIdentifiers parameter is provided for cloneNode to
-     * preserve the document's identifiers. The Hashtable has Elements as the
+     * preserve the document's identifiers. The HashMap has Elements as the
      * keys and their identifiers as the values. When an element is being
      * imported, a check is done for an associated identifier. If one exists,
      * the identifier is registered with the new, imported element. If
      * reversedIdentifiers is null, the parameter is not applied.
      */
     private Node importNode(Node source, boolean deep, boolean cloningDoc,
-    Hashtable reversedIdentifiers)
+    HashMap reversedIdentifiers)
     throws DOMException {
         Node newnode=null;
 		Hashtable userData = null;
