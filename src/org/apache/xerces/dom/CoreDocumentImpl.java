@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -337,11 +338,12 @@ extends ParentNode implements Document  {
             if (identifiers != null) {
                 // Build a reverse mapping from element to identifier.
                 reversedIdentifiers = new HashMap();
-                Enumeration elementIds = identifiers.keys();
-                while (elementIds.hasMoreElements()) {
-                    Object elementId = elementIds.nextElement();
-                    reversedIdentifiers.put(identifiers.get(elementId),
-                    elementId);
+                Iterator entries = identifiers.entrySet().iterator();
+                while (entries.hasNext()) {
+                    Map.Entry entry = (Map.Entry) entries.next();
+                    Object elementId = entry.getKey();
+                    Object elementNode = entry.getValue();
+                    reversedIdentifiers.put(elementNode, elementId);
                 }
             }
 
