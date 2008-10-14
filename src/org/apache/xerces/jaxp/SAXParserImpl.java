@@ -18,7 +18,6 @@
 package org.apache.xerces.jaxp;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -211,9 +210,11 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     private void setFeatures(Hashtable features)
         throws SAXNotSupportedException, SAXNotRecognizedException {
         if (features != null) {
-            for (Enumeration e = features.keys(); e.hasMoreElements();) {
-                String feature = (String)e.nextElement();
-                boolean value = ((Boolean)features.get(feature)).booleanValue();
+            Iterator entries = features.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                String feature = (String) entry.getKey();
+                boolean value = ((Boolean) entry.getValue()).booleanValue();
                 xmlReader.setFeature0(feature, value);
             }
         }

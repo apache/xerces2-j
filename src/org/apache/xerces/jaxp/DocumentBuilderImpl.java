@@ -18,8 +18,9 @@
 package org.apache.xerces.jaxp;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.validation.Schema;
@@ -202,9 +203,11 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private void setFeatures(Hashtable features)
         throws SAXNotSupportedException, SAXNotRecognizedException {
         if (features != null) {
-            for (Enumeration e = features.keys(); e.hasMoreElements();) {
-                String feature = (String)e.nextElement();
-                boolean value = ((Boolean)features.get(feature)).booleanValue();
+            Iterator entries = features.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                String feature = (String) entry.getKey();
+                boolean value = ((Boolean) entry.getValue()).booleanValue();
                 domParser.setFeature(feature, value);
             }
         }
@@ -225,9 +228,11 @@ public class DocumentBuilderImpl extends DocumentBuilder
             return;
         }
 
-        for (Enumeration e = dbfAttrs.keys(); e.hasMoreElements();) {
-            String name = (String)e.nextElement();
-            Object val = dbfAttrs.get(name);
+        Iterator entries = dbfAttrs.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry) entries.next();
+            String name = (String) entry.getKey();
+            Object val = entry.getValue();
             if (val instanceof Boolean) {
                 // Assume feature
                 domParser.setFeature(name, ((Boolean)val).booleanValue());

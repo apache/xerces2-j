@@ -17,8 +17,9 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.xerces.impl.dv.DatatypeValidator;
 
@@ -58,10 +59,12 @@ public class XML11DTDDVFactoryImpl extends DTDDVFactoryImpl {
      */
     public Hashtable getBuiltInTypes() {
         Hashtable toReturn = (Hashtable)fBuiltInTypes.clone();
-        Enumeration xml11Keys = fXML11BuiltInTypes.keys();
-        while (xml11Keys.hasMoreElements()) {
-            Object key = xml11Keys.nextElement();
-            toReturn.put(key, fXML11BuiltInTypes.get(key));
+        Iterator entries = fXML11BuiltInTypes.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry) entries.next();
+            Object key = entry.getKey();
+            Object dv = entry.getValue();
+            toReturn.put(key, dv);
         }
         return toReturn;
     }
