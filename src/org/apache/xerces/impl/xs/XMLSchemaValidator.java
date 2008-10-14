@@ -18,8 +18,9 @@
 package org.apache.xerces.impl.xs;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -4110,21 +4111,25 @@ public class XMLSchemaValidator
          * top of fGlobalMapStack into fGlobalIDConstraintMap.
          */
         public void endElement() {
-            if (fGlobalMapStack.isEmpty())
+            if (fGlobalMapStack.isEmpty()) {
                 return; // must be an invalid doc!
+            }
             Hashtable oldMap = (Hashtable) fGlobalMapStack.pop();
             // return if there is no element
-            if (oldMap == null)
+            if (oldMap == null) {
                 return;
+            }
 
-            Enumeration keys = oldMap.keys();
-            while (keys.hasMoreElements()) {
-                IdentityConstraint id = (IdentityConstraint) keys.nextElement();
-                ValueStoreBase oldVal = (ValueStoreBase) oldMap.get(id);
+            Iterator entries = oldMap.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                IdentityConstraint id = (IdentityConstraint) entry.getKey();
+                ValueStoreBase oldVal = (ValueStoreBase) entry.getValue();
                 if (oldVal != null) {
                     ValueStoreBase currVal = (ValueStoreBase) fGlobalIDConstraintMap.get(id);
-                    if (currVal == null)
+                    if (currVal == null) {
                         fGlobalIDConstraintMap.put(id, oldVal);
+                    }
                     else if (currVal != oldVal) {
                         currVal.append(oldVal);
                     }
