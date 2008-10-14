@@ -2450,14 +2450,15 @@ extends ParentNode implements Document  {
      * @param operation The operation - import, clone, or delete.
 	 * @param handlers Data associated with n.
 	*/
-	void callUserDataHandlers(Node n, Node c, short operation,Hashtable userData) {
+	void callUserDataHandlers(Node n, Node c, short operation, Hashtable userData) {
         if (userData == null || userData.isEmpty()) {
             return;
         }
-        Enumeration keys = userData.keys();
-        while (keys.hasMoreElements()) {
-            String key = (String) keys.nextElement();
-            UserDataRecord r = (UserDataRecord) userData.get(key);
+        Iterator entries = userData.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry) entries.next();
+            String key = (String) entry.getKey();
+            UserDataRecord r = (UserDataRecord) entry.getValue();
             if (r.fHandler != null) {
                 r.fHandler.handle(operation, key, r.fData, n, c);
             }
