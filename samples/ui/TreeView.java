@@ -35,9 +35,10 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -311,11 +312,13 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
             messageText.append("Please click on red Tree View items for details.\n");
             /***/
             Hashtable errors = ef.getErrorNodes();
-            Enumeration keys = errors.keys();
-            while (keys.hasMoreElements()) {
-                Node node = (Node)keys.nextElement();
+            Iterator entries = errors.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                Node node = (Node) entry.getKey();
+                ParseError parseError = (ParseError) entry.getValue();
                 messageText.append("node="+node.getNodeName()
-                +", error="+((ParseError)errors.get(node)).getMsg()+"\n");
+                +", error="+parseError.getMsg()+"\n");
             }
         }
         if (DEBUG) System.out.println("END refreshUI:"+filename);
