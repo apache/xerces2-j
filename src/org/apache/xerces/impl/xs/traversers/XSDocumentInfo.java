@@ -26,6 +26,7 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.SymbolTable;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -150,7 +151,23 @@ class XSDocumentInfo {
 
     // some Object methods
     public String toString() {
-        return fTargetNamespace == null?"no targetNamspace":"targetNamespace is " + fTargetNamespace;
+        StringBuffer buf = new StringBuffer();
+        if (fTargetNamespace == null) {
+            buf.append("no targetNamspace");
+        }
+        else {
+            buf.append("targetNamespace is ");
+            buf.append(fTargetNamespace);
+        }
+        Document doc = (fSchemaElement != null) ? fSchemaElement.getOwnerDocument() : null;
+        if (doc instanceof org.apache.xerces.impl.xs.opti.SchemaDOM) {
+            String documentURI = doc.getDocumentURI();
+            if (documentURI != null && documentURI.length() > 0) {
+                buf.append(" :: schemaLocation is ");
+                buf.append(documentURI);
+            }
+        }
+        return buf.toString();
     }
 
     public void addAllowedNS(String namespace) {
