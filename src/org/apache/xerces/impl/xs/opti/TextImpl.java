@@ -48,6 +48,10 @@ public class TextImpl extends DefaultText {
     // org.w3c.dom.Node methods
     //
     
+    public String getNodeName() {
+        return "#text";
+    }
+    
     public Node getParentNode() {
         return fSchemaDOM.relations[fRow][0];
     }

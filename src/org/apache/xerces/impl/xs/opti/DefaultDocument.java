@@ -48,6 +48,15 @@ public class DefaultDocument extends NodeImpl
     
     // default constructor
     public DefaultDocument() {
+        this.nodeType = Node.DOCUMENT_NODE;
+    }
+    
+    //
+    // org.w3c.dom.Node methods
+    //
+    
+    public String getNodeName() {
+        return "#document";
     }
     
     //
