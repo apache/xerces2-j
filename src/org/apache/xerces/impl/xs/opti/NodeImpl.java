@@ -78,8 +78,12 @@ public class NodeImpl extends DefaultNode {
         hidden = hide;
     }
     
-    
     public boolean getReadOnly() {
         return hidden;
+    }
+    
+    /** NON-DOM method for debugging convenience. */
+    public String toString() {
+        return "[" + getNodeName() + ": " + getNodeValue() + "]";
     }
 }

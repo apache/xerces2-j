@@ -60,11 +60,9 @@ public class AttrImpl extends NodeImpl
         this.value = value;
     }
     
-    
     public String getName() {
         return rawname;
     }
-    
     
     public boolean getSpecified() {
         return true;
@@ -74,11 +72,13 @@ public class AttrImpl extends NodeImpl
         return value;
     }
     
+    public String getNodeValue() {
+        return getValue();
+    }
     
     public Element getOwnerElement() {
         return element;
     }
-    
     
     public void setValue(String value) throws DOMException {
         this.value = value;
@@ -91,12 +91,16 @@ public class AttrImpl extends NodeImpl
         return false;
     }
     
-        /**
+    /**
      * Method getSchemaTypeInfo.
      * @return TypeInfo
      */
     public TypeInfo getSchemaTypeInfo(){
       return null;
     }
-
+    
+    /** NON-DOM method for debugging convenience */
+    public String toString() {
+        return getName() + "=" + "\"" + getValue() + "\"";
+    }
 }
