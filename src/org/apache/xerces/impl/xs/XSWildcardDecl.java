@@ -57,13 +57,11 @@ public class XSWildcardDecl implements XSWildcard {
     /*
      * XML Schema 1.1
      */
-    // disallowed names flag
-    public boolean fDisallowedNames = false;
     // disallowed names list
     public QName[] fDisallowedNamesList = null;
-    // ##defined {disallowed names}
+    // ##defined
     public boolean fDisallowedDefined = false;
-    // ##definedSibling {disallowed names}
+    // ##definedSibling
     public boolean fDisallowedSibling = false;
 
     // I'm trying to implement the following constraint exactly as what the
@@ -127,11 +125,29 @@ public class XSWildcardDecl implements XSWildcard {
     /**
      * XML Schema 1.1
      * 
-     * Validation Rule: Wildcard allows QName
+     * Validation Rule: Wildcard allows Name
      */
     public boolean allowQName(QName name) {
-        // TODO: apply 1.1 rules
-        return allowNamespace(name.uri);
+        // 1 The namespace name is valid with respect to C, as defined in Wildcard allows Namespace Name (3.10.4.3);
+        // 2 C.{disallowed names} does not contain E.
+        if (allowNamespace(name.uri)) {
+            if (fDisallowedNamesList == null || fDisallowedNamesList.length == 0) {
+                return true;
+            }
+            return isNameAllowed(name.uri, name.localpart);
+        }
+
+        // failed
+        return false;
+    }
+
+    private boolean isNameAllowed(String namespace, String localpart) {
+        for (int i=0; i < fDisallowedNamesList.length; i++) {
+            if (fDisallowedNamesList[i].uri == namespace && fDisallowedNamesList[i].localpart == localpart) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -178,6 +194,26 @@ public class XSWildcardDecl implements XSWildcard {
                 }
                 break;
             }
+            if (fDisallowedNamesList != null) {
+                buffer.append(", notQ(");
+                if (fDisallowedNamesList.length > 0) {
+                    buffer.append(fDisallowedNamesList[0]);
+                    for (int i = 1; i < fDisallowedNamesList.length; i++) {
+                        buffer.append(", ");
+                        buffer.append(fNamespaceList[i]);
+                    }
+                }
+                if (fDisallowedDefined) {
+                    buffer.append(", ");
+                    buffer.append(SchemaSymbols.ATTVAL_TWOPOUNDDEFINED);
+                }
+                if (fDisallowedSibling) {
+                    buffer.append(", ");
+                    buffer.append(SchemaSymbols.ATTVAL_TWOPOUNDDEFINEDSIBLING);
+                }
+                buffer.append(")");
+            }
+
             buffer.append("]");
             fDescription = buffer.toString();
         }

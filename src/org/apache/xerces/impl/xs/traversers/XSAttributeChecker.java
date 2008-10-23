@@ -128,6 +128,8 @@ public class XSAttributeChecker {
     public static final int ATTIDX_DEFAULTATTRAPPLY  = ATTIDX_COUNT++;
     public static final int ATTIDX_DEFAULTATTRIBUTES = ATTIDX_COUNT++;    
     public static final int ATTIDX_MODE              = ATTIDX_COUNT++;
+    public static final int ATTIDX_NOTNAMESPACE      = ATTIDX_COUNT++;
+    public static final int ATTIDX_NOTQNAME          = ATTIDX_COUNT++;
     public static final int ATTIDX_XPATHDEFAULTNS    = ATTIDX_COUNT++;    
 
     private static final XIntPool fXIntPool = new XIntPool();
@@ -224,9 +226,12 @@ public class XSAttributeChecker {
     protected static final int DT_BOOLEAN          = -15;
     protected static final int DT_NONNEGINT        = -16;
     protected static final int DT_POSINT           = -17;
+
     protected static final int DT_XPATH_DEFAULT_NS = -18;
     protected static final int DT_MODE             = -19;
     protected static final int DT_MODE1            = -20;
+    protected static final int DT_NOTNAMESPACE     = -21;
+    protected static final int DT_NOTQNAME         = -22;
 
     static {
         // step 2: all possible attributes for all elements
@@ -287,6 +292,9 @@ public class XSAttributeChecker {
         int ATT_DEFAULT_XPATH_NS_N   = attCount++;
         int ATT_MODE_D               = attCount++;
         int ATT_MODE1_D              = attCount++;
+        int ATT_NAMESPACE1_N         = attCount++;
+        int ATT_NOTNAMESPACE_N       = attCount++;        
+        int ATT_NOTQNAME_N           = attCount++;
         int ATT_TEST_XPATH_R         = attCount++;
 
         // step 3: store all these attributes in an array
@@ -509,6 +517,18 @@ public class XSAttributeChecker {
                                                         DT_MODE1,
                                                         ATTIDX_MODE,
                                                         INT_MODE_INTERLEAVE);
+        allAttrs[ATT_NAMESPACE1_N]         = new OneAttr(SchemaSymbols.ATT_NAMESPACE,
+                                                        DT_NAMESPACE,
+                                                        ATTIDX_NAMESPACE,
+                                                        null);
+        allAttrs[ATT_NOTNAMESPACE_N]       = new OneAttr(SchemaSymbols.ATT_NAMESPACE,
+                                                        DT_NOTNAMESPACE,
+                                                        ATTIDX_NOTNAMESPACE,
+                                                        null);
+        allAttrs[ATT_NOTQNAME_N]           = new OneAttr(SchemaSymbols.ATT_NOTQNAME,
+                                                        DT_NOTQNAME,
+                                                        ATTIDX_NOTQNAME,
+                                                        null);
         allAttrs[ATT_TEST_XPATH_R]         = new OneAttr(SchemaSymbols.ATT_TEST,
                                                         DT_XPATH1,
                                                         ATTIDX_XPATH,
@@ -721,8 +741,6 @@ public class XSAttributeChecker {
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         fEleAttrsMapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, attrList);
-        // TODO: XML Schema 1.1 different attribute list
-        fEleAttrs11MapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, attrList);
 
         // for element "complexContent" - local
         attrList = Container.getContainer(2);
@@ -810,8 +828,6 @@ public class XSAttributeChecker {
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         fEleAttrsMapL.put(SchemaSymbols.ELT_ANY, attrList);
-        // TODO: XML Schema 1.1 different attribute list
-        fEleAttrs11MapL.put(SchemaSymbols.ELT_ANY, attrList);
 
         // for element "unique" - local
         attrList = Container.getContainer(2);
@@ -1141,6 +1157,37 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
         fEleAttrs11MapL.put(SchemaSymbols.ELT_FIELD, attrList);
 
+        // for element "any" - local
+        attrList = Container.getContainer(7);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // maxOccurs = (nonNegativeInteger | unbounded)  : 1
+        attrList.put(SchemaSymbols.ATT_MAXOCCURS, allAttrs[ATT_MAXOCCURS_D]);
+        // minOccurs = nonNegativeInteger : 1
+        attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
+        // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
+        attrList.put(SchemaSymbols.ATT_NAMESPACE, allAttrs[ATT_NAMESPACE1_N]);
+        // notNamespace = List of (anyURI | (##targetNamespace | ##local))
+        attrList.put(SchemaSymbols.ATT_NOTNAMESPACE, allAttrs[ATT_NOTNAMESPACE_N]);
+        // notQName = List of (QName | (##defined | ##definedSibling))
+        attrList.put(SchemaSymbols.ATT_NOTQNAME, allAttrs[ATT_NOTQNAME_N]);
+        // processContents = (lax | skip | strict) : strict
+        attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_ANY, attrList);
+
+        // for element "anyAttribute" - local
+        attrList = Container.getContainer(5);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
+        attrList.put(SchemaSymbols.ATT_NAMESPACE, allAttrs[ATT_NAMESPACE1_N]);
+        // notNamespace = List of (anyURI | (##targetNamespace | ##local))
+        attrList.put(SchemaSymbols.ATT_NOTNAMESPACE, allAttrs[ATT_NOTNAMESPACE_N]);
+        // notQName = List of (QName | (##defined | ##definedSibling))
+        attrList.put(SchemaSymbols.ATT_NOTQNAME, allAttrs[ATT_NOTQNAME_N]);        
+        // processContents = (lax | skip | strict) : strict
+        attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, attrList);
 
         // new components
 
@@ -1737,41 +1784,7 @@ public class XSAttributeChecker {
             } else {
                 // list
                 retValue = INT_ANY_LIST;
-
-                fNamespaceList.removeAllElements();
-
-                // tokenize
-                StringTokenizer tokens = new StringTokenizer(value, " \n\t\r");
-                String token;
-                String tempNamespace;
-                try {
-                    while (tokens.hasMoreTokens()) {
-                        token = tokens.nextToken();
-                        if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                            tempNamespace = null;
-                        } else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
-                            tempNamespace = schemaDoc.fTargetNamespace;
-                        } else {
-                            // we have found namespace URI here
-                            // need to add it to the symbol table
-                            fExtraDVs[DT_ANYURI].validate(token, schemaDoc.fValidationContext, null);
-                            tempNamespace = fSymbolTable.addSymbol(token);
-                        }
-
-                        //check for duplicate namespaces in the list
-                        if (!fNamespaceList.contains(tempNamespace)) {
-                            fNamespaceList.addElement(tempNamespace);
-                        }
-                    }
-                } catch (InvalidDatatypeValueException ide) {
-                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )"});
-                }
-
-                // convert the vector to an array
-                int num = fNamespaceList.size();
-                String[] list = new String[num];
-                fNamespaceList.copyInto(list);
-                attrValues[ATTIDX_NAMESPACE_LIST] = list;
+                attrValues[ATTIDX_NAMESPACE_LIST] = processNamespaceList(value, schemaDoc);
             }
             break;
         case DT_PROCESSCONTENTS:
@@ -1815,6 +1828,60 @@ public class XSAttributeChecker {
                                                         (dvIndex == DT_MODE1) ? new Object[]{value, "(none | interleave | suffix)"}
                                                                               : new Object[]{value, "(interleave | sufix)"});
             break;
+        case DT_NOTQNAME:
+            {
+                // notQName = List of (QName | (##defined| ##definedSibling))
+            	if (attrValues[ATTIDX_NOTQNAME] == null) {
+            		attrValues[ATTIDX_NOTQNAME] = new Vector();
+            	}
+            	final Vector notQNameList = (Vector)attrValues[ATTIDX_NOTQNAME];
+
+                // tokenize
+                StringTokenizer tokens = new StringTokenizer(value, " \n\t\r");
+                String token;
+                QName qname;
+                Boolean definedKeyword = Boolean.FALSE;
+                Boolean siblingKeyword = Boolean.FALSE;
+                try {
+                    while (tokens.hasMoreTokens()) {
+                        token = tokens.nextToken();
+                        if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDDEFINED)) {
+                            definedKeyword = Boolean.TRUE;
+                        }
+                        else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDDEFINEDSIBLING)) {
+                        	siblingKeyword = Boolean.TRUE;
+                        }
+                        else {
+                            // we have found a qname here
+                            qname = (QName)fExtraDVs[DT_QNAME].validate(token, schemaDoc.fValidationContext, null);
+                            // check for duplicate qnames in the list
+                            if (!notQNameList.contains(qname)) {
+                            	notQNameList.addElement(qname);
+                            }
+                        }
+                    }
+
+                    // convert to a QName[] and add it back to the list
+                    int num = notQNameList.size();
+                    QName[] list = new QName[num];
+                    notQNameList.copyInto(list);
+                    notQNameList.clear();
+                    notQNameList.add(list);
+
+                    // add ##defined and ##definedSibling keyword to the list
+                    notQNameList.add(definedKeyword); 
+                    notQNameList.add(siblingKeyword);
+                } catch (InvalidDatatypeValueException ide) {
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(List of (QName | ##defined) )"});
+                }
+
+                retValue = notQNameList;
+            }
+            break;
+        case DT_NOTNAMESPACE:
+            // notNamespace = List of (anyURI | (##targetNamespace | ##local))
+            retValue = processNamespaceList(value, schemaDoc);
+            break;
         case DT_WHITESPACE:
             // value = preserve | replace | collapse
             if (value.equals (SchemaSymbols.ATTVAL_PRESERVE))
@@ -1851,6 +1918,43 @@ public class XSAttributeChecker {
         }
 
         return retValue;
+    }
+
+    private String[] processNamespaceList(String value, XSDocumentInfo schemaDoc) throws InvalidDatatypeValueException {
+        fNamespaceList.removeAllElements();
+
+        // tokenize
+        StringTokenizer tokens = new StringTokenizer(value, " \n\t\r");
+        String token;
+        String tempNamespace;
+        try {
+            while (tokens.hasMoreTokens()) {
+                token = tokens.nextToken();
+                if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+                    tempNamespace = null;
+                } else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
+                    tempNamespace = schemaDoc.fTargetNamespace;
+                } else {
+                    // we have found namespace URI here
+                    // need to add it to the symbol table
+                    fExtraDVs[DT_ANYURI].validate(token, schemaDoc.fValidationContext, null);
+                    tempNamespace = fSymbolTable.addSymbol(token);
+                }
+
+                //check for duplicate namespaces in the list
+                if (!fNamespaceList.contains(tempNamespace)) {
+                    fNamespaceList.addElement(tempNamespace);
+                }
+            }
+        } catch (InvalidDatatypeValueException ide) {
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )"});
+        }
+
+        // convert the vector to an array
+        int num = fNamespaceList.size();
+        String[] list = new String[num];
+        fNamespaceList.copyInto(list);
+    	return list;
     }
 
     void reportSchemaError (String key, Object[] args, Element ele) {
@@ -2019,6 +2123,9 @@ public class XSAttributeChecker {
         // clear the subsgroup vector
         if(attrArray[ATTIDX_SUBSGROUP] != null)
             ((Vector)attrArray[ATTIDX_SUBSGROUP]).clear();
+        // clear notQname vector
+        if (attrArray[ATTIDX_NOTQNAME] != null)
+        	((Vector)attrArray[ATTIDX_NOTQNAME]).clear();
         // and put it into the pool
         fArrayPool[--fPoolPos] = attrArray;
     }

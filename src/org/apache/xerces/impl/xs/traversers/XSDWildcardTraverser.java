@@ -17,6 +17,9 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Vector;
+
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -25,6 +28,7 @@ import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSObjectList;
 import org.w3c.dom.Element;
 
@@ -145,18 +149,23 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
             Object[] attrValues,
             XSDocumentInfo schemaDoc,
             SchemaGrammar grammar) {
-        
+
         //get all attributes
         XSWildcardDecl wildcard = new XSWildcardDecl();
         // namespace type
         XInt namespaceTypeAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
-        wildcard.fType = namespaceTypeAttr.shortValue();
+        wildcard.fType = (namespaceTypeAttr != null) ? namespaceTypeAttr.shortValue() : XSWildcardDecl.NSCONSTRAINT_ANY;
         // namespace list
         wildcard.fNamespaceList = (String[])attrValues[XSAttributeChecker.ATTIDX_NAMESPACE_LIST];
         // process contents
         XInt processContentsAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_PROCESSCONTENTS];
         wildcard.fProcessContents = processContentsAttr.shortValue();
-        
+
+        // handle XML Schema 1.1 attributes
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            processExtraAttributes(elmNode, attrValues, wildcard);
+        }
+
         //check content
         Element child = DOMUtil.getFirstChildElement(elmNode);
         XSAnnotationImpl annotation = null;
@@ -196,4 +205,46 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
         
     } // traverseWildcardDecl
     
+    private void processExtraAttributes(Element elmNode,
+    		Object[] attrValues,
+    		XSWildcardDecl wildcard) {
+
+    	// notNamespace
+    	String[] notNamespaceTypeAttr = (String[]) attrValues[XSAttributeChecker.ATTIDX_NOTNAMESPACE];
+        if (notNamespaceTypeAttr != null) {
+        	XInt namespaceTypeAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
+            // 1 namespace and notNamespace must not both be present.
+            if (namespaceTypeAttr != null) {
+                reportSchemaError("src-wildcard.1", null, elmNode);
+            }
+            else {
+            	wildcard.fType = XSWildcardDecl.NSCONSTRAINT_NOT;
+            	wildcard.fNamespaceList = notNamespaceTypeAttr;
+            	
+                // 2 If {variety} is not, {namespaces} has at least one member.
+                if (notNamespaceTypeAttr.length == 0) {
+                    reportSchemaError("wc-props-correct.2", null, elmNode);
+                }
+            }
+        }
+        
+        // notQName
+        Vector notQNameAttr = (Vector) attrValues[XSAttributeChecker.ATTIDX_NOTQNAME];
+        if (notQNameAttr != null && notQNameAttr.size() > 0) {
+        	// get disallowed names and keywords
+        	wildcard.fDisallowedNamesList = (QName[]) notQNameAttr.get(0);
+        	wildcard.fDisallowedDefined = ((Boolean)notQNameAttr.get(1)).booleanValue();
+            wildcard.fDisallowedSibling = ((Boolean)notQNameAttr.get(2)).booleanValue();
+
+            // 4 The namespace name of each QName member in {disallowed names} is allowed by 
+            //   the {namespace constraint}, as defined in Wildcard allows Namespace Name (3.10.4.3).
+            for (int i=0; i<wildcard.fDisallowedNamesList.length; i++) {
+                QName name = wildcard.fDisallowedNamesList[i];
+                if (!wildcard.allowNamespace(name.uri)) {
+                    reportSchemaError("wc-props-correct.4", new Object[] {name.uri, name.localpart}, elmNode);
+                }
+            }
+        }    	
+    }
+
 } // XSDWildcardTraverser

@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.models;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -57,10 +58,11 @@ public interface XSCMValidator {
      *
      * @param elementName
      * @param state  Current state
+     * @param grammar SchemaGrammar that corresponds to the namespace of the element
      * @return element decl or wildcard decl that
      *         corresponds to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, int[] state, SubstitutionGroupHandler subGroupHandler);
+    public Object oneTransition (QName elementName, int[] state, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar);
 
 
     /**

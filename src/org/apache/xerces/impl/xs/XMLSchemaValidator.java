@@ -573,7 +573,7 @@ public class XMLSchemaValidator
             fRootTypeQName = (javax.xml.namespace.QName)value;
         }
         else if (propertyId.equals(XML_SCHEMA_VERSION)) {
-        	// TODO: do we use fSchemaLoader.setProperty
+            // TODO: do we use fSchemaLoader.setProperty
             fSchemaLoader.setSchemaVersion((String)value);
             fSchemaVersion = fSchemaLoader.getSchemaVersion();
             fXSConstraints = fSchemaLoader.getXSConstraints();
@@ -1862,7 +1862,7 @@ public class XMLSchemaValidator
         // context, instead of that of the current element.
         Object decl = null;
         if (fCurrentCM != null) {
-            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
+            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler, sGrammar);
             // it could be an element decl or a wildcard decl
             if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl) fCurrentType;
@@ -2187,7 +2187,7 @@ public class XMLSchemaValidator
         }
 
         //process type alternatives
-        if (fTypeAlternativesChecking) {
+        if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
             boolean typeSelected = false;
             XSTypeAlternativeImpl[] alternatives = fCurrentElemDecl.getTypeAlternatives();
             if (alternatives != null) {
@@ -2703,6 +2703,16 @@ public class XMLSchemaValidator
         return false;
     }
 
+    boolean allowAttribute(XSWildcardDecl attrWildcard, QName name, SchemaGrammar grammar) {
+        if (attrWildcard.allowQName(name)) {
+            if (grammar == null || !attrWildcard.fDisallowedDefined) {
+                return true;
+            }
+            return (grammar.getGlobalAttributeDecl(name.localpart) == null);
+        }
+        return false;
+    }
+
     void processAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
 
         if (DEBUG) {
@@ -2813,7 +2823,10 @@ public class XMLSchemaValidator
             if (currUse == null) {
                 //if (attrWildcard == null)
                 //    reportSchemaError("cvc-complex-type.3.2.1", new Object[]{element.rawname, fTempQName.rawname});
-                if (attrWildcard == null || !attrWildcard.allowNamespace(fTempQName.uri)) {
+                SchemaGrammar grammar = (fSchemaVersion < Constants.SCHEMA_VERSION_1_1)
+                    ? null : findSchemaGrammar(
+                        XSDDescription.CONTEXT_ATTRIBUTE, fTempQName.uri, element, fTempQName, attributes);
+                if (attrWildcard == null || !allowAttribute(attrWildcard, fTempQName, grammar)) {
                     // so this attribute is not allowed
                     reportSchemaError(
                         "cvc-complex-type.3.2.2",

@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.models;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -134,6 +135,34 @@ public class XS11AllCM implements XSCMValidator {
         return matchingDecl;
     }
 
+    // convinient method: to find a matching element decl 
+    XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
+        for (int i = 0; i < fNumElements; i++) {
+            final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i]);
+            if (matchingDecl != null) {
+                return matchingDecl;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean allowExpandedName(XSWildcardDecl wildcard,
+                                      QName curElem,
+                                      SubstitutionGroupHandler subGroupHandler,
+                                      SchemaGrammar grammar) {
+        if (wildcard.allowQName(curElem)) {
+            if (wildcard.fDisallowedSibling && findMatchingElemDecl(curElem, subGroupHandler) != null) {
+                return false;
+            }
+            if (wildcard.fDisallowedDefined && grammar.getElementDeclaration(curElem.localpart) != null) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * The method corresponds to one transition in the content model.
      *
@@ -141,7 +170,7 @@ public class XS11AllCM implements XSCMValidator {
      * @param currentState  Current state
      * @return an element decl object
      */
-    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler) {
+    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar) {
         // error state
         if (currentState[0] < 0) {
             currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
@@ -150,7 +179,7 @@ public class XS11AllCM implements XSCMValidator {
 
         // open content - suffix mode
         if (currentState[0] == STATE_SUFFIX) {
-            if (fOpenContent.fWildcard.allowQName(elementName)) {
+            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, grammar)) {
                 return fOpenContent;
             }
             else { // error
@@ -180,7 +209,7 @@ public class XS11AllCM implements XSCMValidator {
             if (currentState[i + 1] == fDeclsOccurs[declMaxOccurs]) {
                 continue;
             }
-            if (((XSWildcardDecl)fAllDecls[i]).allowQName(elementName)) {
+            if (allowExpandedName((XSWildcardDecl)fAllDecls[i], elementName, subGroupHandler, grammar)) {
                 // found the decl, mark this element as "seen".
                 ++currentState[i + 1];
                 return fAllDecls[i];
@@ -198,7 +227,8 @@ public class XS11AllCM implements XSCMValidator {
                     return findMatchingDecl(elementName, subGroupHandler);
                 }
             }
-            if (fOpenContent.fWildcard.allowQName(elementName)) {
+            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, grammar)) {
+            //if (fOpenContent.fWildcard.allowQName(elementName)) {
                 return fOpenContent;
             }
         }

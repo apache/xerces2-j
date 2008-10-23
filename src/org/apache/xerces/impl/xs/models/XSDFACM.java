@@ -23,6 +23,7 @@ import java.util.Vector;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
+import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
@@ -268,7 +269,7 @@ public class XSDFACM
      *
      * @exception RuntimeException thrown on error
      */
-    public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler) {
+    public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar) {
         int curState = state[0];
 
         if(curState == XSCMValidator.FIRST_ERROR || curState == XSCMValidator.SUBSEQUENT_ERROR) {
@@ -282,14 +283,13 @@ public class XSDFACM
         }
         // apply open content - suffix mode 
         else if (state[3] == STATE_SUFFIX) {
-            if (fOpenContent.fWildcard.allowQName(curElem)) {
+            if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, grammar)) {//if (fOpenContent.fWildcard.allowQName(curElem)) {
                 return fOpenContent;
             }
-            else {
-                state[1] = curState;
-                state[0] = XSCMValidator.FIRST_ERROR;
-                return findMatchingDecl(curElem, subGroupHandler);
-            }
+
+            state[1] = curState;
+            state[0] = XSCMValidator.FIRST_ERROR;
+            return findMatchingDecl(curElem, subGroupHandler);
         }
 
         int nextState = 0;
@@ -309,15 +309,21 @@ public class XSDFACM
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                // XML Schema 1.0
+                if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
+                    if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                        matchingDecl = fElemMap[elemIndex];
+                        break;
+                    }
+                }
+                // XML Schema 1.1
+                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, grammar)) {
                     matchingDecl = fElemMap[elemIndex];
-                    // XML Schema 1.1 - and element has precedence over a wildcard
+                    // Element has precedence over a wildcard
                     // if no occurences or we reached minOccurs, keep looking for
                     // and element declaration
-                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        if (fCountingStates == null || fCountingStates[curState] == null || state[2] == fCountingStates[curState].minOccurs) {
-                            toMatchElementDecl = true;
-                        }
+                    if (fCountingStates == null || fCountingStates[curState] == null || state[2] == fCountingStates[curState].minOccurs) {
+                        toMatchElementDecl = true;
                     }
                     break;
                 }
@@ -348,30 +354,8 @@ public class XSDFACM
         if (matchingDecl == null) {
             // XML Schema 1.1
             // Validate against Open Content
-            if (fOpenContent != null) {
-                // if suffix mode, we should have reached a final state
-                if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
-                    if (fFinalStateFlags[curState]) {
-                        if (fCountingStates != null) {
-                            Occurence o = fCountingStates[curState];
-                            if (o != null && state[2] < o.minOccurs) {
-                                // not enough loops on the current state to be considered final.
-                                state[1] = state[0];
-                                state[0] = XSCMValidator.FIRST_ERROR;
-                                return findMatchingDecl(curElem, subGroupHandler);
-                            }
-                        }
-                        state[3] = STATE_SUFFIX;
-                    }
-                    else {
-                        state[1] = state[0];
-                        state[0] = XSCMValidator.FIRST_ERROR;
-                        return findMatchingDecl(curElem, subGroupHandler);
-                    }
-                }
-                if (fOpenContent.fWildcard.allowQName(curElem)) {
-                    return fOpenContent;
-                }
+            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, grammar)) {
+                return fOpenContent;
             }
 
             state[1] = state[0];
@@ -409,7 +393,7 @@ public class XSDFACM
                         // we've already seen enough instances of the first "foo" perhaps there is
                         // another element declaration or wildcard deeper in the element map which
                         // matches.
-                        return findMatchingDecl(curElem, state, subGroupHandler, elemIndex);
+                        return findMatchingDecl(curElem, state, subGroupHandler, elemIndex, grammar);
                     }  
                 }
                 else if (state[2] < o.minOccurs) {
@@ -455,7 +439,7 @@ public class XSDFACM
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                if (((XSWildcardDecl)fElemMap[elemIndex]).allowQName(curElem)) {
                     return fElemMap[elemIndex];
                 }
             }
@@ -464,11 +448,12 @@ public class XSDFACM
         return null;
     } // findMatchingDecl(QName, SubstitutionGroupHandler): Object
     
-    Object findMatchingDecl(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int elemIndex) {    
+    Object findMatchingDecl(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int elemIndex, SchemaGrammar grammar) {    
         
         int curState = state[0];
         int nextState = 0;
         Object matchingDecl = null;
+        boolean toMatchElementDecl = false;
         
         while (++elemIndex < fElemMapSize) {
             nextState = fTransTable[curState][elemIndex];
@@ -482,20 +467,60 @@ public class XSDFACM
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                // XML Schema 1.0
+                if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
+                    if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                        matchingDecl = fElemMap[elemIndex];
+                        break;
+                    }
+                }
+                // XML Schema 1.1
+                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, grammar)) {
                     matchingDecl = fElemMap[elemIndex];
+                    // Element has precedence over a wildcard
+                    // if no occurences or we reached minOccurs, keep looking for
+                    // and element declaration
+                    if (fCountingStates == null || fCountingStates[curState] == null || state[2] == fCountingStates[curState].minOccurs) {
+                        toMatchElementDecl = true;
+                    }
                     break;
                 }
             }
         }
         
-        // if we still can't find a match, set the state to FIRST_ERROR and return null
-        if (elemIndex == fElemMapSize) {
+        // XML Schema 1.1
+        // We matched against a wildcard, but need to also check
+        // if we can find a matching element declaration
+        if (toMatchElementDecl) {
+            int newState = 0;
+            Object newMatchingDecl = null;
+            while (++elemIndex < fElemMapSize) {
+                newState = fTransTable[curState][elemIndex];
+                if (newState != -1 && fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
+                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                    if (newMatchingDecl != null) {
+                        matchingDecl = newMatchingDecl;
+                        nextState = newState;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if we still can't find a match, set the state to first_error
+        // and return null
+        if (matchingDecl == null) {
+            // XML Schema 1.1
+            // Validate against Open Content
+            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, grammar)) {
+                return fOpenContent;
+            }
+
             state[1] = state[0];
             state[0] = XSCMValidator.FIRST_ERROR;
             return findMatchingDecl(curElem, subGroupHandler);
         }
-        
+
         // if we found a match, set the next state and reset the 
         // counter if the next state is a counting state.
         state[0] = nextState;
@@ -505,6 +530,58 @@ public class XSDFACM
         } 
         return matchingDecl;
     } // findMatchingDecl(QName, int[], SubstitutionGroupHandler, int): Object
+
+    XSElementDecl findMatchingElemDecl(QName curElem, SubstitutionGroupHandler subGroupHandler) {
+        XSElementDecl matchingDecl = null;
+
+        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+            int type = fElemMapType[elemIndex] ;
+            if (type == XSParticleDecl.PARTICLE_ELEMENT) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                if (matchingDecl != null) {
+                    return matchingDecl;
+                }
+            }
+        }
+
+        return null;
+    } // findMatchingDecl(QName, SubstitutionGroupHandler): Object
+    
+    boolean allowExpandedName(XSWildcardDecl wildcard, QName curElem, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar) {
+        if (wildcard.allowQName(curElem)) {
+            if (wildcard.fDisallowedSibling && findMatchingElemDecl(curElem, subGroupHandler) != null) {
+                return false;
+            }
+            if (wildcard.fDisallowedDefined && grammar != null && grammar.getElementDeclaration(curElem.localpart) != null) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    boolean matchOpenContentModel(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int curState, SchemaGrammar grammar) {
+        // if suffix mode, we should have reached a final state
+        if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
+            if (fFinalStateFlags[curState]) {
+                if (fCountingStates != null) {
+                    Occurence o = fCountingStates[curState];
+                    if (o != null && state[2] < o.minOccurs) {
+                        return false;
+                    }
+                }
+                state[3] = STATE_SUFFIX;
+            }
+            else {
+                return false;
+            }
+        }
+        if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, grammar)) {
+            return true;
+        }
+
+        return false;
+    }
 
     // This method returns the start states of the content model.
     public int[] startContentModel() {
