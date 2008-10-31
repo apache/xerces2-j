@@ -241,8 +241,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     /** True if inside DTD external subset. */
     protected boolean fInDTDExternalSubset;
 
-    /** Root element name */
-    protected final QName fRoot = new QName();
+    /** Root element node. */
+    protected Node fRoot;
 
     /** True if inside CDATA section. */
     protected boolean fInCDATASection;
@@ -386,6 +386,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         fCurrentNode = null;
         fCurrentCDATASection = null;
         fCurrentEntityDecl = null;
+        fRoot = null;
     } // dropDocumentReferences()
 
     //
@@ -434,7 +435,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         fStringBuffer.setLength (0);
 
         // reset state information
-        fRoot.clear();
+        fRoot = null;
         fInDTD = false;
         fInDTDExternalSubset = false;
         fInCDATASection = false;
@@ -1020,9 +1021,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
             // filter nodes
             if (fDOMFilter != null && !fInEntityRef) {
-                if (fRoot.rawname == null) {
+                if (fRoot == null) {
                     // fill value of the root element
-                    fRoot.setValues(element);
+                    fRoot = el;
                 } else {
                     short code = fDOMFilter.startElement(el);
                     switch (code) {
@@ -1310,7 +1311,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     }
                 }
                 setCharacterData (false);
-                if (!fRoot.equals(element) && !fInEntityRef && (fDOMFilter.getWhatToShow () & NodeFilter.SHOW_ELEMENT)!=0) {
+                if ((fCurrentNode != fRoot) && !fInEntityRef && (fDOMFilter.getWhatToShow () & NodeFilter.SHOW_ELEMENT)!=0) {
                     short code = fDOMFilter.acceptNode (fCurrentNode);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
