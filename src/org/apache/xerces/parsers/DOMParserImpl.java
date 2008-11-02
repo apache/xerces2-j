@@ -291,7 +291,7 @@ public class DOMParserImpl
         if (fSkippedElemStack != null) {
             fSkippedElemStack.removeAllElements();
         }
-        fRejectedElement.clear();
+        fRejectedElementDepth = 0;
         fFilterReject = false;
         fSchemaType = null;
 
