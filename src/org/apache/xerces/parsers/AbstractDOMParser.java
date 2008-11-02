@@ -260,10 +260,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     /** Base uri stack*/
     protected final Stack fBaseURIStack = new Stack ();
 
-    /** LSParserFilter: the QNAME of rejected element*/
-    protected final QName fRejectedElement = new QName ();
+    /** LSParserFilter: tracks the element depth within a rejected subtree. */
+    protected int fRejectedElementDepth = 0;
 
-    /** LSParserFilter: store qnames of skipped elements*/
+    /** LSParserFilter: store depth of skipped elements */
     protected Stack fSkippedElemStack = null;
 
     /** LSParserFilter: true if inside entity reference */
@@ -927,6 +927,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         }
         if (!fDeferNodeExpansion) {
             if (fFilterReject) {
+                ++fRejectedElementDepth;
                 return;
             }
             Element el = createElementNode (element);
@@ -1034,15 +1035,20 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                         case LSParserFilter.FILTER_REJECT :
                             {
                                 fFilterReject = true;
-                                fRejectedElement.setValues(element);
+                                fRejectedElementDepth = 0;
                                 return;
                             }
                         case LSParserFilter.FILTER_SKIP :
                             {
-                                fSkippedElemStack.push(element.clone());
+                                fSkippedElemStack.push(Boolean.TRUE);
                                 return;
                             }
-                        default : {}
+                        default : 
+                            {
+                                if (!fSkippedElemStack.isEmpty()) {
+                                    fSkippedElemStack.push(Boolean.FALSE);
+                                }
+                            }
                     }
                 }
             }
@@ -1299,14 +1305,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
             if (fDOMFilter != null) {
                 if (fFilterReject) {
-                    if (element.equals (fRejectedElement)) {
+                    if (fRejectedElementDepth-- == 0) {
                         fFilterReject = false;
                     }
                     return;
                 }
-                if (!fSkippedElemStack.isEmpty ()) {
-                    if (fSkippedElemStack.peek ().equals (element)) {
-                        fSkippedElemStack.pop ();
+                if (!fSkippedElemStack.isEmpty()) {
+                    if (fSkippedElemStack.pop() == Boolean.TRUE) {
                         return;
                     }
                 }
