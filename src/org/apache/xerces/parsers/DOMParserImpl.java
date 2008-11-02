@@ -64,7 +64,6 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSParserFilter;
 import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.SAXException;
 
 /**
  * This is Xerces DOM Builder class. It uses the abstract DOM
@@ -142,7 +141,7 @@ public class DOMParserImpl
     private String fSchemaLocation = null;
 	private DOMStringList fRecognizedParameters;
     
-    private final AbortHandler abortHandler = new AbortHandler();
+    private AbortHandler abortHandler = null;
 
     //
     // Constructors
@@ -899,7 +898,7 @@ public class DOMParserImpl
             }
             // Consume this exception if the user
             // issued an interrupt or an abort.
-            if (e != ABORT) {
+            if (e != Abort.INSTANCE) {
                 if (!(e instanceof XMLParseException) && fErrorHandler != null) {
                     DOMErrorImpl error = new DOMErrorImpl ();
                     error.fException = e;
@@ -953,7 +952,7 @@ public class DOMParserImpl
             }
             // Consume this exception if the user
             // issued an interrupt or an abort.
-            if (e != ABORT) {
+            if (e != Abort.INSTANCE) {
                 if (!(e instanceof XMLParseException) && fErrorHandler != null) {
                    DOMErrorImpl error = new DOMErrorImpl ();
                    error.fException = e;
@@ -1077,11 +1076,14 @@ public class DOMParserImpl
             fBusy = false;
             if (currentThread != null) {
                 abortNow = true;
+                if (abortHandler == null) {
+                    abortHandler = new AbortHandler();
+                }
                 fConfiguration.setDocumentHandler(abortHandler);
                 fConfiguration.setDTDHandler(abortHandler);
                 fConfiguration.setDTDContentModelHandler(abortHandler);
                 if (currentThread == Thread.currentThread()) {
-                    throw ABORT;
+                    throw Abort.INSTANCE;
                 }
                 currentThread.interrupt();
             }               
@@ -1115,74 +1117,74 @@ public class DOMParserImpl
         super.startElement(element, attributes, augs);
     }
     
-    private static final class AbortHandler implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler  {
+    private static final class AbortHandler implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler {
 
         private XMLDocumentSource documentSource;
         private XMLDTDContentModelSource dtdContentSource;
         private XMLDTDSource dtdSource;
 
         public void startDocument(XMLLocator locator, String encoding, NamespaceContext namespaceContext, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void xmlDecl(String version, String encoding, String standalone, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void doctypeDecl(String rootElement, String publicId, String systemId, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void comment(XMLString text, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void processingInstruction(String target, XMLString data, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startElement(QName element, XMLAttributes attributes, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startGeneralEntity(String name, XMLResourceIdentifier identifier, String encoding, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void characters(XMLString text, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endElement(QName element, Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startCDATA(Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endCDATA(Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endDocument(Augmentations augs) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void setDocumentSource(XMLDocumentSource source) {
@@ -1194,71 +1196,71 @@ public class DOMParserImpl
         }
 
         public void startDTD(XMLLocator locator, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startParameterEntity(String name, XMLResourceIdentifier identifier, String encoding, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endParameterEntity(String name, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startExternalSubset(XMLResourceIdentifier identifier, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endExternalSubset(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void elementDecl(String name, String contentModel, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startAttlist(String elementName, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue, XMLString nonNormalizedDefaultValue, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endAttlist(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void internalEntityDecl(String name, XMLString text, XMLString nonNormalizedText, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void externalEntityDecl(String name, XMLResourceIdentifier identifier, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier, String notation, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void notationDecl(String name, XMLResourceIdentifier identifier, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startConditional(short type, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void ignoredCharacters(XMLString text, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endConditional(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endDTD(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void setDTDSource(XMLDTDSource source) {
@@ -1270,43 +1272,43 @@ public class DOMParserImpl
         }
 
         public void startContentModel(String elementName, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void any(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void empty(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void startGroup(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void pcdata(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void element(String elementName, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void separator(short separator, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void occurrence(short occurrence, Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endGroup(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void endContentModel(Augmentations augmentations) throws XNIException {
-            throw ABORT;
+            throw Abort.INSTANCE;
         }
 
         public void setDTDContentModelSource(XMLDTDContentModelSource source) {
