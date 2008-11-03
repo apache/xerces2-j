@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.util;
 
 import java.util.ArrayList;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.XSModelImpl;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
@@ -34,7 +35,7 @@ import org.apache.xerces.xs.XSModel;
  * @version $Id$
  */
 public class XSGrammarPool extends XMLGrammarPoolImpl {
-    
+
     /**
      * Return an <code>XSModel</code> that represents components in
      * the schema grammars in this pool implementation.
@@ -42,6 +43,10 @@ public class XSGrammarPool extends XMLGrammarPoolImpl {
      * @return  an <code>XSModel</code> representing this schema grammar
      */
     public XSModel toXSModel() {
+    	return toXSModel(Constants.SCHEMA_VERSION_1_0);
+    }
+    
+    public XSModel toXSModel(short schemaVersion) {
         ArrayList list = new ArrayList();
         for (int i = 0; i < fGrammars.length; i++) {
             for (Entry entry = fGrammars[i] ; entry != null ; entry = entry.next) {
@@ -54,7 +59,7 @@ public class XSGrammarPool extends XMLGrammarPoolImpl {
             return new XSModelImpl(new SchemaGrammar[0]);
         }
         SchemaGrammar[] gs = (SchemaGrammar[])list.toArray(new SchemaGrammar[size]);
-        return new XSModelImpl(gs);
+        return new XSModelImpl(gs, schemaVersion);
     }
 
 } // class XSGrammarPool

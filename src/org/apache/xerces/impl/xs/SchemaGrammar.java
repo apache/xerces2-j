@@ -153,14 +153,23 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     // this class makes sure the static, built-in schema grammars
     // are immutable.
     public static class BuiltinSchemaGrammar extends SchemaGrammar {
+
+        private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
+
         /**
          * Special constructor to create the grammars for the schema namespaces
          *
          * @param grammar
          */
-        public BuiltinSchemaGrammar(int grammar) {
-            SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
-    
+        public BuiltinSchemaGrammar(int grammar, short schemaVersion) {
+            SchemaDVFactory schemaFactory;
+            if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+                schemaFactory = SchemaDVFactory.getInstance();
+            }
+            else {
+                schemaFactory = SchemaDVFactory.getInstance(EXTENDED_SCHEMA_FACTORY_CLASS);
+            }
+
             if (grammar == GRAMMAR_XS) {
                 // target namespace
                 fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
@@ -974,12 +983,22 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     } // class BuiltinAttrDecl
 
     // the grammars to hold components of the schema namespace
-    public final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS);
+    public final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS, Constants.SCHEMA_VERSION_1_0);
+    private final static BuiltinSchemaGrammar SG_SchemaNSExtended = new BuiltinSchemaGrammar(GRAMMAR_XS, Constants.SCHEMA_VERSION_1_0_EXTENDED);    
 
     public final static XSSimpleType fAnySimpleType = (XSSimpleType)SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
 
     // the grammars to hold components of the schema-instance namespace
-    public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI);
+    public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI, Constants.SCHEMA_VERSION_1_0);
+    
+    public static SchemaGrammar getS4SGrammar(short schemaVersion) {
+        if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+            return SG_SchemaNS;
+        }
+        else {
+            return SG_SchemaNSExtended;
+        }
+    }
 
     static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
         XSComplexTypeDecl[] newArray = new XSComplexTypeDecl[newSize];

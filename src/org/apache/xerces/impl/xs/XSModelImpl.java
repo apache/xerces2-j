@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
@@ -103,6 +104,10 @@ public final class XSModelImpl implements XSModel, XSNamespaceItemList {
     * @param grammars   the array of schema grammars
     */
     public XSModelImpl(SchemaGrammar[] grammars) {
+        this(grammars, Constants.SCHEMA_VERSION_1_0);
+    }
+
+    public XSModelImpl(SchemaGrammar[] grammars, short s4sVersion) {
         // copy namespaces/grammars from the array to our arrays
         int len = grammars.length;
         final int initialSize = Math.max(len+1, 5);
@@ -121,7 +126,7 @@ public final class XSModelImpl implements XSModel, XSNamespaceItemList {
         // If a schema for the schema namespace isn't included, include it here.
         if (!hasS4S) {
             namespaces[len] = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-            grammarList[len++] = SchemaGrammar.SG_SchemaNS;
+            grammarList[len++] = SchemaGrammar.getS4SGrammar(s4sVersion);
         }
 
         SchemaGrammar sg1, sg2;

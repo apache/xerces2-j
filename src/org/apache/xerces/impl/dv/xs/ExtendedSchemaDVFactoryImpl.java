@@ -21,29 +21,38 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.util.SymbolHash;
 
 /**
- * the factory to create/return built-in schema 1.0 DVs and create user-defined DVs
+ * A special factory to create/return built-in schema DVs and create user-defined DVs
+ * that includes anyAtomicType, yearMonthDuration and dayTimeDuration
  * 
  * @xerces.internal 
  *
- * @author Neeraj Bajaj, Sun Microsystems, inc.
- * @author Sandy Gao, IBM
  * @author Khaled Noaman, IBM
  *
  * @version $Id$
  */
-public class SchemaDVFactoryImpl extends BaseSchemaDVFactory {
+public class ExtendedSchemaDVFactoryImpl extends BaseSchemaDVFactory {
 
-    static final SymbolHash fBuiltInTypes = new SymbolHash();
-    
+    static SymbolHash fBuiltInTypes = new SymbolHash();
     static {
         createBuiltInTypes();
     }
-
+    
     // create all built-in types
     static void createBuiltInTypes() {
-    	createBuiltInTypes(fBuiltInTypes, XSSimpleTypeDecl.fAnySimpleType);
-    	
-        // TODO: move specific 1.0 DV implementation from base
+        final String ANYATOMICTYPE     = "anyAtomicType";
+        final String DURATION          = "duration";
+        final String YEARMONTHDURATION = "yearMonthDuration";
+        final String DAYTIMEDURATION   = "dayTimeDuration";
+
+    	createBuiltInTypes(fBuiltInTypes, XSSimpleTypeDecl.fAnyAtomicType);
+
+        // add anyAtomicType
+        fBuiltInTypes.put(ANYATOMICTYPE, XSSimpleTypeDecl.fAnyAtomicType);
+
+        // add 2 duration types
+        XSSimpleTypeDecl durationDV = (XSSimpleTypeDecl)fBuiltInTypes.get(DURATION);
+        fBuiltInTypes.put(YEARMONTHDURATION, new XSSimpleTypeDecl(durationDV, YEARMONTHDURATION, XSSimpleTypeDecl.DV_YEARMONTHDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.YEARMONTHDURATION_DT));
+        fBuiltInTypes.put(DAYTIMEDURATION, new XSSimpleTypeDecl(durationDV, DAYTIMEDURATION, XSSimpleTypeDecl.DV_DAYTIMEDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.DAYTIMEDURATION_DT));
     } //createBuiltInTypes()
 
     /**
@@ -70,5 +79,4 @@ public class SchemaDVFactoryImpl extends BaseSchemaDVFactory {
     public SymbolHash getBuiltInTypes() {
         return (SymbolHash)fBuiltInTypes.makeClone();
     }
-
-}//SchemaDVFactoryImpl
+}
