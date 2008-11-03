@@ -88,6 +88,11 @@ public class SourceValidator
     /** Generate synthetic schema annotations feature id (http://apache.org/xml/features/generate-synthetic-annotations). */
     protected static final String GENERATE_SYNTHETIC_ANNOTATIONS_ID = "http://apache.org/xml/features/generate-synthetic-annotations";
     
+    // property ids
+    
+    /** StAX support for reporting line and column numbers property id (javax.xml.stream.isSupportingLocationCoordinates). */
+    protected static final String IS_SUPPORTING_LOCATION_COORDINATES = "javax.xml.stream.isSupportingLocationCoordinates";
+    
     // default settings
     
     /** Default schema language (http://www.w3.org/2001/XMLSchema). */
@@ -530,6 +535,11 @@ public class SourceValidator
                 else if (validationSource.equals("stax")) {
                     // StAXSource
                     XMLInputFactory xif = XMLInputFactory.newInstance();
+                    try {
+                        // Enable reporting of column and line numbers in XMLStreamReaders which support it.
+                        xif.setProperty(IS_SUPPORTING_LOCATION_COORDINATES, Boolean.TRUE);
+                    }
+                    catch (IllegalArgumentException e) {}
                     for (int j = 0; j < length; ++j) {
                         String systemId = (String) instances.elementAt(j);
                         sourceValidator.validate(validator, xif, systemId, repetition, memoryUsage);
