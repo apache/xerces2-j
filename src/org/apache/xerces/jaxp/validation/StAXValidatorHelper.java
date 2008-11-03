@@ -119,6 +119,9 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     /** XML Locator wrapper for StAX. **/
     private final StAXLocationWrapper fStAXLocationWrapper = new StAXLocationWrapper();
     
+    /** On demand reader of the Location from an XMLStreamReader. **/
+    private final XMLStreamReaderLocation fXMLStreamReaderLocation = new XMLStreamReaderLocation();
+    
     /** Map for tracking entity declarations. */
     private HashMap fEntities = null;
     
@@ -203,6 +206,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                 // Release references to application objects
                 fCurrentEvent = null;
                 fStAXLocationWrapper.setLocation(null);
+                fXMLStreamReaderLocation.setXMLStreamReader(null);
                 if (fStAXValidatorHandler != null) {
                     fStAXValidatorHandler.setStAXResult(null);
                 }
@@ -350,7 +354,8 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                     throw new SAXException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
                             "StAXIllegalInitialState", null));
                 }
-                setup(reader.getLocation(), result, Boolean.TRUE.equals(reader.getProperty(STRING_INTERNING)));
+                fXMLStreamReaderLocation.setXMLStreamReader(reader);
+                setup(fXMLStreamReaderLocation, result, Boolean.TRUE.equals(reader.getProperty(STRING_INTERNING)));
                 fSchemaValidator.startDocument(fStAXLocationWrapper, null, fNamespaceContext, null);
                 do {
                     switch (eventType) {
@@ -629,6 +634,64 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                     fSchemaValidator.characters(fTempString, null);
                 }
             }
+        }
+    }
+    
+    /**
+     * On demand reader of the Location from an XMLStreamReader.
+     */
+    static final class XMLStreamReaderLocation implements Location {
+        
+        private XMLStreamReader reader;
+        
+        public XMLStreamReaderLocation() {}
+        
+        public int getCharacterOffset() {
+            Location loc = getLocation();
+            if (loc != null) {
+                return loc.getCharacterOffset();
+            }
+            return -1;
+        }
+        
+        public int getColumnNumber() {
+            Location loc = getLocation();
+            if (loc != null) {
+                return loc.getColumnNumber();
+            }
+            return -1;
+        }
+        
+        public int getLineNumber() {
+            Location loc = getLocation();
+            if (loc != null) {
+                return loc.getLineNumber();
+            }
+            return -1;
+        }
+        
+        public String getPublicId() {
+            Location loc = getLocation();
+            if (loc != null) {
+                return loc.getPublicId();
+            }
+            return null;
+        }
+        
+        public String getSystemId() {
+            Location loc = getLocation();
+            if (loc != null) {
+                return loc.getSystemId();
+            } 
+            return null;
+        }
+        
+        public void setXMLStreamReader(XMLStreamReader reader) {
+            this.reader = reader;
+        }
+        
+        private Location getLocation() {
+            return reader != null ? reader.getLocation() : null;
         }
     }
 
