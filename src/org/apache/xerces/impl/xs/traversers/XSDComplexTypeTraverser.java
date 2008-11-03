@@ -1186,7 +1186,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (existingAttrUse == null) {
                 
                 String idName = toAttrGrp.addAttributeUse(oneAttrUse);
-                if (idName != null) {
+                // Only applies to XML Schema 1.0
+                if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.5",
                             new Object[]{typeName, idName, oneAttrUse.fAttrDecl.getName()},
                             elem);

@@ -644,7 +644,8 @@ abstract class XSDAbstractTraverser {
                 if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.getNamespace(),
                         tempAttrUse.fAttrDecl.getName())==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
-                    if (idName != null) {
+                    // Only applies to XML Schema 1.0
+                    if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
                         String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
                         String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                         reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName(), idName}, child);
@@ -670,7 +671,8 @@ abstract class XSDAbstractTraverser {
                     if (existingAttrUse == attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
                             oneAttrUse.fAttrDecl.getName())) {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
-                        if (idName != null) {
+                        // Only applies to XML Schema 1.0
+                        if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
                             String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
                             String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                             reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName(), idName}, child);

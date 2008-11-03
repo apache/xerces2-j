@@ -524,8 +524,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
         }
         
+        // Only applies to XML Schema 1.0
+        //
         // 5 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}.
-        if (element.fDefault != null) {
+        if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && element.fDefault != null) {
             if ((elementType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE &&
                     ((XSSimpleType)elementType).isIDType()) ||
                     (elementType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&

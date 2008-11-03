@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -176,7 +177,9 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             }
             
             // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
-            if (((XSSimpleType)attribute.getTypeDefinition()).isIDType() ) {
+            //
+            // Only applies to XML Schema 1.0
+            if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && ((XSSimpleType)attribute.getTypeDefinition()).isIDType() ) {
                 reportSchemaError ("a-props-correct.3", new Object[]{nameAtt}, attrDecl);
             }
             
@@ -394,7 +397,9 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
         
         // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
-        if (attDefault != null) {
+        //
+        // Only applies to XML Schema 1.0
+        if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && attDefault != null) {
             if (attrType.isIDType() ) {
                 reportSchemaError ("a-props-correct.3", new Object[]{nameAtt}, attrDecl);
             }

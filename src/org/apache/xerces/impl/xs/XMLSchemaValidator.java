@@ -2871,7 +2871,10 @@ public class XMLSchemaValidator
                 } else {
                     // 5 Let [Definition:]  the wild IDs be the set of all attribute information item to which clause 3.2 applied and whose validation resulted in a context-determined declaration of mustFind or no context-determined declaration at all, and whose [local name] and [namespace name] resolve (as defined by QName resolution (Instance) (3.15.4)) to an attribute declaration whose {type definition} is or is derived from ID. Then all of the following must be true:
                     // 5.1 There must be no more than one item in wild IDs.
-                    if (currDecl.fType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE
+                	//
+                	// Only applies to XML Schema 1.0
+                    if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1
+                        && currDecl.fType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE
                         && ((XSSimpleType) currDecl.fType).isIDType()) {
                         if (wildcardIDName != null) {
                             reportSchemaError(
@@ -2887,6 +2890,9 @@ public class XMLSchemaValidator
         } // end of for (all attributes)
 
         // 5.2 If wild IDs is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
+        //
+        // Only applies to XML Schema 1.0
+        // Since we do not set the wildcardIDName if it's 1.1, no need to explicitly check for the version
         if (!isSimple && attrGrp.fIDAttrName != null && wildcardIDName != null) {
             reportSchemaError(
                 "cvc-complex-type.5.2",
