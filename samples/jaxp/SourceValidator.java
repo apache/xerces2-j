@@ -23,9 +23,12 @@ import java.util.Vector;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -42,19 +45,19 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
- * <p>A sample demonstrating how to use the JAXP 1.3 Validation API
+ * <p>A sample demonstrating how to use the JAXP 1.4 Validation API
  * to create a validator and use the validator to validate input
- * from SAX, DOM or a stream. The output of this program shows the 
- * time spent executing the Validator.validate(Source) method.</p>
+ * from SAX, DOM, StAX or a stream. The output of this program shows 
+ * the time spent executing the Validator.validate(Source) method.</p>
  * 
  * <p>This class is useful as a "poor-man's" performance tester to
- * compare the speed of various JAXP 1.3 validators with different
+ * compare the speed of various JAXP 1.4 validators with different
  * input sources. However, it is important to note that the first 
  * validation time of a validator will include both VM class load time 
  * and validator initialization that would not be present in subsequent
  * validations with the same document. Also note that when the source for
- * validation is SAX or a stream, the validation time will also include
- * the time to parse the document, whereas the DOM validation is
+ * validation is SAX, StAX or a stream, the validation time will also 
+ * include the time to parse the document, whereas the DOM validation is
  * completely in memory.</p>
  * 
  * <p><strong>Note:</strong> The results produced by this program
@@ -162,6 +165,43 @@ public class SourceValidator
 
         }
     } // validate(Validator,Source,String,int,boolean)
+    
+    public void validate(Validator validator, 
+            XMLInputFactory xif, String systemId,
+            int repetitions, boolean memoryUsage) {
+        try {
+            Source source = new StreamSource(systemId);
+            long timeBefore = System.currentTimeMillis();
+            long memoryBefore = Runtime.getRuntime().freeMemory();
+            for (int j = 0; j < repetitions; ++j) {
+                XMLStreamReader reader = xif.createXMLStreamReader(source);
+                validator.validate(new StAXSource(reader));
+                reader.close();
+            }
+            long memoryAfter = Runtime.getRuntime().freeMemory();
+            long timeAfter = System.currentTimeMillis();
+
+            long time = timeAfter - timeBefore;
+            long memory = memoryUsage
+                        ? memoryBefore - memoryAfter : Long.MIN_VALUE;
+            printResults(fOut, systemId, time, memory, repetitions);
+        }
+        catch (SAXParseException e) {
+            // ignore
+        }
+        catch (Exception e) {
+            System.err.println("error: Parse error occurred - "+e.getMessage());
+            Exception se = e;
+            if (e instanceof SAXException) {
+                se = ((SAXException)e).getException();
+            }
+            if (se != null)
+              se.printStackTrace(System.err);
+            else
+              e.printStackTrace(System.err);
+
+        }
+    } // validate(Validator,XMLInputFactory,String,int,boolean)
     
     /** Prints the results. */
     public void printResults(PrintWriter out, String uri, long time,
@@ -322,7 +362,7 @@ public class SourceValidator
                 }
                 if (arg.equals("-vs")) {
                     if (i + 1 < argv.length && !(arg = argv[i + 1]).startsWith("-")) {
-                        if (arg.equals("sax") || arg.equals("dom") || arg.equals("stream")) {
+                        if (arg.equals("sax") || arg.equals("dom") || arg.equals("stax") || arg.equals("stream")) {
                             validationSource = arg;
                         }
                         else {
@@ -466,6 +506,7 @@ public class SourceValidator
                 if (validationSource.equals("sax")) {
                     // SAXSource
                     XMLReader reader = XMLReaderFactory.createXMLReader();
+                    reader.setErrorHandler(sourceValidator);
                     for (int j = 0; j < length; ++j) {
                         String systemId = (String) instances.elementAt(j);
                         SAXSource source = new SAXSource(reader, new InputSource(systemId));
@@ -484,6 +525,14 @@ public class SourceValidator
                         DOMSource source = new DOMSource(doc);
                         source.setSystemId(systemId);
                         sourceValidator.validate(validator, source, systemId, repetition, memoryUsage);
+                    }
+                }
+                else if (validationSource.equals("stax")) {
+                    // StAXSource
+                    XMLInputFactory xif = XMLInputFactory.newInstance();
+                    for (int j = 0; j < length; ++j) {
+                        String systemId = (String) instances.elementAt(j);
+                        sourceValidator.validate(validator, xif, systemId, repetition, memoryUsage);
                     }
                 }
                 else {
@@ -526,7 +575,7 @@ public class SourceValidator
         System.err.println("  -x number   Select number of repetitions.");
         System.err.println("  -a uri ...  Provide a list of schema documents");
         System.err.println("  -i uri ...  Provide a list of instance documents to validate");
-        System.err.println("  -vs source  Select validation source (sax|dom|stream)");
+        System.err.println("  -vs source  Select validation source (sax|dom|stax|stream)");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
