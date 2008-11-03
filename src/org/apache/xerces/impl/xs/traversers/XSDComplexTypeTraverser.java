@@ -639,8 +639,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // Traverse any attributes
             // -----------------------------------------------------------------------
             if (attrOrAssertNode != null) {
-            	if (isAttrOrAttrGroup(attrOrAssertNode)) {
-            		Element node=traverseAttrsAndAttrGrps(attrOrAssertNode,fAttrGrp,
+                if (isAttrOrAttrGroup(attrOrAssertNode)) {
+                    Element node=traverseAttrsAndAttrGrps(attrOrAssertNode,fAttrGrp,
                             schemaDoc,grammar,fComplexTypeDecl);
 
                     if (node != null) {
@@ -658,11 +658,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                         }
                     }
                 }
-            	else if (isAssert(attrOrAssertNode)) {
+                else if (isAssert(attrOrAssertNode)) {
                     traverseAsserts(attrOrAssertNode, schemaDoc, grammar,
                             fComplexTypeDecl);
-            	}
-            	else  {
+                }
+                else  {
                     fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                     throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
@@ -711,7 +711,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                         } else {
                             // a non assert element after attributes is an error
                             fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
-                            fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);                        	
+                            fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                             throw new ComplexTypeRecoverableError(
                                     "s4s-elt-invalid-content.1",
                                     new Object[] { fName,
@@ -1472,7 +1472,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     traverseAsserts(sibling, schemaDoc, grammar, enclosingCT);
                 } else {
                     // a non assert element after assert is an error
-                	fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                    fAttrChecker.returnAttrArray(attrValues, schemaDoc);
                     throw new ComplexTypeRecoverableError(
                             "s4s-elt-invalid-content.1", new Object[] { fName,
                                     DOMUtil.getLocalName(sibling) }, sibling);
@@ -1579,7 +1579,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
     
     private void contentRestore() {
-    	fAssertions = (XSAssertImpl[])fGlobalStore[--fGlobalStorePos];
+        fAssertions = (XSAssertImpl[])fGlobalStore[--fGlobalStorePos];
         fOpenContent = (XSOpenContentDecl)fGlobalStore[--fGlobalStorePos];
         fAnnotations = (XSAnnotationImpl [])fGlobalStore[--fGlobalStorePos];
         fXSSimpleType = (XSSimpleType)fGlobalStore[--fGlobalStorePos];
@@ -1627,7 +1627,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fAssertions = new XSAssertImpl[1];
         }
         else {
-        	XSAssertImpl [] tempArray = new XSAssertImpl[fAssertions.length + 1];
+            XSAssertImpl [] tempArray = new XSAssertImpl[fAssertions.length + 1];
             System.arraycopy(fAssertions, 0, tempArray, 0, fAssertions.length);
             fAssertions = tempArray;
         }

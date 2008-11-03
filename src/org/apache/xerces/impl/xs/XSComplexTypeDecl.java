@@ -173,7 +173,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     }
 
     public void setAssertions(XSObjectListImpl assertions) {
-    	fAssertions = assertions;
+        fAssertions = assertions;
     }
 
     public XSCMValidator getContentModel(CMBuilder cmBuilder) {
@@ -567,7 +567,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         }
         fAnnotations = null;
         if (fAssertions != null) {
-        	fAssertions.clear();
+            fAssertions.clear();
         }
         fAssertions = null;
     }
