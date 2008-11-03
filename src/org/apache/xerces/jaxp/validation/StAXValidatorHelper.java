@@ -75,6 +75,9 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     
     // property identifiers
     
+    /** Property identifier: string interning. */
+    private static final String STRING_INTERNING = "javax.xml.stream.isInterning";
+    
     /** Property identifier: error reporter. */
     private static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
@@ -118,6 +121,9 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     
     /** Map for tracking entity declarations. */
     private HashMap fEntities = null;
+    
+    /** Flag used to track whether XML names and Namespace URIs have been internalized. */
+    private boolean fStringsInternalized = false;
     
     /** Validator helper for XMLStreamReaders. **/
     private StreamHelper fStreamHelper;
@@ -244,9 +250,22 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     
     /** Fills in a QName object. */
     final void fillQName(QName toFill, String uri, String localpart, String prefix) {
-        uri = (uri != null && uri.length() > 0) ? fSymbolTable.addSymbol(uri) : null;
-        localpart = (localpart != null) ? fSymbolTable.addSymbol(localpart) : XMLSymbols.EMPTY_STRING;
-        prefix = (prefix != null && prefix.length() > 0) ? fSymbolTable.addSymbol(prefix) : XMLSymbols.EMPTY_STRING;
+        if (!fStringsInternalized) {
+            uri = (uri != null && uri.length() > 0) ? fSymbolTable.addSymbol(uri) : null;
+            localpart = (localpart != null) ? fSymbolTable.addSymbol(localpart) : XMLSymbols.EMPTY_STRING;
+            prefix = (prefix != null && prefix.length() > 0) ? fSymbolTable.addSymbol(prefix) : XMLSymbols.EMPTY_STRING;
+        }
+        else {
+            if (uri != null && uri.length() == 0) {
+                uri = null;
+            }
+            if (localpart == null) {
+                localpart = XMLSymbols.EMPTY_STRING;
+            }
+            if (prefix == null) {
+                prefix = XMLSymbols.EMPTY_STRING;
+            }
+        }
         String raw = localpart;
         if (prefix != XMLSymbols.EMPTY_STRING) {
             fStringBuffer.clear();
@@ -259,7 +278,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     }
     
     /** Setup for validation. **/
-    final void setup(Location location, StAXResult result) {
+    final void setup(Location location, StAXResult result, boolean stringsInternalized) {
         fDepth = 0;
         fComponentManager.reset();
         setupStAXResultHandler(result);
@@ -270,6 +289,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
         }
         fStAXLocationWrapper.setLocation(location);
         fErrorReporter.setDocumentLocator(fStAXLocationWrapper);
+        fStringsInternalized = stringsInternalized;
     }
     
     /** Copies entity declarations into a hash map. */
@@ -330,7 +350,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                     throw new SAXException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
                             "StAXIllegalInitialState", null));
                 }
-                setup(reader.getLocation(), result);
+                setup(reader.getLocation(), result, Boolean.TRUE.equals(reader.getProperty(STRING_INTERNING)));
                 fSchemaValidator.startDocument(fStAXLocationWrapper, null, fNamespaceContext, null);
                 do {
                     switch (eventType) {
@@ -458,7 +478,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                     throw new SAXException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
                             "StAXIllegalInitialState", null));
                 }
-                setup(null, result);
+                setup(null, result, false);
                 fSchemaValidator.startDocument(fStAXLocationWrapper, null, fNamespaceContext, null);
                 loop : while (reader.hasNext()) {
                     fCurrentEvent = reader.nextEvent();
