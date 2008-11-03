@@ -1212,6 +1212,8 @@ public class XSAttributeChecker {
         // xpathDefaultNamespace = (anyURI | (##defaultNamespace | ##targetNamespace | ##local))
         attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
         fEleAttrs11MapL.put(SchemaSymbols.ELT_ASSERT, attrList);
+        // for element "assertion" - local // mukul
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_ASSERTION, attrList);
 
         // for element "defaultOpenContent" - global
         attrList = Container.getContainer(3);

@@ -114,5 +114,10 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
      * An open content
      */
     public XSOpenContent getOpenContent();
+    
+    /**
+     * A sequence of [assertions] or an empty <code>XSObjectList</code>.
+     */
+    public XSObjectList getAssertions();
 
 }

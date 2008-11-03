@@ -22,6 +22,8 @@ import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+import org.apache.xerces.impl.xpath.XPath20;
+import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -33,6 +35,8 @@ import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.impl.xs.assertion.Test;
+import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
@@ -67,7 +71,7 @@ import org.w3c.dom.Element;
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
     // size of stack to hold globals:
-    private final static int GLOBAL_NUM = 12;
+    private final static int GLOBAL_NUM = 13;
     
     // globals for building XSComplexTypeDecls
     private String fName = null;
@@ -84,6 +88,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private XSComplexTypeDecl fComplexTypeDecl = null;
     private XSAnnotationImpl [] fAnnotations = null;
     private XSOpenContentDecl fOpenContent = null;
+    private XSAssertImpl[] fAssertions = null;
     
     private XSParticleDecl fEmptyParticle = null;
     
@@ -270,6 +275,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fIsAbstract = (abstractAtt != null && abstractAtt.booleanValue());
         fAnnotations = null;
         fOpenContent = null;
+        fAssertions = null;
         
         Element child = null;
         
@@ -383,6 +389,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fDerivedBy, fFinal, fBlock, fContentType, fIsAbstract,
                 fAttrGrp, fXSSimpleType, fParticle, new XSObjectListImpl(fAnnotations, 
                         fAnnotations == null? 0 : fAnnotations.length), fOpenContent);
+        fComplexTypeDecl.setAssertions(fAssertions != null 
+                ? new XSObjectListImpl(fAssertions, fAssertions.length) : null);
         return fComplexTypeDecl;
     }
     
@@ -602,14 +610,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // -----------------------------------------------------------------------
             // Traverse any facets
             // -----------------------------------------------------------------------
-            Element attrNode = null;
+            Element attrOrAssertNode = null;
             XSFacets facetData = null;
             short presentFacets = 0 ;
             short fixedFacets = 0 ;
             
             if (simpleContent!=null) {
                 FacetInfo fi = traverseFacets(simpleContent, baseValidator, schemaDoc);
-                attrNode = fi.nodeAfterFacets;
+                attrOrAssertNode = fi.nodeAfterFacets;
                 facetData = fi.facetdata;
                 presentFacets = fi.fPresentFacets;
                 fixedFacets = fi.fFixedFacets;
@@ -630,22 +638,36 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // -----------------------------------------------------------------------
             // Traverse any attributes
             // -----------------------------------------------------------------------
-            if (attrNode != null) {
-                if (!isAttrOrAttrGroup(attrNode)) {
-                    fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
-                    fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
-                    throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
-                            new Object[]{fName,DOMUtil.getLocalName(attrNode)},
-                            attrNode);
+            if (attrOrAssertNode != null) {
+            	if (isAttrOrAttrGroup(attrOrAssertNode)) {
+            		Element node=traverseAttrsAndAttrGrps(attrOrAssertNode,fAttrGrp,
+                            schemaDoc,grammar,fComplexTypeDecl);
+
+                    if (node != null) {
+                        if (isAssert(node)) {
+                            traverseAsserts(node, schemaDoc, grammar,
+                                    fComplexTypeDecl);
+                        } else {
+                            // a non assert element after attributes is an error
+                            fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
+                            fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
+                            throw new ComplexTypeRecoverableError(
+                                    "s4s-elt-invalid-content.1",
+                                    new Object[] { fName,
+                                            DOMUtil.getLocalName(node) }, node);
+                        }
+                    }
                 }
-                Element node=traverseAttrsAndAttrGrps(attrNode,fAttrGrp,
-                        schemaDoc,grammar,fComplexTypeDecl);
-                if (node!=null) {
+            	else if (isAssert(attrOrAssertNode)) {
+                    traverseAsserts(attrOrAssertNode, schemaDoc, grammar,
+                            fComplexTypeDecl);
+            	}
+            	else  {
                     fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                     throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
-                            new Object[]{fName,DOMUtil.getLocalName(node)},
-                            node);
+                            new Object[]{fName,DOMUtil.getLocalName(attrOrAssertNode)},
+                            attrOrAssertNode);
                 }
             }
             
@@ -664,7 +686,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                 fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                 throw new ComplexTypeRecoverableError((String)errArgs[errArgs.length-1],
-                        errArgs, attrNode);
+                        errArgs, attrOrAssertNode);
             }
             
         }
@@ -677,23 +699,36 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 // -----------------------------------------------------------------------
                 // Traverse any attributes
                 // -----------------------------------------------------------------------
-                Element attrNode = simpleContent;
-                if (!isAttrOrAttrGroup(attrNode)) {
-                    fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
-                    fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
-                    throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
-                            new Object[]{fName,DOMUtil.getLocalName(attrNode)},
-                            attrNode);
+                Element attrOrAssertNode = simpleContent;
+                if (isAttrOrAttrGroup(attrOrAssertNode)) {
+                    Element node = traverseAttrsAndAttrGrps(attrOrAssertNode,
+                            fAttrGrp, schemaDoc, grammar, fComplexTypeDecl);
+
+                    if (node != null) {
+                        if (isAssert(node)) {
+                            traverseAsserts(node, schemaDoc, grammar,
+                                    fComplexTypeDecl);
+                        } else {
+                            // a non assert element after attributes is an error
+                            fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
+                            fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);                        	
+                            throw new ComplexTypeRecoverableError(
+                                    "s4s-elt-invalid-content.1",
+                                    new Object[] { fName,
+                                            DOMUtil.getLocalName(node) }, node);
+                        }
+                    }
                 }
-                Element node=traverseAttrsAndAttrGrps(attrNode,fAttrGrp,
-                        schemaDoc,grammar,fComplexTypeDecl);
-                
-                if (node!=null) {
+                else if (isAssert(attrOrAssertNode)) {
+                    traverseAsserts(attrOrAssertNode, schemaDoc, grammar,
+                            fComplexTypeDecl);
+                }
+                else {
                     fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                     throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
-                            new Object[]{fName,DOMUtil.getLocalName(node)},
-                            node);
+                            new Object[]{fName,DOMUtil.getLocalName(attrOrAssertNode)},
+                            attrOrAssertNode);
                 }
                 // Remove prohibited uses.   Should be done prior to any merge.
                 fAttrGrp.removeProhibitedAttrs();
@@ -1188,7 +1223,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             XSDocumentInfo schemaDoc, SchemaGrammar grammar)
     throws ComplexTypeRecoverableError {
         
-        Element attrNode = null;
+        Element attrOrAssertNode = null;
         XSParticleDecl particle = null;
         
         // whether there is a particle with empty model group
@@ -1213,7 +1248,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 
                 particle = fSchemaHandler.fGroupTraverser.traverseLocal(complexContentChild,
                         schemaDoc, grammar);
-                attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+                attrOrAssertNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 particle = traverseSequence(complexContentChild,schemaDoc,grammar,
@@ -1223,7 +1258,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     if (group.fParticleCount == 0)
                         emptyParticle = true;
                 }
-                attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+                attrOrAssertNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 particle = traverseChoice(complexContentChild,schemaDoc,grammar,
@@ -1233,7 +1268,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     if (group.fParticleCount == 0)
                         emptyParticle = true;
                 }
-                attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+                attrOrAssertNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(complexContentChild,schemaDoc,grammar,
@@ -1243,11 +1278,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     if (group.fParticleCount == 0)
                         emptyParticle = true;
                 }
-                attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+                attrOrAssertNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else {
                 // Should be attributes here - will check below...
-                attrNode = complexContentChild;
+                attrOrAssertNode = complexContentChild;
             }
         }
         
@@ -1300,31 +1335,42 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // -------------------------------------------------------------
         // Now, process attributes
         // -------------------------------------------------------------
-        if (attrNode != null) {
-            if (!isAttrOrAttrGroup(attrNode)) {
-                throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
-                        new Object[]{fName,DOMUtil.getLocalName(attrNode)},
-                        attrNode);
+        if (attrOrAssertNode != null) {
+            if (isAttrOrAttrGroup(attrOrAssertNode)) {
+                Element node = traverseAttrsAndAttrGrps(attrOrAssertNode,
+                        fAttrGrp, schemaDoc, grammar, fComplexTypeDecl);
+
+                // Only remove prohibited attribute uses if this isn't a derived type
+                // Derivation-specific code worries about this elsewhere
+                if (!isDerivation) {
+                    fAttrGrp.removeProhibitedAttrs();
+                }
+                
+                if (node != null) {
+                    if (isAssert(node)) {
+                        traverseAsserts(node, schemaDoc, grammar,
+                                fComplexTypeDecl);
+                    } else {
+                        // a non assert element after attributes is an error
+                        throw new ComplexTypeRecoverableError(
+                                "s4s-elt-invalid-content.1", new Object[] {
+                                        fName, DOMUtil.getLocalName(node) },
+                                node);
+                    }
+                }
             }
-            Element node =
-                traverseAttrsAndAttrGrps(attrNode,fAttrGrp,schemaDoc,grammar,fComplexTypeDecl);
-            if (node!=null) {
-                throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
-                        new Object[]{fName,DOMUtil.getLocalName(node)},
-                        node);
+            else if (isAssert(attrOrAssertNode)) {
+                traverseAsserts(attrOrAssertNode, schemaDoc, grammar,
+                        fComplexTypeDecl);
             }
-            // Only remove prohibited attribute uses if this isn't a derived type
-            // Derivation-specific code worries about this elsewhere
-            if (!isDerivation) {
-                fAttrGrp.removeProhibitedAttrs();
+            else {
+                throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
+                        new Object[]{fName,DOMUtil.getLocalName(attrOrAssertNode)},
+                        attrOrAssertNode);
             }
         }
-        
-        
-        
     } // end processComplexContent
-    
-    
+
     private boolean isAttrOrAttrGroup(Element e) {
         String elementName = DOMUtil.getLocalName(e);
         
@@ -1335,14 +1381,112 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         else
             return false;
     }
-    
+
+    private boolean isAssert(Element e) {
+        String elementName = DOMUtil.getLocalName(e);
+        return elementName.equals(SchemaSymbols.ELT_ASSERT);
+    }
+
     private void traverseSimpleContentDecl(Element simpleContentDecl) {
     }
     
     private void traverseComplexContentDecl(Element complexContentDecl,
             boolean mixedOnComplexTypeDecl) {
     }
-    
+
+    /*
+     * traversal support, for XML Schema 1.1 'assertions'.
+     */
+    private void traverseAsserts(Element assertElement,
+            XSDocumentInfo schemaDoc, SchemaGrammar grammar,
+            XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
+
+        Object[] attrValues = fAttrChecker.checkAttributes(assertElement,
+                false, schemaDoc);
+        String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
+        String defaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+
+        if (test != null) {
+            // get 'annotation'
+            Element childNode = DOMUtil.getFirstChildElement(assertElement);
+            XSAnnotationImpl annotation = null;
+
+            // first child could be an annotation
+            if (childNode != null
+                    && DOMUtil.getLocalName(childNode).equals(
+                            SchemaSymbols.ELT_ANNOTATION)) {
+                annotation = traverseAnnotationDecl(childNode, attrValues,
+                        false, schemaDoc);
+                // now move on to the next child element
+                childNode = DOMUtil.getNextSiblingElement(childNode);
+
+                if (childNode != null) {
+                    // it's an error to have something after the
+                    // annotation, in 'assert'
+                    reportSchemaError("xxx-define this", new Object[] { DOMUtil
+                            .getLocalName(childNode) }, childNode);
+                }
+            } else {
+                String text = DOMUtil.getSyntheticAnnotation(childNode);
+                if (text != null) {
+                    annotation = traverseSyntheticAnnotation(childNode, text,
+                            attrValues, false, schemaDoc);
+                }
+            }
+
+            XSObjectList annotations = null;
+            if (annotation != null) {
+                annotations = new XSObjectListImpl();
+                ((XSObjectListImpl) annotations).add(annotation);
+            } else {
+                // if no annotations are present add an empty list to
+                // the assertion
+                annotations = XSObjectListImpl.EMPTY_LIST;
+            }
+
+            XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations);
+            Test testExpr = null;
+            // set the test attribute value
+            try {
+                testExpr = new Test(new XPath20(test, fSymbolTable,
+                        schemaDoc.fNamespaceSupport), assertImpl);
+            } catch (XPathException e) {
+                // if the xpath is invalid create a Test without an
+                // expression
+                reportSchemaError(e.getKey(), new Object[] { test },
+                        assertElement);
+                testExpr = new Test(null, assertImpl);
+            }
+
+            assertImpl.setTest(testExpr);
+            assertImpl.setXPathDefauleNamespace(defaultNamespace);
+
+            addAssertion(assertImpl);
+
+            Element sibling = DOMUtil.getNextSiblingElement(assertElement);
+            // if there is sibling element
+            if (sibling != null) {
+                if (sibling.getLocalName().equals(SchemaSymbols.ELT_ASSERT)) {
+                    // traverse sibling assertion elements recursively, till
+                    // none is found
+                    traverseAsserts(sibling, schemaDoc, grammar, enclosingCT);
+                } else {
+                    // a non assert element after assert is an error
+                	fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                    throw new ComplexTypeRecoverableError(
+                            "s4s-elt-invalid-content.1", new Object[] { fName,
+                                    DOMUtil.getLocalName(sibling) }, sibling);
+                }
+            }
+        } else {
+            // 'test' attribute is mandatory in assert element
+            reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil
+                    .getLocalName(assertElement) }, assertElement);
+        }
+
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+    }
+
     /*
      * Generate a name for an anonymous type
      */
@@ -1431,9 +1575,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fGlobalStore[fGlobalStorePos++] = fXSSimpleType;
         fGlobalStore[fGlobalStorePos++] = fAnnotations;
         fGlobalStore[fGlobalStorePos++] = fOpenContent;
+        fGlobalStore[fGlobalStorePos++] = fAssertions;
     }
     
     private void contentRestore() {
+    	fAssertions = (XSAssertImpl[])fGlobalStore[--fGlobalStorePos];
         fOpenContent = (XSOpenContentDecl)fGlobalStore[--fGlobalStorePos];
         fAnnotations = (XSAnnotationImpl [])fGlobalStore[--fGlobalStorePos];
         fXSSimpleType = (XSSimpleType)fGlobalStore[--fGlobalStorePos];
@@ -1467,5 +1613,24 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fAnnotations = tempArray;
         }
         fAnnotations[fAnnotations.length-1] = annotation;
+    }
+    
+    private void addAssertion(XSAssertImpl assertion) {
+        if (assertion == null) {
+            return;
+        }
+        // it isn't very likely that there will be more than one annotation
+        // in a complexType decl.  This saves us fromhaving to push/pop
+        // one more object from the fGlobalStore, and that's bound
+        // to be a savings for most applications
+        if (fAssertions == null) {
+            fAssertions = new XSAssertImpl[1];
+        }
+        else {
+        	XSAssertImpl [] tempArray = new XSAssertImpl[fAssertions.length + 1];
+            System.arraycopy(fAssertions, 0, tempArray, 0, fAssertions.length);
+            fAssertions = tempArray;
+        }
+        fAssertions[fAssertions.length-1] = assertion;
     }
 }

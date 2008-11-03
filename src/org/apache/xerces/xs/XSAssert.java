@@ -19,7 +19,7 @@ package org.apache.xerces.xs;
 
 /**
  * This interface represents the XML Schema assertion component. Assertion
- * components were first introduced in the XML schema structures 1.1
+ * components were first introduced in the XML Schema structures 1.1
  * specification, as a means of constraining the existence and values of 
  * related elements and attributes.
  * 

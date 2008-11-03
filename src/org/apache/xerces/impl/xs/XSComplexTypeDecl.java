@@ -95,6 +95,9 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
 
     // the open content
     XSOpenContentDecl fOpenContent = null;
+    
+    // list of assertions affiliated with this type
+    XSObjectListImpl fAssertions = null;
 
     // DOM Level 3 TypeInfo Derivation Method constants
     static final int DERIVATION_ANY = 0;
@@ -167,6 +170,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     }
     public void setIsAnonymous() {
         fMiscFlags |= CT_IS_ANONYMOUS;
+    }
+
+    public void setAssertions(XSObjectListImpl assertions) {
+    	fAssertions = assertions;
     }
 
     public XSCMValidator getContentModel(CMBuilder cmBuilder) {
@@ -559,6 +566,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
             fAnnotations.clear();
         }
         fAnnotations = null;
+        if (fAssertions != null) {
+        	fAssertions.clear();
+        }
+        fAssertions = null;
     }
 
     /**
@@ -736,6 +747,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
 
     public XSOpenContent getOpenContent() {
         return fOpenContent;
+    }
+    
+    public XSObjectList getAssertions() {
+        return (fAssertions != null) ? fAssertions : XSObjectListImpl.EMPTY_LIST;
     }
 
 } // class XSComplexTypeDecl

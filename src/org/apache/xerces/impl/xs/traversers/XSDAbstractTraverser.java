@@ -376,8 +376,8 @@ abstract class XSDAbstractTraverser {
                     reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                 }
             }
-            // process 'assert' facet. introduced in XML Schema 1.1
-            else if (facet.equals(SchemaSymbols.ELT_ASSERT)) {                
+            // process 'assertion' facet. introduced in XML Schema 1.1
+            else if (facet.equals(SchemaSymbols.ELT_ASSERTION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
                 String test = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
                 String defaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
