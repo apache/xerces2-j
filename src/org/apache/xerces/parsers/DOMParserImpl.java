@@ -58,12 +58,14 @@ import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMStringList;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSParserFilter;
 import org.w3c.dom.ls.LSResourceResolver;
+import org.w3c.dom.traversal.NodeFilter;
 
 /**
  * This is Xerces DOM Builder class. It uses the abstract DOM
@@ -125,22 +127,23 @@ public class DOMParserImpl
 
     /** Include namespace declaration attributes in the document. **/
     protected boolean fNamespaceDeclarations = true;
-    
+
     // REVISIT: this value should be null by default and should be set during creation of
     //          LSParser
     protected String fSchemaType = null;
 
     protected boolean fBusy = false;
-    
+
     private boolean abortNow = false;
-    
+
     private Thread currentThread;
 
     protected final static boolean DEBUG = false;
 
     private String fSchemaLocation = null;
-	private DOMStringList fRecognizedParameters;
-    
+    private DOMStringList fRecognizedParameters;
+
+    private boolean fNullFilterInUse = false;
     private AbortHandler abortHandler = null;
 
     //
@@ -287,6 +290,10 @@ public class DOMParserImpl
             fConfiguration.getFeature(Constants.DOM_NAMESPACE_DECLARATIONS);
                 
         // DOM Filter
+        if (fNullFilterInUse) {
+            fDOMFilter = null;
+            fNullFilterInUse = false;
+        }
         if (fSkippedElemStack != null) {
             fSkippedElemStack.removeAllElements();
         }
@@ -304,33 +311,42 @@ public class DOMParserImpl
         return this;
     }
 
-
     /**
-     *  When the application provides a filter, the parser will call out to
-     * the filter at the completion of the construction of each
-     * <code>Element</code> node. The filter implementation can choose to
-     * remove the element from the document being constructed (unless the
-     * element is the document element) or to terminate the parse early. If
-     * the document is being validated when it's loaded the validation
-     * happens before the filter is called.
+     * When a filter is provided, the implementation will call out to the 
+     * filter as it is constructing the DOM tree structure. The filter can 
+     * choose to remove elements from the document being constructed, or to 
+     * terminate the parsing early. 
+     * <br> The filter is invoked after the operations requested by the 
+     * <code>DOMConfiguration</code> parameters have been applied. For 
+     * example, if "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate'>
+     * validate</a>" is set to <code>true</code>, the validation is done before invoking the 
+     * filter. 
      */
     public LSParserFilter getFilter () {
-        return fDOMFilter;
+        return !fNullFilterInUse ? fDOMFilter : null;
     }
 
     /**
-     *  When the application provides a filter, the parser will call out to
-     * the filter at the completion of the construction of each
-     * <code>Element</code> node. The filter implementation can choose to
-     * remove the element from the document being constructed (unless the
-     * element is the document element) or to terminate the parse early. If
-     * the document is being validated when it's loaded the validation
-     * happens before the filter is called.
+     * When a filter is provided, the implementation will call out to the 
+     * filter as it is constructing the DOM tree structure. The filter can 
+     * choose to remove elements from the document being constructed, or to 
+     * terminate the parsing early. 
+     * <br> The filter is invoked after the operations requested by the 
+     * <code>DOMConfiguration</code> parameters have been applied. For 
+     * example, if "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate'>
+     * validate</a>" is set to <code>true</code>, the validation is done before invoking the 
+     * filter. 
      */
     public void setFilter (LSParserFilter filter) {
-        fDOMFilter = filter;
+        if (fBusy && filter == null && fDOMFilter != null) {
+            fNullFilterInUse = true;
+            fDOMFilter = NullLSParserFilter.INSTANCE;
+        }
+        else {
+            fDOMFilter = filter;
+        }
         if (fSkippedElemStack == null) {
-            fSkippedElemStack = new Stack ();
+            fSkippedElemStack = new Stack();
         }
     }
 
@@ -1115,6 +1131,20 @@ public class DOMParserImpl
             }
         }
         super.startElement(element, attributes, augs);
+    }
+    
+    static final class NullLSParserFilter implements LSParserFilter {
+        static final NullLSParserFilter INSTANCE = new NullLSParserFilter();
+        private NullLSParserFilter() {}
+        public short acceptNode(Node nodeArg) {
+            return LSParserFilter.FILTER_ACCEPT;
+        }
+        public int getWhatToShow() {
+            return NodeFilter.SHOW_ALL;
+        }
+        public short startElement(Element elementArg) {
+            return LSParserFilter.FILTER_ACCEPT;
+        }
     }
     
     private static final class AbortHandler implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler {
