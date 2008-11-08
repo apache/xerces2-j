@@ -19,6 +19,7 @@ package org.apache.xerces.util;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Locale;
 
 /**********************************************************************
 * A class to represent a Uniform Resource Identifier (URI). This class
@@ -1402,7 +1403,7 @@ import java.io.Serializable;
       throw new MalformedURIException("The scheme is not conformant.");
     }
 
-    m_scheme = p_scheme.toLowerCase();
+    m_scheme = p_scheme.toLowerCase(Locale.ENGLISH);
   }
 
  /**
