@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Locale;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -94,11 +95,12 @@ abstract class XSDAbstractTraverser {
         fAttrChecker = attrChecker;
     }
     
-    void reset(SymbolTable symbolTable, boolean validateAnnotations) {
+    void reset(SymbolTable symbolTable, boolean validateAnnotations, Locale locale) {
         fSymbolTable = symbolTable;
         fValidateAnnotations = validateAnnotations;
         fValidationState.setExtraChecking(false);
         fValidationState.setSymbolTable(symbolTable);
+        fValidationState.setLocale(locale);
     }
     
     // traverse the annotation declaration

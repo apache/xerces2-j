@@ -146,6 +146,10 @@ public class NonValidatingConfiguration
     /** Property identifier: XML Schema validator. */
     protected static final String SCHEMA_VALIDATOR =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
+    
+    /** Property identifier: locale. */
+    protected static final String LOCALE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
 
 
     // debugging
@@ -300,7 +304,8 @@ public class NonValidatingConfiguration
             NAMESPACE_BINDER,
             XMLGRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
-            VALIDATION_MANAGER
+            VALIDATION_MANAGER,
+            LOCALE
         };
         addRecognizedProperties(recognizedProperties);
 	
@@ -368,11 +373,23 @@ public class NonValidatingConfiguration
 		super.setFeature(featureId, state);
 	}
 	
+	public Object getProperty(String propertyId)
+	    throws XMLConfigurationException {
+	    if (LOCALE.equals(propertyId)) {
+	        return getLocale();
+	    }
+	    return super.getProperty(propertyId);
+	}
+	
 	public void setProperty(String propertyId, Object value)
-		throws XMLConfigurationException {
-		fConfigUpdated = true;
-		super.setProperty(propertyId, value);
-		}
+	    throws XMLConfigurationException {
+	    fConfigUpdated = true;
+        if (LOCALE.equals(propertyId)) {
+            setLocale((Locale) value);
+        }
+	    super.setProperty(propertyId, value);
+	}
+	
     /**
      * Set the locale to use for messages.
      *

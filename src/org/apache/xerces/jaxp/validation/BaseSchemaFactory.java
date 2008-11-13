@@ -185,7 +185,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
                 SAXSource saxSource = (SAXSource) source;
                 InputSource inputSource = saxSource.getInputSource();
                 if (inputSource == null) {
-                    throw new SAXException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    throw new SAXException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                             "SAXSourceNullInputSource", null));
                 }
                 xmlInputSources[i] = new SAXInputSource(saxSource.getXMLReader(), inputSource);
@@ -207,11 +207,11 @@ abstract class BaseSchemaFactory extends SchemaFactory {
                 }
             }
             else if (source == null) {
-                throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                         "SchemaSourceArrayMemberNull", null));
             }
             else {
-                throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                         "SchemaFactorySourceUnrecognized", 
                         new Object [] {source.getClass().getName()}));
             }
@@ -287,7 +287,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
     public boolean getFeature(String name) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "FeatureNameNull", null));
         }
         if (name.startsWith(JAXP_SOURCE_FEATURE_PREFIX)) {
@@ -312,12 +312,12 @@ abstract class BaseSchemaFactory extends SchemaFactory {
             String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "feature-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "feature-not-supported", new Object [] {identifier}));
             }
         }
@@ -326,7 +326,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
     public Object getProperty(String name) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "ProperyNameNull", null));
         }
         if (name.equals(SECURITY_MANAGER)) {
@@ -334,7 +334,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
         }
         else if (name.equals(XMLGRAMMAR_POOL)) {
             throw new SAXNotSupportedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                    SAXMessageFormatter.formatMessage(getLocale(), 
                     "property-not-supported", new Object [] {name}));
         }
         else if (name.equals(XML_SCHEMA_VERSION)) {
@@ -347,12 +347,12 @@ abstract class BaseSchemaFactory extends SchemaFactory {
             String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "property-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "property-not-supported", new Object [] {identifier}));
             }
         }
@@ -361,7 +361,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
     public void setFeature(String name, boolean value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "FeatureNameNull", null));
         }
         if (name.startsWith(JAXP_SOURCE_FEATURE_PREFIX)) {
@@ -370,7 +370,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
                 name.equals(DOMSource.FEATURE) ||
                 name.equals(StAXSource.FEATURE)) {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "feature-read-only", new Object [] {name}));
             }
         }
@@ -390,12 +390,12 @@ abstract class BaseSchemaFactory extends SchemaFactory {
             String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "feature-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "feature-not-supported", new Object [] {identifier}));
             }
         }
@@ -404,7 +404,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
     public void setProperty(String name, Object object)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "ProperyNameNull", null));
         }
         if (name.equals(SECURITY_MANAGER)) {
@@ -414,7 +414,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
         }
         else if (name.equals(XMLGRAMMAR_POOL)) {
             throw new SAXNotSupportedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                    SAXMessageFormatter.formatMessage(getLocale(), 
                     "property-not-supported", new Object [] {name}));
         }
         if (name.equals(XML_SCHEMA_VERSION)) {
@@ -429,15 +429,19 @@ abstract class BaseSchemaFactory extends SchemaFactory {
             String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "property-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(getLocale(), 
                         "property-not-supported", new Object [] {identifier}));
             }
         }
+    }
+    
+    protected Locale getLocale() {
+        return fXMLSchemaLoader.getLocale();
     }
     
     private void propagateFeatures(AbstractXMLSchema schema) {

@@ -128,9 +128,8 @@ public class XMLGrammarPreparser {
         fSymbolTable = symbolTable;
 
         fLoaders = new Hashtable();
-        setLocale(Locale.getDefault());
         fErrorReporter = new XMLErrorReporter();
-        fErrorReporter.setLocale(fLocale);
+        setLocale(Locale.getDefault());
         fEntityResolver = new XMLEntityManager();
         // those are all the basic properties...
     } // <init>(SymbolTable)
@@ -222,6 +221,7 @@ public class XMLGrammarPreparser {
      */
     public void setLocale(Locale locale) {
         fLocale = locale;
+        fErrorReporter.setLocale(locale);
     } // setLocale(Locale)
 
     /** Return the Locale the XMLGrammarLoader is using. */

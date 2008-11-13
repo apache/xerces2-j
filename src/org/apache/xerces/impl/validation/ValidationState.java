@@ -19,6 +19,7 @@ package org.apache.xerces.impl.validation;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.util.SymbolTable;
@@ -46,6 +47,7 @@ public class ValidationState implements ValidationContext {
     private EntityState fEntityState            = null;
     private NamespaceContext fNamespaceContext  = null;
     private SymbolTable fSymbolTable            = null;
+    private Locale fLocale                      = null;
 
     //REVISIT: Should replace with a lighter structure.
     private final HashMap fIdTable    = new HashMap();
@@ -187,5 +189,14 @@ public class ValidationState implements ValidationContext {
         }
         return null;
     }
-
+    
+    // Locale
+    
+    public void setLocale(Locale locale) {
+        fLocale = locale;
+    }
+    
+    public Locale getLocale() {
+        return fLocale;
+    }
 }

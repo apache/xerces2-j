@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
-import java.util.Locale;
 
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.SAXParserFactory;
@@ -236,7 +235,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public boolean getFeature(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "FeatureNameNull", null));
         }
         try {
@@ -246,12 +245,12 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-supported", new Object [] {identifier}));
             }
         }
@@ -260,7 +259,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public void setFeature(String name, boolean value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "FeatureNameNull", null));
         }
         try {
@@ -270,12 +269,12 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-supported", new Object [] {identifier}));
             }
         }
@@ -284,7 +283,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "ProperyNameNull", null));
         }
         try {
@@ -294,12 +293,12 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-supported", new Object [] {identifier}));
             }
         }
@@ -308,7 +307,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public void setProperty(String name, Object object)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "ProperyNameNull", null));
         }
         try {
@@ -318,12 +317,12 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-supported", new Object [] {identifier}));
             }
         }
@@ -759,7 +758,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             }
             return;
         }
-        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                 "SourceResultMismatch", 
                 new Object [] {source.getClass().getName(), result.getClass().getName()}));
     }
@@ -848,7 +847,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
      * REVISIT: I'm not sure if this code should belong here.
      */
     private final XMLSchemaTypeInfoProvider fTypeInfoProvider = new XMLSchemaTypeInfoProvider();
-    private static class XMLSchemaTypeInfoProvider extends TypeInfoProvider {
+    private class XMLSchemaTypeInfoProvider extends TypeInfoProvider {
         
         /** Element augmentations: contains ElementPSVI. **/
         private Augmentations fElementAugs;
@@ -894,7 +893,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
          */
         private void checkStateAttribute() {
             if (!fInStartElement) {
-                throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "TypeInfoProviderIllegalStateAttribute", null));
             }
         }
@@ -906,7 +905,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
          */
         private void checkStateElement() {
             if (!fInStartElement && !fInEndElement) {
-                throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "TypeInfoProviderIllegalStateElement", null));
             }
         }

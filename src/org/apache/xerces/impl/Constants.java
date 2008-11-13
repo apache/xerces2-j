@@ -369,12 +369,14 @@ public final class Constants {
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
     
-    
     /** Input buffer size property ("input-buffer-size"). */
     public static final String BUFFER_SIZE_PROPERTY = "input-buffer-size";
     
     /** Security manager property ("security-manager"). */
     public static final String SECURITY_MANAGER_PROPERTY = "security-manager";
+    
+    /** Locale property ("locale"). */
+    public static final String LOCALE_PROPERTY = "locale";
     
     /** Entity resolver property ("internal/entity-resolver"). */
     public static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
@@ -429,7 +431,7 @@ public final class Constants {
     /** Element PSVI is stored in augmentations using string "ELEMENT_PSVI" */
     public final static String ELEMENT_PSVI = "ELEMENT_PSVI";
     
-    /* Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
+    /** Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
     public final static String ATTRIBUTE_PSVI = "ATTRIBUTE_PSVI";
     
     /** 
@@ -541,6 +543,7 @@ public final class Constants {
             VALIDATION_MANAGER_PROPERTY,
             BUFFER_SIZE_PROPERTY,
             SECURITY_MANAGER_PROPERTY,
+            LOCALE_PROPERTY,
             ROOT_TYPE_DEFINITION_PROPERTY,
             XML_SCHEMA_VERSION_PROPERTY
     };

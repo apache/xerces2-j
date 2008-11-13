@@ -25,7 +25,7 @@ import javax.xml.validation.SchemaFactory;
  * {@link SchemaFactory} for XML Schema.
  *
  * @author Khaled Noaman, IBM
- * @version $Id:$
+ * @version $Id$
  */
 public final class XMLSchema11Factory extends BaseSchemaFactory {
     
@@ -38,11 +38,11 @@ public final class XMLSchema11Factory extends BaseSchemaFactory {
 
     public boolean isSchemaLanguageSupported(String schemaLanguage) {
         if (schemaLanguage == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "SchemaLanguageNull", null));
         }
         if (schemaLanguage.length() == 0) {
-            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "SchemaLanguageLengthZero", null));
         }
         // only W3C XML Schema 1.1 is supported

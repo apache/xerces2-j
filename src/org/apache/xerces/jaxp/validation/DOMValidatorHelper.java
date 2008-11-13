@@ -19,7 +19,6 @@ package org.apache.xerces.jaxp.validation;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -206,7 +205,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
             }
             return;
         }
-        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                 "SourceResultMismatch", 
                 new Object [] {source.getClass().getName(), result.getClass().getName()}));
     }

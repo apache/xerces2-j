@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Locale;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -543,8 +544,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         return element;
     }
     
-    void reset(SymbolTable symbolTable, boolean validateAnnotations) {
-        super.reset(symbolTable, validateAnnotations);
+    void reset(SymbolTable symbolTable, boolean validateAnnotations, Locale locale) {
+        super.reset(symbolTable, validateAnnotations, locale);
         fDeferTraversingLocalElements = true;
     } // reset()
     

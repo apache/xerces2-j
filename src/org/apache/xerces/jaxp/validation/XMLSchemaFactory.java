@@ -51,11 +51,11 @@ public final class XMLSchemaFactory extends BaseSchemaFactory {
      */
     public boolean isSchemaLanguageSupported(String schemaLanguage) {
         if (schemaLanguage == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "SchemaLanguageNull", null));
         }
         if (schemaLanguage.length() == 0) {
-            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(getLocale(), 
                     "SchemaLanguageLengthZero", null));
         }
         // only W3C XML Schema 1.0 is supported
