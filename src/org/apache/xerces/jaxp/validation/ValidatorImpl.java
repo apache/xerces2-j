@@ -18,7 +18,6 @@
 package org.apache.xerces.jaxp.validation;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -131,12 +130,12 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
         }
         // Source parameter cannot be null.
         else if (source == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "SourceParameterNull", null));
         }
         // Source parameter must be a SAXSource, DOMSource or StreamSource
         else {
-            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "SourceNotAccepted", new Object [] {source.getClass().getName()}));
         }
     }
@@ -162,7 +161,7 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public boolean getFeature(String name) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "FeatureNameNull", null));
         }
         if (name.startsWith(JAXP_SOURCE_RESULT_FEATURE_PREFIX)) {
@@ -185,12 +184,12 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-supported", new Object [] {identifier}));
             }
         }
@@ -199,7 +198,7 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public void setFeature(String name, boolean value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "FeatureNameNull", null));
         }
         if (name.startsWith(JAXP_SOURCE_RESULT_FEATURE_PREFIX)) {
@@ -212,7 +211,7 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
                 name.equals(DOMResult.FEATURE) ||
                 name.equals(StAXResult.FEATURE)) {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-read-only", new Object [] {name}));
             }
         }
@@ -223,12 +222,12 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "feature-not-supported", new Object [] {identifier}));
             }
         }
@@ -238,7 +237,7 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "ProperyNameNull", null));
         }
         if (CURRENT_ELEMENT_NODE.equals(name)) {
@@ -252,12 +251,12 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-supported", new Object [] {identifier}));
             }
         }
@@ -266,12 +265,12 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     public void setProperty(String name, Object object)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
-            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "ProperyNameNull", null));
         }
         if (CURRENT_ELEMENT_NODE.equals(name)) {
             throw new SAXNotSupportedException(
-                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                    SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "property-read-only", new Object [] {name}));
         }
         try {
@@ -281,12 +280,12 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
             final String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
                 throw new SAXNotRecognizedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-recognized", new Object [] {identifier}));
             }
             else {
                 throw new SAXNotSupportedException(
-                        SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "property-not-supported", new Object [] {identifier}));
             }
         }

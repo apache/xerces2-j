@@ -34,7 +34,7 @@ class ParserForXMLSchema extends RegexParser {
         //this.setLocale(Locale.getDefault());
     }
     public ParserForXMLSchema(Locale locale) {
-        //this.setLocale(locale);
+        super(locale);
     }
 
     Token processCaret() throws ParseException {

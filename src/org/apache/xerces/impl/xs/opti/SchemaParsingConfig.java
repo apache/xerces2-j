@@ -150,6 +150,10 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     protected static final String SCHEMA_VALIDATOR =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
     
+    /** Property identifier: locale. */
+    protected static final String LOCALE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
+    
     
     // debugging
     
@@ -318,7 +322,8 @@ public class SchemaParsingConfig extends BasicParserConfiguration
             XMLGRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
             VALIDATION_MANAGER,
-            GENERATE_SYNTHETIC_ANNOTATIONS
+            GENERATE_SYNTHETIC_ANNOTATIONS,
+            LOCALE
         };
         addRecognizedProperties(recognizedProperties);
         
@@ -444,6 +449,26 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     } // setFeature(String,boolean)
     
     /**
+     * Returns the value of a property.
+     * 
+     * @param propertyId The property identifier.
+     * @return the value of the property
+     * 
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
+     */
+    public Object getProperty(String propertyId)
+        throws XMLConfigurationException {
+        if (LOCALE.equals(propertyId)) {
+            return getLocale();
+        }
+        return super.getProperty(propertyId);
+    }
+    
+    /**
      * setProperty
      * 
      * @param propertyId 
@@ -453,7 +478,10 @@ public class SchemaParsingConfig extends BasicParserConfiguration
         throws XMLConfigurationException {
         
         fConfigUpdated = true;
-
+        if (LOCALE.equals(propertyId)) {
+            setLocale((Locale) value);
+        }
+        
         // forward to every XML 1.0 component
         fNamespaceScanner.setProperty(propertyId, value);
         fDTDScanner.setProperty(propertyId, value);

@@ -168,12 +168,15 @@ public class DTDConfiguration
     
     /** Property identifier: JAXP schema language / DOM schema-type. */
     protected static final String JAXP_SCHEMA_LANGUAGE =
-    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
+        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
 
     /** Property identifier: JAXP schema source/ DOM schema-location. */
     protected static final String JAXP_SCHEMA_SOURCE =
-    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
-
+        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
+    
+    /** Property identifier: locale. */
+    protected static final String LOCALE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
 
     // debugging
 
@@ -318,7 +321,8 @@ public class DTDConfiguration
             DATATYPE_VALIDATOR_FACTORY,
             VALIDATION_MANAGER,
             JAXP_SCHEMA_SOURCE,
-            JAXP_SCHEMA_LANGUAGE
+            JAXP_SCHEMA_LANGUAGE,
+            LOCALE
         };
         addRecognizedProperties(recognizedProperties);
 
@@ -399,6 +403,22 @@ public class DTDConfiguration
     //
     // Public methods
     //
+    
+    public Object getProperty(String propertyId)
+        throws XMLConfigurationException {
+        if (LOCALE.equals(propertyId)) {
+            return getLocale();
+        }
+        return super.getProperty(propertyId);
+    }
+
+    public void setProperty(String propertyId, Object value)
+        throws XMLConfigurationException {
+        if (LOCALE.equals(propertyId)) {
+            setLocale((Locale) value);
+        }
+        super.setProperty(propertyId, value);
+    }
 
     /**
      * Set the locale to use for messages.

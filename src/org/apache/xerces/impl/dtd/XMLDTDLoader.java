@@ -99,6 +99,10 @@ public class XMLDTDLoader
     /** Property identifier: entity resolver. */
     public static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+    
+    /** Property identifier: locale. */
+    public static final String LOCALE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
 
     /** Recognized properties. */
     private static final String[] LOADER_RECOGNIZED_PROPERTIES = {
@@ -108,6 +112,7 @@ public class XMLDTDLoader
         ENTITY_RESOLVER,
         GRAMMAR_POOL,       
         DTD_VALIDATOR,
+        LOCALE
     };
 
     // enforcing strict uri?
@@ -244,17 +249,25 @@ public class XMLDTDLoader
      */
     public Object getProperty(String propertyId) 
             throws XMLConfigurationException {
-        if(propertyId.equals( SYMBOL_TABLE)) {
+        if (propertyId.equals(SYMBOL_TABLE)) {
             return fSymbolTable;
-        } else if(propertyId.equals( ERROR_REPORTER)) {
+        } 
+        else if (propertyId.equals(ERROR_REPORTER)) {
             return fErrorReporter;
-        } else if(propertyId.equals( ERROR_HANDLER)) {
+        } 
+        else if (propertyId.equals(ERROR_HANDLER)) {
             return fErrorReporter.getErrorHandler();
-        } else if(propertyId.equals( ENTITY_RESOLVER)) {
+        } 
+        else if (propertyId.equals(ENTITY_RESOLVER)) {
             return fEntityResolver;
-        } else if(propertyId.equals( GRAMMAR_POOL)) {
+        } 
+        else if (propertyId.equals(LOCALE)) {
+            return getLocale();
+        }
+        else if (propertyId.equals(GRAMMAR_POOL)) {
             return fGrammarPool;
-        } else if(propertyId.equals( DTD_VALIDATOR)) {
+        } 
+        else if (propertyId.equals(DTD_VALIDATOR)) {
             return fValidator;
         } 
         throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, propertyId);
@@ -277,11 +290,12 @@ public class XMLDTDLoader
      */
     public void setProperty(String propertyId, Object value)
             throws XMLConfigurationException {
-        if(propertyId.equals( SYMBOL_TABLE)) {
+        if (propertyId.equals(SYMBOL_TABLE)) {
             fSymbolTable = (SymbolTable)value;
             fDTDScanner.setProperty(propertyId, value);
             fEntityManager.setProperty(propertyId, value);
-        } else if(propertyId.equals( ERROR_REPORTER)) {
+        } 
+        else if(propertyId.equals(ERROR_REPORTER)) {
             fErrorReporter = (XMLErrorReporter)value;
             // Add XML message formatter if there isn't one.
             if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
@@ -291,14 +305,21 @@ public class XMLDTDLoader
             }
             fDTDScanner.setProperty(propertyId, value);
             fEntityManager.setProperty(propertyId, value);
-        } else if(propertyId.equals( ERROR_HANDLER)) {
+        } 
+        else if (propertyId.equals(ERROR_HANDLER)) {
             fErrorReporter.setProperty(propertyId, value);
-        } else if(propertyId.equals( ENTITY_RESOLVER)) {
+        } 
+        else if (propertyId.equals(ENTITY_RESOLVER)) {
             fEntityResolver = (XMLEntityResolver)value;
             fEntityManager.setProperty(propertyId, value);
-        } else if(propertyId.equals( GRAMMAR_POOL)) {
+        }
+        else if (propertyId.equals(LOCALE)) {
+            setLocale((Locale) value);
+        }
+        else if(propertyId.equals(GRAMMAR_POOL)) {
             fGrammarPool = (XMLGrammarPool)value;
-        } else {
+        } 
+        else {
             throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, propertyId);
         }
     } // setProperty(String,Object)
@@ -343,6 +364,7 @@ public class XMLDTDLoader
      */
     public void setLocale(Locale locale) {
         fLocale = locale;
+        fErrorReporter.setLocale(locale);
     } // setLocale(Locale)
 
     /** Return the Locale the XMLGrammarLoader is using. */

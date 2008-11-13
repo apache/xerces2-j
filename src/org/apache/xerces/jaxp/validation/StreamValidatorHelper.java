@@ -20,7 +20,6 @@ package org.apache.xerces.jaxp.validation;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
-import java.util.Locale;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -156,7 +155,7 @@ final class StreamValidatorHelper implements ValidatorHelper {
                     ser = fSerializerFactory.makeSerializer(out, new OutputFormat());
                 }
                 else {
-                    throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                         "StreamResultNotInitialized", null));
                 }
 
@@ -194,7 +193,7 @@ final class StreamValidatorHelper implements ValidatorHelper {
             
             return;
         }
-        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                 "SourceResultMismatch", 
                 new Object [] {source.getClass().getName(), result.getClass().getName()}));
     }

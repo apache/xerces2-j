@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventReader;
@@ -213,7 +212,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
             }
             return;
         }
-        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+        throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                 "SourceResultMismatch", 
                 new Object [] {source.getClass().getName(), result.getClass().getName()}));
     }
@@ -351,7 +350,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                 int eventType = reader.getEventType();
                 if (eventType != XMLStreamConstants.START_DOCUMENT &&
                     eventType != XMLStreamConstants.START_ELEMENT) {
-                    throw new SAXException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    throw new SAXException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                             "StAXIllegalInitialState", null));
                 }
                 fXMLStreamReaderLocation.setXMLStreamReader(reader);
@@ -480,7 +479,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                 int eventType = fCurrentEvent.getEventType();
                 if (eventType != XMLStreamConstants.START_DOCUMENT &&
                     eventType != XMLStreamConstants.START_ELEMENT) {
-                    throw new SAXException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    throw new SAXException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                             "StAXIllegalInitialState", null));
                 }
                 setup(null, result, false);

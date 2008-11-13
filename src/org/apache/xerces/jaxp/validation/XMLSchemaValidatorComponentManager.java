@@ -19,6 +19,7 @@ package org.apache.xerces.jaxp.validation;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -67,19 +68,19 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
     
     /** Feature identifier: whether to ignore xsi:type attributes until a global element declaration is encountered */
-    protected static final String IGNORE_XSI_TYPE =
+    private static final String IGNORE_XSI_TYPE =
         Constants.XERCES_FEATURE_PREFIX + Constants.IGNORE_XSI_TYPE_FEATURE;
     
     /** Feature identifier: whether to ignore ID/IDREF errors */
-    protected static final String ID_IDREF_CHECKING =
+    private static final String ID_IDREF_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.ID_IDREF_CHECKING_FEATURE;
     
     /** Feature identifier: whether to ignore unparsed entity errors */
-    protected static final String UNPARSED_ENTITY_CHECKING =
+    private static final String UNPARSED_ENTITY_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.UNPARSED_ENTITY_CHECKING_FEATURE;
     
     /** Feature identifier: whether to ignore identity constraint errors */
-    protected static final String IDENTITY_CONSTRAINT_CHECKING =
+    private static final String IDENTITY_CONSTRAINT_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.IDC_CHECKING_FEATURE;
     
     // property identifiers
@@ -123,6 +124,10 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     /** Property identifier: grammar pool. */
     private static final String XMLGRAMMAR_POOL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+    
+    /** Property identifier: locale. */
+    private static final String LOCALE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
     
     //
     // Data
@@ -184,6 +189,9 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     
     /** Application's LSResourceResolver. */
     private LSResourceResolver fResourceResolver = null;
+    
+    /** Locale chosen by the application. */
+    private Locale fLocale = null;
     
     /** Constructs a component manager suitable for Xerces' schema validator. */
     public XMLSchemaValidatorComponentManager(XSGrammarPoolContainer grammarContainer) {
@@ -319,6 +327,9 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
      */
     public Object getProperty(String propertyId)
             throws XMLConfigurationException {
+        if (LOCALE.equals(propertyId)) {
+            return getLocale();
+        }
         final Object component = fComponents.get(propertyId);
         if (component != null) {
             return component;
@@ -350,6 +361,11 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         fSchemaValidator.setProperty(propertyId, value);
         if (ENTITY_RESOLVER.equals(propertyId) || ERROR_HANDLER.equals(propertyId) || 
                 SECURITY_MANAGER.equals(propertyId)) {
+            fComponents.put(propertyId, value);
+            return;
+        }
+        else if (LOCALE.equals(propertyId)) {
+            setLocale((Locale) value);
             fComponents.put(propertyId, value);
             return;
         }
@@ -409,8 +425,17 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         setProperty(ENTITY_RESOLVER, new DOMEntityResolverWrapper(resourceResolver));
     }
     
-    public LSResourceResolver getResourceResolver() {
+    LSResourceResolver getResourceResolver() {
         return fResourceResolver;
+    }
+    
+    void setLocale(Locale locale) {
+        fLocale = locale;
+        fErrorReporter.setLocale(locale);
+    }
+    
+    Locale getLocale() {
+        return fLocale;
     }
     
     /** Cleans out configuration, restoring it to its initial state. */
@@ -423,6 +448,10 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         
         // Restore initial security manager
         fComponents.put(SECURITY_MANAGER, fInitSecurityManager);
+        
+        // Set the Locale back to null.
+        setLocale(null);
+        fComponents.put(LOCALE, null);
         
         // Reset feature and property values to their initial values
         if (!fInitFeatures.isEmpty()) {

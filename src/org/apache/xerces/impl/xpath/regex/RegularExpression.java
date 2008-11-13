@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xpath.regex;
 
 import java.text.CharacterIterator;
+import java.util.Locale;
 
 /**
  * A regular expression matching engine using Non-deterministic Finite Automaton (NFA).
@@ -2968,7 +2969,7 @@ public class RegularExpression implements java.io.Serializable {
      * @exception org.apache.xerces.utils.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
      */
     public RegularExpression(String regex) throws ParseException {
-        this.setPattern(regex, null);
+        this(regex, null);
     }
 
     /**
@@ -2980,6 +2981,17 @@ public class RegularExpression implements java.io.Serializable {
      */
     public RegularExpression(String regex, String options) throws ParseException {
         this.setPattern(regex, options);
+    }
+    
+    /**
+     * Creates a new RegularExpression instance with options.
+     *
+     * @param regex A regular expression
+     * @param options A String consisted of "i" "m" "s" "u" "w" "," "X"
+     * @exception org.apache.xerces.utils.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
+     */
+    public RegularExpression(String regex, String options, Locale locale) throws ParseException {
+        this.setPattern(regex, options, locale);
     }
 
     RegularExpression(String regex, Token tok, int parens, boolean hasBackReferences, int options) {
@@ -2994,14 +3006,18 @@ public class RegularExpression implements java.io.Serializable {
      *
      */
     public void setPattern(String newPattern) throws ParseException {
-        this.setPattern(newPattern, this.options);
+        this.setPattern(newPattern, Locale.getDefault());
+    }
+    
+    public void setPattern(String newPattern, Locale locale) throws ParseException {
+        this.setPattern(newPattern, this.options, locale);
     }
 
-    private void setPattern(String newPattern, int options) throws ParseException {
+    private void setPattern(String newPattern, int options, Locale locale) throws ParseException {
         this.regex = newPattern;
         this.options = options;
         RegexParser rp = RegularExpression.isSet(this.options, RegularExpression.XMLSCHEMA_MODE)
-                         ? new ParserForXMLSchema() : new RegexParser();
+                         ? new ParserForXMLSchema(locale) : new RegexParser(locale);
         this.tokentree = rp.parse(this.regex, this.options);
         this.nofparen = rp.parennumber;
         this.hasBackReferences = rp.hasBackReferences;
@@ -3013,7 +3029,11 @@ public class RegularExpression implements java.io.Serializable {
      *
      */
     public void setPattern(String newPattern, String options) throws ParseException {
-        this.setPattern(newPattern, REUtil.parseOptions(options));
+        this.setPattern(newPattern, options, Locale.getDefault());
+    }
+    
+    public void setPattern(String newPattern, String options, Locale locale) throws ParseException {
+        this.setPattern(newPattern, REUtil.parseOptions(options), locale);
     }
 
     /**
