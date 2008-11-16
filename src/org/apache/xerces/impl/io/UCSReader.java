@@ -31,7 +31,7 @@ import java.io.Reader;
  *
  * @version $Id$
  */
-public class UCSReader extends Reader {
+public final class UCSReader extends Reader {
 
     //
     // Constants

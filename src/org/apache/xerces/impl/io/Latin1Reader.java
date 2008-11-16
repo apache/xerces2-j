@@ -30,7 +30,7 @@ import java.io.Reader;
  * 
  * @version $Id$
  */
-public class Latin1Reader 
+public final class Latin1Reader 
     extends Reader {
     
     //
