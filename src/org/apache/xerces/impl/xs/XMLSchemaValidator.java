@@ -552,7 +552,18 @@ public class XMLSchemaValidator
      */
     public void setProperty(String propertyId, Object value) throws XMLConfigurationException {
         if (propertyId.equals(ROOT_TYPE_DEF)) {
-            fRootTypeQName = (javax.xml.namespace.QName)value;
+            if (value == null) {
+                fRootTypeQName = null;
+                fRootTypeDefinition = null;
+            }
+            else if (value instanceof javax.xml.namespace.QName) {
+                fRootTypeQName = (javax.xml.namespace.QName) value;
+                fRootTypeDefinition = null;
+            }
+            else {
+                fRootTypeDefinition = (XSTypeDefinition) value;
+                fRootTypeQName = null;
+            }
         }
     } // setProperty(String,Object)
 
@@ -1209,6 +1220,7 @@ public class XMLSchemaValidator
     private final QName fTempQName = new QName();
     
     private javax.xml.namespace.QName fRootTypeQName = null;
+    private XSTypeDefinition fRootTypeDefinition = null;
     
     private int fIgnoreXSITypeDepth;
     
@@ -1402,10 +1414,23 @@ public class XMLSchemaValidator
         fValidationState.setSymbolTable(fSymbolTable);
         
         try {
-            fRootTypeQName = (javax.xml.namespace.QName)componentManager.getProperty(ROOT_TYPE_DEF);
+            final Object rootType = componentManager.getProperty(ROOT_TYPE_DEF);
+            if (rootType == null) {
+                fRootTypeQName = null;
+                fRootTypeDefinition = null;
+            }
+            else if (rootType instanceof javax.xml.namespace.QName) {
+                fRootTypeQName = (javax.xml.namespace.QName) rootType;
+                fRootTypeDefinition = null;
+            }
+            else {
+                fRootTypeDefinition = (XSTypeDefinition) rootType;
+                fRootTypeQName = null;
+            }
         } 
         catch (XMLConfigurationException e) {
             fRootTypeQName = null;
+            fRootTypeDefinition = null;
         }
         
         boolean ignoreXSIType;
@@ -1895,26 +1920,31 @@ public class XMLSchemaValidator
         }
         
         // 1.2.1.1 A type definition was stipulated by the processor
-        if (fElementDepth == 0 && fRootTypeQName != null) {
-            String rootTypeNamespace = fRootTypeQName.getNamespaceURI();
-            if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
-                rootTypeNamespace = null;
+        if (fElementDepth == 0) {
+            if (fRootTypeDefinition != null) {
+                fCurrentType = fRootTypeDefinition;
             }
-            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
-                fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
-            }
-            else {
-                SchemaGrammar grammarForRootType = findSchemaGrammar(
-                    XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
-                if (grammarForRootType != null) {
-                    fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+            else if (fRootTypeQName != null) {
+                String rootTypeNamespace = fRootTypeQName.getNamespaceURI();
+                if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
+                    rootTypeNamespace = null;
                 }
-            }
-            if (fCurrentType == null) {
-                String typeName = (fRootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
-                    fRootTypeQName.getLocalPart() :
-                    fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
-                reportSchemaError("cvc-type.1", new Object[] {typeName});
+                if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
+                    fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+                }
+                else {
+                    SchemaGrammar grammarForRootType = findSchemaGrammar(
+                            XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
+                    if (grammarForRootType != null) {
+                        fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+                    }
+                }
+                if (fCurrentType == null) {
+                    String typeName = (fRootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
+                            fRootTypeQName.getLocalPart() :
+                                fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
+                            reportSchemaError("cvc-type.1", new Object[] {typeName});
+                }
             }
         }
         
