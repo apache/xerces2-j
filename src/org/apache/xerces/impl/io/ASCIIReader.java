@@ -35,7 +35,7 @@ import org.apache.xerces.util.MessageFormatter;
  *
  * @version $Id$
  */
-public class ASCIIReader
+public final class ASCIIReader
     extends Reader {
 
     //

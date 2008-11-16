@@ -34,7 +34,7 @@ import org.apache.xerces.util.MessageFormatter;
  *
  * @version $Id$
  */
-public class UTF8Reader
+public final class UTF8Reader
     extends Reader {
 
     //
