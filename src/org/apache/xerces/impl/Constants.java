@@ -422,6 +422,9 @@ public final class Constants {
     
     /** Schema type of the root element in a document ("validation/schema/root-type-definition"). */
     public static final String ROOT_TYPE_DEFINITION_PROPERTY = "validation/schema/root-type-definition";
+    
+    /** Schema element declaration for the root element in a document ("validation/schema/root-element-declaration"). */
+    public static final String ROOT_ELEMENT_DECLARATION_PROPERTY = "validation/schema/root-element-declaration";
 
     /** Datatype XML version property ("validation/schema/datatype-xml-version"). */
     public static final String XML_SCHEMA_VERSION_PROPERTY ="validation/schema/version";
@@ -545,7 +548,8 @@ public final class Constants {
             SECURITY_MANAGER_PROPERTY,
             LOCALE_PROPERTY,
             ROOT_TYPE_DEFINITION_PROPERTY,
-            XML_SCHEMA_VERSION_PROPERTY
+            ROOT_ELEMENT_DECLARATION_PROPERTY,
+            XML_SCHEMA_VERSION_PROPERTY,
     };
     
     /** Empty enumeration. */

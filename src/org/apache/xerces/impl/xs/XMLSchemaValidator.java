@@ -237,6 +237,10 @@ public class XMLSchemaValidator
     /** Property identifier: root type definition. */
     protected static final String ROOT_TYPE_DEF =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_TYPE_DEFINITION_PROPERTY;
+    
+    /** Property identifier: root element declaration. */
+    protected static final String ROOT_ELEMENT_DECL =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
     /** Property identifier: xml schema version. */
     protected static final String XML_SCHEMA_VERSION =
@@ -307,12 +311,13 @@ public class XMLSchemaValidator
             JAXP_SCHEMA_SOURCE,
             JAXP_SCHEMA_LANGUAGE,
             ROOT_TYPE_DEF,
-            XML_SCHEMA_VERSION
+            ROOT_ELEMENT_DECL,
+            XML_SCHEMA_VERSION,
         };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS =
-        { null, null, null, null, null, null, null, null, null, null };
+        { null, null, null, null, null, null, null, null, null, null, null, };
 
     // this is the number of valuestores of each kind
     // we expect an element to have.  It's almost
@@ -581,6 +586,20 @@ public class XMLSchemaValidator
             else {
                 fRootTypeDefinition = (XSTypeDefinition) value;
                 fRootTypeQName = null;
+            }
+        }
+        else if (propertyId.equals(ROOT_ELEMENT_DECL)) {
+            if (value == null) {
+                fRootElementDeclQName = null;
+                fRootElementDeclaration = null;
+            }
+            else if (value instanceof javax.xml.namespace.QName) {
+                fRootElementDeclQName = (javax.xml.namespace.QName) value;
+                fRootElementDeclaration = null;
+            }
+            else {
+                fRootElementDeclaration = (XSElementDecl) value;
+                fRootElementDeclQName = null;
             }
         }
         else if (propertyId.equals(XML_SCHEMA_VERSION)) {
@@ -1243,8 +1262,13 @@ public class XMLSchemaValidator
     /** temporary qname */
     private final QName fTempQName = new QName();
     
+    /** value of the "root-type-definition" property. */
     private javax.xml.namespace.QName fRootTypeQName = null;
     private XSTypeDefinition fRootTypeDefinition = null;
+    
+    /** value of the "root-element-declaration" property. */
+    private javax.xml.namespace.QName fRootElementDeclQName = null;
+    private XSElementDecl fRootElementDeclaration = null;
     
     private int fIgnoreXSITypeDepth;
     
@@ -1459,6 +1483,26 @@ public class XMLSchemaValidator
         catch (XMLConfigurationException e) {
             fRootTypeQName = null;
             fRootTypeDefinition = null;
+        }
+        
+        try {
+            final Object rootDecl = componentManager.getProperty(ROOT_ELEMENT_DECL);
+            if (rootDecl == null) {
+                fRootElementDeclQName = null;
+                fRootElementDeclaration = null;
+            }
+            else if (rootDecl instanceof javax.xml.namespace.QName) {
+                fRootElementDeclQName = (javax.xml.namespace.QName) rootDecl;
+                fRootElementDeclaration = null;
+            }
+            else {
+                fRootElementDeclaration = (XSElementDecl) rootDecl;
+                fRootElementDeclQName = null;
+            }
+        }
+        catch (XMLConfigurationException e) {
+            fRootElementDeclQName = null;
+            fRootElementDeclaration = null;
         }
         
         boolean ignoreXSIType;
@@ -1956,32 +2000,20 @@ public class XMLSchemaValidator
             return augs;
         }
         
-        // 1.2.1.1 A type definition was stipulated by the processor
         if (fElementDepth == 0) {
+            // 1.2.1.1 A type definition was stipulated by the processor
             if (fRootTypeDefinition != null) {
                 fCurrentType = fRootTypeDefinition;
             }
             else if (fRootTypeQName != null) {
-                String rootTypeNamespace = fRootTypeQName.getNamespaceURI();
-                if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
-                    rootTypeNamespace = null;
-                }
-                if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
-                    fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
-                }
-                else {
-                    SchemaGrammar grammarForRootType = findSchemaGrammar(
-                            XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
-                    if (grammarForRootType != null) {
-                        fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
-                    }
-                }
-                if (fCurrentType == null) {
-                    String typeName = (fRootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
-                            fRootTypeQName.getLocalPart() :
-                                fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
-                            reportSchemaError("cvc-type.1", new Object[] {typeName});
-                }
+                processRootTypeQName();
+            }
+            // 1.1.1.1 An element declaration was stipulated by the processor
+            else if (fRootElementDeclaration != null) {
+                fCurrentElemDecl = fRootElementDeclaration;
+            }
+            else if (fRootElementDeclQName != null) {
+                processRootElementDeclQName();
             }
         }
         
@@ -3379,6 +3411,47 @@ public class XMLSchemaValidator
         }
         return actualValue;
     } // elementLocallyValidComplexType
+    
+    void processRootTypeQName() {
+        String rootTypeNamespace = fRootTypeQName.getNamespaceURI();
+        if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
+            rootTypeNamespace = null;
+        }
+        if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
+            fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+        }
+        else {
+            final SchemaGrammar grammarForRootType = findSchemaGrammar(
+                    XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
+            if (grammarForRootType != null) {
+                fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+            }
+        }
+        if (fCurrentType == null) {
+            String typeName = (fRootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
+                    fRootTypeQName.getLocalPart() :
+                        fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
+                    reportSchemaError("cvc-type.1", new Object[] {typeName});
+        }
+    } // processRootTypeQName
+    
+    void processRootElementDeclQName() {
+        String rootElementDeclNamespace = fRootElementDeclQName.getNamespaceURI();
+        if (rootElementDeclNamespace != null && rootElementDeclNamespace.equals(XMLConstants.NULL_NS_URI)) {
+            rootElementDeclNamespace = null;
+        }
+        final SchemaGrammar grammarForRootElement = findSchemaGrammar(
+                XSDDescription.CONTEXT_ELEMENT, rootElementDeclNamespace, null, null, null);
+        if (grammarForRootElement != null) {
+            fCurrentElemDecl = grammarForRootElement.getGlobalElementDecl(fRootElementDeclQName.getLocalPart());
+        }
+        if (fCurrentElemDecl == null) {
+            String declName = (fRootElementDeclQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
+                    fRootElementDeclQName.getLocalPart() :
+                        fRootElementDeclQName.getPrefix()+":"+fRootElementDeclQName.getLocalPart();
+                    reportSchemaError("cvc-elt.1", new Object[] {declName});
+        }
+    } // processRootElementDeclQName
 
     void reportSchemaError(String key, Object[] arguments) {
         if (fDoValidation)

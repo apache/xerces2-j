@@ -141,6 +141,10 @@ public class StandardParserConfiguration
     /** Property identifier: root type definition. */
     protected static final String ROOT_TYPE_DEF =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_TYPE_DEFINITION_PROPERTY;
+    
+    /** Property identifier: root element declaration. */
+    protected static final String ROOT_ELEMENT_DECL =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
     //
     // Data
@@ -248,6 +252,7 @@ public class StandardParserConfiguration
             SCHEMA_LOCATION,
             SCHEMA_NONS_LOCATION,
             ROOT_TYPE_DEF,
+            ROOT_ELEMENT_DECL,
         };
         
         addRecognizedProperties(recognizedProperties);
