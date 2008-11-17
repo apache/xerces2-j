@@ -413,8 +413,11 @@ public final class Constants {
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
     
-    /** Schema type of the root element in a document ("validation/schema/root-type-definition"). */
+    /** Schema type for the root element in a document ("validation/schema/root-type-definition"). */
     public static final String ROOT_TYPE_DEFINITION_PROPERTY = "validation/schema/root-type-definition";
+    
+    /** Schema element declaration for the root element in a document ("validation/schema/root-element-declaration"). */
+    public static final String ROOT_ELEMENT_DECLARATION_PROPERTY = "validation/schema/root-element-declaration";
     
     // general constants
     
@@ -534,6 +537,7 @@ public final class Constants {
             SECURITY_MANAGER_PROPERTY,
             LOCALE_PROPERTY,
             ROOT_TYPE_DEFINITION_PROPERTY,
+            ROOT_ELEMENT_DECLARATION_PROPERTY,
     };
     
     /** Empty enumeration. */
