@@ -137,8 +137,9 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return list of error codes
      */
     public StringList getErrorCodes() {
-        if (fErrorCodes == null)
-            return null;
+        if (fErrorCodes == null) {
+            return StringListImpl.EMPTY_LIST;
+        }
         return new StringListImpl(fErrorCodes, fErrorCodes.length);
     }
 
