@@ -271,15 +271,16 @@ public class XMLErrorReporter
      * @param arguments The replacement arguments for the error message,
      *                  if needed.
      * @param severity  The severity of the error.
+     * @return          The formatted error message.
      *
      * @see #SEVERITY_WARNING
      * @see #SEVERITY_ERROR
      * @see #SEVERITY_FATAL_ERROR
      */
-    public void reportError(String domain, String key, Object[] arguments, 
+    public String reportError(String domain, String key, Object[] arguments, 
                             short severity) throws XNIException {
-        reportError(fLocator, domain, key, arguments, severity);
-    } // reportError(String,String,Object[],short)
+        return reportError(fLocator, domain, key, arguments, severity);
+    } // reportError(String,String,Object[],short):String
     
     /**
      * Reports an error. The error message passed to the error handler
@@ -292,15 +293,16 @@ public class XMLErrorReporter
      *                  if needed.
      * @param severity  The severity of the error.
      * @param exception The exception to wrap.
+     * @return          The formatted error message.
      *
      * @see #SEVERITY_WARNING
      * @see #SEVERITY_ERROR
      * @see #SEVERITY_FATAL_ERROR
      */
-    public void reportError(String domain, String key, Object[] arguments, 
+    public String reportError(String domain, String key, Object[] arguments, 
             short severity, Exception exception) throws XNIException {
-        reportError(fLocator, domain, key, arguments, severity, exception);
-    } // reportError(String,String,Object[],short,Exception)
+        return reportError(fLocator, domain, key, arguments, severity, exception);
+    } // reportError(String,String,Object[],short,Exception):String
     
     /**
      * Reports an error at a specific location.
@@ -311,16 +313,17 @@ public class XMLErrorReporter
      * @param arguments The replacement arguments for the error message,
      *                  if needed.
      * @param severity  The severity of the error.
+     * @return          The formatted error message.
      *
      * @see #SEVERITY_WARNING
      * @see #SEVERITY_ERROR
      * @see #SEVERITY_FATAL_ERROR
      */
-    public void reportError(XMLLocator location,
+    public String reportError(XMLLocator location,
             String domain, String key, Object[] arguments, 
             short severity) throws XNIException {
-        reportError(location, domain, key, arguments, severity, null);
-    } // reportError(XMLLocator,String,String,Object[],short)
+        return reportError(location, domain, key, arguments, severity, null);
+    } // reportError(XMLLocator,String,String,Object[],short):String
 
     /**
      * Reports an error at a specific location.
@@ -332,12 +335,13 @@ public class XMLErrorReporter
      *                  if needed.
      * @param severity  The severity of the error.
      * @param exception The exception to wrap.
+     * @return          The formatted error message.
      *
      * @see #SEVERITY_WARNING
      * @see #SEVERITY_ERROR
      * @see #SEVERITY_FATAL_ERROR
      */
-    public void reportError(XMLLocator location,
+    public String reportError(XMLLocator location,
                             String domain, String key, Object[] arguments, 
                             short severity, Exception exception) throws XNIException {
 
@@ -398,8 +402,9 @@ public class XMLErrorReporter
                 break;
             }
         }
+        return message;
 
-    } // reportError(XMLLocator,String,String,Object[],short,Exception)
+    } // reportError(XMLLocator,String,String,Object[],short,Exception):String
 
     //
     // XMLComponent methods

@@ -83,8 +83,8 @@ public class ElementPSVImpl implements ElementPSVI {
     /** validity: valid, invalid, unknown */
     protected short fValidity = ElementPSVI.VALIDITY_NOTKNOWN;
 
-    /** error codes */
-    protected String[] fErrorCodes = null;
+    /** error codes and error messages */
+    protected String[] fErrors = null;
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
@@ -157,12 +157,24 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return Array of error codes
      */
     public StringList getErrorCodes() {
-        if (fErrorCodes == null) {
+        if (fErrors == null || fErrors.length == 0) {
             return StringListImpl.EMPTY_LIST;
         }
-        return new StringListImpl(fErrorCodes, fErrorCodes.length);
+        return new PSVIErrorList(fErrors, true);
     }
-
+    
+    /**
+     * A list of error messages generated from the validation attempt or
+     * an empty <code>StringList</code> if no errors occurred during the 
+     * validation attempt. The indices of error messages in this list are 
+     * aligned with those in the <code>[schema error code]</code> list.
+     */
+    public StringList getErrorMessages() {
+        if (fErrors == null || fErrors.length == 0) {
+            return StringListImpl.EMPTY_LIST;
+        }
+        return new PSVIErrorList(fErrors, false);
+    }
 
     // This is the only information we can provide in a pipeline.
     public String getValidationContext() {
@@ -265,7 +277,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fMemberType = null;
         fValidationAttempted = ElementPSVI.VALIDATION_NONE;
         fValidity = ElementPSVI.VALIDITY_NOTKNOWN;
-        fErrorCodes = null;
+        fErrors = null;
         fValidationContext = null;
         fNormalizedValue = null;
         fActualValue = null;

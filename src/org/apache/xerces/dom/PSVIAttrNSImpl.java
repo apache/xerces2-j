@@ -22,6 +22,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
@@ -93,6 +94,9 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
 
     /** error codes */
     protected StringList fErrorCodes = null;
+    
+    /** error messages */
+    protected StringList fErrorMessages = null;
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
@@ -160,7 +164,23 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
      * @return list of error codes
      */
     public StringList getErrorCodes() {
-        return fErrorCodes;
+        if (fErrorCodes != null) {
+            return fErrorCodes;
+        }
+        return StringListImpl.EMPTY_LIST;
+    }
+    
+    /**
+     * A list of error messages generated from the validation attempt or
+     * an empty <code>StringList</code> if no errors occurred during the 
+     * validation attempt. The indices of error messages in this list are 
+     * aligned with those in the <code>[schema error code]</code> list.
+     */
+    public StringList getErrorMessages() {
+        if (fErrorMessages != null) {
+            return fErrorMessages;
+        }
+        return StringListImpl.EMPTY_LIST;
     }
 
     // This is the only information we can provide in a pipeline.
@@ -211,6 +231,7 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
         this.fValidity = attr.getValidity();
         this.fValidationAttempted = attr.getValidationAttempted();
         this.fErrorCodes = attr.getErrorCodes();
+        this.fErrorMessages = attr.getErrorMessages();
         this.fNormalizedValue = attr.getSchemaNormalizedValue();
         this.fActualValue = attr.getActualNormalizedValue();
         this.fActualValueType = attr.getActualNormalizedValueType();

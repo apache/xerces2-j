@@ -28,19 +28,19 @@ public interface ItemPSVI {
      */
     public static final short VALIDITY_NOTKNOWN         = 0;
     /**
-     *  Validity value indicating that validation has been strictly assessed 
+     * Validity value indicating that validation has been strictly assessed 
      * and the item in question is invalid according to the rules of schema 
      * validation. 
      */
     public static final short VALIDITY_INVALID          = 1;
     /**
-     *  Validation status indicating that schema validation has been performed 
+     * Validation status indicating that schema validation has been performed 
      * and the item in question is valid according to the rules of schema 
      * validation. 
      */
     public static final short VALIDITY_VALID            = 2;
     /**
-     *  Validation status indicating that schema validation has been performed 
+     * Validation status indicating that schema validation has been performed 
      * and the item in question has specifically been skipped. 
      */
     public static final short VALIDATION_NONE           = 0;
@@ -50,12 +50,12 @@ public interface ItemPSVI {
      */
     public static final short VALIDATION_PARTIAL        = 1;
     /**
-     *  Validation status indicating that full schema validation has been 
+     * Validation status indicating that full schema validation has been 
      * performed on the item. 
      */
     public static final short VALIDATION_FULL           = 2;
     /**
-     *  The nearest ancestor element information item with a 
+     * The nearest ancestor element information item with a 
      * <code>[schema information]</code> property (or this element item 
      * itself if it has such a property). For more information refer to 
      * element validation context and attribute validation context . 
@@ -63,7 +63,7 @@ public interface ItemPSVI {
     public String getValidationContext();
 
     /**
-     *  <code>[validity]</code>: determines the validity of the schema item 
+     * <code>[validity]</code>: determines the validity of the schema item 
      * with respect to the validation being attempted. The value will be one 
      * of the constants: <code>VALIDITY_NOTKNOWN</code>, 
      * <code>VALIDITY_INVALID</code> or <code>VALIDITY_VALID</code>. 
@@ -71,7 +71,7 @@ public interface ItemPSVI {
     public short getValidity();
 
     /**
-     *  <code>[validation attempted]</code>: determines the extent to which 
+     * <code>[validation attempted]</code>: determines the extent to which 
      * the schema item has been validated. The value will be one of the 
      * constants: <code>VALIDATION_NONE</code>, 
      * <code>VALIDATION_PARTIAL</code> or <code>VALIDATION_FULL</code>. 
@@ -79,11 +79,19 @@ public interface ItemPSVI {
     public short getValidationAttempted();
 
     /**
-     *  <code>[schema error code]</code>: a list of error codes generated from 
+     * <code>[schema error code]</code>: a list of error codes generated from 
      * the validation attempt or an empty <code>StringList</code> if no 
      * errors occurred during the validation attempt. 
      */
     public StringList getErrorCodes();
+    
+    /**
+     * A list of error messages generated from the validation attempt or
+     * an empty <code>StringList</code> if no errors occurred during the 
+     * validation attempt. The indices of error messages in this list are 
+     * aligned with those in the <code>[schema error code]</code> list.
+     */
+    public StringList getErrorMessages();
 
     /**
      * <code>[schema normalized value]</code>: the normalized value of this 
@@ -154,7 +162,7 @@ public interface ItemPSVI {
                                    throws XSException;
 
     /**
-     *  <code>[type definition]</code>: an item isomorphic to the type 
+     * <code>[type definition]</code>: an item isomorphic to the type 
      * definition used to validate the schema item. 
      */
     public XSTypeDefinition getTypeDefinition();
