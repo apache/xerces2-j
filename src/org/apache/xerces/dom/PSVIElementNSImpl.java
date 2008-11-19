@@ -22,6 +22,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
@@ -103,6 +104,9 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
 
     /** error codes */
     protected StringList fErrorCodes = null;
+    
+    /** error messages */
+    protected StringList fErrorMessages = null;
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
@@ -172,9 +176,24 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      * @return Array of error codes
      */
     public StringList getErrorCodes() {
-        return fErrorCodes;
+        if (fErrorCodes != null) {
+            return fErrorCodes;
+        }
+        return StringListImpl.EMPTY_LIST;
     }
-
+    
+    /**
+     * A list of error messages generated from the validation attempt or
+     * an empty <code>StringList</code> if no errors occurred during the 
+     * validation attempt. The indices of error messages in this list are 
+     * aligned with those in the <code>[schema error code]</code> list.
+     */
+    public StringList getErrorMessages() {
+        if (fErrorMessages != null) {
+            return fErrorMessages;
+        }
+        return StringListImpl.EMPTY_LIST;
+    }
 
     // This is the only information we can provide in a pipeline.
     public String getValidationContext() {
@@ -255,6 +274,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         this.fValidity = elem.getValidity();
         this.fValidationAttempted = elem.getValidationAttempted();
         this.fErrorCodes = elem.getErrorCodes();
+        this.fErrorMessages = elem.getErrorMessages();
         this.fNormalizedValue = elem.getSchemaNormalizedValue();
         this.fActualValue = elem.getActualNormalizedValue();
         this.fActualValueType = elem.getActualNormalizedValueType();

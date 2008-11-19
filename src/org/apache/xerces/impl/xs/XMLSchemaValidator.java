@@ -450,9 +450,10 @@ public class XMLSchemaValidator
 
         public void reportError(String domain, String key, Object[] arguments, short severity)
             throws XNIException {
-            fErrorReporter.reportError(domain, key, arguments, severity);
+            String message = fErrorReporter.reportError(domain, key, arguments, severity);
             if (fAugPSVI) {
                 fErrors.addElement(key);
+                fErrors.addElement(message);
             }
         } // reportError(String,String,Object[],short)
 
@@ -463,9 +464,10 @@ public class XMLSchemaValidator
             Object[] arguments,
             short severity)
             throws XNIException {
-            fErrorReporter.reportError(location, domain, key, arguments, severity);
+            String message = fErrorReporter.reportError(location, domain, key, arguments, severity);
             if (fAugPSVI) {
                 fErrors.addElement(key);
+                fErrors.addElement(message);
             }
         } // reportError(XMLLocator,String,String,Object[],short)
     }
@@ -2470,7 +2472,7 @@ public class XMLSchemaValidator
                 String[] errors = fXSIErrorReporter.mergeContext();
 
                 // PSVI: error codes
-                fCurrentPSVI.fErrorCodes = errors;
+                fCurrentPSVI.fErrors = errors;
                 // PSVI: validity
                 fCurrentPSVI.fValidity =
                     (errors == null) ? ElementPSVI.VALIDITY_VALID : ElementPSVI.VALIDITY_INVALID;
@@ -3000,7 +3002,7 @@ public class XMLSchemaValidator
 
             String[] errors = fXSIErrorReporter.mergeContext();
             // PSVI: error codes
-            attrPSVI.fErrorCodes = errors;
+            attrPSVI.fErrors = errors;
             // PSVI: validity
             attrPSVI.fValidity =
                 (errors == null) ? AttributePSVI.VALIDITY_VALID : AttributePSVI.VALIDITY_INVALID;
