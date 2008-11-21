@@ -85,6 +85,9 @@ Authors:
     <property name="debug" value="off"/>
     <property name="optimize" value="on"/>
     <property name="deprecation" value="off"/>
+  	
+    <property name="javac.source" value="${ant.java.version}"/>
+    <property name="javac.target" value="${ant.java.version}"/>
 
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
 
@@ -257,6 +260,8 @@ Authors:
 
     <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
+           source="${javac.source}"
+           target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
            debug="${debug}"
            deprecation="${deprecation}"
@@ -320,6 +325,8 @@ Authors:
     </copy>
     <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
+           source="${javac.source}"
+           target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
            debug="${debug}"
            includeAntRuntime="false"
@@ -337,6 +344,8 @@ Authors:
     </copy>
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
+           source="${javac.source}"
+           target="${javac.target}"
            classpath="${tools.dir}/${jar.apis}:${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"
            includeAntRuntime="false"
@@ -960,6 +969,8 @@ Authors:
 
     <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
+           source="${javac.source}"
+           target="${javac.target}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
@@ -1257,7 +1268,9 @@ Authors:
 
     <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
-    	   classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
+           source="${javac.source}"
+           target="${javac.target}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
@@ -1405,6 +1418,8 @@ Authors:
 
         <xjavac srcdir="${build.src}"
                destdir="${build.dest}"
+               source="${javac.source}"
+               target="${javac.target}"
                classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
                debug="${debug}"
                deprecation="${deprecation}"
@@ -1476,6 +1491,8 @@ Authors:
   	
     <javac srcdir="${build.src}"
            destdir="${build.dest}"
+           source="${javac.source}"
+           target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.ant}:${tools.dir}/${jar.ant.nodeps}"
            debug="${debug}"
            deprecation="${deprecation}"
