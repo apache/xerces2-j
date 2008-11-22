@@ -162,7 +162,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_FIELD, SchemaSymbols.ATT_XPATH}, fElem);
                 return;
             }
-            fText = fText.trim();
+            fText = XMLChar.trim(fText);
             try {
                 Field.XPath fXpath = new Field.XPath(fText, fSymbolTable,
                         schemaDoc.fNamespaceSupport);
