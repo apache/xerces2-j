@@ -107,6 +107,7 @@ final class StAXSchemaParser {
                 eventType != XMLStreamConstants.START_ELEMENT) {
                 throw new XMLStreamException();
             }
+            fLocationWrapper.setLocation(currentEvent.getLocation());
             fSchemaDOMParser.startDocument(fLocationWrapper, null, fNamespaceContext, null);
             loop: while (input.hasNext()) {
                 currentEvent = input.nextEvent();
@@ -183,6 +184,7 @@ final class StAXSchemaParser {
                 eventType != XMLStreamConstants.START_ELEMENT) {
                 throw new XMLStreamException();
             }
+            fLocationWrapper.setLocation(input.getLocation());
             fSchemaDOMParser.startDocument(fLocationWrapper, null, fNamespaceContext, null);
             boolean first = true;
             loop: while (input.hasNext()) {
