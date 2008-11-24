@@ -846,6 +846,7 @@ public class XSDHandler {
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(XSDDescription.CONTEXT_IMPORT);
                 fSchemaGrammarDescription.setBaseSystemId(doc2SystemId(schemaRoot));
+                fSchemaGrammarDescription.setLiteralSystemId(schemaHint);
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
                 
