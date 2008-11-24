@@ -488,138 +488,36 @@ public class XSDHandler {
         // parsing schemas
         prepareForParse();       
         
-        Document schemaRootDoc = null;
         Element schemaRoot = null;
         // first phase:  construct trees.
         if (is instanceof DOMInputSource) {
-            //clean up the field fHiddenNodes, used for DOMInputSource
-            fHiddenNodes.clear();
-            Node domNode = ((DOMInputSource)is).getNode();
-            
-            if (domNode instanceof Document) {
-                schemaRootDoc = (Document)domNode;
-                schemaRoot = DOMUtil.getRoot(schemaRootDoc);
-            }
-            else if (domNode instanceof Element) {
-                schemaRoot = (Element)domNode;
-            }
-            else {
-                return null;
-            }
+            schemaRoot = getSchemaDocument(schemaNamespace, (DOMInputSource) is,
+                    referType == XSDDescription.CONTEXT_PREPARSE,
+                    referType, null);
         } // DOMInputSource
         else if (is instanceof SAXInputSource) {
-            XMLReader parser = ((SAXInputSource)is).getXMLReader();
-            InputSource inputSource = ((SAXInputSource)is).getInputSource(); 
-            boolean namespacePrefixes = false;
-            if (parser != null) {
-                try {
-                    namespacePrefixes = parser.getFeature(NAMESPACE_PREFIXES);
-                }
-                catch (SAXException se) {}
-            }
-            else {
-                try {
-                    parser = XMLReaderFactory.createXMLReader();
-                }
-                // If something went wrong with the factory
-                // just use our own SAX parser.
-                catch (SAXException se) {
-                    parser = new SAXParser();
-                }
-                try {
-                    parser.setFeature(NAMESPACE_PREFIXES, true);
-                    namespacePrefixes = true;
-                }
-                catch (SAXException se) {}
-            }
-            // If XML names and Namespace URIs are already internalized we
-            // can avoid running them through the SymbolTable.
-            boolean stringsInternalized = false;
-            try {
-                stringsInternalized = parser.getFeature(STRING_INTERNING);
-            }
-            catch (SAXException exc) {
-                // The feature isn't recognized or getting it is not supported.
-                // In either case, assume that strings are not internalized.
-            }
-            if (fXSContentHandler == null) {
-                fXSContentHandler = new SchemaContentHandler();
-            }
-            fXSContentHandler.reset(fSchemaParser, fSymbolTable, 
-                    namespacePrefixes, stringsInternalized);
-            parser.setContentHandler(fXSContentHandler);
-            parser.setErrorHandler(fErrorReporter.getSAXErrorHandler());
-        	try {
-            	parser.parse(inputSource);	
-        	}
-        	catch (SAXException se) {
-        		return null;
-        	}
-        	// Disconnect the schema loader and other objects from the XMLReader
-        	try {
-        	    parser.setContentHandler(null);
-        	    parser.setErrorHandler(null);
-        	}
-        	// Ignore any exceptions thrown by the XMLReader. Old versions of SAX
-        	// required an XMLReader to throw a NullPointerException if an attempt
-        	// to set a handler to null was made.
-        	catch (Exception e) {}
-        	schemaRootDoc = fXSContentHandler.getDocument();
-            if (schemaRootDoc == null) {
-                // something went wrong right off the hop
-                return null;
-            }
-        	schemaRoot = DOMUtil.getRoot(schemaRootDoc);          
-        }
+            schemaRoot = getSchemaDocument(schemaNamespace, (SAXInputSource) is,
+                    referType == XSDDescription.CONTEXT_PREPARSE,
+                    referType, null);             
+        } // SAXInputSource
         else if (is instanceof StAXInputSource) {
-            StAXInputSource sis = (StAXInputSource)is;
-            if (fStAXSchemaParser == null) {
-                fStAXSchemaParser = new StAXSchemaParser();
-            }
-            fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
-            try {
-                final boolean consumeRemainingContent = sis.shouldConsumeRemainingContent();
-                final XMLStreamReader streamReader = sis.getXMLStreamReader();
-                if (streamReader != null) {
-                    fStAXSchemaParser.parse(streamReader);
-                    if (consumeRemainingContent) {
-                        while (streamReader.hasNext()) {
-                            streamReader.next();
-                        }
-                    }
-                }
-                else {
-                    final XMLEventReader eventReader = sis.getXMLEventReader();
-                    fStAXSchemaParser.parse(eventReader);
-                    if (consumeRemainingContent) {
-                        while (eventReader.hasNext()) {
-                            eventReader.nextEvent();
-                        }
-                    }
-                }
-            }
-            catch (XMLStreamException e) {
-                return null;
-            }
-            schemaRootDoc = fStAXSchemaParser.getDocument();
-            if (schemaRootDoc == null) {
-                return null;
-            }
-            schemaRoot = DOMUtil.getRoot(schemaRootDoc);
-        }
+            schemaRoot = getSchemaDocument(schemaNamespace, (StAXInputSource) is,
+                    referType == XSDDescription.CONTEXT_PREPARSE,
+                    referType, null);
+        } // StAXInputSource
         else {
         	schemaRoot = getSchemaDocument(schemaNamespace, is,
                   referType == XSDDescription.CONTEXT_PREPARSE,
                   referType, null);
              
-        }//is instanceof XMLInputSource
+        } //is instanceof XMLInputSource
 
-        if(schemaRoot == null){
+        if (schemaRoot == null) {
             // something went wrong right off the hop
             return null;
         }      
         
-        if ( referType == XSDDescription.CONTEXT_PREPARSE) {
+        if (referType == XSDDescription.CONTEXT_PREPARSE) {
         	Element schemaElem = schemaRoot;
             schemaNamespace = DOMUtil.getAttrValue(schemaElem, SchemaSymbols.ATT_TARGETNAMESPACE);
             if(schemaNamespace != null && schemaNamespace.length() > 0) {
@@ -1798,113 +1696,14 @@ public class XSDHandler {
             }
         }
         if (schemaSource instanceof DOMInputSource) {
-            fHiddenNodes.clear();
-            Node node = ((DOMInputSource)schemaSource).getNode();
- 
-            if (node instanceof Document) {
-                return DOMUtil.getRoot((Document) node);
-            }
-            else if (node instanceof Element) {
-                return (Element) node;
-            }
-            else {
-                return null;
-            }
+            return getSchemaDocument(desc.getTargetNamespace(), (DOMInputSource) schemaSource, mustResolve, desc.getContextType(), referElement);
         } // DOMInputSource
         else if (schemaSource instanceof SAXInputSource) {
-            XMLReader parser = ((SAXInputSource)schemaSource).getXMLReader();
-            InputSource inputSource = ((SAXInputSource)schemaSource).getInputSource(); 
-            boolean namespacePrefixes = false;
-            if (parser != null) {
-                try {
-                    namespacePrefixes = parser.getFeature(NAMESPACE_PREFIXES);
-                }
-                catch (SAXException se) {}
-            }
-            else {
-                try {
-                    parser = XMLReaderFactory.createXMLReader();
-                }
-                // If something went wrong with the factory
-                // just use our own SAX parser.
-                catch (SAXException se) {
-                    parser = new SAXParser();
-                }
-                try {
-                    parser.setFeature(NAMESPACE_PREFIXES, true);
-                    namespacePrefixes = true;
-                }
-                catch (SAXException se) {}
-            }
-            // If XML names and Namespace URIs are already internalized we
-            // can avoid running them through the SymbolTable.
-            boolean stringsInternalized = false;
-            try {
-                stringsInternalized = parser.getFeature(STRING_INTERNING);
-            }
-            catch (SAXException exc) {
-                // The feature isn't recognized or getting it is not supported.
-                // In either case, assume that strings are not internalized.
-            }
-            if (fXSContentHandler == null) {
-                fXSContentHandler = new SchemaContentHandler();
-            }
-            fXSContentHandler.reset(fSchemaParser, fSymbolTable, 
-                    namespacePrefixes, stringsInternalized);
-            parser.setContentHandler(fXSContentHandler);
-            parser.setErrorHandler(fErrorReporter.getSAXErrorHandler());
-            try {
-                parser.parse(inputSource);  
-            }
-            catch (SAXException se) {
-                return null;
-            }
-            catch (IOException ioe) {
-                return null;
-            }
-            Document root = fXSContentHandler.getDocument();
-            if (root == null) {
-                // something went wrong right off the hop
-                return null;
-            }
-            return DOMUtil.getRoot(root);          
-        }
+            return getSchemaDocument(desc.getTargetNamespace(), (SAXInputSource) schemaSource, mustResolve, desc.getContextType(), referElement);    
+        } // SAXInputSource
         else if (schemaSource instanceof StAXInputSource) {
-            StAXInputSource sis = (StAXInputSource)schemaSource;
-            if (fStAXSchemaParser == null) {
-                fStAXSchemaParser = new StAXSchemaParser();
-            }
-            fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
-            try {
-                final boolean consumeRemainingContent = sis.shouldConsumeRemainingContent();
-                final XMLStreamReader streamReader = sis.getXMLStreamReader();
-                if (streamReader != null) {
-                    fStAXSchemaParser.parse(streamReader);
-                    if (consumeRemainingContent) {
-                        while (streamReader.hasNext()) {
-                            streamReader.next();
-                        }
-                    }
-                }
-                else {
-                    final XMLEventReader eventReader = sis.getXMLEventReader();
-                    fStAXSchemaParser.parse(eventReader);
-                    if (consumeRemainingContent) {
-                        while (eventReader.hasNext()) {
-                            eventReader.nextEvent();
-                        }
-                    }
-                }
-            }
-            catch (XMLStreamException e) {
-                return null;
-            }
-            Document root = fStAXSchemaParser.getDocument();
-            if (root == null) {
-                return null;
-            }
-            return DOMUtil.getRoot(root);
-        }
+            return getSchemaDocument(desc.getTargetNamespace(), (StAXInputSource) schemaSource, mustResolve, desc.getContextType(), referElement);
+        } // StAXInputSource
         return getSchemaDocument(desc.getTargetNamespace(), schemaSource, mustResolve, desc.getContextType(), referElement);
     } // getSchema(String, String, String, boolean, short):  Document
     
@@ -1951,16 +1750,9 @@ public class XSDHandler {
                 }
                 
                 fSchemaParser.parse(schemaSource);
-                schemaElement = fSchemaParser.getDocument() == null ? null: DOMUtil.getRoot(fSchemaParser.getDocument());
-                
-                // now we need to store the mapping information from system id
-                // to the document. also from the document to the system id.
-                if (key != null)
-                    fTraversed.put(key, schemaElement );
-                if (schemaId != null)
-                    fDoc2SystemId.put(schemaElement, schemaId );
-                fLastSchemaWasDuplicate = false;
-                return schemaElement;
+                Document schemaDocument = fSchemaParser.getDocument();
+                schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
+                return getSchemaDocument0(key, schemaId, schemaElement);
             }
             else {
                 hasInput = false;
@@ -1968,7 +1760,267 @@ public class XSDHandler {
         }
         catch (IOException ex) {
         }
+        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement);
+    } // getSchemaDocument(String, XMLInputSource, boolean, short, Element): Element
+    
+    /**
+     * getSchemaDocument method uses SAXInputSource to parse a schema document.
+     * @param schemaNamespace
+     * @param schemaSource
+     * @param mustResolve
+     * @param referType
+     * @param referElement
+     * @return A schema Element.
+     */
+    private Element getSchemaDocument(String schemaNamespace, SAXInputSource schemaSource,
+            boolean mustResolve, short referType, Element referElement) {
+        XMLReader parser = schemaSource.getXMLReader();
+        InputSource inputSource = schemaSource.getInputSource();
+        boolean hasInput = true;
+        Element schemaElement = null;
+        try {
+            if (inputSource != null &&
+                    (inputSource.getSystemId() != null ||
+                     inputSource.getByteStream() != null ||
+                     inputSource.getCharacterStream() != null)) {
+                
+                // check whether the same document has been parsed before. 
+                // If so, return the document corresponding to that system id.
+                XSDKey key = null;
+                String schemaId = null;
+                if (referType != XSDDescription.CONTEXT_PREPARSE) {
+                    schemaId = XMLEntityManager.expandSystemId(inputSource.getSystemId(), schemaSource.getBaseSystemId(), false);
+                    key = new XSDKey(schemaId, referType, schemaNamespace);
+                    if ((schemaElement = (Element) fTraversed.get(key)) != null) {
+                        fLastSchemaWasDuplicate = true;
+                        return schemaElement;
+                    }
+                }
+                
+                boolean namespacePrefixes = false;
+                if (parser != null) {
+                    try {
+                        namespacePrefixes = parser.getFeature(NAMESPACE_PREFIXES);
+                    }
+                    catch (SAXException se) {}
+                }
+                else {
+                    try {
+                        parser = XMLReaderFactory.createXMLReader();
+                    }
+                    // If something went wrong with the factory
+                    // just use our own SAX parser.
+                    catch (SAXException se) {
+                        parser = new SAXParser();
+                    }
+                    try {
+                        parser.setFeature(NAMESPACE_PREFIXES, true);
+                        namespacePrefixes = true;
+                    }
+                    catch (SAXException se) {}
+                }
+                // If XML names and Namespace URIs are already internalized we
+                // can avoid running them through the SymbolTable.
+                boolean stringsInternalized = false;
+                try {
+                    stringsInternalized = parser.getFeature(STRING_INTERNING);
+                }
+                catch (SAXException exc) {
+                    // The feature isn't recognized or getting it is not supported.
+                    // In either case, assume that strings are not internalized.
+                }
+                if (fXSContentHandler == null) {
+                    fXSContentHandler = new SchemaContentHandler();
+                }
+                fXSContentHandler.reset(fSchemaParser, fSymbolTable, 
+                        namespacePrefixes, stringsInternalized);
+                parser.setContentHandler(fXSContentHandler);
+                parser.setErrorHandler(fErrorReporter.getSAXErrorHandler());
+                
+                parser.parse(inputSource);
+                // Disconnect the schema loader and other objects from the XMLReader
+                try {
+                    parser.setContentHandler(null);
+                    parser.setErrorHandler(null);
+                }
+                // Ignore any exceptions thrown by the XMLReader. Old versions of SAX
+                // required an XMLReader to throw a NullPointerException if an attempt
+                // to set a handler to null was made.
+                catch (Exception e) {}
+                
+                Document schemaDocument = fXSContentHandler.getDocument();
+                schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
+                return getSchemaDocument0(key, schemaId, schemaElement);
+            }
+            else {
+                hasInput = false;
+            }
+        }
+        catch (SAXException se) {    
+        }
+        catch (IOException ioe) {
+        }
+        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement);
+    } // getSchemaDocument(String, SAXInputSource, boolean, short, Element): Element
+    
+    /**
+     * getSchemaDocument method uses DOMInputSource to parse a schema document.
+     * @param schemaNamespace
+     * @param schemaSource
+     * @param mustResolve
+     * @param referType
+     * @param referElement
+     * @return A schema Element.
+     */
+    private Element getSchemaDocument(String schemaNamespace, DOMInputSource schemaSource,
+            boolean mustResolve, short referType, Element referElement) {
+        boolean hasInput = true;
+        Element schemaElement = null;
+        Element schemaRootElement = null;
         
+        final Node node = schemaSource.getNode();
+        short nodeType = -1;
+        if (node != null) {
+            nodeType = node.getNodeType();
+            if (nodeType == Node.DOCUMENT_NODE) {
+                schemaRootElement = DOMUtil.getRoot((Document) node);
+            }
+            else if (nodeType == Node.ELEMENT_NODE) {
+                schemaRootElement = (Element) node;
+            }
+        }
+        
+        try {
+            if (schemaRootElement != null) {
+                // check whether the same document has been parsed before. 
+                // If so, return the document corresponding to that system id.
+                XSDKey key = null;
+                String schemaId = null;
+                if (referType != XSDDescription.CONTEXT_PREPARSE) {
+                    schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
+                    boolean isDocument = (nodeType == Node.DOCUMENT_NODE);
+                    if (!isDocument) {
+                        Node parent = schemaRootElement.getParentNode();
+                        if (parent != null) {
+                            isDocument = (parent.getNodeType() == Node.DOCUMENT_NODE);
+                        }
+                    }
+                    if (isDocument) {
+                        key = new XSDKey(schemaId, referType, schemaNamespace);
+                        if ((schemaElement = (Element) fTraversed.get(key)) != null) {
+                            fLastSchemaWasDuplicate = true;
+                            return schemaElement;
+                        }
+                    }
+                }
+
+                schemaElement = schemaRootElement;
+                return getSchemaDocument0(key, schemaId, schemaElement);
+            }
+            else {
+                hasInput = false;
+            }
+        }
+        catch (IOException ioe) {
+        }
+        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement);
+    } // getSchemaDocument(String, DOMInputSource, boolean, short, Element): Element
+    
+    /**
+     * getSchemaDocument method uses StAXInputSource to parse a schema document.
+     * @param schemaNamespace
+     * @param schemaSource
+     * @param mustResolve
+     * @param referType
+     * @param referElement
+     * @return A schema Element.
+     */
+    private Element getSchemaDocument(String schemaNamespace, StAXInputSource schemaSource,
+            boolean mustResolve, short referType, Element referElement) {
+        Element schemaElement = null;
+        try {
+            final boolean consumeRemainingContent = schemaSource.shouldConsumeRemainingContent();
+            final XMLStreamReader streamReader = schemaSource.getXMLStreamReader();
+            final XMLEventReader eventReader = schemaSource.getXMLEventReader();
+            
+            // check whether the same document has been parsed before. 
+            // If so, return the document corresponding to that system id.
+            XSDKey key = null;
+            String schemaId = null;
+            if (referType != XSDDescription.CONTEXT_PREPARSE) {
+                schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
+                boolean isDocument = consumeRemainingContent;
+                if (!isDocument) {
+                    if (streamReader != null) {
+                        isDocument = (streamReader.getEventType() == XMLStreamReader.START_DOCUMENT);
+                    }
+                    else {
+                        isDocument = eventReader.peek().isStartDocument();
+                    }
+                }
+                if (isDocument) {
+                    key = new XSDKey(schemaId, referType, schemaNamespace);
+                    if ((schemaElement = (Element) fTraversed.get(key)) != null) {
+                        fLastSchemaWasDuplicate = true;
+                        return schemaElement;
+                    }
+                }
+            }
+            
+            if (fStAXSchemaParser == null) {
+                fStAXSchemaParser = new StAXSchemaParser();
+            }
+            fStAXSchemaParser.reset(fSchemaParser, fSymbolTable);
+            
+            if (streamReader != null) {
+                fStAXSchemaParser.parse(streamReader);
+                if (consumeRemainingContent) {
+                    while (streamReader.hasNext()) {
+                        streamReader.next();
+                    }
+                }
+            }
+            else {
+                fStAXSchemaParser.parse(eventReader);
+                if (consumeRemainingContent) {
+                    while (eventReader.hasNext()) {
+                        eventReader.nextEvent();
+                    }
+                }
+            }
+            Document schemaDocument = fStAXSchemaParser.getDocument();
+            schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
+            return getSchemaDocument0(key, schemaId, schemaElement);
+        }
+        catch (XMLStreamException e) {
+        }
+        catch (IOException e) {
+        }
+        return getSchemaDocument1(mustResolve, true, schemaSource, referElement);
+    } // getSchemaDocument(String, StAXInputSource, boolean, short, Element): Element
+    
+    /**
+     * Code shared between the various getSchemaDocument() methods which
+     * stores mapping information for the document.
+     */
+    private Element getSchemaDocument0(XSDKey key, String schemaId, Element schemaElement) {
+        // now we need to store the mapping information from system id
+        // to the document. also from the document to the system id.
+        if (key != null) {
+            fTraversed.put(key, schemaElement);
+        }
+        if (schemaId != null) {
+            fDoc2SystemId.put(schemaElement, schemaId);
+        }
+        fLastSchemaWasDuplicate = false;
+        return schemaElement;
+    } // getSchemaDocument0(XSDKey, String, Element): Element
+    
+    /**
+     * Error handling code shared between the various getSchemaDocument() methods.
+     */
+    private Element getSchemaDocument1(boolean mustResolve, boolean hasInput, 
+            XMLInputSource schemaSource, Element referElement) {
         // either an error occured (exception), or empty input source was
         // returned, we need to report an error or a warning
         if (mustResolve) {
@@ -1991,7 +2043,7 @@ public class XSDHandler {
         
         fLastSchemaWasDuplicate = false;
         return null;
-    } // getSchema(String, XMLInputSource, boolean, boolean): Document
+    } // getSchemaDocument1(boolean, boolean, XMLInputSource, Element): Element
     
     // initialize all the traversers.
     // this should only need to be called once during the construction
