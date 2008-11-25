@@ -102,6 +102,9 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     // parsers for annotation support
     private SoftReference fSAXParser = null;
     private SoftReference fDOMParser = null;
+    
+    // is this grammar immutable?  (fully constructed and not changeable)
+    private boolean fIsImmutable = false;
 
     //
     // Constructors
@@ -1297,6 +1300,14 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fAnnotations = newArray;
         }
         fAnnotations[fNumAnnotations++] = annotation;
+    }
+    
+    public void setImmutable(boolean isImmutable) {
+        fIsImmutable = isImmutable;
+    }
+    
+    public boolean isImmutable() {
+        return fIsImmutable;
     }
 
 } // class SchemaGrammar

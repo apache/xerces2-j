@@ -1010,13 +1010,17 @@ public class XSDHandler {
     
     private boolean isExistingGrammar(XSDDescription desc) {
         SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
-        if(sg == null) {
+        if (sg == null) {
             return findGrammar(desc) != null;
+        }
+        else if (sg.isImmutable()) {
+            return true;
         }
         else {
             try {
                 return sg.getDocumentLocations().contains(XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId(), false));
-            } catch (MalformedURIException e) {
+            } 
+            catch (MalformedURIException e) {
                 return false;
             }
         }
