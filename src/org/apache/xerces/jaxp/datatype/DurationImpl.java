@@ -100,11 +100,6 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
 class DurationImpl
 	extends Duration
 	implements Serializable {
-    
-    /**
-     * <p>Number of Fields.</p>
-     */
-    private static final int FIELD_NUM = 6;
 
     /**
      * <p>Internal array of value Fields.</p>
@@ -119,21 +114,9 @@ class DurationImpl
     };
 
     /**
-     * <p>Internal array of value Field ids.</p>
-     */
-    private static final int[] FIELD_IDS = {
-        DatatypeConstants.YEARS.getId(),
-        DatatypeConstants.MONTHS.getId(),
-        DatatypeConstants.DAYS.getId(),
-        DatatypeConstants.HOURS.getId(),
-        DatatypeConstants.MINUTES.getId(),
-        DatatypeConstants.SECONDS.getId()
-    };
-
-    /**
      * <p>BigDecimal value of 0.</p>
      */    
-    private static final BigDecimal ZERO = BigDecimal.valueOf((long) 0);
+    private static final BigDecimal ZERO = BigDecimal.valueOf(0);
 
     /**
      * <p>Indicates the sign. -1, 0 or 1 if the duration is negative,
@@ -704,8 +687,7 @@ class DurationImpl
 	 */
     public int compare(Duration rhs) {
     	
-    	BigInteger maxintAsBigInteger = BigInteger.valueOf((long) Integer.MAX_VALUE);
-    	BigInteger minintAsBigInteger = BigInteger.valueOf((long) Integer.MIN_VALUE);
+    	BigInteger maxintAsBigInteger = BigInteger.valueOf(Integer.MAX_VALUE);
 
     	// check for fields that are too large in this Duration
     	if (years != null && years.compareTo(maxintAsBigInteger) == 1) {    		
