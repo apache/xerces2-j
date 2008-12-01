@@ -165,6 +165,23 @@ catch (SAXException e) {
     buffer.
    </note>
   </property>
+  <property name='http://apache.org/xml/properties/locale'
+            id='locale'>
+   <desc>
+    The locale to use for reporting errors and warnings. When the 
+    value of this property is not set the platform default returned 
+    from java.util.Locale.getDefault() will be used.
+   </desc>
+   <type>java.util.Locale</type>
+   <access general='read-write'/>
+   <since value='&ParserName; 2.10.0'/>
+   <note>
+    If no messages are available for the specified locale the
+    platform default will be used. If the platform default is
+    not English and no messages are available for this locale
+    then messages will be reported in English.
+   </note>
+  </property>
   <property name='http://apache.org/xml/properties/security-manager'
             id='security-manager'>
    <desc>
