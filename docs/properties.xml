@@ -125,18 +125,60 @@ catch (SAXException e) {
     property.
    </note>
   </property>
+  <property name='http://apache.org/xml/properties/validation/schema/root-element-declaration'
+            id='validation.schema.root-element-declaration'>
+   <desc>
+    A QName or XSElementDeclaration object representing the top-level element declaration 
+    used when validating the root element of a document or document fragment (also
+    known as the validation root). If the value of this property is non-null the 
+    validation root will be validated against the specified element declaration regardless
+    of the actual name of the root element in the instance document. If the value is a 
+    QName and a element declaration cannot be found an error will be reported.
+   </desc>
+   <type>javax.xml.namespace.QName or org.apache.xerces.xs.XSElementDeclaration</type>
+   <access general='read-write'/>
+   <since value='&ParserName; 2.10.0'/>
+   <note>
+    If the 'root-type-definition' property has been set this property takes precedence
+    if its value is non-null.
+   </note>
+   <note>
+    If the value specified is an XSElementDeclaration it must be an object obtained from
+    Xerces and must also be an object which is known to the schema validator, for example
+    one which would be returned from an XMLGrammarPool. If these constraints are not met
+    a ClassCastException may be thrown or processing of substitution groups, xsi:type
+    and wildcards may fail to locate otherwise available schema components.
+   </note>
+   <see idref='validation.schema.root-type-definition'/>
+  </property>
   <property name='http://apache.org/xml/properties/validation/schema/root-type-definition'
             id='validation.schema.root-type-definition'>
    <desc>
-    A QName object representing the top-level type definition used when 
-    validating the root element of a document or document fragment (also
-    known as the validation root). If the value of this property is non-null, 
-    the validation root will not be validated against any element declaration. 
-    If the type definition cannot be found an error will be reported.
+    A QName or XSTypeDefinition object representing the top-level type definition 
+    used when validating the root element of a document or document fragment (also
+    known as the validation root). If the value of this property is non-null and the
+    'root-element-declaration' property is not set the validation root will not be validated 
+    against any element declaration. If the value is a QName and a type definition cannot 
+    be found an error will be reported.
    </desc>
-   <type>javax.xml.namespace.QName</type>
+   <type>javax.xml.namespace.QName or org.apache.xerces.xs.XSTypeDefinition</type>
    <access general='read-write'/>
    <since value='&ParserName; 2.8.0'/>
+   <note>
+    If the 'root-element-declaration' property has been set this property is ignored.
+   </note>
+   <note>
+    Prior to &ParserName; 2.10.0 setting the value of this property to an XSTypeDefinition
+    was not supported.
+   </note>
+   <note>
+    If the value specified is an XSTypeDefinition it must be an object obtained from
+    Xerces and must also be an object which is known to the schema validator, for example
+    one which would be returned from an XMLGrammarPool. If these constraints are not met
+    a ClassCastException may be thrown or processing of substitution groups, xsi:type
+    and wildcards may fail to locate otherwise available schema components.
+   </note>
+   <see idref='validation.schema.root-element-declaration'/>
   </property>
   <property name='http://apache.org/xml/properties/input-buffer-size'
             id='input-buffer-size'>
@@ -169,7 +211,7 @@ catch (SAXException e) {
             id='locale'>
    <desc>
     The locale to use for reporting errors and warnings. When the 
-    value of this property is not set the platform default returned 
+    value of this property is null the platform default returned 
     from java.util.Locale.getDefault() will be used.
    </desc>
    <type>java.util.Locale</type>
