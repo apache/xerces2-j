@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -984,7 +983,7 @@ public class XMLEntityManager
                         // set preference for redirection
                         followRedirects = httpInputSource.getFollowHTTPRedirects();
                         if (!followRedirects) {
-                            setInstanceFollowRedirects(urlConnection, followRedirects);
+                            urlConnection.setInstanceFollowRedirects(followRedirects);
                         }
                     }
                     
@@ -1860,19 +1859,6 @@ public class XMLEntityManager
         // if any exception is thrown, it'll get thrown to the caller.
         
     } // expandSystemIdStrictOff(String,String):String
-    
-    /**
-     * Attempt to set whether redirects will be followed for an <code>HttpURLConnection</code>.
-     * This may fail on earlier JDKs which do not support setting this preference.
-     */
-    public static void setInstanceFollowRedirects(HttpURLConnection urlCon, boolean followRedirects) {
-        try {
-            Method method = HttpURLConnection.class.getMethod("setInstanceFollowRedirects", new Class[] {Boolean.TYPE});
-            method.invoke(urlCon, new Object[] {followRedirects ? Boolean.TRUE : Boolean.FALSE});
-        }
-        // setInstanceFollowRedirects doesn't exist.
-        catch (Exception exc) {}
-    }
     
     public static OutputStream createOutputStream(String uri) throws IOException {
         // URI was specified. Handle relative URIs.
