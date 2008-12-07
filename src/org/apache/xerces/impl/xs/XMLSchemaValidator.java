@@ -1966,19 +1966,19 @@ public class XMLSchemaValidator
         }
         
         if (fElementDepth == 0) {
-            // 1.2.1.1 A type definition was stipulated by the processor
-            if (fRootTypeDefinition != null) {
-                fCurrentType = fRootTypeDefinition;
-            }
-            else if (fRootTypeQName != null) {
-                processRootTypeQName();
-            }
             // 1.1.1.1 An element declaration was stipulated by the processor
-            else if (fRootElementDeclaration != null) {
+            if (fRootElementDeclaration != null) {
                 fCurrentElemDecl = fRootElementDeclaration;
             }
             else if (fRootElementDeclQName != null) {
                 processRootElementDeclQName();
+            }
+            // 1.2.1.1 A type definition was stipulated by the processor
+            else if (fRootTypeDefinition != null) {
+                fCurrentType = fRootTypeDefinition;
+            }
+            else if (fRootTypeQName != null) {
+                processRootTypeQName();
             }
         }
         
