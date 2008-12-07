@@ -865,7 +865,7 @@ public abstract class ParentNode
         Node child1 = getFirstChild();
         Node child2 = arg.getFirstChild();
         while (child1 != null && child2 != null) {
-            if (!((NodeImpl) child1).isEqualNode(child2)) {
+            if (!child1.isEqualNode(child2)) {
                 return false;
             }
             child1 = child1.getNextSibling();
