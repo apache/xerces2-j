@@ -17,26 +17,7 @@
 -->
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="Document Object Model Level 3 Implementation">
-	<!--
-	<s2 title="Disclaimer">
-		<p>
 
-			The &ParserNameLong; &ParserVersion; contains a partial
-			implementation of the W3C Document Object Model Level 3.
-		</p>
-		<p>
-			The
-			<jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>
-			specification is at the stage of
-			<strong>Proposed Recommendation</strong>, which represents work in progress 
-			and has been widely reviewed and satisfies certain technical requirements
-			but may still change based on implementation experience.
-
-			This implementation is experimental: it should not be
-			considered as complete or correct.
-		</p>
-	</s2>
-	-->
 	<s2 title="Introduction">
 		<p>
 			The &ParserNameLong; &ParserVersion; contains an implementation of 
@@ -152,7 +133,7 @@
 				<strong>validate</strong>
 				[
 				<em>true/false</em>
-				] -- revalidation is supported only against XML Schemas. For more information, please refer to
+				] -- revalidation is only supported against XML Schemas and DTDs. For more information, please refer to
 				<link idref='faq-dom'>How to revalidate DOM in memory?</link>
 				.
 			</li>
