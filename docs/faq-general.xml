@@ -43,7 +43,7 @@
         </p>
         <ul>
         <li><code>xml-apis.jar</code> contains the DOM level 3,
-        SAX 2.0.2 and the JAXP 1.3 APIs;</li>
+        SAX 2.0.2 and the JAXP 1.4 APIs;</li>
         <li><code>xercesImpl.jar</code> contains the implementation of
         these API&apos;s as well as the XNI API.
         </li>
@@ -54,8 +54,8 @@
         </p>
     </a>
  </faq>
- <faq title="Using JAXP 1.3 on JDK 1.4">
-  <q>How can I use JAXP 1.3 on JDK 1.4?</q>
+ <faq title="Using JAXP 1.4 on JDK 1.4 and above">
+  <q>How can I use JAXP 1.4 on JDK 1.4 and above?</q>
   <a>
    <p>
     Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">Endorsed Standards Override Mechanism</jump>

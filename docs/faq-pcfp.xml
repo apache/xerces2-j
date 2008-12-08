@@ -81,7 +81,7 @@
   <q>How can I tell the parser to validate against XML Schema and not to report DTD validation errors?</q>
   <a>
    <p>
-    Using JAXP you can instruct the parser to validate against XML Schema only. The JAXP 1.3
+    Using JAXP you can instruct the parser to validate against XML Schema only. The JAXP 1.4
     Validation API allows you to build an in-memory representation of an XML Schema which 
     you can then set on a parser factory. Parsers created from the factory will validate
     documents using the schema object you specified.

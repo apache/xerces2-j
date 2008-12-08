@@ -22,9 +22,9 @@
     <q>How do I enable XInclude processing?</q>
     <a>
      <p>
-      Applications using JAXP 1.3 can enable XInclude processing by setting
-      XInclude awareness on the parser factory. The following demonstrates
-      how to accomplish this with SAX:
+      Applications using JAXP 1.3 (and above) can enable XInclude processing 
+      by setting XInclude awareness on the parser factory. The following 
+      demonstrates how to accomplish this with SAX:
      </p>
      <source>import javax.xml.parsers.SAXParserFactory;
      

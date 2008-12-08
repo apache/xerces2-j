@@ -97,7 +97,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     the parser.  Currently &ParserName; supports DOM level 3, SAX
     2.0.2, and the <code>javax.xml.datatype</code>, 
     <code>javax.xml.parsers</code> and <code>javax.xml.validation</code> 
-    parts of JAXP 1.3.</td>
+    parts of JAXP 1.4.</td>
    </tr>
    <tr>
     <td>xercesSamples.jar</td>

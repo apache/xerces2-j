@@ -203,8 +203,8 @@ PSVIProvider psviProvider = (PSVIProvider)reader;</source>
     </a>
   </faq>
 
- <faq title="Accessing PSVI via the JAXP 1.3 Validation API">
-   <q>How do I access PSVI via the JAXP 1.3 Validation API?</q>
+ <faq title="Accessing PSVI via the JAXP 1.4 Validation API">
+   <q>How do I access PSVI via the JAXP 1.4 Validation API?</q>
    <a> <p>Like the Xerces SAX parser the implementations of <code>javax.xml.validation.Validator</code>
        and <code>javax.xml.validation.ValidatorHandler</code> also implement the
        <code>org.apache.xerces.xs.PSVIProvider</code> interface. Within the scope of the methods 

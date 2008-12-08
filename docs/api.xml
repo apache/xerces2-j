@@ -44,6 +44,17 @@
       <jump href='javadocs/api/javax/xml/parsers/package-summary.html'>Parsers</jump>
      </li>
      <li>
+      <jump href='javadocs/api/javax/xml/stream/package-summary.html'>Stream</jump>
+     </li>
+     <ul>
+      <li>
+       <jump href='javadocs/api/javax/xml/stream/events/package-summary.html'>Events</jump>
+      </li>
+      <li>
+       <jump href='javadocs/api/javax/xml/stream/util/package-summary.html'>Utilities</jump>
+      </li>
+     </ul>
+     <li>
       <jump href='javadocs/api/javax/xml/transform/package-summary.html'>Transform</jump>
      </li>
      <ul>
@@ -52,6 +63,9 @@
       </li>
       <li>
        <jump href='javadocs/api/javax/xml/transform/sax/package-summary.html'>SAX</jump>
+      </li>
+      <li>
+       <jump href='javadocs/api/javax/xml/transform/stax/package-summary.html'>StAX</jump>
       </li>
       <li>
        <jump href='javadocs/api/javax/xml/transform/stream/package-summary.html'>Stream</jump>
