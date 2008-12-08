@@ -2006,16 +2006,17 @@ public class XMLSchemaValidator
             // 1.1.1.1 An element declaration was stipulated by the processor
             if (fRootElementDeclaration != null) {
                 fCurrentElemDecl = fRootElementDeclaration;
+                checkElementMatchesRootElementDecl(fCurrentElemDecl, element);
             }
             else if (fRootElementDeclQName != null) {
-                processRootElementDeclQName();
+                processRootElementDeclQName(fRootElementDeclQName, element);
             }
             // 1.2.1.1 A type definition was stipulated by the processor
             else if (fRootTypeDefinition != null) {
                 fCurrentType = fRootTypeDefinition;
             }
             else if (fRootTypeQName != null) {
-                processRootTypeQName();
+                processRootTypeQName(fRootTypeQName);
             }
         }
         
@@ -2084,7 +2085,7 @@ public class XMLSchemaValidator
                 // of this. - SG
                 fXSIErrorReporter.fErrorReporter.reportError(
                     XSMessageFormatter.SCHEMA_DOMAIN,
-                    "cvc-elt.1",
+                    "cvc-elt.1.a",
                     new Object[] { element.rawname },
                     XMLErrorReporter.SEVERITY_ERROR);
             }
@@ -3414,46 +3415,58 @@ public class XMLSchemaValidator
         return actualValue;
     } // elementLocallyValidComplexType
     
-    void processRootTypeQName() {
-        String rootTypeNamespace = fRootTypeQName.getNamespaceURI();
+    void processRootTypeQName(final javax.xml.namespace.QName rootTypeQName) {
+        String rootTypeNamespace = rootTypeQName.getNamespaceURI();
         if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
             rootTypeNamespace = null;
         }
         if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
-            fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+            fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(rootTypeQName.getLocalPart());
         }
         else {
             final SchemaGrammar grammarForRootType = findSchemaGrammar(
                     XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
             if (grammarForRootType != null) {
-                fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+                fCurrentType = grammarForRootType.getGlobalTypeDecl(rootTypeQName.getLocalPart());
             }
         }
         if (fCurrentType == null) {
-            String typeName = (fRootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
-                    fRootTypeQName.getLocalPart() :
-                        fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
+            String typeName = (rootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
+                    rootTypeQName.getLocalPart() :
+                        rootTypeQName.getPrefix()+":"+rootTypeQName.getLocalPart();
                     reportSchemaError("cvc-type.1", new Object[] {typeName});
         }
     } // processRootTypeQName
     
-    void processRootElementDeclQName() {
-        String rootElementDeclNamespace = fRootElementDeclQName.getNamespaceURI();
+    void processRootElementDeclQName(final javax.xml.namespace.QName rootElementDeclQName, final QName element) {
+        String rootElementDeclNamespace = rootElementDeclQName.getNamespaceURI();
         if (rootElementDeclNamespace != null && rootElementDeclNamespace.equals(XMLConstants.NULL_NS_URI)) {
             rootElementDeclNamespace = null;
         }
         final SchemaGrammar grammarForRootElement = findSchemaGrammar(
                 XSDDescription.CONTEXT_ELEMENT, rootElementDeclNamespace, null, null, null);
         if (grammarForRootElement != null) {
-            fCurrentElemDecl = grammarForRootElement.getGlobalElementDecl(fRootElementDeclQName.getLocalPart());
+            fCurrentElemDecl = grammarForRootElement.getGlobalElementDecl(rootElementDeclQName.getLocalPart());
         }
         if (fCurrentElemDecl == null) {
-            String declName = (fRootElementDeclQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
-                    fRootElementDeclQName.getLocalPart() :
-                        fRootElementDeclQName.getPrefix()+":"+fRootElementDeclQName.getLocalPart();
-                    reportSchemaError("cvc-elt.1", new Object[] {declName});
+            String declName = (rootElementDeclQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
+                    rootElementDeclQName.getLocalPart() :
+                        rootElementDeclQName.getPrefix()+":"+rootElementDeclQName.getLocalPart();
+                    reportSchemaError("cvc-elt.1.a", new Object[] {declName});
+        }
+        else {
+            checkElementMatchesRootElementDecl(fCurrentElemDecl, element);
         }
     } // processRootElementDeclQName
+    
+    void checkElementMatchesRootElementDecl(final XSElementDecl rootElementDecl, final QName element) {
+        // Report an error if the name of the element does 
+        // not match the name of the specified element declaration.
+        if (element.localpart != rootElementDecl.fName ||
+            element.uri != rootElementDecl.fTargetNamespace) {
+            reportSchemaError("cvc-elt.1.b", new Object[] {element.rawname, rootElementDecl.fName});
+        }
+    } // checkElementMatchesRootElementDecl
 
     void reportSchemaError(String key, Object[] arguments) {
         if (fDoValidation)
