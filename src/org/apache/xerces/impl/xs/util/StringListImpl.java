@@ -17,12 +17,13 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.util.AbstractList;
 import java.util.Vector;
 
 import org.apache.xerces.xs.StringList;
 
 /**
- * Containts a list of Object's.
+ * Contains a list of Strings.
  *
  * @xerces.internal 
  *
@@ -30,22 +31,12 @@ import org.apache.xerces.xs.StringList;
  *
  * @version $Id$
  */
-public final class StringListImpl implements StringList {
+public final class StringListImpl extends AbstractList implements StringList {
 
     /**
      * An immutable empty list.
      */
-    public static final StringList EMPTY_LIST = new StringList () {
-        public int getLength() {
-            return 0;
-        }
-        public boolean contains(String item) {
-            return false;
-        }
-        public String item(int index) {
-            return null;
-        }
-    };
+    public static final StringListImpl EMPTY_LIST = new StringListImpl(new String[0], 0);
     
     // The array to hold all data
     private final String[] fArray;
@@ -118,5 +109,23 @@ public final class StringListImpl implements StringList {
         }
         return fArray[index];
     }
+    
+    /*
+     * List methods
+     */
 
-} // class XSParticle
+    public Object get(int index) {
+        if (index >= 0 && index < fLength) {
+            if (fVector != null) {
+                return fVector.elementAt(index);
+            }
+            return fArray[index];
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    public int size() {
+        return getLength();
+    }
+
+} // class StringListImpl

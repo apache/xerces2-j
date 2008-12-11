@@ -17,11 +17,16 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.util.AbstractList;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 
 /**
- * Containts a list of XSObject's.
+ * Contains a list of XSObjects.
  *
  * @xerces.internal 
  *
@@ -29,17 +34,39 @@ import org.apache.xerces.xs.XSObjectList;
  *
  * @version $Id$
  */
-public class XSObjectListImpl implements XSObjectList {
+public class XSObjectListImpl extends AbstractList implements XSObjectList {
 
     /**
      * An immutable empty list.
      */
-    public static final XSObjectList EMPTY_LIST = new XSObjectList () {
-        public int getLength() {
+    public static final XSObjectListImpl EMPTY_LIST = new XSObjectListImpl(new XSObject[0], 0);
+    private static final ListIterator EMPTY_ITERATOR = new ListIterator() {
+        public boolean hasNext() {
+            return false;
+        }
+        public Object next() {
+            throw new NoSuchElementException();
+        }
+        public boolean hasPrevious() {
+            return false;
+        }
+        public Object previous() {
+            throw new NoSuchElementException();
+        }
+        public int nextIndex() {
             return 0;
         }
-        public XSObject item(int index) {
-            return null;
+        public int previousIndex() {
+            return -1;
+        }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        public void set(Object object) {
+            throw new UnsupportedOperationException();
+        }
+        public void add(Object object) {
+            throw new UnsupportedOperationException();
         }
     };
     
@@ -50,8 +77,6 @@ public class XSObjectListImpl implements XSObjectList {
     // Number of elements in this list
     private int fLength = 0;
     
-
-
     public XSObjectListImpl() {
         fArray = new XSObject[DEFAULT_SIZE];
         fLength = 0;
@@ -86,8 +111,9 @@ public class XSObjectListImpl implements XSObjectList {
      *   valid index.
      */
     public XSObject item(int index) {
-        if (index < 0 || index >= fLength)
+        if (index < 0 || index >= fLength) {
             return null;
+        }
         return fArray[index];
     }
 
@@ -100,16 +126,113 @@ public class XSObjectListImpl implements XSObjectList {
         fLength = 0;
     }
     
-    public void add (XSObject object){
-       if (fLength == fArray.length){  
+    public void addXSObject(XSObject object) {
+       if (fLength == fArray.length) {  
            XSObject[] temp = new XSObject[fLength + 4];
            System.arraycopy(fArray, 0, temp, 0, fLength);
            fArray = temp;
        }
-       fArray[fLength++]=object;
+       fArray[fLength++] = object;
     }
-    public void add (int index, XSObject object){
-        fArray [index] = object;
+    
+    public void addXSObject(int index, XSObject object) {
+        fArray[index] = object;
+    }
+    
+    /*
+     * List methods
+     */
+    
+    public boolean contains(Object value) {
+        return (value == null) ? containsNull() : containsObject(value);
     }
 
-} // class XSObjectList
+    public Object get(int index) {
+        if (index >= 0 && index < fLength) {
+            return fArray[index];
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    public int size() {
+        return getLength();
+    }
+    
+    public Iterator iterator() {
+        return listIterator0(0);
+    }
+    
+    public ListIterator listIterator() {
+        return listIterator0(0);
+    }
+    
+    public ListIterator listIterator(int index) {
+        if (index >= 0 && index < fLength) {
+            return listIterator0(index);
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+    
+    private ListIterator listIterator0(int index) {
+        return fLength == 0 ? EMPTY_ITERATOR : new XSObjectListIterator(index);
+    }
+    
+    private boolean containsObject(Object value) {
+        for (int i = fLength - 1; i >= 0; --i) {
+            if (value.equals(fArray[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean containsNull() {
+        for (int i = fLength - 1; i >= 0; --i) {
+            if (fArray[i] == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private final class XSObjectListIterator implements ListIterator {
+        private int index;
+        public XSObjectListIterator(int index) {
+            this.index = index;
+        }
+        public boolean hasNext() {
+            return (index < fLength);
+        }
+        public Object next() {
+            if (index < fLength) {
+                return fArray[index++];
+            }
+            throw new NoSuchElementException();
+        }
+        public boolean hasPrevious() {
+            return (index > 0);
+        }
+        public Object previous() {
+            if (index > 0) {
+                return fArray[--index];
+            }
+            throw new NoSuchElementException();
+        }
+        public int nextIndex() {
+            return index;
+        }
+        public int previousIndex() {
+            return index - 1;
+        }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        public void set(Object o) {
+            throw new UnsupportedOperationException();
+        }
+        public void add(Object o) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+} // class XSObjectListImpl

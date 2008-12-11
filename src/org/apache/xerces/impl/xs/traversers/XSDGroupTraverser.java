@@ -122,7 +122,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 XSObjectList annotations;
                 if (annotation != null) {
                     annotations = new XSObjectListImpl();
-                    ((XSObjectListImpl) annotations).add(annotation);
+                    ((XSObjectListImpl) annotations).addXSObject(annotation);
                 } else {
                     annotations = XSObjectListImpl.EMPTY_LIST;
                 }
@@ -214,7 +214,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 XSObjectList annotations;
                 if (annotation != null) {
                     annotations = new XSObjectListImpl();
-                    ((XSObjectListImpl) annotations).add(annotation);
+                    ((XSObjectListImpl) annotations).addXSObject(annotation);
                 } else {
                     annotations = XSObjectListImpl.EMPTY_LIST;
                 }

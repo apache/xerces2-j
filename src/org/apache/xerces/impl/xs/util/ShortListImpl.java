@@ -17,11 +17,13 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.util.AbstractList;
+
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSException;
 
 /**
- * Containts a list of Object's.
+ * Contains a list of shorts.
  *
  * @xerces.internal 
  *
@@ -29,22 +31,12 @@ import org.apache.xerces.xs.XSException;
  *
  * @version $Id$
  */
-public final class ShortListImpl implements ShortList {
+public final class ShortListImpl extends AbstractList implements ShortList {
 
     /**
      * An immutable empty list.
      */
-    public static final ShortList EMPTY_LIST = new ShortList() {
-        public int getLength() {
-            return 0;
-        }
-        public boolean contains(short item) {
-            return false;
-        }
-        public short item(int index) throws XSException {
-            throw new XSException(XSException.INDEX_SIZE_ERR, null);
-        }
-    };
+    public static final ShortListImpl EMPTY_LIST = new ShortListImpl(new short[0], 0);
     
     // The array to hold all data
     private final short[] fArray;
@@ -109,6 +101,21 @@ public final class ShortListImpl implements ShortList {
             }
         }
         return true;
+    }
+    
+    /*
+     * List methods
+     */
+
+    public Object get(int index) {
+        if (index >= 0 && index < fLength) {
+            return new Short(fArray[index]);
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    public int size() {
+        return getLength();
     }
 
 } // class ShortListImpl

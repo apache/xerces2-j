@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.dv.util;
 
+import java.util.AbstractList;
+
 import org.apache.xerces.xs.XSException;
 import org.apache.xerces.xs.datatypes.ByteList;
 
@@ -29,7 +31,7 @@ import org.apache.xerces.xs.datatypes.ByteList;
  * 
  * @version $Id$
  */
-public class ByteListImpl implements ByteList {
+public class ByteListImpl extends AbstractList implements ByteList {
 
     // actually data stored in a byte array
     protected final byte[] data;
@@ -85,5 +87,19 @@ public class ByteListImpl implements ByteList {
         return data[index];
     }
     
+    /*
+     * List methods
+     */
+
+    public Object get(int index) {
+        if (index >= 0 && index < data.length) {
+            return new Byte(data[index]);
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    public int size() {
+        return getLength();
+    }
 }
 

@@ -119,7 +119,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         XSObjectList annotations;
         if (annotation != null) {
             annotations = new XSObjectListImpl();
-            ((XSObjectListImpl)annotations).add (annotation);
+            ((XSObjectListImpl)annotations).addXSObject (annotation);
         } else {
             annotations = XSObjectListImpl.EMPTY_LIST;
         }
@@ -283,7 +283,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         XSObjectList annotations;
         if (annotation != null) {
             annotations = new XSObjectListImpl();
-            ((XSObjectListImpl)annotations).add (annotation);
+            ((XSObjectListImpl)annotations).addXSObject (annotation);
         } else {
             annotations = XSObjectListImpl.EMPTY_LIST;
         }

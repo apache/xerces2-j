@@ -87,7 +87,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         XSObjectList annotations = null;
         if (annotation != null) {
             annotations = new XSObjectListImpl();
-            ((XSObjectListImpl)annotations).add(annotation);
+            ((XSObjectListImpl)annotations).addXSObject(annotation);
         }
         else {
             //if no annotations are present add an empty list to the type alternative

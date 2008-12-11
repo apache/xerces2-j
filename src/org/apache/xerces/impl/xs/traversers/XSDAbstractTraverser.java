@@ -323,7 +323,7 @@ abstract class XSDAbstractTraverser {
                     enumAnnotations = new XSObjectListImpl();
                 }
                 enumData.addElement(enumVal);
-                enumAnnotations.add(null);
+                enumAnnotations.addXSObject(null);
                 if (hasQName)
                     enumNSDecls.addElement(nsDecls);
                 Element child = DOMUtil.getFirstChildElement( content );
@@ -331,13 +331,13 @@ abstract class XSDAbstractTraverser {
                 if (child != null &&
                     DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     // traverse annotation if any
-                    enumAnnotations.add(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
+                    enumAnnotations.addXSObject(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
                     child = DOMUtil.getNextSiblingElement(child);
                 }
                 else {
                     String text = DOMUtil.getSyntheticAnnotation(content);
                     if (text != null) {
-                        enumAnnotations.add(enumAnnotations.getLength()-1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
+                        enumAnnotations.addXSObject(enumAnnotations.getLength()-1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
                     }
                 }
                 if (child !=null) {
@@ -362,7 +362,7 @@ abstract class XSDAbstractTraverser {
                     if (patternAnnotations == null){
                         patternAnnotations = new XSObjectListImpl();
                     }
-                    patternAnnotations.add(traverseAnnotationDecl(child, attrs, false, schemaDoc));
+                    patternAnnotations.addXSObject(traverseAnnotationDecl(child, attrs, false, schemaDoc));
                     child = DOMUtil.getNextSiblingElement(child);
                 }
                 else {
@@ -371,7 +371,7 @@ abstract class XSDAbstractTraverser {
                         if (patternAnnotations == null){
                             patternAnnotations = new XSObjectListImpl();
                         }
-                        patternAnnotations.add(traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
+                        patternAnnotations.addXSObject(traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
                     }
                 }
                 if (child !=null) {
@@ -414,7 +414,7 @@ abstract class XSDAbstractTraverser {
                     XSObjectList annotations = null;
                     if (annotation != null) {
                         annotations = new XSObjectListImpl();
-                        ((XSObjectListImpl)annotations).add(annotation);
+                        ((XSObjectListImpl)annotations).addXSObject(annotation);
                     }
                     else {
                         //if no annotations are present add an empty list to the assertion
