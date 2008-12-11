@@ -1438,7 +1438,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 if (fBase.patternAnnotations != null) {
                     if (patternAnnotations != null) {
                         for (int i = fBase.patternAnnotations.getLength()-1; i >= 0; --i) {
-                            patternAnnotations.add(fBase.patternAnnotations.item(i));
+                            patternAnnotations.addXSObject(fBase.patternAnnotations.item(i));
                         }
                     }
                     else {
@@ -3161,7 +3161,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
             if (annotation != null) {
                 this.annotations = new XSObjectListImpl();
-                ((XSObjectListImpl)this.annotations).add(annotation);
+                ((XSObjectListImpl)this.annotations).addXSObject(annotation);
             } 
             else {
                 this.annotations =  XSObjectListImpl.EMPTY_LIST;

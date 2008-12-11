@@ -316,7 +316,7 @@ abstract class XSDAbstractTraverser {
                     enumAnnotations = new XSObjectListImpl();
                 }
                 enumData.addElement(enumVal);
-                enumAnnotations.add(null);
+                enumAnnotations.addXSObject(null);
                 if (hasQName)
                     enumNSDecls.addElement(nsDecls);
                 Element child = DOMUtil.getFirstChildElement( content );
@@ -355,7 +355,7 @@ abstract class XSDAbstractTraverser {
                     if (patternAnnotations == null){
                         patternAnnotations = new XSObjectListImpl();
                     }
-                    patternAnnotations.add(traverseAnnotationDecl(child, attrs, false, schemaDoc));
+                    patternAnnotations.addXSObject(traverseAnnotationDecl(child, attrs, false, schemaDoc));
                     child = DOMUtil.getNextSiblingElement(child);
                 }
                 else {
@@ -364,7 +364,7 @@ abstract class XSDAbstractTraverser {
                         if (patternAnnotations == null){
                             patternAnnotations = new XSObjectListImpl();
                         }
-                        patternAnnotations.add(traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
+                        patternAnnotations.addXSObject(traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
                     }
                 }
                 if (child !=null) {

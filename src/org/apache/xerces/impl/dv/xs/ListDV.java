@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.util.AbstractList;
+
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.xs.datatypes.ObjectList;
@@ -48,7 +50,7 @@ public class ListDV extends TypeValidator{
         return ((ListData)value).getLength();
     }
 
-    final static class ListData implements ObjectList {
+    final static class ListData extends AbstractList implements ObjectList {
         final Object[] data;
         private String canonical;
         public ListData(Object[] data) {
@@ -112,6 +114,21 @@ public class ListDV extends TypeValidator{
                 return null;
             }
             return data[index];
+        }
+        
+        /*
+         * List methods
+         */
+        
+        public Object get(int index) {
+            if (index >= 0 && index < data.length) {
+                return data[index];
+            }
+            throw new IndexOutOfBoundsException("Index: " + index);
+        }
+        
+        public int size() {
+            return getLength();
         }
     }
 } // class ListDV
