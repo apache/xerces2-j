@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.AbstractList;
+
 import org.apache.xerces.xs.StringList;
 
 /**
@@ -28,7 +30,7 @@ import org.apache.xerces.xs.StringList;
  * 
  * @version $Id$
  */
-final class PSVIErrorList implements StringList {
+final class PSVIErrorList extends AbstractList implements StringList {
 
     private final String[] fArray;
     private final int fLength;
@@ -68,4 +70,20 @@ final class PSVIErrorList implements StringList {
         }
         return fArray[(index << 1) + fOffset];
     }
-}
+    
+    /*
+     * List methods
+     */
+
+    public Object get(int index) {
+        if (index >= 0 && index < fLength) {
+            return fArray[(index << 1) + fOffset];
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    public int size() {
+        return getLength();
+    }
+    
+} // class PSVIErrorList
