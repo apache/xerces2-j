@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.AbstractList;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -50,7 +51,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  *
  * @version $Id$
  */
-public final class XSModelImpl implements XSModel, XSNamespaceItemList {
+public final class XSModelImpl extends AbstractList implements XSModel, XSNamespaceItemList {
 
     // the max index / the max value of XSObject type
     private static final short MAX_COMP_IDX = XSTypeDefinition.SIMPLE_TYPE;
@@ -550,6 +551,21 @@ public final class XSModelImpl implements XSModel, XSNamespaceItemList {
             return null;
         }
         return fGrammarList[index];
+    }
+    
+    //
+    // java.util.List methods
+    //
+
+    public Object get(int index) {
+        if (index >= 0 && index < fGrammarCount) {
+            return fGrammarList[index];
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    public int size() {
+        return getLength();
     }
 
 } // class XSModelImpl
