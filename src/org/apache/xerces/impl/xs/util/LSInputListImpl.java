@@ -31,7 +31,7 @@ import org.w3c.dom.ls.LSInput;
  * 
  * @version $Id$
  */
-public class LSInputListImpl extends AbstractList implements LSInputList {
+public final class LSInputListImpl extends AbstractList implements LSInputList {
     
     /**
      * An immutable empty list.
