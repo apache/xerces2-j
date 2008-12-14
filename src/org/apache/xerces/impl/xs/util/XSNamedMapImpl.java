@@ -18,7 +18,6 @@
 package org.apache.xerces.impl.xs.util;
 
 import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObject;
 
@@ -49,19 +48,17 @@ public class XSNamedMapImpl implements XSNamedMap {
     };
     
     // components of these namespaces are stored in this map
-    String[]     fNamespaces;
+    final String[] fNamespaces;
     // number of namespaces
-    int          fNSNum;
+    final int fNSNum;
     // each entry contains components in one namespace
-    SymbolHash[] fMaps;
+    final SymbolHash[] fMaps;
     // store all components from all namespace.
     // used when this map is accessed as a list.
-    XSObject[]   fArray = null;
+    XSObject[] fArray = null;
     // store the number of componetns.
     // used when this map is accessed as a list.
-    int          fLength = -1;
-    // temprory QName object
-    QName        fName = new QName();
+    int fLength = -1;
     
     /**
      * Construct an XSNamedMap implmentation for one namespace
@@ -96,7 +93,9 @@ public class XSNamedMapImpl implements XSNamedMap {
      */
     public XSNamedMapImpl(XSObject[] array, int length) {
         if (length == 0) {
+            fNamespaces = null;
             fNSNum = 0;
+            fMaps = null;
             fLength = 0;
             return;
         }
