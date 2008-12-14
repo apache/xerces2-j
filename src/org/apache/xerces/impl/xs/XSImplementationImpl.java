@@ -19,12 +19,15 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom.PSVIDOMImplementationImpl;
+import org.apache.xerces.impl.xs.util.LSInputListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.xs.LSInputList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSException;
 import org.apache.xerces.xs.XSImplementation;
 import org.apache.xerces.xs.XSLoader;
 import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.ls.LSInput;
 
 /**
  * Implements XSImplementation interface that allows one to retrieve an instance of <code>XSLoader</code>. 
@@ -82,8 +85,6 @@ public class XSImplementationImpl extends PSVIDOMImplementationImpl
 		super.hasFeature(feature, version));
     } // hasFeature(String,String):boolean
     
-
-
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.XSImplementation#createXSLoader(org.apache.xerces.xs.StringList)
      */
@@ -103,6 +104,16 @@ public class XSImplementationImpl extends PSVIDOMImplementationImpl
     		}
     	}
     	return loader;
+    }
+    
+    public StringList createStringList(String[] values) {
+        int length = (values != null) ? values.length : 0;
+        return (length != 0) ? new StringListImpl((String[]) values.clone(), length) : StringListImpl.EMPTY_LIST;
+    }
+    
+    public LSInputList createLSInputList(LSInput[] values) {
+        int length = (values != null) ? values.length : 0;
+        return (length != 0) ? new LSInputListImpl((LSInput[]) values.clone(), length) : LSInputListImpl.EMPTY_LIST;
     }
 
     /* (non-Javadoc)
