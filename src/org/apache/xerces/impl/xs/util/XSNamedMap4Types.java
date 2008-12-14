@@ -108,7 +108,7 @@ public final class XSNamedMap4Types extends XSNamedMapImpl {
             if (isEqual(namespace, fNamespaces[i])) {
                 XSTypeDefinition type = (XSTypeDefinition)fMaps[i].get(localName);
                 // only return it if it matches the required type
-                if (type.getTypeCategory() == fType) {
+                if (type != null && type.getTypeCategory() == fType) {
                     return type;
                 }
                 return null;
