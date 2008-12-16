@@ -93,7 +93,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
     private static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
-    /** Property identifier: SecurityManager. */
+    /** Property identifier: XML Schema version. */
     private static final String XML_SCHEMA_VERSION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
 
@@ -126,7 +126,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
     private boolean fUseGrammarPoolOnly;
     
     /** Whether the XML Schema is 1.1 or not */
-    private String fXSDVersion;
+    private final String fXSDVersion;
 
     BaseSchemaFactory(String xsdVersion) {
         fErrorHandlerWrapper = new ErrorHandlerWrapper(DraconianErrorHandler.getInstance());
@@ -134,6 +134,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
         fXMLGrammarPoolWrapper = new XMLGrammarPoolWrapper();
         fXMLSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, true);
         fXMLSchemaLoader.setProperty(XMLGRAMMAR_POOL, fXMLGrammarPoolWrapper);
+        fXMLSchemaLoader.setProperty(XML_SCHEMA_VERSION, xsdVersion);
         fXMLSchemaLoader.setEntityResolver(fDOMEntityResolverWrapper);
         fXMLSchemaLoader.setErrorHandler(fErrorHandlerWrapper);
         fXSDVersion = xsdVersion;
@@ -417,10 +418,10 @@ abstract class BaseSchemaFactory extends SchemaFactory {
                     SAXMessageFormatter.formatMessage(getLocale(), 
                     "property-not-supported", new Object [] {name}));
         }
-        if (name.equals(XML_SCHEMA_VERSION)) {
-            fXSDVersion = (String) object;
-            fXMLSchemaLoader.setProperty(XML_SCHEMA_VERSION, fXSDVersion);
-            return;
+        else if (name.equals(XML_SCHEMA_VERSION)) {
+            throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(getLocale(), 
+                    "property-read-only", new Object [] {name}));
         }
         try {
             fXMLSchemaLoader.setProperty(name, object);
