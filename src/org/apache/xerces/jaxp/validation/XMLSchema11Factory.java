@@ -17,8 +17,6 @@
 
 package org.apache.xerces.jaxp.validation;
 
-import java.util.Locale;
-
 import javax.xml.validation.SchemaFactory;
 
 /**
