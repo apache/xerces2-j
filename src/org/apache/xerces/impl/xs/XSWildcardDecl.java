@@ -195,12 +195,12 @@ public class XSWildcardDecl implements XSWildcard {
                 break;
             }
             if (fDisallowedNamesList != null) {
-                buffer.append(", notQ(");
+                buffer.append(", notQName(");
                 if (fDisallowedNamesList.length > 0) {
                     buffer.append(fDisallowedNamesList[0]);
                     for (int i = 1; i < fDisallowedNamesList.length; i++) {
                         buffer.append(", ");
-                        buffer.append(fNamespaceList[i]);
+                        buffer.append(fDisallowedNamesList[i]);
                     }
                 }
                 if (fDisallowedDefined) {
