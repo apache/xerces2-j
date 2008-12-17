@@ -39,8 +39,8 @@ public final class Constants {
     public static final String NS_DTD = "http://www.w3.org/TR/REC-xml".intern();
     
     // Schema Versions:
-    public static final String W3C_XML_SCHEMA10_NS_URI = "http://www.w3.org/2001/XMLSchema/v1.0".intern();
-    public static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/2001/XMLSchema/v1.1".intern();    
+    public static final String W3C_XML_SCHEMA10_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.0".intern();
+    public static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.1".intern();    
     
     // sax features
     

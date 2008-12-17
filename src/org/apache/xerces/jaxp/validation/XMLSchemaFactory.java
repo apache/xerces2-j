@@ -29,7 +29,7 @@ import javax.xml.validation.SchemaFactory;
 public final class XMLSchemaFactory extends BaseSchemaFactory {
 
     /** Schema Version 1.0 */
-    private static final String W3C_XML_SCHEMA10_NS_URI = "http://www.w3.org/2001/XMLSchema/v1.0";
+    private static final String W3C_XML_SCHEMA10_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.0";
 
     public XMLSchemaFactory() {
         super(W3C_XML_SCHEMA10_NS_URI);

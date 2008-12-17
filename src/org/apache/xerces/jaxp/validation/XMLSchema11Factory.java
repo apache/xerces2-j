@@ -28,7 +28,7 @@ import javax.xml.validation.SchemaFactory;
 public final class XMLSchema11Factory extends BaseSchemaFactory {
     
     /** Schema Version 1.1 */
-    private static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/2001/XMLSchema/v1.1";
+    private static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.1";
 
     public XMLSchema11Factory() {
         super(W3C_XML_SCHEMA11_NS_URI);
