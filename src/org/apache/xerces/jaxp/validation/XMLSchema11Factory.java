@@ -19,6 +19,8 @@ package org.apache.xerces.jaxp.validation;
 
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.xerces.impl.Constants;
+
 /**
  * {@link SchemaFactory} for XML Schema.
  *
@@ -26,12 +28,9 @@ import javax.xml.validation.SchemaFactory;
  * @version $Id$
  */
 public final class XMLSchema11Factory extends BaseSchemaFactory {
-    
-    /** Schema Version 1.1 */
-    private static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.1";
 
     public XMLSchema11Factory() {
-        super(W3C_XML_SCHEMA11_NS_URI);
+        super(Constants.W3C_XML_SCHEMA11_NS_URI);
     }
 
     public boolean isSchemaLanguageSupported(String schemaLanguage) {
@@ -44,7 +43,7 @@ public final class XMLSchema11Factory extends BaseSchemaFactory {
                     "SchemaLanguageLengthZero", null));
         }
         // only W3C XML Schema 1.1 is supported
-        return schemaLanguage.equals(W3C_XML_SCHEMA11_NS_URI);
+        return schemaLanguage.equals(Constants.W3C_XML_SCHEMA11_NS_URI);
     }
 
 } // XMLSchema11Factory
