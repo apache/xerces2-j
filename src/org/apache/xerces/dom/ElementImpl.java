@@ -1177,7 +1177,7 @@ public class ElementImpl
      * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-childElementCount">
      * Element Traversal Specification</a>
      */
-    public int getChildElementCount() {
+    public final int getChildElementCount() {
         int count = 0;
         Element child = getFirstElementChild();
         while (child != null) {
@@ -1191,16 +1191,16 @@ public class ElementImpl
      * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-firstElementChild">
      * Element Traversal Specification</a>
      */
-    public Element getFirstElementChild() {
+    public final Element getFirstElementChild() {
         Node n = getFirstChild();
         while (n != null) {
             switch (n.getNodeType()) {
                 case Node.ELEMENT_NODE:
                     return (Element) n;
                 case Node.ENTITY_REFERENCE_NODE:
-                    Element _e = getFirstElementChild(n);
-                    if (_e != null) {
-                        return _e;
+                    final Element e = getFirstElementChild(n);
+                    if (e != null) {
+                        return e;
                     }
                     break;
             }
@@ -1213,16 +1213,16 @@ public class ElementImpl
      * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-lastElementChild">
      * Element Traversal Specification</a>
      */
-    public Element getLastElementChild() {
+    public final Element getLastElementChild() {
         Node n = getLastChild();
         while (n != null) {
             switch (n.getNodeType()) {
                 case Node.ELEMENT_NODE:
                     return (Element) n;
                 case Node.ENTITY_REFERENCE_NODE:
-                    Element _e = getLastElementChild(n);
-                    if (_e != null) {
-                        return _e;
+                    final Element e = getLastElementChild(n);
+                    if (e != null) {
+                        return e;
                     }
                     break;
             }
@@ -1235,16 +1235,16 @@ public class ElementImpl
      * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-nextElementSibling">
      * Element Traversal Specification</a>
      */
-    public Element getNextElementSibling() {
+    public final Element getNextElementSibling() {
         Node n = getNextSibling();
         while (n != null) {
             switch (n.getNodeType()) {
                 case Node.ELEMENT_NODE:
                     return (Element) n;
                 case Node.ENTITY_REFERENCE_NODE:
-                    Element _e = getFirstElementChild(n);
-                    if (_e != null) {
-                        return _e;
+                    final Element e = getFirstElementChild(n);
+                    if (e != null) {
+                        return e;
                     }
                     break;
             }
@@ -1271,16 +1271,16 @@ public class ElementImpl
      * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-previousElementSibling">
      * Element Traversal Specification</a>
      */
-    public Element getPreviousElementSibling() {
+    public final Element getPreviousElementSibling() {
         Node n = getPreviousSibling();
         while (n != null) {
             switch (n.getNodeType()) {
                 case Node.ELEMENT_NODE:
                     return (Element) n;
                 case Node.ENTITY_REFERENCE_NODE:
-                    Element _e = getLastElementChild(n);
-                    if (_e != null) {
-                        return _e;
+                    final Element e = getLastElementChild(n);
+                    if (e != null) {
+                        return e;
                     }
                     break;
             }
