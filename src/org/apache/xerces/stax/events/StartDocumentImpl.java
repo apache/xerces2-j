@@ -26,7 +26,7 @@ import javax.xml.stream.events.StartDocument;
  *
  * @version $Id$
  */
-public class StartDocumentImpl extends XMLEventImpl implements StartDocument {
+public final class StartDocumentImpl extends XMLEventImpl implements StartDocument {
 
     private final String fCharEncoding;
     private final boolean fEncodingSet;

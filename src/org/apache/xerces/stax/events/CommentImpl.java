@@ -26,7 +26,7 @@ import javax.xml.stream.events.Comment;
  *
  * @version $Id$
  */
-public class CommentImpl extends XMLEventImpl implements Comment {
+public final class CommentImpl extends XMLEventImpl implements Comment {
 
     /**
      * The text of the comment. Will be the empty string if there's no

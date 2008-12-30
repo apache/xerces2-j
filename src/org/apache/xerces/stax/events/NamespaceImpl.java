@@ -29,7 +29,7 @@ import org.apache.xerces.xni.NamespaceContext;
  *
  * @version $Id$
  */
-public class NamespaceImpl extends AttributeImpl implements Namespace {
+public final class NamespaceImpl extends AttributeImpl implements Namespace {
 
     private final String fPrefix;
     private final String fNamespaceURI;
