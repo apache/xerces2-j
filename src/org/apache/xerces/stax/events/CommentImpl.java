@@ -21,6 +21,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.events.Comment;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

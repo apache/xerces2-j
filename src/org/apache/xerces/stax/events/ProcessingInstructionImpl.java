@@ -23,6 +23,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.ProcessingInstruction;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

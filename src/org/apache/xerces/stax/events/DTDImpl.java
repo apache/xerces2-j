@@ -24,6 +24,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.events.DTD;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

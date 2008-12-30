@@ -39,6 +39,8 @@ import javax.xml.stream.events.StartElement;
 /**
  * <p>Implementation of XMLEventFactory.</p>
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public final class XMLEventFactoryImpl extends XMLEventFactory {

@@ -32,6 +32,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *
