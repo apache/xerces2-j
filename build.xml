@@ -435,6 +435,7 @@ Copyright:
                            org.apache.xerces.impl.*,
                            org.apache.xerces.jaxp.*,
                            org.apache.xerces.parsers,
+                           org.apache.xerces.stax.*,
                            org.apache.xerces.util,
                            org.apache.xerces.xinclude,
                            org.apache.xerces.xpointer'
