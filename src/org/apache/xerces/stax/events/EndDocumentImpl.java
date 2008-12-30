@@ -27,7 +27,7 @@ import javax.xml.stream.events.EndDocument;
  *
  * @version $Id$
  */
-public class EndDocumentImpl extends XMLEventImpl implements EndDocument {
+public final class EndDocumentImpl extends XMLEventImpl implements EndDocument {
 
     /**
      * Constructor.

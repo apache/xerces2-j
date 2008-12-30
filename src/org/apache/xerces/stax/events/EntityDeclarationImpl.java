@@ -26,7 +26,7 @@ import javax.xml.stream.events.EntityDeclaration;
  *
  * @version $Id$
  */
-public class EntityDeclarationImpl extends XMLEventImpl implements
+public final class EntityDeclarationImpl extends XMLEventImpl implements
         EntityDeclaration {
 
     private final String fPublicId;

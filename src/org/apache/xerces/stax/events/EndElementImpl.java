@@ -30,7 +30,7 @@ import javax.xml.stream.events.EndElement;
  *
  * @version $Id$
  */
-public class EndElementImpl extends XMLEventImpl implements EndElement {
+public final class EndElementImpl extends XMLEventImpl implements EndElement {
 
     /**
      * The qualified name of the element that is being closed.

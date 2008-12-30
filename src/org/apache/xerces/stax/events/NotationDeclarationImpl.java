@@ -26,7 +26,7 @@ import javax.xml.stream.events.NotationDeclaration;
  *
  * @version $Id$
  */
-public class NotationDeclarationImpl extends XMLEventImpl implements
+public final class NotationDeclarationImpl extends XMLEventImpl implements
         NotationDeclaration {
 
     private final String fSystemId;

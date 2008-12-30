@@ -51,28 +51,28 @@ public class AttributeImpl extends XMLEventImpl implements Attribute {
     /**
      * @see javax.xml.stream.events.Attribute#getName()
      */
-    public QName getName() {
+    public final QName getName() {
         return fName;
     }
 
     /**
      * @see javax.xml.stream.events.Attribute#getValue()
      */
-    public String getValue() {
+    public final String getValue() {
         return fValue;
     }
 
     /**
      * @see javax.xml.stream.events.Attribute#getDTDType()
      */
-    public String getDTDType() {
+    public final String getDTDType() {
         return fDtdType;
     }
 
     /**
      * @see javax.xml.stream.events.Attribute#isSpecified()
      */
-    public boolean isSpecified() {
+    public final boolean isSpecified() {
         return fIsSpecified;
     }
 

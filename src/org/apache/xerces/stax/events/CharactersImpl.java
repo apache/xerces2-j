@@ -26,7 +26,7 @@ import javax.xml.stream.events.Characters;
  *
  * @version $Id$
  */
-public class CharactersImpl extends XMLEventImpl implements Characters {
+public final class CharactersImpl extends XMLEventImpl implements Characters {
 
     private final String fData;
     private final boolean fIsWS;

@@ -37,7 +37,7 @@ import javax.xml.stream.events.StartElement;
  *
  * @version $Id$
  */
-public class StartElementImpl extends XMLEventImpl implements StartElement {
+public final class StartElementImpl extends XMLEventImpl implements StartElement {
 
     private final Map fAttributes = new TreeMap(new Comparator(){
         public int compare(Object o1, Object o2) {

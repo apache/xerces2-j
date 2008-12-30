@@ -41,7 +41,7 @@ import javax.xml.stream.events.StartElement;
  * 
  * @version $Id$
  */
-public class XMLEventFactoryImpl extends XMLEventFactory {
+public final class XMLEventFactoryImpl extends XMLEventFactory {
 
     public XMLEventFactoryImpl() {}
     

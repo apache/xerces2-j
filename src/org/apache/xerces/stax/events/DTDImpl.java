@@ -29,7 +29,7 @@ import javax.xml.stream.events.DTD;
  *
  * @version $Id$
  */
-public class DTDImpl extends XMLEventImpl implements DTD {
+public final class DTDImpl extends XMLEventImpl implements DTD {
 
     private final String fDtd;
     
