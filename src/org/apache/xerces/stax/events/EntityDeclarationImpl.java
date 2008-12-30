@@ -40,7 +40,7 @@ public class EntityDeclarationImpl extends XMLEventImpl implements
      * @param schemaType
      */
     public EntityDeclarationImpl(final String publicId, final String systemId, final String name, final String notationName, final Location location) {
-        super(ENTITY_DECLARATION, location, null);
+        super(ENTITY_DECLARATION, location);
         fPublicId = publicId;
         fSystemId = systemId;
         fName = name;

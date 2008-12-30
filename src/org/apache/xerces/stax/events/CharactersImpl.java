@@ -17,7 +17,6 @@
 
 package org.apache.xerces.stax.events;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.events.Characters;
 
@@ -40,8 +39,8 @@ public class CharactersImpl extends XMLEventImpl implements Characters {
      * @param location
      * @param schemaType
      */
-    public CharactersImpl(final String data, final boolean isWS, final boolean isCData, final boolean isIgnorableWS, final Location location, final QName schemaType) {
-        super(CHARACTERS, location, schemaType);
+    public CharactersImpl(final String data, final boolean isWS, final boolean isCData, final boolean isIgnorableWS, final Location location) {
+        super(CHARACTERS, location);
         fData = data;
         fIsWS = isWS;
         fIsCData = isCData;

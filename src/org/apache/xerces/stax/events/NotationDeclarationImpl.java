@@ -39,7 +39,7 @@ public class NotationDeclarationImpl extends XMLEventImpl implements
      * @param schemaType
      */
     public NotationDeclarationImpl(final String name, final String publicId, final String systemId, final Location location) {
-        super(NOTATION_DECLARATION, location, null);
+        super(NOTATION_DECLARATION, location);
         fName = name;
         fPublicId = publicId;
         fSystemId = systemId;

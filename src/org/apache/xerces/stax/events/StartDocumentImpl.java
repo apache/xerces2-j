@@ -38,7 +38,7 @@ public class StartDocumentImpl extends XMLEventImpl implements StartDocument {
      * @param location
      */
     public StartDocumentImpl(final String charEncoding, final boolean encodingSet, final boolean isStandalone, final boolean standaloneSet, final String version, final Location location) {
-        super(START_DOCUMENT, location, null);
+        super(START_DOCUMENT, location);
         fCharEncoding = charEncoding;
         fEncodingSet = encodingSet;
         fIsStandalone = isStandalone;

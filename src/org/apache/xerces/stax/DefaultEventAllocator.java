@@ -70,9 +70,9 @@ public class DefaultEventAllocator implements XMLEventAllocator {
                 //in turn at index 0. 
                 return makeAttribute(0, reader);
             case XMLStreamConstants.CDATA:
-                 return new CharactersImpl(reader.getText(), false, true, false, location, null);
+                 return new CharactersImpl(reader.getText(), false, true, false, location);
             case XMLStreamConstants.CHARACTERS:
-                return new CharactersImpl(reader.getText(), false, false, false, location, null);
+                return new CharactersImpl(reader.getText(), false, false, false, location);
             case XMLStreamConstants.COMMENT:
                 return new CommentImpl(reader.getText(), location);
             case XMLStreamConstants.DTD:
@@ -94,7 +94,7 @@ public class DefaultEventAllocator implements XMLEventAllocator {
                 return new ProcessingInstructionImpl(reader.getPITarget(), reader.getPIData(), location);
             case XMLStreamConstants.SPACE:
                 //TODO: Ignorable Whitespace
-                return new CharactersImpl(reader.getText(), true, false, false, location, null);
+                return new CharactersImpl(reader.getText(), true, false, false, location);
             case XMLStreamConstants.START_DOCUMENT:
                 return new StartDocumentImpl(reader.getEncoding(), reader.getCharacterEncodingScheme() != null, reader.isStandalone(), reader.standaloneSet(), reader.getVersion(), location);
             case XMLStreamConstants.START_ELEMENT:
@@ -120,7 +120,7 @@ public class DefaultEventAllocator implements XMLEventAllocator {
             throw new IllegalStateException("makeStartElement must only be called when in the start element state.");
         }
         
-        StartElementImpl startElement = new StartElementImpl(streamReader.getName(), streamReader.getNamespaceContext(), streamReader.getLocation(), null);
+        StartElementImpl startElement = new StartElementImpl(streamReader.getName(), streamReader.getNamespaceContext(), streamReader.getLocation());
         for(int i = 0; i < streamReader.getAttributeCount(); i++) {
             startElement.addAttribute(makeAttribute(i, streamReader));
         }
@@ -149,7 +149,7 @@ public class DefaultEventAllocator implements XMLEventAllocator {
     private static Attribute makeAttribute(final int i, XMLStreamReader streamReader) {
         String prefix = streamReader.getAttributePrefix(i);
         final QName name = new QName(streamReader.getAttributeNamespace(i), streamReader.getAttributeLocalName(i), prefix == null ? "" : prefix); 
-        return new AttributeImpl(name, streamReader.getAttributeValue(i), streamReader.getAttributeType(i), streamReader.isAttributeSpecified(i), streamReader.getLocation(), null);
+        return new AttributeImpl(name, streamReader.getAttributeValue(i), streamReader.getAttributeType(i), streamReader.isAttributeSpecified(i), streamReader.getLocation());
     }
     
 }

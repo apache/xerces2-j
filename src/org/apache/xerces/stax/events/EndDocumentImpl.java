@@ -34,7 +34,7 @@ public class EndDocumentImpl extends XMLEventImpl implements EndDocument {
      * @param location Location object for this event. 
      */
     public EndDocumentImpl(Location location) {
-        super(XMLStreamConstants.END_DOCUMENT, location, null);
+        super(XMLStreamConstants.END_DOCUMENT, location);
     }
 
 }

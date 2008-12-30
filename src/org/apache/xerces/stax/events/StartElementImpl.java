@@ -56,8 +56,8 @@ public class StartElementImpl extends XMLEventImpl implements StartElement {
      * @param location
      * @param schemaType
      */
-    public StartElementImpl(final QName name, final NamespaceContext namespaceContext, final Location location, final QName schemaType) {
-        super(START_ELEMENT, location, schemaType);
+    public StartElementImpl(final QName name, final NamespaceContext namespaceContext, final Location location) {
+        super(START_ELEMENT, location);
         fName = name;
         fNamespaceContext = namespaceContext;
     }
