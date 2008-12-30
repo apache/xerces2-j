@@ -27,7 +27,7 @@ import javax.xml.stream.events.EntityReference;
  *
  * @version $Id$
  */
-public class EntityReferenceImpl extends XMLEventImpl implements
+public final class EntityReferenceImpl extends XMLEventImpl implements
         EntityReference {
 
     /**

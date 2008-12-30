@@ -28,7 +28,7 @@ import javax.xml.stream.events.ProcessingInstruction;
  *
  * @version $Id$
  */
-public class ProcessingInstructionImpl extends XMLEventImpl implements
+public final class ProcessingInstructionImpl extends XMLEventImpl implements
         ProcessingInstruction {
 
     private final String fTarget;
