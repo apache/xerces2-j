@@ -102,6 +102,9 @@
       <jump href='javadocs/api/org/w3c/dom/traversal/package-summary.html'>Traversal</jump>
      </li>
      <li>
+      <jump href='javadocs/api/org/w3c/dom/views/package-summary.html'>Views</jump>
+     </li>
+     <li>
       <jump href='javadocs/api/org/w3c/dom/xpath/package-summary.html'>XPath</jump>
      </li>
     </ul>
