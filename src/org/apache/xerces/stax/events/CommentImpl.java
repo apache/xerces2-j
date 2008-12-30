@@ -38,7 +38,7 @@ public class CommentImpl extends XMLEventImpl implements Comment {
      * @param location
      */
     public CommentImpl(final String text, final Location location) {
-        super(COMMENT, location, null);
+        super(COMMENT, location);
         fText = text;
     }
 

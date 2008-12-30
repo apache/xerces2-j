@@ -29,7 +29,6 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 /**
- * 
  * @author Lucian Holland
  *
  * @version $Id$
@@ -48,17 +47,11 @@ public abstract class XMLEventImpl implements XMLEvent {
     private Location fLocation;
 
     /**
-     * The QName of the schema type for this element.
-     */
-    private QName fSchemaType;
-
-    /**
      * Constructor.
      */
-    public XMLEventImpl(final int eventType, final Location location, final QName schemaType) {
+    public XMLEventImpl(final int eventType, final Location location) {
         fEventType = eventType;
         fLocation = location;
-        fSchemaType = schemaType;
     }
 
     /**
@@ -163,7 +156,7 @@ public abstract class XMLEventImpl implements XMLEvent {
      * @see javax.xml.stream.events.XMLEvent#getSchemaType()
      */
     public QName getSchemaType() {
-        return fSchemaType;
+        return null;
     }
 
     /**

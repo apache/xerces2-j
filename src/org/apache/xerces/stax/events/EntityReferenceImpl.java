@@ -40,7 +40,7 @@ public class EntityReferenceImpl extends XMLEventImpl implements
      * @param location
      */
     public EntityReferenceImpl(final EntityDeclaration decl, final Location location) {
-        super(ENTITY_REFERENCE, location, null);
+        super(ENTITY_REFERENCE, location);
         fDecl = decl;;
     }
 
