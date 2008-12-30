@@ -24,6 +24,8 @@ import javax.xml.stream.Location;
 /**
  * <p>Location wrapper around a SAX Locator.</p>
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public final class SAXLocation implements Location {

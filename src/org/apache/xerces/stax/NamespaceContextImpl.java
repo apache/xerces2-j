@@ -28,6 +28,8 @@ import javax.xml.namespace.NamespaceContext;
 /**
  * <p>NamespaceContext for the SAX and DOM XMLStreamReaders.</p>
  * 
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * 
  * @version $Id$

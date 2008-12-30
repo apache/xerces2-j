@@ -25,6 +25,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * 
  * @version $Id$

@@ -37,6 +37,8 @@ import org.xml.sax.XMLReader;
 /**
  * <p>An XMLStreamReader created from a SAXSource.</p>
  * 
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * 
  * @version $Id$

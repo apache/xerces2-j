@@ -18,6 +18,7 @@
 package org.apache.xerces.stax;
 
 import java.util.Stack;
+
 import javax.xml.stream.XMLStreamConstants;
 
 import org.apache.xerces.parsers.AbstractXMLDocumentParser;
@@ -30,11 +31,12 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
 
 /**
+ * @xerces.internal
+ * 
  * @author Wei Duan
  * 
  * @version $Id$

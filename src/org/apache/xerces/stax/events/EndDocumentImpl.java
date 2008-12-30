@@ -22,6 +22,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.events.EndDocument;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

@@ -21,6 +21,8 @@ import javax.xml.stream.Location;
 import org.apache.xerces.xni.XMLLocator;
 
 /**
+ * @xerces.internal
+ * 
  * @author Wei Duan
  * 
  * @version $Id$

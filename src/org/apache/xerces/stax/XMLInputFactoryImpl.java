@@ -42,6 +42,8 @@ import org.xml.sax.XMLReader;
 /**
  * <p>Implementation of XMLInputFactory.</p>
  * 
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * @author Wei Duan
  * 

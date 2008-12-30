@@ -21,6 +21,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.events.EntityDeclaration;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

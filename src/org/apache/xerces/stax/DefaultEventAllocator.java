@@ -43,6 +43,9 @@ import org.apache.xerces.stax.events.StartElementImpl;
 
 /**
  * Default implementation of the event allocator interface.
+ * 
+ * @xerces.internal
+ * 
  * @author Lucian Holland
  *
  * @version $Id$

@@ -29,6 +29,8 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
+ * @xerces.internal
+ * 
  * @author Wei Duan
  */
 public class StAXResolver implements XMLEntityResolver {

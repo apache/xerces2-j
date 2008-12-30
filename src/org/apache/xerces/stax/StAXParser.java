@@ -17,6 +17,8 @@
 
 package org.apache.xerces.stax;
 
+import java.util.NoSuchElementException;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -26,12 +28,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.xerces.parsers.XML11Configuration;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
+ * @xerces.internal
+ * 
  * @author Wei Duan
  * 
  * @version $Id$

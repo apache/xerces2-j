@@ -23,6 +23,8 @@ import javax.xml.stream.Location;
  * <p>Location which always returns <code>-1</code> 
  * and <code>null</code> from its methods.</p>
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public final class EmptyLocation implements Location {

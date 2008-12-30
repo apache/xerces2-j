@@ -28,6 +28,7 @@ import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.XMLEventAllocator;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

@@ -26,6 +26,8 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 
 /**
+ * @xerces.internal
+ * 
  * @author Wei Duan
  * 
  * @version $Id$

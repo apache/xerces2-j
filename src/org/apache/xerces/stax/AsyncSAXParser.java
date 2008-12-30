@@ -23,6 +23,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 /**
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * 
  * @version $Id$

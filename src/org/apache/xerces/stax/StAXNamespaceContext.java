@@ -22,6 +22,8 @@ import java.util.Iterator;
 import javax.xml.namespace.NamespaceContext;
 
 /**
+ * @xerces.internal
+ * 
  * @author Wei Duan
  * 
  * @version $Id$

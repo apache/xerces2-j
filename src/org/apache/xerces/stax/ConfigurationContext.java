@@ -28,6 +28,8 @@ import javax.xml.stream.XMLResolver;
 import javax.xml.stream.util.XMLEventAllocator;
 
 /**
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * 
  * @version $Id$

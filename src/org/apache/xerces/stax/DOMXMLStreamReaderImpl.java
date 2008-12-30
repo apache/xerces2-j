@@ -42,6 +42,8 @@ import org.w3c.dom.ProcessingInstruction;
 /**
  * <p>An XMLStreamReader created from a DOMSource.</p>
  * 
+ * @xerces.internal
+ * 
  * @author Hua Lei
  * 
  * @version $Id$
