@@ -42,14 +42,16 @@ import org.w3c.dom.TypeInfo;
  * <P>
  * ElementImpl does not support Namespaces. ElementNSImpl, which inherits from
  * it, does.
- * @see ElementNSImpl
  * 
  * @xerces.internal
+ * 
+ * @see ElementNSImpl
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
+ * @author Michael Glavassevich, IBM
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
@@ -1166,5 +1168,191 @@ public class ElementImpl
         return (NamedNodeMapImpl) eldef.getAttributes();
 
     } // getDefaultAttributes()
+    
+    //
+    // ElementTraversal methods
+    //
+
+    /**
+     * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-childElementCount">
+     * Element Traversal Specification</a>
+     */
+    public int getChildElementCount() {
+        int count = 0;
+        Element child = getFirstElementChild();
+        while (child != null) {
+            ++count;
+            child = ((ElementImpl) child).getNextElementSibling();
+        }
+        return count;
+    } // getChildElementCount():int
+
+    /**
+     * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-firstElementChild">
+     * Element Traversal Specification</a>
+     */
+    public Element getFirstElementChild() {
+        Node n = getFirstChild();
+        while (n != null) {
+            switch (n.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    return (Element) n;
+                case Node.ENTITY_REFERENCE_NODE:
+                    Element _e = getFirstElementChild(n);
+                    if (_e != null) {
+                        return _e;
+                    }
+                    break;
+            }
+            n = n.getNextSibling();
+        }
+        return null;
+    } // getFirstElementChild():Element
+
+    /**
+     * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-lastElementChild">
+     * Element Traversal Specification</a>
+     */
+    public Element getLastElementChild() {
+        Node n = getLastChild();
+        while (n != null) {
+            switch (n.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    return (Element) n;
+                case Node.ENTITY_REFERENCE_NODE:
+                    Element _e = getLastElementChild(n);
+                    if (_e != null) {
+                        return _e;
+                    }
+                    break;
+            }
+            n = n.getPreviousSibling();
+        }
+        return null;
+    } // getLastElementChild():Element
+
+    /**
+     * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-nextElementSibling">
+     * Element Traversal Specification</a>
+     */
+    public Element getNextElementSibling() {
+        Node n = getNextSibling();
+        while (n != null) {
+            switch (n.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    return (Element) n;
+                case Node.ENTITY_REFERENCE_NODE:
+                    Element _e = getFirstElementChild(n);
+                    if (_e != null) {
+                        return _e;
+                    }
+                    break;
+            }
+            Node next = n.getNextSibling();
+            // If "n" has no following sibling and its parent is an entity reference node we 
+            // need to continue the search through the following siblings of the entity 
+            // reference as these are logically siblings of *this* element node.
+            if (next == null) {
+                Node parent = n.getParentNode();
+                while (parent != null && parent.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                    next = parent.getNextSibling();
+                    if (next != null) {
+                        break;
+                    }
+                    parent = parent.getParentNode();
+                }
+            }
+            n = next;
+        }
+        return null;
+    } // getNextElementSibling():Element
+
+    /**
+     * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-previousElementSibling">
+     * Element Traversal Specification</a>
+     */
+    public Element getPreviousElementSibling() {
+        Node n = getPreviousSibling();
+        while (n != null) {
+            switch (n.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    return (Element) n;
+                case Node.ENTITY_REFERENCE_NODE:
+                    Element _e = getLastElementChild(n);
+                    if (_e != null) {
+                        return _e;
+                    }
+                    break;
+            }
+            Node prev = n.getPreviousSibling();
+            // If "n" has no previous sibling and its parent is an entity reference node we 
+            // need to continue the search through the previous siblings of the entity 
+            // reference as these are logically siblings of *this* element node.
+            if (prev == null) {
+                Node parent = n.getParentNode();
+                while (parent != null && parent.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                    prev = parent.getPreviousSibling();
+                    if (prev != null) {
+                        break;
+                    }
+                    parent = parent.getParentNode();
+                }
+            }
+            n = prev;
+        }
+        return null;
+    } // getPreviousElementSibling():Element
+    
+    // Returns the first element node found from a 
+    // non-recursive in order traversal of the given node.
+    private Element getFirstElementChild(Node n) {
+        final Node top = n;
+        while (n != null) {
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                return (Element) n;
+            }
+            Node next = n.getFirstChild();
+            while (next == null) {         
+                if (top == n) {
+                    break;
+                }
+                next = n.getNextSibling();
+                if (next == null) {
+                    n = n.getParentNode();
+                    if (n == null || top == n) {
+                        return null;
+                    }
+                }
+            }
+            n = next;
+        }
+        return null;
+    } // getFirstElementChild(Node):Element
+    
+    // Returns the first element node found from a 
+    // non-recursive reverse order traversal of the given node.
+    private Element getLastElementChild(Node n) {
+        final Node top = n;
+        while (n != null) {
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                return (Element) n;
+            }
+            Node next = n.getLastChild();
+            while (next == null) {         
+                if (top == n) {
+                    break;
+                }
+                next = n.getPreviousSibling();
+                if (next == null) {
+                    n = n.getParentNode();
+                    if (n == null || top == n) {
+                        return null;
+                    }
+                }
+            }
+            n = next;
+        }
+        return null;
+    } // getLastElementChild(Node):Element
 
 } // class ElementImpl
