@@ -36,12 +36,12 @@ public class AttributeImpl extends XMLEventImpl implements Attribute {
     /**
      * Constructor.
      */
-    public AttributeImpl(final QName name, final String value, final String dtdType, final boolean isSpecified, final Location location, final QName schemaType) {
-        this(ATTRIBUTE, name, value, dtdType, isSpecified, location, schemaType);
+    public AttributeImpl(final QName name, final String value, final String dtdType, final boolean isSpecified, final Location location) {
+        this(ATTRIBUTE, name, value, dtdType, isSpecified, location);
     }
 
-    protected AttributeImpl(final int type, final QName name, final String value, final String dtdType, final boolean isSpecified, final Location location, final QName schemaType) {
-        super(type, location, schemaType);
+    protected AttributeImpl(final int type, final QName name, final String value, final String dtdType, final boolean isSpecified, final Location location) {
+        super(type, location);
         fName = name;
         fValue = value;
         fDtdType = dtdType;

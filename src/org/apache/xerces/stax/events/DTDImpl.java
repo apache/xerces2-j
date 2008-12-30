@@ -37,7 +37,7 @@ public class DTDImpl extends XMLEventImpl implements DTD {
      * Constructor.
      */
     public DTDImpl(final String dtd, final Location location) {
-        super(XMLStreamConstants.DTD, location, null);
+        super(XMLStreamConstants.DTD, location);
         fDtd = dtd;
     }
     

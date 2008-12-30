@@ -39,7 +39,7 @@ public class NamespaceImpl extends AttributeImpl implements Namespace {
      * @param schemaType
      */
     public NamespaceImpl(final String prefix, final String namespaceURI, final Location location) {
-        super(NAMESPACE, makeAttributeQName(prefix), namespaceURI, null, true, location, null);
+        super(NAMESPACE, makeAttributeQName(prefix), namespaceURI, null, true, location);
         fPrefix = (prefix == null ? "" : prefix);
         fNamespaceURI = namespaceURI;
     }

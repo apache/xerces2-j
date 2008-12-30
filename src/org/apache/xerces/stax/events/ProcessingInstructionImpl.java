@@ -38,7 +38,7 @@ public class ProcessingInstructionImpl extends XMLEventImpl implements
      * @param location
      */
     public ProcessingInstructionImpl(final String target, final String data, final Location location) {
-        super(PROCESSING_INSTRUCTION, location, null);
+        super(PROCESSING_INSTRUCTION, location);
         fTarget = target;
         fData = data;
     }

@@ -41,7 +41,7 @@ public class EndElementImpl extends XMLEventImpl implements EndElement {
      * @param location The location object for this event.
      */
     public EndElementImpl(final QName name, final Location location) {
-        super(XMLStreamConstants.END_ELEMENT, location, null);
+        super(XMLStreamConstants.END_ELEMENT, location);
         fName = name;
     }
 
