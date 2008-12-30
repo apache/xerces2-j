@@ -24,6 +24,7 @@ import javax.xml.stream.events.Namespace;
 import org.apache.xerces.xni.NamespaceContext;
 
 /**
+ * @xerces.internal
  * 
  * @author Lucian Holland
  *

@@ -22,6 +22,8 @@ import javax.xml.stream.Location;
 import javax.xml.stream.events.Attribute;
 
 /**
+ * @xerces.internal
+ * 
  * @author Lucian Holland
  * 
  * @version $Id$

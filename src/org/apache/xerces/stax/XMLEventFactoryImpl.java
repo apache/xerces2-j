@@ -37,6 +37,8 @@ import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 
 /**
+ * @xerces.internal
+ * 
  * <p>Implementation of XMLEventFactory.</p>
  * 
  * @version $Id$
