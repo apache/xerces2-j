@@ -17,6 +17,7 @@
 
 package org.apache.xerces.stax.events;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.events.Namespace;
@@ -41,7 +42,7 @@ public final class NamespaceImpl extends AttributeImpl implements Namespace {
      */
     public NamespaceImpl(final String prefix, final String namespaceURI, final Location location) {
         super(NAMESPACE, makeAttributeQName(prefix), namespaceURI, null, true, location);
-        fPrefix = (prefix == null ? "" : prefix);
+        fPrefix = (prefix == null) ? XMLConstants.DEFAULT_NS_PREFIX : prefix;
         fNamespaceURI = namespaceURI;
     }
 
@@ -50,8 +51,8 @@ public final class NamespaceImpl extends AttributeImpl implements Namespace {
      * @return A QName for the attribute that declares this namespace.
      */
     private static QName makeAttributeQName(String prefix) {
-        if (prefix == null) {
-            return new QName("", "xmlns", "");
+        if (prefix == null || prefix.equals(XMLConstants.DEFAULT_NS_PREFIX)) {
+            return new QName(NamespaceContext.XMLNS_URI, "xmlns", "");
         }
         return new QName(NamespaceContext.XMLNS_URI, prefix, "xmlns");
     }
