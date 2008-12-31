@@ -22,8 +22,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.events.Namespace;
 
-import org.apache.xerces.xni.NamespaceContext;
-
 /**
  * @xerces.internal
  * 
@@ -52,9 +50,9 @@ public final class NamespaceImpl extends AttributeImpl implements Namespace {
      */
     private static QName makeAttributeQName(String prefix) {
         if (prefix == null || prefix.equals(XMLConstants.DEFAULT_NS_PREFIX)) {
-            return new QName(NamespaceContext.XMLNS_URI, "xmlns", "");
+            return new QName(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, XMLConstants.DEFAULT_NS_PREFIX);
         }
-        return new QName(NamespaceContext.XMLNS_URI, prefix, "xmlns");
+        return new QName(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, prefix, XMLConstants.XMLNS_ATTRIBUTE);
     }
 
     /**
@@ -75,6 +73,6 @@ public final class NamespaceImpl extends AttributeImpl implements Namespace {
      * @see javax.xml.stream.events.Namespace#isDefaultNamespaceDeclaration()
      */
     public boolean isDefaultNamespaceDeclaration() {
-        return fPrefix == "";
+        return fPrefix.length() == 0;
     }
 }
