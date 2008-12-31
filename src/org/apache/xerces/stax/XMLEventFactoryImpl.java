@@ -19,10 +19,12 @@ package org.apache.xerces.stax;
 
 import java.util.Iterator;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.Comment;
@@ -36,6 +38,18 @@ import javax.xml.stream.events.ProcessingInstruction;
 import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 
+import org.apache.xerces.stax.events.AttributeImpl;
+import org.apache.xerces.stax.events.CharactersImpl;
+import org.apache.xerces.stax.events.CommentImpl;
+import org.apache.xerces.stax.events.DTDImpl;
+import org.apache.xerces.stax.events.EndDocumentImpl;
+import org.apache.xerces.stax.events.EndElementImpl;
+import org.apache.xerces.stax.events.EntityReferenceImpl;
+import org.apache.xerces.stax.events.NamespaceImpl;
+import org.apache.xerces.stax.events.ProcessingInstructionImpl;
+import org.apache.xerces.stax.events.StartDocumentImpl;
+import org.apache.xerces.stax.events.StartElementImpl;
+
 /**
  * <p>Implementation of XMLEventFactory.</p>
  * 
@@ -44,119 +58,145 @@ import javax.xml.stream.events.StartElement;
  * @version $Id$
  */
 public final class XMLEventFactoryImpl extends XMLEventFactory {
+    
+    private Location fLocation;
 
     public XMLEventFactoryImpl() {}
     
-    public void setLocation(Location location) {}
+    public void setLocation(Location location) {
+        fLocation = location;
+    }
     
     public Attribute createAttribute(String prefix, String namespaceURI,
             String localName, String value) {
-        return null;
+        return createAttribute(new QName(namespaceURI, localName, prefix), value);
     }
 
     public Attribute createAttribute(String localName, String value) {
-        return null;
+        return createAttribute(new QName(localName), value);
     }
 
     public Attribute createAttribute(QName name, String value) {
-        return null;
+        return new AttributeImpl(name, value, "CDATA", true, fLocation);
     }
     
     public Namespace createNamespace(String namespaceURI) {
-        return null;
+        return createNamespace(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
     }
 
     public Namespace createNamespace(String prefix, String namespaceUri) {
-        return null;
+        return new NamespaceImpl(prefix, namespaceUri, fLocation);
     }
     
     public StartElement createStartElement(QName name, Iterator attributes,
             Iterator namespaces) {
-        return null;
+        return createStartElement(name, attributes, namespaces, null);
     }
     
     public StartElement createStartElement(String prefix, String namespaceUri,
             String localName) {
-        return null;
+        return createStartElement(new QName(namespaceUri, localName, prefix), null, null);
     }
   
     public StartElement createStartElement(String prefix, String namespaceUri,
             String localName, Iterator attributes, Iterator namespaces) {
-        return null;
+        return createStartElement(new QName(namespaceUri, localName, prefix), attributes, namespaces);
     }
     
     public StartElement createStartElement(String prefix, String namespaceUri,
             String localName, Iterator attributes, Iterator namespaces,
             NamespaceContext context) {
-        return null;
+        return createStartElement(new QName(namespaceUri, localName, prefix), attributes, namespaces, context);
+    }
+    
+    private StartElement createStartElement(QName name, Iterator attributes,
+            Iterator namespaces, NamespaceContext context) {
+        StartElementImpl start = new StartElementImpl(name, context, fLocation);
+        if (attributes != null) {
+            while (attributes.hasNext()) {
+                start.addAttribute((Attribute) attributes.next());
+            }
+        }
+        if (namespaces != null) {
+            while (namespaces.hasNext()) {
+                start.addNamespace((Namespace) namespaces.next());
+            }
+        }
+        return start;
     }
 
     public EndElement createEndElement(QName name, Iterator namespaces) {
-        return null;
+        EndElementImpl end = new EndElementImpl(name, fLocation);
+        if (namespaces != null) {
+            while (namespaces.hasNext()) {
+                end.addNamespace((Namespace) namespaces.next());
+            }
+        }
+        return end;
     }
 
     public EndElement createEndElement(String prefix, String namespaceUri,
             String localName) {
-        return null;
+        return createEndElement(new QName(namespaceUri, localName, prefix), null);
     }
     
     public EndElement createEndElement(String prefix, String namespaceUri,
             String localName, Iterator namespaces) {
-        return null;
+        return createEndElement(new QName(namespaceUri, localName, prefix), namespaces);
     }
     
     public Characters createCharacters(String content) {
-        return null;
+        return new CharactersImpl(content, XMLStreamConstants.CHARACTERS, fLocation);
     }
 
     public Characters createCData(String content) {
-        return null;
+        return new CharactersImpl(content, XMLStreamConstants.CDATA, fLocation);
     }
 
     public Characters createSpace(String content) {
-        return null;
+        return createCharacters(content);
     }
 
     public Characters createIgnorableSpace(String content) {
-        return null;
+        return new CharactersImpl(content, XMLStreamConstants.SPACE, fLocation);
     }
     
     public StartDocument createStartDocument() {
-        return null;
+        return createStartDocument(null, null);
     }
     
     public StartDocument createStartDocument(String encoding, String version,
             boolean standalone) {
-        return null;
+        return new StartDocumentImpl(encoding, encoding != null, standalone, true, version, fLocation);
     }
     
     public StartDocument createStartDocument(String encoding, String version) {
-        return null;
+        return new StartDocumentImpl(encoding, encoding != null, false, false, version, fLocation);
     }
 
     public StartDocument createStartDocument(String encoding) {
-        return null;
+        return createStartDocument(encoding, null);
     }
     
     public EndDocument createEndDocument() {
-        return null;
+        return new EndDocumentImpl(fLocation);
     }
     
     public EntityReference createEntityReference(String name,
             EntityDeclaration declaration) {
-        return null;
+        return new EntityReferenceImpl(name, declaration, fLocation);
     }
     
     public Comment createComment(String text) {
-        return null;
+        return new CommentImpl(text, fLocation);
     }
     
     public ProcessingInstruction createProcessingInstruction(String target,
             String data) {
-        return null;
+        return new ProcessingInstructionImpl(target, data, fLocation);
     }
     
     public DTD createDTD(String dtd) {
-        return null;
+        return new DTDImpl(dtd, fLocation);
     }
 }

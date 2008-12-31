@@ -18,7 +18,6 @@
 package org.apache.xerces.stax.events;
 
 import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.events.EndDocument;
 
 /**
@@ -35,7 +34,7 @@ public final class EndDocumentImpl extends XMLEventImpl implements EndDocument {
      * @param location Location object for this event. 
      */
     public EndDocumentImpl(Location location) {
-        super(XMLStreamConstants.END_DOCUMENT, location);
+        super(END_DOCUMENT, location);
     }
 
 }

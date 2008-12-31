@@ -21,7 +21,6 @@ import java.io.Writer;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.EndElement;
@@ -51,7 +50,7 @@ public abstract class XMLEventImpl implements XMLEvent {
     /**
      * Constructor.
      */
-    public XMLEventImpl(final int eventType, final Location location) {
+    XMLEventImpl(final int eventType, final Location location) {
         fEventType = eventType;
         fLocation = location;
     }
@@ -74,63 +73,65 @@ public abstract class XMLEventImpl implements XMLEvent {
      * @see javax.xml.stream.events.XMLEvent#isStartElement()
      */
     public final boolean isStartElement() {
-        return XMLStreamConstants.START_ELEMENT == fEventType;
+        return START_ELEMENT == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isAttribute()
      */
     public final boolean isAttribute() {
-        return XMLStreamConstants.ATTRIBUTE == fEventType;
+        return ATTRIBUTE == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isNamespace()
      */
     public final boolean isNamespace() {
-        return XMLStreamConstants.NAMESPACE == fEventType;
+        return NAMESPACE == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isEndElement()
      */
     public final boolean isEndElement() {
-        return XMLStreamConstants.END_ELEMENT == fEventType;
+        return END_ELEMENT == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isEntityReference()
      */
     public final boolean isEntityReference() {
-        return XMLStreamConstants.ENTITY_REFERENCE == fEventType;
+        return ENTITY_REFERENCE == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isProcessingInstruction()
      */
     public final boolean isProcessingInstruction() {
-        return XMLStreamConstants.PROCESSING_INSTRUCTION == fEventType;
+        return PROCESSING_INSTRUCTION == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isCharacters()
      */
     public final boolean isCharacters() {
-        return XMLStreamConstants.CHARACTERS == fEventType;
+        return CHARACTERS == fEventType ||
+            CDATA == fEventType ||
+            SPACE == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isStartDocument()
      */
     public final boolean isStartDocument() {
-        return XMLStreamConstants.START_DOCUMENT == fEventType;
+        return START_DOCUMENT == fEventType;
     }
 
     /**
      * @see javax.xml.stream.events.XMLEvent#isEndDocument()
      */
     public final boolean isEndDocument() {
-        return XMLStreamConstants.END_DOCUMENT == fEventType;
+        return END_DOCUMENT == fEventType;
     }
 
     /**

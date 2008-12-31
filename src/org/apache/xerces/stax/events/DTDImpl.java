@@ -17,10 +17,10 @@
 
 package org.apache.xerces.stax.events;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.events.DTD;
 
 /**
@@ -32,29 +32,27 @@ import javax.xml.stream.events.DTD;
  */
 public final class DTDImpl extends XMLEventImpl implements DTD {
 
-    private final String fDtd;
+    private final String fDTD;
     
     /**
      * Constructor.
      */
     public DTDImpl(final String dtd, final Location location) {
-        super(XMLStreamConstants.DTD, location);
-        fDtd = dtd;
+        super(DTD, location);
+        fDTD = dtd;
     }
     
     /**
      * @see javax.xml.stream.events.DTD#getDocumentTypeDeclaration()
      */
     public String getDocumentTypeDeclaration() {
-        // TODO Auto-generated method stub
-        return null;
+        return fDTD;
     }
 
     /**
      * @see javax.xml.stream.events.DTD#getProcessedDTD()
      */
     public Object getProcessedDTD() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -62,16 +60,13 @@ public final class DTDImpl extends XMLEventImpl implements DTD {
      * @see javax.xml.stream.events.DTD#getNotations()
      */
     public List getNotations() {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     /**
      * @see javax.xml.stream.events.DTD#getEntities()
      */
     public List getEntities() {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.EMPTY_LIST;
     }
-
 }
