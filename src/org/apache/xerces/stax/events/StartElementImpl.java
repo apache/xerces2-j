@@ -17,10 +17,8 @@
 
 package org.apache.xerces.stax.events;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -28,7 +26,6 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 
 /**
@@ -38,7 +35,7 @@ import javax.xml.stream.events.StartElement;
  *
  * @version $Id$
  */
-public final class StartElementImpl extends XMLEventImpl implements StartElement {
+public final class StartElementImpl extends ElementImpl implements StartElement {
 
     private final Map fAttributes = new TreeMap(new Comparator(){
         public int compare(Object o1, Object o2) {
@@ -49,8 +46,6 @@ public final class StartElementImpl extends XMLEventImpl implements StartElement
             QName name2 = (QName)o2;
             return name1.toString().compareTo(name2.toString());
         }});
-    private final List fNamespaces = new ArrayList();
-    private final QName fName;
     private final NamespaceContext fNamespaceContext;
 
     /**
@@ -58,30 +53,15 @@ public final class StartElementImpl extends XMLEventImpl implements StartElement
      * @param schemaType
      */
     public StartElementImpl(final QName name, final NamespaceContext namespaceContext, final Location location) {
-        super(START_ELEMENT, location);
-        fName = name;
+        super(name, true, location);
         fNamespaceContext = namespaceContext;
-    }
-
-    /**
-     * @see javax.xml.stream.events.StartElement#getName()
-     */
-    public QName getName() {
-        return fName;
     }
 
     /**
      * @see javax.xml.stream.events.StartElement#getAttributes()
      */
     public Iterator getAttributes() {
-        return new NoRemoveIterator(fAttributes.values().iterator());
-    }
-
-    /**
-     * @see javax.xml.stream.events.StartElement#getNamespaces()
-     */
-    public Iterator getNamespaces() {
-        return new NoRemoveIterator(fNamespaces.iterator());
+        return createImmutableIterator(fAttributes.values().iterator());
     }
 
     /**
@@ -107,42 +87,6 @@ public final class StartElementImpl extends XMLEventImpl implements StartElement
 
     public void addAttribute(final Attribute attribute) {
         fAttributes.put(attribute.getName(), attribute);
-    }
-    
-    public void addNamespace(final Namespace namespace) {
-        fNamespaces.add(namespace);
-    }
-    
-    
-    private final class NoRemoveIterator implements Iterator {
-        
-        private final Iterator fWrapped;
-        
-        public NoRemoveIterator(Iterator wrapped) {
-            fWrapped = wrapped;
-        }
-        
-        /**
-         * @see java.util.Iterator#hasNext()
-         */
-        public boolean hasNext() {
-            return fWrapped.hasNext();
-        }
-
-        /**
-         * @see java.util.Iterator#next()
-         */
-        public Object next() {
-            return fWrapped.next();
-        }
-
-        /**
-         * @see java.util.Iterator#remove()
-         */
-        public void remove() {
-            throw new UnsupportedOperationException("Attributes iterator is read-only.");
-        }
-        
     }
         
 }

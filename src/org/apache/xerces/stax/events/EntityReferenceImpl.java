@@ -30,19 +30,36 @@ import javax.xml.stream.events.EntityReference;
  */
 public final class EntityReferenceImpl extends XMLEventImpl implements
         EntityReference {
+    
+    /**
+     * The name of the entity.
+     */
+    private final String fName;
 
     /**
      * The entity declaration for this entity reference.
      */
     private final EntityDeclaration fDecl;
-
+    
     /**
      * Constructor.
+     * @param decl
      * @param location
      */
     public EntityReferenceImpl(final EntityDeclaration decl, final Location location) {
+        this(decl != null ? decl.getName() : null, decl, location);
+    }
+    
+    /**
+     * Constructor.
+     * @param name
+     * @param decl
+     * @param location
+     */
+    public EntityReferenceImpl(final String name, final EntityDeclaration decl, final Location location) {
         super(ENTITY_REFERENCE, location);
-        fDecl = decl;;
+        fName = name;
+        fDecl = decl;
     }
 
     /**
@@ -56,9 +73,7 @@ public final class EntityReferenceImpl extends XMLEventImpl implements
      * @see javax.xml.stream.events.EntityReference#getName()
      */
     public String getName() {
-        //TODO: Is this actually correct? Not sure how an entity ref can have a different
-        //name to the entity decl, but needs checking just in case.
-        return fDecl.getName();
+        return fName;
     }
 
 }

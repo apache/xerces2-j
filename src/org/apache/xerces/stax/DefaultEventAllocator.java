@@ -73,9 +73,9 @@ public class DefaultEventAllocator implements XMLEventAllocator {
                 //in turn at index 0. 
                 return makeAttribute(0, reader);
             case XMLStreamConstants.CDATA:
-                 return new CharactersImpl(reader.getText(), false, true, false, location);
+                 return new CharactersImpl(reader.getText(), XMLStreamConstants.CDATA, location);
             case XMLStreamConstants.CHARACTERS:
-                return new CharactersImpl(reader.getText(), false, false, false, location);
+                return new CharactersImpl(reader.getText(), XMLStreamConstants.CHARACTERS, location);
             case XMLStreamConstants.COMMENT:
                 return new CommentImpl(reader.getText(), location);
             case XMLStreamConstants.DTD:
@@ -97,7 +97,7 @@ public class DefaultEventAllocator implements XMLEventAllocator {
                 return new ProcessingInstructionImpl(reader.getPITarget(), reader.getPIData(), location);
             case XMLStreamConstants.SPACE:
                 //TODO: Ignorable Whitespace
-                return new CharactersImpl(reader.getText(), true, false, false, location);
+                return new CharactersImpl(reader.getText(), XMLStreamConstants.SPACE, location);
             case XMLStreamConstants.START_DOCUMENT:
                 return new StartDocumentImpl(reader.getEncoding(), reader.getCharacterEncodingScheme() != null, reader.isStandalone(), reader.standaloneSet(), reader.getVersion(), location);
             case XMLStreamConstants.START_ELEMENT:

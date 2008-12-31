@@ -20,6 +20,8 @@ package org.apache.xerces.stax.events;
 import javax.xml.stream.Location;
 import javax.xml.stream.events.Characters;
 
+import org.apache.xerces.util.XMLChar;
+
 /**
  * @xerces.internal
  * 
@@ -30,9 +32,6 @@ import javax.xml.stream.events.Characters;
 public final class CharactersImpl extends XMLEventImpl implements Characters {
 
     private final String fData;
-    private final boolean fIsWS;
-    private final boolean fIsCData;
-    private final boolean fIsIgnorableWS;
 
     /**
      * Standard constructor.
@@ -40,12 +39,9 @@ public final class CharactersImpl extends XMLEventImpl implements Characters {
      * @param location
      * @param schemaType
      */
-    public CharactersImpl(final String data, final boolean isWS, final boolean isCData, final boolean isIgnorableWS, final Location location) {
-        super(CHARACTERS, location);
+    public CharactersImpl(final String data, final int eventType, final Location location) {
+        super(eventType, location);
         fData = data;
-        fIsWS = isWS;
-        fIsCData = isCData;
-        fIsIgnorableWS = isIgnorableWS;
     }
 
     /**
@@ -59,22 +55,30 @@ public final class CharactersImpl extends XMLEventImpl implements Characters {
      * @see javax.xml.stream.events.Characters#isWhiteSpace()
      */
     public boolean isWhiteSpace() {
-        return fIsWS;
+        final int length = fData != null ? fData.length() : 0;
+        if (length == 0) {
+            return false;
+        }
+        for (int i = 0; i < length; ++i) {
+            if (!XMLChar.isSpace(fData.charAt(i))) {
+                return false;
+            }
+        }
+        return true; 
     }
 
     /**
      * @see javax.xml.stream.events.Characters#isCData()
      */
     public boolean isCData() {
-        return fIsCData;
+        return CDATA == getEventType();
     }
 
     /**
      * @see javax.xml.stream.events.Characters#isIgnorableWhiteSpace()
      */
     public boolean isIgnorableWhiteSpace() {
-        return fIsIgnorableWS;
+        return SPACE == getEventType();
     }
-
     
 }

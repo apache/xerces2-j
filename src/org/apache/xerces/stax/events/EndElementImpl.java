@@ -17,11 +17,8 @@
 
 package org.apache.xerces.stax.events;
 
-import java.util.Iterator;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.events.EndElement;
 
 /**
@@ -31,34 +28,13 @@ import javax.xml.stream.events.EndElement;
  *
  * @version $Id$
  */
-public final class EndElementImpl extends XMLEventImpl implements EndElement {
-
-    /**
-     * The qualified name of the element that is being closed.
-     */
-    private final QName fName;
+public final class EndElementImpl extends ElementImpl implements EndElement {
 
     /**
      * @param location The location object for this event.
      */
     public EndElementImpl(final QName name, final Location location) {
-        super(XMLStreamConstants.END_ELEMENT, location);
-        fName = name;
-    }
-
-    /**
-     * @see javax.xml.stream.events.EndElement#getName()
-     */
-    public QName getName() {
-        return fName;
-    }
-
-    /**
-     * @see javax.xml.stream.events.EndElement#getNamespaces()
-     */
-    public Iterator getNamespaces() {
-        // TODO Auto-generated method stub
-        return null;
+        super(name, false, location);
     }
     
 }
