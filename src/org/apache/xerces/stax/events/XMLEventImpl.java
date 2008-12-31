@@ -27,6 +27,9 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.xerces.stax.EmptyLocation;
+import org.apache.xerces.stax.ImmutableLocation;
+
 /**
  * @xerces.internal
  * 
@@ -52,7 +55,12 @@ public abstract class XMLEventImpl implements XMLEvent {
      */
     XMLEventImpl(final int eventType, final Location location) {
         fEventType = eventType;
-        fLocation = location;
+        if (location != null) {
+            fLocation = new ImmutableLocation(location);
+        }
+        else {
+            fLocation = EmptyLocation.getInstance();
+        }
     }
 
     /**
