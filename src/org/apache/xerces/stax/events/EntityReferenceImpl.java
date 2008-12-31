@@ -17,7 +17,11 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.EntityDeclaration;
 import javax.xml.stream.events.EntityReference;
 
@@ -47,7 +51,7 @@ public final class EntityReferenceImpl extends XMLEventImpl implements
      * @param location
      */
     public EntityReferenceImpl(final EntityDeclaration decl, final Location location) {
-        this(decl != null ? decl.getName() : null, decl, location);
+        this(decl != null ? decl.getName() : "", decl, location);
     }
     
     /**
@@ -58,7 +62,7 @@ public final class EntityReferenceImpl extends XMLEventImpl implements
      */
     public EntityReferenceImpl(final String name, final EntityDeclaration decl, final Location location) {
         super(ENTITY_REFERENCE, location);
-        fName = name;
+        fName = (name != null) ? name : "";
         fDecl = decl;
     }
 
@@ -75,5 +79,15 @@ public final class EntityReferenceImpl extends XMLEventImpl implements
     public String getName() {
         return fName;
     }
-
+    
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            writer.write('&');
+            writer.write(fName);
+            writer.write(';');
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }

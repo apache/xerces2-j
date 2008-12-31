@@ -17,7 +17,11 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.NotationDeclaration;
 
 /**
@@ -66,6 +70,30 @@ public final class NotationDeclarationImpl extends XMLEventImpl implements
     public String getSystemId() {
         return fSystemId;
     }
-
-
+    
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            writer.write("<!NOTATION ");
+            if (fPublicId != null) {
+                writer.write("PUBLIC \"");
+                writer.write(fPublicId);
+                writer.write('\"');
+                if (fSystemId != null) {
+                    writer.write(" \"");
+                    writer.write(fSystemId);
+                    writer.write('\"');
+                }
+            }
+            else {
+                writer.write("SYSTEM \"");
+                writer.write(fSystemId);
+                writer.write('\"');
+            }
+            writer.write(fName);
+            writer.write('>');
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }

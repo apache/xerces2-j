@@ -17,7 +17,11 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 
 import org.apache.xerces.util.XMLChar;
@@ -41,7 +45,7 @@ public final class CharactersImpl extends XMLEventImpl implements Characters {
      */
     public CharactersImpl(final String data, final int eventType, final Location location) {
         super(eventType, location);
-        fData = data;
+        fData = (data != null) ? data : "";
     }
 
     /**
@@ -81,4 +85,12 @@ public final class CharactersImpl extends XMLEventImpl implements Characters {
         return SPACE == getEventType();
     }
     
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            writer.write(fData);
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }

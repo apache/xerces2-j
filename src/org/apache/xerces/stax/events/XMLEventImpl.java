@@ -18,7 +18,6 @@
 package org.apache.xerces.stax.events;
 
 import java.io.StringWriter;
-import java.io.Writer;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -169,13 +168,6 @@ public abstract class XMLEventImpl implements XMLEvent {
      */
     public final QName getSchemaType() {
         return null;
-    }
-
-    /**
-     * @see javax.xml.stream.events.XMLEvent#writeAsEncodedUnicode(java.io.Writer)
-     */
-    public void writeAsEncodedUnicode(final Writer writer) throws XMLStreamException {
-        // TODO Auto-generated method stub
     }
     
     public final String toString() {
