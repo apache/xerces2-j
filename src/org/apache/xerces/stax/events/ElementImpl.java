@@ -31,7 +31,7 @@ import javax.xml.stream.events.Namespace;
  * @author Lucian Holland
  * @author Michael Glavassevich, IBM
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class ElementImpl extends XMLEventImpl {
     
