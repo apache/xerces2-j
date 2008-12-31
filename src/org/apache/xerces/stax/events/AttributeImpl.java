@@ -17,8 +17,12 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 
 /**
@@ -77,5 +81,23 @@ public class AttributeImpl extends XMLEventImpl implements Attribute {
     public final boolean isSpecified() {
         return fIsSpecified;
     }
-
+    
+    public final void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            // Write name
+            String prefix = fName.getPrefix();
+            if (prefix != null && prefix.length() > 0) {
+                writer.write(prefix);
+                writer.write(':');
+            }
+            writer.write(fName.getLocalPart());
+            // Write value
+            writer.write("=\"");
+            writer.write(fValue);
+            writer.write('"');
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }

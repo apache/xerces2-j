@@ -17,7 +17,11 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartDocument;
 
 /**
@@ -88,5 +92,26 @@ public final class StartDocumentImpl extends XMLEventImpl implements StartDocume
     public String getVersion() {
         return fVersion;
     }
- 
+    
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            writer.write("<?xml version=\"");
+            writer.write(fVersion != null && fVersion.length() > 0 ? fVersion : "1.0");
+            writer.write('"');
+            if (encodingSet()) {
+                writer.write(" encoding=\"");
+                writer.write(fCharEncoding);
+                writer.write('"');
+            }
+            if (standaloneSet()) {
+                writer.write(" standalone=\"");
+                writer.write(fIsStandalone ? "yes" : "no");
+                writer.write('"');
+            }
+            writer.write("?>");
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }

@@ -17,9 +17,11 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.ProcessingInstruction;
 
 /**
@@ -40,7 +42,7 @@ public final class ProcessingInstructionImpl extends XMLEventImpl implements
      */
     public ProcessingInstructionImpl(final String target, final String data, final Location location) {
         super(PROCESSING_INSTRUCTION, location);
-        fTarget = target;
+        fTarget = target != null ? target : "";
         fData = data;
     }
 
@@ -58,11 +60,18 @@ public final class ProcessingInstructionImpl extends XMLEventImpl implements
         return fData;
     }
 
-    /**
-     * @see org.apache.xerces.stax.events.XMLEventImpl#writeToStreamWriter(javax.xml.stream.XMLStreamWriter)
-     */
-    public void writeToStreamWriter(XMLStreamWriter writer) throws XMLStreamException {
-        
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            writer.write("<?");
+            writer.write(fTarget);
+            if (fData != null && fData.length() > 0) {
+                writer.write(' ');
+                writer.write(fData);
+            }
+            writer.write("?>");
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
     }
-
 }
