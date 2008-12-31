@@ -17,6 +17,7 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.StringWriter;
 import java.io.Writer;
 
 import javax.xml.namespace.QName;
@@ -175,5 +176,14 @@ public abstract class XMLEventImpl implements XMLEvent {
      */
     public void writeAsEncodedUnicode(final Writer writer) throws XMLStreamException {
         // TODO Auto-generated method stub
+    }
+    
+    public final String toString() {
+        final StringWriter writer = new StringWriter();
+        try {
+            writeAsEncodedUnicode(writer);
+        }
+        catch (XMLStreamException xse) {}
+        return writer.toString();
     }
 }
