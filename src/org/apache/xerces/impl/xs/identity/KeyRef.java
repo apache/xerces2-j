@@ -43,8 +43,8 @@ public class KeyRef
 
     /** Constructs a keyref with the specified name. */
     public KeyRef(String namespace, String identityConstraintName,
-                  String elemName, UniqueOrKey key) {
-        super(namespace, identityConstraintName, elemName);
+                  UniqueOrKey key) {
+        super(namespace, identityConstraintName);
         fKey = key;
         type = IC_KEYREF;
     } // <init>(String,String,String)

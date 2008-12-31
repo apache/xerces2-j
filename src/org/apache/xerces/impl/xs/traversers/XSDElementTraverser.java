@@ -440,7 +440,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                             childName.equals(SchemaSymbols.ELT_KEYREF) ||
                             childName.equals(SchemaSymbols.ELT_UNIQUE))) {
                 
-                if (childName.equals(SchemaSymbols.ELT_KEY) ||
+                // if the identity constraint contains the ref attribute,
+                // defer traversal until all the named identity constraints have been traversed
+                if (DOMUtil.getAttr(child, SchemaSymbols.ATT_REF) != null) {
+                    fSchemaHandler.storeIdentityConstraintReferral(child, schemaDoc, element);
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_KEY) ||
                         childName.equals(SchemaSymbols.ELT_UNIQUE)) {
                     // need to set <key>/<unique> to hidden before traversing it,
                     // because it has global scope

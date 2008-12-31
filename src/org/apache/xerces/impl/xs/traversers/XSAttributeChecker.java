@@ -79,6 +79,9 @@ public class XSAttributeChecker {
     private static final String ELEMENT_R = "element_r";
     private static final String ATTRIBUTE_N = "attribute_n";
     private static final String ATTRIBUTE_R = "attribute_r";
+    private static final String UNIQUE_R = "unique_r";
+    private static final String KEY_R = "key_r";
+    private static final String KEYREF_R = "keyref_r";
 
     private static      int ATTIDX_COUNT             = 0;
     public static final int ATTIDX_ABSTRACT          = ATTIDX_COUNT++;
@@ -825,7 +828,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         fEleAttrsMapL.put(SchemaSymbols.ELT_ANY, attrList);
 
-        // for element "unique" - local
+        // for element "unique" with the name attribute - local
         attrList = Container.getContainer(2);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -851,6 +854,18 @@ public class XSAttributeChecker {
         fEleAttrsMapL.put(SchemaSymbols.ELT_KEYREF, attrList);
         // XML Schema 1.1
         fEleAttrs11MapL.put(SchemaSymbols.ELT_KEYREF, attrList);
+
+        // for element "unique" with the ref attribute
+        attrList = Container.getContainer(2);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // ref = QName        
+        attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
+        fEleAttrs11MapL.put(UNIQUE_R, attrList);
+        // for element "key" with the ref attribute - same list
+        fEleAttrs11MapL.put(KEY_R, attrList);
+        // for element "keyref" with the ref attribute - same list
+        fEleAttrs11MapL.put(KEYREF_R, attrList);
 
         // for element "selector" - local
         attrList = Container.getContainer(2);
@@ -1370,6 +1385,13 @@ public class XSAttributeChecker {
                     lookupName = ATTRIBUTE_R;
                 else
                     lookupName = ATTRIBUTE_N;
+            } else if (fSchemaHandler.fSchemaVersion==Constants.SCHEMA_VERSION_1_1 && DOMUtil.getAttr(element, SchemaSymbols.ATT_REF)!=null) {
+                if (elName.equals(SchemaSymbols.ELT_UNIQUE))
+                    lookupName = UNIQUE_R;
+                else if (elName.equals(SchemaSymbols.ELT_KEY))
+                    lookupName = KEY_R;
+                else if (elName.equals(SchemaSymbols.ELT_KEYREF))
+                    lookupName = KEYREF_R;            
             }
         }
 

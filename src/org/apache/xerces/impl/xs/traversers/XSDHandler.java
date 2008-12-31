@@ -419,6 +419,21 @@ public class XSDHandler {
     private XSDocumentInfo [] fKeyrefsMapXSDocumentInfo = new XSDocumentInfo[INIT_KEYREF_STACK];
     private XSElementDecl [] fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];
     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
+
+    // these data members are needed for the deferred traversal
+    // of referral identity constraints.
+
+    // the initial size of the array to store deferred referral identity constraints
+    private static final int INIT_IC_REFERRAL_STACK = 2;
+    // the incremental size of the array to store deferred referral identity constraints
+    private static final int INC_IC_REFERRAL_STACK_AMOUNT = 2;
+    // current position of the array (# of deferred referral identity constraints)
+    private int fICReferralStackPos = 0;
+
+    private Element[] fICReferrals = new Element[INIT_IC_REFERRAL_STACK];
+    private XSDocumentInfo [] fICReferralsMapXSDocumentInfo = new XSDocumentInfo[INIT_IC_REFERRAL_STACK];
+    private XSElementDecl [] fICReferralElems = new XSElementDecl [INIT_IC_REFERRAL_STACK];
+    private String [][] fICReferralNamespaceContext = new String[INIT_IC_REFERRAL_STACK][1];
     
     // Constructors
     public XSDHandler(short schemaVersion, XSConstraints xsConstraints){
@@ -562,11 +577,14 @@ public class XSDHandler {
         // fifth phase:  handle Keyrefs
         resolveKeyRefs();
         
-        // sixth phase:  validate attribute of non-schema namespaces
+        // sixth phase:  handle identity constraint referral declarations
+        resolveIdentityConstraintReferrals();
+
+        // seventh phase:  validate attribute of non-schema namespaces
         // REVISIT: skip this for now. we really don't want to do it.
         //fAttributeChecker.checkNonSchemaAttributes(fGrammarBucket);
         
-        // seventh phase:  store imported grammars
+        // eighth phase:  store imported grammars
         // for all grammars with <import>s
         for (int i = fAllTNSs.size() - 1; i >= 0; i--) {
             // get its target namespace
@@ -1623,6 +1641,24 @@ public class XSDHandler {
             fKeyrefTraverser.traverse(fKeyrefs[i], fKeyrefElems[i], keyrefSchemaDoc, keyrefGrammar);
         }
     } // end resolveKeyRefs
+
+    //  In xsd 1.1, identity constraint declarations can refer to other identity constraints.
+    // Because we do not wish to traverse all our DOM trees looking for ID constraints while
+    // we're building our global name registries, we need to resolve identity constraint 
+    // referrals after all named identity constraints parsing have been complete.
+    protected void resolveIdentityConstraintReferrals() {
+        for (int i=0; i<fICReferralStackPos; i++) {
+            XSDocumentInfo icReferralSchemaDoc = fICReferralsMapXSDocumentInfo[i];
+            icReferralSchemaDoc.fNamespaceSupport.makeGlobal();
+            icReferralSchemaDoc.fNamespaceSupport.setEffectiveContext( fICReferralNamespaceContext[i] );
+            SchemaGrammar icReferralGrammar = fGrammarBucket.getGrammar(icReferralSchemaDoc.fTargetNamespace);
+            // need to set the identity constraint to hidden before traversing it,
+            // because it has global scope
+            DOMUtil.setHidden(fICReferrals[i], fHiddenNodes);
+            // using the uniqueOrKey traverser to access the method located in abstractIDConstraintTraverser
+            fUniqueOrKeyTraverser.traverseIdentityConstraintReferral(fICReferrals[i], fICReferralElems[i], icReferralSchemaDoc, icReferralGrammar);
+        }
+    } // end resolveIdentityConstraintReferrals
     
     // an accessor method.  Just makes sure callers
     // who want the Identity constraint registry vaguely know what they're about.
@@ -1671,7 +1707,32 @@ public class XSDHandler {
         
         fKeyrefsMapXSDocumentInfo[fKeyrefStackPos++] = schemaDoc; 
     } // storeKeyref (Element, XSDocumentInfo, XSElementDecl): void
-    
+
+    //  This method squirrels away referral identity cosntraint declarations (for xsd 1.1) along with the element
+    // decls and namespace bindings they might find handy.
+    protected void storeIdentityConstraintReferral (Element icToStore, XSDocumentInfo schemaDoc,
+            XSElementDecl currElemDecl) {
+        // set up all the registries we'll need...
+        if (fICReferralStackPos == fICReferrals.length) {
+            Element [] elemArray = new Element [fICReferralStackPos + INC_IC_REFERRAL_STACK_AMOUNT];
+            System.arraycopy(fICReferrals, 0, elemArray, 0, fICReferralStackPos);
+            fICReferrals = elemArray;
+            XSElementDecl [] declArray = new XSElementDecl [fICReferralStackPos + INC_IC_REFERRAL_STACK_AMOUNT];
+            System.arraycopy(fICReferralElems, 0, declArray, 0, fICReferralStackPos);
+            fICReferralElems = declArray;
+            String[][] stringArray = new String [fICReferralStackPos + INC_IC_REFERRAL_STACK_AMOUNT][];
+            System.arraycopy(fICReferralNamespaceContext, 0, stringArray, 0, fICReferralStackPos);
+            fICReferralNamespaceContext = stringArray;
+
+            XSDocumentInfo [] xsDocumentInfo = new XSDocumentInfo [fICReferralStackPos + INC_IC_REFERRAL_STACK_AMOUNT];
+            System.arraycopy(fICReferralsMapXSDocumentInfo, 0, xsDocumentInfo, 0, fICReferralStackPos);
+            fICReferralsMapXSDocumentInfo = xsDocumentInfo;
+        }
+        fICReferrals[fICReferralStackPos] = icToStore;
+        fICReferralElems[fICReferralStackPos] = currElemDecl;
+        fICReferralNamespaceContext[fICReferralStackPos] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
+        fICReferralsMapXSDocumentInfo[fICReferralStackPos++] = schemaDoc; 
+    } // storeIdentityConstraintReferral (Element, XSDocumentInfo, XSElementDecl): void
     
     /**
      * resolveSchema method is responsible for resolving location of the schema (using XMLEntityResolver),

@@ -401,6 +401,13 @@ public class XSElementDecl implements XSElementDeclaration {
         return ((fMiscFlags & ABSTRACT) != 0);
     }
 
+    public void addAnnotation(XSAnnotation annotation) {
+        if (fAnnotations == XSObjectListImpl.EMPTY_LIST) {
+            fAnnotations = new XSObjectListImpl();
+        }
+        ((XSObjectListImpl)fAnnotations).add(annotation);        
+    }    
+    
     /**
      * Optional. Annotation.
      */

@@ -81,7 +81,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
             return;
         }
 
-        KeyRef keyRef = new KeyRef(schemaDoc.fTargetNamespace, krName, element.fName, key);
+        KeyRef keyRef = new KeyRef(schemaDoc.fTargetNamespace, krName, key);
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem, schemaDoc, attrValues);

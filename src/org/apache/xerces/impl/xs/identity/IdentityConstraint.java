@@ -49,9 +49,6 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
     /** Identity constraint name. */
     protected final String fIdentityConstraintName;
 
-    /** name of owning element */
-    protected final String fElementName;
-
     /** Selector. */
     protected Selector fSelector;
 
@@ -72,10 +69,9 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
     //
 
     /** Default constructor. */
-    protected IdentityConstraint(String namespace, String identityConstraintName, String elemName) {
+    protected IdentityConstraint(String namespace, String identityConstraintName) {
         fNamespace = namespace;
         fIdentityConstraintName = identityConstraintName;
-        fElementName = elemName;
     } // <init>(String,String)
 
     //
@@ -115,11 +111,6 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
     public Field getFieldAt(int index) {
         return fFields[index];
     } // getFieldAt(int):Field
-
-    // get the name of the owning element
-    public String getElementName () {
-        return fElementName;
-    } // getElementName(): String
 
     //
     // Object methods

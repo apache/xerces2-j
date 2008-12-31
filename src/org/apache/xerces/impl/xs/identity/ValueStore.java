@@ -67,5 +67,16 @@ public interface ValueStore {
      */
     public void reportError(String key, Object[] args);
     
+    /**
+     * Sets the name of the element which holds the identity constraint
+     * @param elemenName The name of the element which holds the identity constraint.
+     */
+    public void setElementName(String elementName);
+    
+    /** 
+     * @return the name of the element which holds the identity constraint that is stored in this value store
+     */
+    public String getElementName();
+    
 
 } // interface ValueStore

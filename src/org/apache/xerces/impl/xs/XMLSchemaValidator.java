@@ -3597,6 +3597,7 @@ public class XMLSchemaValidator
         protected IdentityConstraint fIdentityConstraint;
         protected int fFieldCount = 0;
         protected Field[] fFields = null;
+        protected String fElementName;
         /** current data */
         protected Object[] fLocalValues = null;
         protected short[] fLocalValueTypes = null;
@@ -3626,7 +3627,8 @@ public class XMLSchemaValidator
         //
 
         /** Constructs a value store for the specified identity constraint. */
-        protected ValueStoreBase(IdentityConstraint identityConstraint) {
+        protected ValueStoreBase(IdentityConstraint identityConstraint, String elementName) {
+            fElementName = elementName;
             fIdentityConstraint = identityConstraint;
             fFieldCount = fIdentityConstraint.getFieldCount();
             fFields = new Field[fFieldCount];
@@ -3684,9 +3686,8 @@ public class XMLSchemaValidator
             if (fValuesCount == 0) {
                 if (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY) {
                     String code = "AbsentKeyValue";
-                    String eName = fIdentityConstraint.getElementName();
                     String cName = fIdentityConstraint.getIdentityConstraintName();
-                    reportSchemaError(code, new Object[] { eName, cName });
+                    reportSchemaError(code, new Object[] { fElementName, cName });
                 }
                 return;
             }
@@ -3701,9 +3702,8 @@ public class XMLSchemaValidator
                 if (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY) {
                     String code = "KeyNotEnoughValues";
                     UniqueOrKey key = (UniqueOrKey) fIdentityConstraint;
-                    String eName = fIdentityConstraint.getElementName();
                     String cName = key.getIdentityConstraintName();
-                    reportSchemaError(code, new Object[] { eName, cName });
+                    reportSchemaError(code, new Object[] { fElementName, cName });
                 }
                 return;
             }
@@ -3759,9 +3759,8 @@ public class XMLSchemaValidator
             // do we even know this field?
             if (i == -1) {
                 String code = "UnknownField";
-                String eName = fIdentityConstraint.getElementName();
                 String cName = fIdentityConstraint.getIdentityConstraintName();
-                reportSchemaError(code, new Object[] { field.toString(), eName, cName });
+                reportSchemaError(code, new Object[] { field.toString(), fElementName, cName });
                 return;
             }
             if (!mayMatch) {
@@ -3785,6 +3784,22 @@ public class XMLSchemaValidator
                 }
             }
         } // addValue(String,Field)
+
+        /**
+         * Sets the name of the element which holds the identity constraint
+         * that is stored in this value store
+         */
+        public void setElementName(String elementName) {
+            fElementName = elementName;
+        }
+
+        /**
+         * Returns the name of the element which holds the identity constraint 
+         * that is stored in this value store
+         */
+        public String getElementName() {
+            return fElementName;
+        } // getElementName():String
 
         /**
          * Returns true if this value store contains the locally scoped value stores
@@ -4033,8 +4048,8 @@ public class XMLSchemaValidator
         //
 
         /** Constructs a unique value store. */
-        public UniqueValueStore(UniqueOrKey unique) {
-            super(unique);
+        public UniqueValueStore(UniqueOrKey unique, String elementName) {
+            super(unique, elementName);
         } // <init>(Unique)
 
         //
@@ -4049,9 +4064,8 @@ public class XMLSchemaValidator
             if (contains()) {
                 String code = "DuplicateUnique";
                 String value = toString(fLocalValues);
-                String eName = fIdentityConstraint.getElementName();
                 String cName = fIdentityConstraint.getIdentityConstraintName();
-                reportSchemaError(code, new Object[] { value, eName, cName });
+                reportSchemaError(code, new Object[] { value, fElementName, cName });
             }
         } // duplicateValue(Hashtable)
 
@@ -4071,8 +4085,8 @@ public class XMLSchemaValidator
         //
 
         /** Constructs a key value store. */
-        public KeyValueStore(UniqueOrKey key) {
-            super(key);
+        public KeyValueStore(UniqueOrKey key, String elementName) {
+            super(key, elementName);
         } // <init>(Key)
 
         //
@@ -4086,9 +4100,8 @@ public class XMLSchemaValidator
             if (contains()) {
                 String code = "DuplicateKey";
                 String value = toString(fLocalValues);
-                String eName = fIdentityConstraint.getElementName();
                 String cName = fIdentityConstraint.getIdentityConstraintName();
-                reportSchemaError(code, new Object[] { value, eName, cName });
+                reportSchemaError(code, new Object[] { value, fElementName, cName });
             }
         } // duplicateValue(Hashtable)
 
@@ -4113,8 +4126,8 @@ public class XMLSchemaValidator
         //
 
         /** Constructs a key value store. */
-        public KeyRefValueStore(KeyRef keyRef, KeyValueStore keyValueStore) {
-            super(keyRef);
+        public KeyRefValueStore(KeyRef keyRef, KeyValueStore keyValueStore, String elementName) { 
+            super(keyRef, elementName);
             fKeyValueStore = keyValueStore;
         } // <init>(KeyRef)
 
@@ -4146,9 +4159,8 @@ public class XMLSchemaValidator
             if (errorIndex != -1) {
                 String code = "KeyNotFound";
                 String values = toString(fValues, errorIndex, fFieldCount);
-                String element = fIdentityConstraint.getElementName();
                 String name = fIdentityConstraint.getName();
-                reportSchemaError(code, new Object[] { name, values, element });
+                reportSchemaError(code, new Object[] { name, values, fElementName });
             }
 
         } // endDocumentFragment()
@@ -4291,10 +4303,11 @@ public class XMLSchemaValidator
                         UniqueValueStore uniqueValueStore =
                             (UniqueValueStore) fIdentityConstraint2ValueStoreMap.get(toHash);
                         if (uniqueValueStore == null) {
-                            uniqueValueStore = new UniqueValueStore(unique);
+                            uniqueValueStore = new UniqueValueStore(unique, eDecl.getName());
                             fIdentityConstraint2ValueStoreMap.put(toHash, uniqueValueStore);
                         } else {
                             uniqueValueStore.clear();
+                            uniqueValueStore.setElementName(eDecl.getName());
                         }
                         fValueStores.addElement(uniqueValueStore);
                         activateSelectorFor(icArray[i]);
@@ -4306,10 +4319,11 @@ public class XMLSchemaValidator
                         KeyValueStore keyValueStore =
                             (KeyValueStore) fIdentityConstraint2ValueStoreMap.get(toHash);
                         if (keyValueStore == null) {
-                            keyValueStore = new KeyValueStore(key);
+                            keyValueStore = new KeyValueStore(key, eDecl.getName());
                             fIdentityConstraint2ValueStoreMap.put(toHash, keyValueStore);
                         } else {
                             keyValueStore.clear();
+                            keyValueStore.setElementName(eDecl.getName());
                         }
                         fValueStores.addElement(keyValueStore);
                         activateSelectorFor(icArray[i]);
@@ -4321,10 +4335,11 @@ public class XMLSchemaValidator
                         KeyRefValueStore keyRefValueStore =
                             (KeyRefValueStore) fIdentityConstraint2ValueStoreMap.get(toHash);
                         if (keyRefValueStore == null) {
-                            keyRefValueStore = new KeyRefValueStore(keyRef, null);
+                            keyRefValueStore = new KeyRefValueStore(keyRef, null, eDecl.getName());
                             fIdentityConstraint2ValueStoreMap.put(toHash, keyRefValueStore);
                         } else {
                             keyRefValueStore.clear();
+                            keyRefValueStore.setElementName(eDecl.getName());
                         }
                         fValueStores.addElement(keyRefValueStore);
                         activateSelectorFor(icArray[i]);
