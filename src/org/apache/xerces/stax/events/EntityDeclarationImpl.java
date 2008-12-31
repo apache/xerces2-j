@@ -17,7 +17,11 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.EntityDeclaration;
 
 /**
@@ -91,5 +95,31 @@ public final class EntityDeclarationImpl extends XMLEventImpl implements
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            writer.write("<!ENTITY ");
+            writer.write(fName);
+            if (fPublicId != null) {
+                writer.write(" PUBLIC \"");
+                writer.write(fPublicId);
+                writer.write("\" \"");
+                writer.write(fSystemId);
+                writer.write('"');
+            }
+            else {
+                writer.write(" SYSTEM \"");
+                writer.write(fSystemId);
+                writer.write('"');
+            }
+            if (fNotationName != null) {
+                writer.write(" NDATA ");
+                writer.write(fNotationName);
+            }
+            writer.write('>');
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }

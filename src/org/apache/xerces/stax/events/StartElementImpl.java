@@ -17,6 +17,8 @@
 
 package org.apache.xerces.stax.events;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,7 +27,9 @@ import java.util.TreeMap;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 
 /**
@@ -88,5 +92,36 @@ public final class StartElementImpl extends ElementImpl implements StartElement 
     public void addAttribute(final Attribute attribute) {
         fAttributes.put(attribute.getName(), attribute);
     }
-        
+    
+    public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
+        try {
+            // Write start tag.
+            writer.write("<");
+            QName name = getName();
+            String prefix = name.getPrefix();
+            if (prefix != null && prefix.length() > 0) {
+                writer.write(prefix);
+                writer.write(':');
+            }
+            writer.write(name.getLocalPart());
+            // Write namespace declarations.
+            Iterator nsIter = getNamespaces();
+            while (nsIter.hasNext()) {
+                Namespace ns = (Namespace) nsIter.next();
+                writer.write(' ');
+                ns.writeAsEncodedUnicode(writer);
+            }
+            // Write attributes
+            Iterator attrIter = getAttributes();
+            while (attrIter.hasNext()) {
+                Attribute attr = (Attribute) attrIter.next();
+                writer.write(' ');
+                attr.writeAsEncodedUnicode(writer);
+            }
+            writer.write('>');
+        }
+        catch (IOException ioe) {
+            throw new XMLStreamException(ioe);
+        }
+    }
 }
