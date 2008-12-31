@@ -571,8 +571,6 @@ public class XSAttributeChecker {
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
         fEleAttrsMapL.put(ATTRIBUTE_N, attrList);
-        // TODO: XML Schema 1.1 - different list
-        fEleAttrs11MapL.put(ATTRIBUTE_N, attrList);
 
         // for element "attribute" - local ref
         attrList = Container.getContainer(5);
@@ -639,8 +637,6 @@ public class XSAttributeChecker {
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
         fEleAttrsMapL.put(ELEMENT_N, attrList);
-        // TODO: XML Schema 1.1 - different attribute list
-        fEleAttrs11MapL.put(ELEMENT_N, attrList);
 
         // for element "element" - local ref
         attrList = Container.getContainer(4);
@@ -1108,6 +1104,52 @@ public class XSAttributeChecker {
         // xml:lang = language
         attrList.put(SchemaSymbols.ATT_XML_LANG, allAttrs[ATT_XML_LANG]);
         fEleAttrs11MapG.put(SchemaSymbols.ELT_SCHEMA, attrList);
+        
+        // for element "attribute" - local name
+        attrList = Container.getContainer(8);
+        // default = string
+        attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
+        // fixed = string
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_N]);
+        // form = (qualified | unqualified)
+        attrList.put(SchemaSymbols.ATT_FORM, allAttrs[ATT_FORM_N]);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // name = NCName
+        attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
+        // targeNamespace = anyURI
+        attrList.put(SchemaSymbols.ATT_TARGETNAMESPACE, allAttrs[ATT_TARGET_N_N]);
+        // type = QName
+        attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
+        // use = (optional | prohibited | required) : optional
+        attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
+        fEleAttrs11MapL.put(ATTRIBUTE_N, attrList);
+        
+        // for element "element" - local name
+        attrList = Container.getContainer(11);
+        // block = (#all | List of (extension | restriction | substitution))
+        attrList.put(SchemaSymbols.ATT_BLOCK, allAttrs[ATT_BLOCK_N]);
+        // default = string
+        attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
+        // fixed = string
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_N]);
+        // form = (qualified | unqualified)
+        attrList.put(SchemaSymbols.ATT_FORM, allAttrs[ATT_FORM_N]);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // maxOccurs = (nonNegativeInteger | unbounded)  : 1
+        attrList.put(SchemaSymbols.ATT_MAXOCCURS, allAttrs[ATT_MAXOCCURS_D]);
+        // minOccurs = nonNegativeInteger : 1
+        attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
+        // name = NCName
+        attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
+        // nillable = boolean : false
+        attrList.put(SchemaSymbols.ATT_NILLABLE, allAttrs[ATT_NILLABLE_D]);
+        // targeNamespace = anyURI
+        attrList.put(SchemaSymbols.ATT_TARGETNAMESPACE, allAttrs[ATT_TARGET_N_N]);
+        // type = QName
+        attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
+        fEleAttrs11MapL.put(ELEMENT_N, attrList);
 
         // for element "complexType" - global
         attrList = Container.getContainer(7);

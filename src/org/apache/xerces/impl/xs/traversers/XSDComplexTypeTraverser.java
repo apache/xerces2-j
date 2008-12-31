@@ -30,7 +30,6 @@ import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
@@ -333,6 +332,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 // set the base to the anyType
                 fBaseType = SchemaGrammar.fAnyType;
                 fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
+                
+                // xsd 1.1 - the baseType and derivedBy fields are required to be set on the 
+                // complex type declaration for later checking for targetNamespace constraints
+                // note that the default value for derivedBy is restriction
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    fComplexTypeDecl.setBaseType(fBaseType);
+                }
+                
                 processComplexContent(child, mixedAtt.booleanValue(), false,
                         schemaDoc, grammar);
             }
@@ -372,6 +379,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 // set the base to the anyType
                 fBaseType = SchemaGrammar.fAnyType;
                 fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
+                
+                // xsd 1.1 - these fields are set on the complex type declaration
+                // for later checking for targetNamespace constraints
+                // note that the default value for derivedBy is restriction
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    fComplexTypeDecl.setBaseType(fBaseType);
+                }
+                
                 processComplexContent(child, mixedAtt.booleanValue(), false,
                         schemaDoc, grammar);
             }
@@ -436,8 +451,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         String simpleContentName = DOMUtil.getLocalName(simpleContent);
         if (simpleContentName.equals(SchemaSymbols.ELT_RESTRICTION))
             fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
-        else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
+        else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION)) {
             fDerivedBy = XSConstants.DERIVATION_EXTENSION;
+            // xsd 1.1 - the derivedBy field is required to be set on the complex type 
+            // declaration for later checking for targetNamespace constraints
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                fComplexTypeDecl.setDerivationMethod(XSConstants.DERIVATION_EXTENSION);
+            }
+        }
         else {
             fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
             throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
@@ -478,6 +499,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         
         fBaseType = type;
+        
+        // xsd 1.1 - the baseType field is set on the complex type declaration
+        // for later checking for targetNamespace constraints
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fComplexTypeDecl.setBaseType(fBaseType);
+        }
         
         XSSimpleType baseValidator = null;
         XSComplexTypeDecl baseComplexType = null;
@@ -799,8 +826,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         String complexContentName = DOMUtil.getLocalName(complexContent);
         if (complexContentName.equals(SchemaSymbols.ELT_RESTRICTION))
             fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
-        else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
+        else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION)) {
             fDerivedBy = XSConstants.DERIVATION_EXTENSION;
+            // xsd 1.1 - the derivedBy field is set on the complex type declaration
+            // for later checking for targetNamespace constraints
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                fComplexTypeDecl.setDerivationMethod(XSConstants.DERIVATION_EXTENSION);
+            }
+        }
         else {
             fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
             throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
@@ -847,6 +880,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         XSComplexTypeDecl baseType = (XSComplexTypeDecl)type;
         fBaseType = baseType;
+        
+        // xsd 1.1 - the baseType field is set on the complex type declaration
+        // for later checking for targetNamespace constraints
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fComplexTypeDecl.setBaseType(fBaseType);
+        }
 
         // -----------------------------------------------------------------------
         // Check that the base permits the derivation

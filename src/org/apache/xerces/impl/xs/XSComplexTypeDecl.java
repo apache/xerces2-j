@@ -134,6 +134,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
    public void setName(String name) {
         fName = name;
    }
+   
+   public void setBaseType(XSTypeDefinition baseType) {
+       fBaseType = baseType;
+   }
 
     public short getTypeCategory() {
         return COMPLEX_TYPE;
@@ -170,6 +174,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     }
     public void setIsAnonymous() {
         fMiscFlags |= CT_IS_ANONYMOUS;
+    }
+    
+    public void setDerivationMethod(short derivationMethod) {
+        fDerivedBy = derivationMethod;
     }
 
     public void setAssertions(XSObjectListImpl assertions) {

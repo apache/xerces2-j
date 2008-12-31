@@ -27,7 +27,6 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -270,6 +269,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         Boolean nillableAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
         Vector  subGroupAtt  = (Vector)  attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
+        String  targetNsAtt  = (String)  attrValues[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
         QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
         
         // Step 1: get declaration information
@@ -293,7 +293,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             if (parent instanceof XSComplexTypeDecl)
                 element.setIsLocal((XSComplexTypeDecl)parent);
             
-            if (formAtt != null) {
+            if (targetNsAtt!=null) {
+                // XML Schema 1.1, set the target namespace to be the value of the targetNamespace attribute if one is defined
+                element.fTargetNamespace = fSymbolTable.addSymbol(targetNsAtt);
+            } else if (formAtt != null) {
                 if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                     element.fTargetNamespace = schemaDoc.fTargetNamespace;
                 else
@@ -499,6 +502,26 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 3 type and either <simpleType> or <complexType> are mutually exclusive.
         if (haveAnonType && (typeAtt != null)) {
             reportSchemaError("src-element.3", new Object[]{nameAtt}, elmDecl);
+        }
+        
+        // 4 If the targetNamespace attribute is present, then all of the following are true:
+        if (targetNsAtt != null) {
+            // 4.2 The form attribute must not be present.
+            if (formAtt != null) {
+                reportSchemaError ("src-element.4.2", new Object[] {nameAtt}, elmDecl);
+            }
+            // 4.3 If the ancestor <schema> does not have a targetNamespace [attribute] or its ·actual value· is different from the ·actual value· of targetNamespace of <attribute>:
+            String schemaTns = schemaDoc.fTargetNamespace;
+            if (schemaTns==null || targetNsAtt!=schemaTns) {
+                // 4.3.1 <element> must have <complexType> as an ancestor
+                if (parent==null || !(parent instanceof XSComplexTypeDecl)) {
+                    reportSchemaError ("src-element.4.3.1", new Object[] {nameAtt}, elmDecl);
+                }
+                // 4.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the ·actual value· of the base [attribute] of <restriction> does not ·match· the name of ·xs:anyType·.
+                else if ((((XSComplexTypeDecl)parent).getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || (((XSComplexTypeDecl)parent).getBaseType() == SchemaGrammar.fAnyType)) {
+                    reportSchemaError ("src-element.4.3.2", new Object[] {nameAtt}, elmDecl);
+                }
+            }
         }
         
         // Step 5: check 3.3.6 constraints

@@ -228,11 +228,12 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             boolean isGlobal,
             XSComplexTypeDecl enclosingCT) {
         
-        String  defaultAtt = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
-        String  fixedAtt   = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
-        XInt    formAtt    = (XInt)   attrValues[XSAttributeChecker.ATTIDX_FORM];
-        String  nameAtt    = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
-        QName   typeAtt    = (QName)  attrValues[XSAttributeChecker.ATTIDX_TYPE];
+        String  defaultAtt  = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
+        String  fixedAtt    = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
+        XInt    formAtt     = (XInt)   attrValues[XSAttributeChecker.ATTIDX_FORM];
+        String  nameAtt     = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
+        String  targetNsAtt = (String) attrValues[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
+        QName   typeAtt     = (QName)  attrValues[XSAttributeChecker.ATTIDX_TYPE];
         
         // Step 1: get declaration information
         XSAttributeDecl attribute = null;
@@ -259,7 +260,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 enclCT = enclosingCT;
                 scope = XSAttributeDecl.SCOPE_LOCAL;
             }
-            if (formAtt != null) {
+            if (targetNsAtt != null) {
+                // XML Schema 1.1, set the target namespace to be the value of the targetNamespace attribute if one is defined
+                tnsAtt = fSymbolTable.addSymbol(targetNsAtt);
+            } else if (formAtt != null) {
                 if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                     tnsAtt = schemaDoc.fTargetNamespace;
             } else if (schemaDoc.fAreLocalAttributesQualified) {
@@ -381,6 +385,26 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // Step 5: check 3.2.6 constraints
         // check for NOTATION type
         checkNotationType(nameAtt, attrType, attrDecl);
+        
+        // 6 If the targetNamespace attribute is present then all of the following must be true:         
+        if (targetNsAtt != null) {
+            // 6.2 The form attribute must not be present. 
+            if (formAtt != null) {
+                reportSchemaError ("src-attribute.6.2", new Object[] {nameAtt}, attrDecl);                
+            }
+            // 6.3 If the ancestor <schema> does not have a targetNamespace [attribute] or its ·actual value· is different from the ·actual value· of targetNamespace of <attribute>:
+            String schemaTns = schemaDoc.fTargetNamespace;
+            if (schemaTns==null || tnsAtt!=schemaTns) {
+                // 6.3.1 <attribute> must have <complexType> as an ancestor
+                if (enclCT == null) {
+                    reportSchemaError ("src-attribute.6.3.1", new Object[] {nameAtt}, attrDecl);
+                }
+                // 6.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the ·actual value· of the base [attribute] of <restriction> does not ·match· the name of ·xs:anyType·.
+                else if ((enclCT.getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || enclCT.getBaseType() == SchemaGrammar.fAnyType) {
+                    reportSchemaError ("src-attribute.6.3.2", new Object[] {nameAtt}, attrDecl);
+                }
+            }
+        }
         
         // a-props-correct
         
