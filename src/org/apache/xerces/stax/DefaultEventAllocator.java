@@ -17,6 +17,9 @@
 
 package org.apache.xerces.stax;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
@@ -83,7 +86,7 @@ public class DefaultEventAllocator implements XMLEventAllocator {
             case XMLStreamConstants.END_DOCUMENT:
                 return new EndDocumentImpl(location);
             case XMLStreamConstants.END_ELEMENT:
-                return new EndElementImpl(reader.getName(), location);
+                return new EndElementImpl(reader.getName(), null, location);
             case XMLStreamConstants.ENTITY_REFERENCE:
                 //TODO: Get the EntityDeclaration.
                 return new EntityReferenceImpl(null, location);
@@ -122,15 +125,18 @@ public class DefaultEventAllocator implements XMLEventAllocator {
         if (!streamReader.isStartElement()) {
             throw new IllegalStateException("makeStartElement must only be called when in the start element state.");
         }
-        
-        StartElementImpl startElement = new StartElementImpl(streamReader.getName(), streamReader.getNamespaceContext(), streamReader.getLocation());
-        for(int i = 0; i < streamReader.getAttributeCount(); i++) {
-            startElement.addAttribute(makeAttribute(i, streamReader));
+        final int attrLength = streamReader.getAttributeCount();
+        final List attributes = new ArrayList(attrLength);
+        for (int i = 0; i < attrLength; ++i) {
+            attributes.add(makeAttribute(i, streamReader));
         }
-        for(int i = 0; i < streamReader.getNamespaceCount(); i++) {
-            startElement.addNamespace(makeNamespace(i, streamReader));
+        final int nsLength = streamReader.getNamespaceCount();
+        final List namespaces = new ArrayList(nsLength);
+        for (int i = 0; i < nsLength; ++i) {
+            namespaces.add(makeNamespace(i, streamReader));
         }
-        return startElement;
+        return new StartElementImpl(streamReader.getName(), 
+                attributes.iterator(), namespaces.iterator(), streamReader.getNamespaceContext(), streamReader.getLocation());
     }
     
     /**
