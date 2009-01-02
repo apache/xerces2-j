@@ -34,7 +34,7 @@ import javax.xml.namespace.NamespaceContext;
  * 
  * @version $Id$
  */
-public class DefaultNamespaceContext implements NamespaceContext {
+public final class DefaultNamespaceContext implements NamespaceContext {
     
     /**
      * Singleton instance.
