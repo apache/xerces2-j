@@ -32,6 +32,8 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 
+import org.apache.xerces.stax.DefaultNamespaceContext;
+
 /**
  * @xerces.internal
  * 
@@ -58,7 +60,7 @@ public final class StartElementImpl extends ElementImpl implements StartElement 
      */
     public StartElementImpl(final QName name, final NamespaceContext namespaceContext, final Location location) {
         super(name, true, location);
-        fNamespaceContext = namespaceContext;
+        fNamespaceContext = (namespaceContext != null) ? namespaceContext : DefaultNamespaceContext.getInstance();
     }
 
     /**
