@@ -170,6 +170,9 @@ Copyright:
     <copy file="${src.dir}/org/apache/xerces/jaxp/validation/javax.xml.validation.SchemaFactory"
       tofile="${build.dest}/META-INF/services/javax.xml.validation.SchemaFactory"/>
 
+    <copy file="${src.dir}/org/apache/xerces/stax/javax.xml.stream.XMLEventFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.stream.XMLEventFactory"/>
+
     <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
       tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
     
