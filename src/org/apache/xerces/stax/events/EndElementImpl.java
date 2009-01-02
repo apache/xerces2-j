@@ -19,6 +19,7 @@ package org.apache.xerces.stax.events;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -37,8 +38,8 @@ public final class EndElementImpl extends ElementImpl implements EndElement {
     /**
      * @param location The location object for this event.
      */
-    public EndElementImpl(final QName name, final Location location) {
-        super(name, false, location);
+    public EndElementImpl(final QName name, final Iterator namespaces, final Location location) {
+        super(name, false, namespaces, location);
     }
 
     public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {

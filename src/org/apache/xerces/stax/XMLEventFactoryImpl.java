@@ -111,28 +111,11 @@ public final class XMLEventFactoryImpl extends XMLEventFactory {
     
     private StartElement createStartElement(QName name, Iterator attributes,
             Iterator namespaces, NamespaceContext context) {
-        StartElementImpl start = new StartElementImpl(name, context, fLocation);
-        if (attributes != null) {
-            while (attributes.hasNext()) {
-                start.addAttribute((Attribute) attributes.next());
-            }
-        }
-        if (namespaces != null) {
-            while (namespaces.hasNext()) {
-                start.addNamespace((Namespace) namespaces.next());
-            }
-        }
-        return start;
+        return new StartElementImpl(name, attributes, namespaces, context, fLocation);
     }
 
     public EndElement createEndElement(QName name, Iterator namespaces) {
-        EndElementImpl end = new EndElementImpl(name, fLocation);
-        if (namespaces != null) {
-            while (namespaces.hasNext()) {
-                end.addNamespace((Namespace) namespaces.next());
-            }
-        }
-        return end;
+        return new EndElementImpl(name, namespaces, fLocation);
     }
 
     public EndElement createEndElement(String prefix, String namespaceUri,

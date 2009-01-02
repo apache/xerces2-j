@@ -19,6 +19,7 @@ package org.apache.xerces.stax.events;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,24 +43,37 @@ import org.apache.xerces.stax.DefaultNamespaceContext;
  * @version $Id$
  */
 public final class StartElementImpl extends ElementImpl implements StartElement {
-
-    private final Map fAttributes = new TreeMap(new Comparator(){
+    
+    private static final Comparator QNAME_COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
-            if(o1.equals(o2)) {
+            if (o1.equals(o2)) {
                 return 0;
             }
-            QName name1 = (QName)o1;
-            QName name2 = (QName)o2;
+            QName name1 = (QName) o1;
+            QName name2 = (QName) o2;
             return name1.toString().compareTo(name2.toString());
-        }});
+        }};
+
+    private final Map fAttributes;
     private final NamespaceContext fNamespaceContext;
 
     /**
      * @param location
      * @param schemaType
      */
-    public StartElementImpl(final QName name, final NamespaceContext namespaceContext, final Location location) {
-        super(name, true, location);
+    public StartElementImpl(final QName name, final Iterator attributes, final Iterator namespaces, final NamespaceContext namespaceContext, final Location location) {
+        super(name, true, namespaces, location);
+        if (attributes != null && attributes.hasNext()) {
+            fAttributes = new TreeMap(QNAME_COMPARATOR);
+            do {
+                Attribute attr = (Attribute) attributes.next();
+                fAttributes.put(attr.getName(), attr);
+            }
+            while (attributes.hasNext());
+        }
+        else {
+            fAttributes = Collections.EMPTY_MAP;
+        }
         fNamespaceContext = (namespaceContext != null) ? namespaceContext : DefaultNamespaceContext.getInstance();
     }
 
@@ -90,15 +104,11 @@ public final class StartElementImpl extends ElementImpl implements StartElement 
     public String getNamespaceURI(final String prefix) {
         return fNamespaceContext.getNamespaceURI(prefix);
     }
-
-    public void addAttribute(final Attribute attribute) {
-        fAttributes.put(attribute.getName(), attribute);
-    }
     
     public void writeAsEncodedUnicode(Writer writer) throws XMLStreamException {
         try {
             // Write start tag.
-            writer.write("<");
+            writer.write('<');
             QName name = getName();
             String prefix = name.getPrefix();
             if (prefix != null && prefix.length() > 0) {

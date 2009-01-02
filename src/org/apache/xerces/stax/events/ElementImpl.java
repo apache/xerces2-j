@@ -18,6 +18,7 @@
 package org.apache.xerces.stax.events;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -43,14 +44,25 @@ public abstract class ElementImpl extends XMLEventImpl {
     /**
      * Namespaces declared in the current scope.
      */
-    private final List fNamespaces = new ArrayList();
+    private final List fNamespaces;
     
     /**
      * Constructor.
      */
-    ElementImpl(final QName name, final boolean isStartElement, final Location location) {
+    ElementImpl(final QName name, final boolean isStartElement, Iterator namespaces, final Location location) {
         super(isStartElement ? START_ELEMENT : END_ELEMENT, location);
         fName = name;
+        if (namespaces != null && namespaces.hasNext()) {
+            fNamespaces = new ArrayList();
+            do {
+                Namespace ns = (Namespace) namespaces.next();
+                fNamespaces.add(ns);
+            }
+            while (namespaces.hasNext());
+        }
+        else {
+            fNamespaces = Collections.EMPTY_LIST;
+        }
     }
     
     /**
@@ -67,10 +79,6 @@ public abstract class ElementImpl extends XMLEventImpl {
      */
     public final Iterator getNamespaces() {
         return createImmutableIterator(fNamespaces.iterator());
-    }
-    
-    public final void addNamespace(final Namespace namespace) {
-        fNamespaces.add(namespace);
     }
     
     static Iterator createImmutableIterator(Iterator iter) {
