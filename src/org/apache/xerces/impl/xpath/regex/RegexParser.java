@@ -89,10 +89,16 @@ class RegexParser {
 
     public void setLocale(Locale locale) {
         try {
-            this.resources = ResourceBundle.getBundle("org.apache.xerces.impl.xpath.regex.message", locale);
-        } catch (MissingResourceException mre) {
+            if (locale != null) {
+                this.resources = ResourceBundle.getBundle("org.apache.xerces.impl.xpath.regex.message", locale);
+            }
+            else {
+                this.resources = ResourceBundle.getBundle("org.apache.xerces.impl.xpath.regex.message");
+            }
+        } 
+        catch (MissingResourceException mre) {
             throw new RuntimeException("Installation Problem???  Couldn't load messages: "
-                                       +mre.getMessage());
+                                       + mre.getMessage());
         }
     }
 
