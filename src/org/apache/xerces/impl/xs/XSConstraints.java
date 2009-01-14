@@ -357,15 +357,21 @@ public class XSConstraints {
                 XSModelGroupImpl derivedMG = derivedGrp.fModelGroup;
                 XSGroupDecl baseGrp = redefinedGroups[i++];
                 XSModelGroupImpl baseMG = baseGrp.fModelGroup;
+                fakeDerived.fValue = derivedMG;
+                fakeBase.fValue = baseMG;
                 if(baseMG == null) {
                     if(derivedMG != null) { // can't be a restriction!
                         reportSchemaError(errorReporter, rgLocators[i/2-1],
                                 "src-redefine.6.2.2",
                                 new Object[]{derivedGrp.fName, "rcase-Recurse.2"});
                     }
+                } else if (derivedMG == null) {
+                    if (!fakeBase.emptiable()) {
+                        reportSchemaError(errorReporter, rgLocators[i/2-1],
+                                "src-redefine.6.2.2",
+                                new Object[]{derivedGrp.fName, "rcase-Recurse.2"});
+                    }
                 } else {
-                    fakeDerived.fValue = derivedMG;
-                    fakeBase.fValue = baseMG;
                     try {
                         particleValidRestriction(fakeDerived, SGHandler, fakeBase, SGHandler);
                     } catch (XMLSchemaException e) {
