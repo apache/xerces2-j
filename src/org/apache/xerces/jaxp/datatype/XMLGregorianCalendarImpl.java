@@ -315,7 +315,7 @@ class XMLGregorianCalendarImpl
         // only constraint on integer value of year.
         DatatypeConstants.DECEMBER,              
         31,       //day of month                         
-        23,       //hour
+        24,       //hour
         59,       //minute
         60,       //second (leap second allows for 60)
         999,      //millisecond
@@ -2058,7 +2058,8 @@ class XMLGregorianCalendarImpl
         }
 
         // http://www.w3.org/2001/05/xmlschema-errata#e2-45
-        if (hour == 24 && (minute != 0 || second != 0)) {
+        if (hour == 24 && (minute != 0 || second != 0 || 
+                (fractionalSecond != null && fractionalSecond.compareTo(DECIMAL_ZERO) != 0))) {
             return false;
         }
 
