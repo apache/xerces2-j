@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.models;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
@@ -54,15 +55,17 @@ public class XSAllCM implements XSCMValidator {
     private final boolean fIsOptionalElement[];
     private final boolean fHasOptionalContent;
     private int fNumElements = 0;
+    private short fSchemaVersion;
 
     //
     // Constructors
     //
 
-    public XSAllCM (boolean hasOptionalContent, int size) {
+    public XSAllCM (boolean hasOptionalContent, int size, short schemaVersion) {
         fHasOptionalContent = hasOptionalContent;
         fAllElements = new XSElementDecl[size];
         fIsOptionalElement = new boolean[size];
+        fSchemaVersion = schemaVersion;
     }
 
     public void addElement (XSElementDecl element, boolean isOptional) {
@@ -98,7 +101,7 @@ public class XSAllCM implements XSCMValidator {
     Object findMatchingDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
         Object matchingDecl = null;
         for (int i = 0; i < fNumElements; i++) {
-            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
+            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i], fSchemaVersion/*Constants.SCHEMA_VERSION_1_0*/);
             if (matchingDecl != null)
                 break;
         }
@@ -130,7 +133,7 @@ public class XSAllCM implements XSCMValidator {
             // this element yet.
             if (currentState[i+1] != STATE_START)
                 continue;
-            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
+            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i], fSchemaVersion/*Constants.SCHEMA_VERSION_1_0*/);
             if (matchingDecl != null) {
                 // found the decl, mark this element as "seen".
                 currentState[i+1] = STATE_VALID;

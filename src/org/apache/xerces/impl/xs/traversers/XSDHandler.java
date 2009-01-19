@@ -103,7 +103,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version $Id$
  */
 public class XSDHandler {
-    
+
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
         Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
@@ -443,7 +443,7 @@ public class XSDHandler {
         fSchemaParser = new SchemaDOMParser(new SchemaParsingConfig());
         fSchemaParser.setSupportedVersion(fSupportedVersion); //REVISIT: pass to constructor?
     }
-    
+
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
@@ -642,7 +642,7 @@ public class XSDHandler {
     
     private void createAnnotationValidator() {
         fAnnotationValidator = new XML11Configuration();
-        fGrammarBucketAdapter = new XSAnnotationGrammarPool();
+        fGrammarBucketAdapter = new XSAnnotationGrammarPool(fSchemaVersion);
         fAnnotationValidator.setFeature(VALIDATION, true);
         fAnnotationValidator.setFeature(XMLSCHEMA_VALIDATION, true);
         fAnnotationValidator.setProperty(XMLGRAMMAR_POOL, fGrammarBucketAdapter);
@@ -803,12 +803,12 @@ public class XSDHandler {
         else if(fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT) {
             sg = findGrammar(desc);
             if(sg == null) {
-                sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
+                sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable, fSchemaVersion);
                 fGrammarBucket.putGrammar(sg);
             }
         }
         else {
-            sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
+            sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable, fSchemaVersion);
             fGrammarBucket.putGrammar(sg);
         }
         
@@ -1408,7 +1408,15 @@ public class XSDHandler {
         if (declToTraverse.uri != null &&
                 declToTraverse.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
             if (declType == TYPEDECL_TYPE) {
-                Object retObj = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(declToTraverse.localpart);
+                if (fSchemaVersion == Constants.SCHEMA_VERSION_1_0_EXTENDED) {
+                    if (declToTraverse.localpart.equals("duration") ||
+                            declToTraverse.localpart.equals("yearMonthDuration") ||
+                            declToTraverse.localpart.equals("dayTimeDuration")) {
+                        return null;
+                    }
+                }
+                SchemaGrammar s4s = SchemaGrammar.getS4SGrammar(fSchemaVersion);
+                Object retObj = s4s.getGlobalTypeDecl(declToTraverse.localpart);
                 if (retObj != null)
                     return retObj;
             }
@@ -2822,12 +2830,16 @@ public class XSDHandler {
         
         private XSGrammarBucket fGrammarBucket;
         private Grammar [] fInitialGrammarSet;
+        private short fSchemaVersion;
         
+        XSAnnotationGrammarPool(short schemaVersion) {
+            fSchemaVersion = schemaVersion;
+        }
         public Grammar[] retrieveInitialGrammarSet(String grammarType) {
             if (grammarType == XMLGrammarDescription.XML_SCHEMA) {
                 if (fInitialGrammarSet == null) {
                     if (fGrammarBucket == null) {
-                        fInitialGrammarSet = new Grammar [] {SchemaGrammar.Schema4Annotations.INSTANCE};
+                        fInitialGrammarSet = new Grammar [] {SchemaGrammar.Schema4Annotations.getSchema4Annotations(fSchemaVersion)};
                     }
                     else {
                         SchemaGrammar [] schemaGrammars = fGrammarBucket.getGrammars();
@@ -2844,7 +2856,7 @@ public class XSDHandler {
                         }
                         Grammar [] grammars = new Grammar[schemaGrammars.length + 1];
                         System.arraycopy(schemaGrammars, 0, grammars, 0, schemaGrammars.length);
-                        grammars[grammars.length - 1] = SchemaGrammar.Schema4Annotations.INSTANCE;
+                        grammars[grammars.length - 1] = SchemaGrammar.Schema4Annotations.getSchema4Annotations(fSchemaVersion);
                         fInitialGrammarSet = grammars;
                     }
                 }
@@ -2867,7 +2879,7 @@ public class XSDHandler {
                     }
                 }
                 if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(tns)) {
-                    return SchemaGrammar.Schema4Annotations.INSTANCE;
+                    return SchemaGrammar.Schema4Annotations.getSchema4Annotations(fSchemaVersion);
                 }
             }
             return null;

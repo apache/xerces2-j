@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
@@ -51,9 +52,11 @@ public abstract class XSConstraints {
     // (IHR@xbrl.org) (Ignacio@Hernandez-Ros.com)
 
     static final int OCCURRENCE_UNKNOWN = SchemaSymbols.OCCURRENCE_UNBOUNDED-1;
-    static final XSSimpleType STRING_TYPE = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+    // TODO: using 1.0 xs:string
+    static final XSSimpleType STRING_TYPE = (XSSimpleType)SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_0).getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
 
-    static final XSConstraints XS_1_0_CONSTRAINTS = new XS10Constraints();
+    static final XSConstraints XS_1_0_CONSTRAINTS = new XS10Constraints(Constants.SCHEMA_VERSION_1_0);
+    static final XSConstraints XS_1_0_CONSTRAINTS_EXTENDED = new XS10Constraints(Constants.SCHEMA_VERSION_1_0_EXTENDED);
     static final XSConstraints XS_1_1_CONSTRAINTS = new XS11Constraints();
 
     private final XSComplexTypeDecl fAnyType;
@@ -341,10 +344,16 @@ public abstract class XSConstraints {
      * Unique Particle Attribution, Particle Derivation (Restriction),
      * Element Declrations Consistent.
      */
-    public void fullSchemaChecking(XSGrammarBucket grammarBucket,
+    public abstract void fullSchemaChecking(XSGrammarBucket grammarBucket,
             SubstitutionGroupHandler SGHandler,
             CMBuilder cmBuilder,
-            XMLErrorReporter errorReporter) {
+            XMLErrorReporter errorReporter);
+
+    protected void fullSchemaChecking(XSGrammarBucket grammarBucket,
+            SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder,
+            XMLErrorReporter errorReporter,
+            short schemaVersion) {
         // get all grammars, and put all substitution group information
         // in the substitution group handler
         SchemaGrammar[] grammars = grammarBucket.getGrammars();
@@ -376,7 +385,7 @@ public abstract class XSConstraints {
                     fakeDerived.fValue = derivedMG;
                     fakeBase.fValue = baseMG;
                     try {
-                        particleValidRestriction(fakeDerived, SGHandler, fakeBase, SGHandler);
+                        particleValidRestriction(fakeDerived, SGHandler, fakeBase, SGHandler, schemaVersion);
                     } catch (XMLSchemaException e) {
                         String key = e.getKey();
                         reportSchemaError(errorReporter, rgLocators[i/2-1],
@@ -453,7 +462,7 @@ public abstract class XSConstraints {
                             particleValidRestriction(types[j].fParticle,
                                     SGHandler,
                                     ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle,
-                                    SGHandler);
+                                    SGHandler, schemaVersion);
                         } catch (XMLSchemaException e) {
                             reportSchemaError(errorReporter, ctLocators[j],
                                     e.getKey(),
@@ -513,11 +522,15 @@ public abstract class XSConstraints {
     /*
        Check that a given particle is a valid restriction of a base particle.
      */
-
-    public void checkElementDeclsConsistent(XSComplexTypeDecl type,
+    public abstract void checkElementDeclsConsistent(XSComplexTypeDecl type,
             XSParticleDecl particle,
             SymbolHash elemDeclHash,
-            SubstitutionGroupHandler sgHandler)
+            SubstitutionGroupHandler sgHandler) throws XMLSchemaException;
+
+    protected void checkElementDeclsConsistent(XSComplexTypeDecl type,
+            XSParticleDecl particle,
+            SymbolHash elemDeclHash,
+            SubstitutionGroupHandler sgHandler, short schemaVersion)
         throws XMLSchemaException {
 
         // check for elements in the tree with the same name and namespace
@@ -533,7 +546,7 @@ public abstract class XSConstraints {
 
             if (elem.fScope == XSConstants.SCOPE_GLOBAL) {
                 // Check for subsitution groups.
-                XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(elem);
+                XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(elem, schemaVersion);
                 for (int i = 0; i < subGroup.length; i++) {
                     findElemInTable(type, subGroup[i], elemDeclHash);
                 }
@@ -582,16 +595,18 @@ public abstract class XSConstraints {
     private boolean particleValidRestriction(XSParticleDecl dParticle,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl bParticle,
-            SubstitutionGroupHandler bSGHandler)
+            SubstitutionGroupHandler bSGHandler,
+            short schemaVersion)
         throws XMLSchemaException {
-        return particleValidRestriction(dParticle, dSGHandler, bParticle, bSGHandler, true);
+        return particleValidRestriction(dParticle, dSGHandler, bParticle, bSGHandler, true, schemaVersion);
     }
 
     private boolean particleValidRestriction(XSParticleDecl dParticle,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl bParticle,
             SubstitutionGroupHandler bSGHandler,
-            boolean checkWCOccurrence)
+            boolean checkWCOccurrence,
+            short schemaVersion)
         throws XMLSchemaException {
 
         Vector dChildren = null;
@@ -656,7 +671,7 @@ public abstract class XSConstraints {
                 // Check for subsitution groups.   Treat any element that has a
                 // subsitution group as a choice.   Fill in the children vector with the
                 // members of the substitution group
-                XSElementDecl[] subGroup = dSGHandler.getSubstitutionGroup(dElement);
+                XSElementDecl[] subGroup = dSGHandler.getSubstitutionGroup(dElement, schemaVersion);
                 if (subGroup.length >0 ) {
                     // Now, set the type to be CHOICE.  The "group" will have the same
                     // occurrence information as the original particle.
@@ -713,7 +728,7 @@ public abstract class XSConstraints {
                 // Check for subsitution groups.   Treat any element that has a
                 // subsitution group as a choice.   Fill in the children vector with the
                 // members of the substitution group
-                XSElementDecl[] bsubGroup = bSGHandler.getSubstitutionGroup(bElement);
+                XSElementDecl[] bsubGroup = bSGHandler.getSubstitutionGroup(bElement, schemaVersion);
                 if (bsubGroup.length >0 ) {
                     // Now, set the type to be CHOICE
                     bType = XSModelGroupImpl.MODELGROUP_CHOICE;
@@ -768,7 +783,7 @@ public abstract class XSConstraints {
                         dChildren.addElement(dParticle);
 
                         checkRecurseLax(dChildren, 1, 1, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
                     case XSModelGroupImpl.MODELGROUP_SEQUENCE:
@@ -780,7 +795,7 @@ public abstract class XSConstraints {
                         dChildren.addElement(dParticle);
 
                         checkRecurse(dChildren, 1, 1, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
 
@@ -837,7 +852,7 @@ public abstract class XSConstraints {
                                 dMaxEffectiveTotalRange,
                                 dSGHandler,
                                 bParticle,bMinOccurs,bMaxOccurs,
-                                checkWCOccurrence);
+                                checkWCOccurrence, schemaVersion);
 
                         return bExpansionHappened;
                     }
@@ -845,7 +860,7 @@ public abstract class XSConstraints {
                     case XSModelGroupImpl.MODELGROUP_ALL:
                     {
                         checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
 
@@ -881,14 +896,14 @@ public abstract class XSConstraints {
                                 dMaxEffectiveTotalRange,
                                 dSGHandler,
                                 bParticle,bMinOccurs,bMaxOccurs,
-                                checkWCOccurrence);
+                                checkWCOccurrence, schemaVersion);
                         return bExpansionHappened;
                     }
 
                     case XSModelGroupImpl.MODELGROUP_CHOICE:
                     {
                         checkRecurseLax(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
 
@@ -925,21 +940,21 @@ public abstract class XSConstraints {
                                 dMaxEffectiveTotalRange,
                                 dSGHandler,
                                 bParticle,bMinOccurs,bMaxOccurs,
-                                checkWCOccurrence);
+                                checkWCOccurrence, schemaVersion);
                         return bExpansionHappened;
                     }
 
                     case XSModelGroupImpl.MODELGROUP_ALL:
                     {
                         checkRecurseUnordered(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
 
                     case XSModelGroupImpl.MODELGROUP_SEQUENCE:
                     {
                         checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
 
@@ -949,7 +964,7 @@ public abstract class XSConstraints {
                         int max1 = (dMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)?
                                 dMaxOccurs : dMaxOccurs * dChildren.size();
                         checkMapAndSum(dChildren, min1, max1, dSGHandler,
-                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
+                                bChildren, bMinOccurs, bMaxOccurs, bSGHandler, schemaVersion);
                         return bExpansionHappened;
                     }
 
@@ -1200,7 +1215,7 @@ public abstract class XSConstraints {
     private void checkNSRecurseCheckCardinality(Vector children, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl wildcard, int min2, int max2,
-            boolean checkWCOccurrence)
+            boolean checkWCOccurrence, short schemaVersion)
         throws XMLSchemaException {
 
 
@@ -1218,7 +1233,7 @@ public abstract class XSConstraints {
         try {
             for (int i = 0; i < count; i++) {
                 XSParticleDecl particle1 = (XSParticleDecl)children.elementAt(i);
-                particleValidRestriction(particle1, dSGHandler, wildcard, null, false);
+                particleValidRestriction(particle1, dSGHandler, wildcard, null, false, schemaVersion);
 
             }
         }
@@ -1233,7 +1248,7 @@ public abstract class XSConstraints {
     private void checkRecurse(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
-            SubstitutionGroupHandler bSGHandler)
+            SubstitutionGroupHandler bSGHandler, short schemaVersion)
         throws XMLSchemaException {
 
         // check Occurrence ranges
@@ -1256,7 +1271,7 @@ public abstract class XSConstraints {
                 XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
                 current +=1;
                 try {
-                    particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler);
+                    particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler, schemaVersion);
                     continue label;
                 }
                 catch (XMLSchemaException e) {
@@ -1280,7 +1295,8 @@ public abstract class XSConstraints {
     private void checkRecurseUnordered(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
-            SubstitutionGroupHandler bSGHandler)
+            SubstitutionGroupHandler bSGHandler,
+            short schemaVersion)
         throws XMLSchemaException {
 
 
@@ -1304,7 +1320,7 @@ public abstract class XSConstraints {
             for (int j = 0; j<count2; j++) {
                 XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
                 try {
-                    particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler);
+                    particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler, schemaVersion);
                     if (foundIt[j])
                         throw new XMLSchemaException("rcase-RecurseUnordered.2", null);
                     else
@@ -1332,7 +1348,8 @@ public abstract class XSConstraints {
     private void checkRecurseLax(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
-            SubstitutionGroupHandler  bSGHandler)
+            SubstitutionGroupHandler  bSGHandler,
+            short schemaVersion)
         throws XMLSchemaException {
 
         // check Occurrence ranges
@@ -1357,7 +1374,7 @@ public abstract class XSConstraints {
                 try {
                     // IHR: go back one element on b list because the next element may match
                     // this as well.
-                    if (particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler))
+                    if (particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler, schemaVersion))
                         current--;
                     continue label;
                 }
@@ -1374,7 +1391,8 @@ public abstract class XSConstraints {
     private void checkMapAndSum(Vector dChildren, int min1, int max1,
             SubstitutionGroupHandler dSGHandler,
             Vector bChildren, int min2, int max2,
-            SubstitutionGroupHandler bSGHandler)
+            SubstitutionGroupHandler bSGHandler,
+            short schemaVersion)
         throws XMLSchemaException {
 
         // See if the sequence group is a valid restriction of the choice
@@ -1409,7 +1427,7 @@ public abstract class XSConstraints {
             for (int j = 0; j<count2; j++) {
                 XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
                 try {
-                    particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler);
+                    particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler, schemaVersion);
                     continue label;
                 }
                 catch (XMLSchemaException e) {
@@ -1420,9 +1438,13 @@ public abstract class XSConstraints {
         }
     }
     // to check whether two element overlap, as defined in constraint UPA
-    public boolean overlapUPA(XSElementDecl element1,
+    public abstract boolean overlapUPA(XSElementDecl element1,
             XSElementDecl element2,
-            SubstitutionGroupHandler sgHandler) {
+            SubstitutionGroupHandler sgHandler);
+    
+    protected boolean overlapUPA(XSElementDecl element1,
+            XSElementDecl element2,
+            SubstitutionGroupHandler sgHandler, short schemaVersion) {
         // if the two element have the same name and namespace,
         if (element1.fName == element2.fName &&
                 element1.fTargetNamespace == element2.fTargetNamespace) {
@@ -1431,7 +1453,7 @@ public abstract class XSConstraints {
 
         // or if there is an element decl in element1's substitution group,
         // who has the same name/namespace with element2
-        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element1);
+        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element1, schemaVersion);
         for (int i = subGroup.length-1; i >= 0; i--) {
             if (subGroup[i].fName == element2.fName &&
                     subGroup[i].fTargetNamespace == element2.fTargetNamespace) {
@@ -1441,7 +1463,7 @@ public abstract class XSConstraints {
 
         // or if there is an element decl in element2's substitution group,
         // who has the same name/namespace with element1
-        subGroup = sgHandler.getSubstitutionGroup(element2);
+        subGroup = sgHandler.getSubstitutionGroup(element2, schemaVersion);
         for (int i = subGroup.length-1; i >= 0; i--) {
             if (subGroup[i].fName == element1.fName &&
                     subGroup[i].fTargetNamespace == element1.fTargetNamespace) {

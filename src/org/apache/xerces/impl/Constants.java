@@ -40,8 +40,9 @@ public final class Constants {
     
     // Schema Versions:
     public static final String W3C_XML_SCHEMA10_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.0".intern();
-    public static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.1".intern();    
-    
+    public static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.1".intern();
+    public static final String W3C_XML_SCHEMA10EX_NS_URI = "http://www.w3.org/XML/XMLSchema/v1.0EX".intern();
+
     // sax features
     
     /** SAX feature prefix ("http://xml.org/sax/features/"). */
@@ -469,6 +470,7 @@ public final class Constants {
     // Constant to enable Schema 1.1 support
     public final static boolean SCHEMA_1_1_SUPPORT = false;
     public final static short SCHEMA_VERSION_1_0 = 1;
+    public final static short SCHEMA_VERSION_1_0_EXTENDED = 2;
     public final static short SCHEMA_VERSION_1_1 = 4;    
     
     // private

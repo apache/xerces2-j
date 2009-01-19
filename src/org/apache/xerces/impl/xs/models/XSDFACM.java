@@ -303,7 +303,7 @@ public class XSDFACM
                 continue;
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
                 if (matchingDecl != null) {
                     break;
                 }
@@ -339,7 +339,7 @@ public class XSDFACM
             while (++elemIndex < fElemMapSize) {
                 newState = fTransTable[curState][elemIndex];
                 if (newState != -1 && fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
                     if (newMatchingDecl != null) {
                         matchingDecl = newMatchingDecl;
                         nextState = newState;
@@ -433,7 +433,7 @@ public class XSDFACM
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
                 if (matchingDecl != null) {
                     return matchingDecl;
                 }
@@ -461,7 +461,7 @@ public class XSDFACM
                 continue;
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
                 if (matchingDecl != null) {
                     break;
                 }
@@ -497,7 +497,7 @@ public class XSDFACM
             while (++elemIndex < fElemMapSize) {
                 newState = fTransTable[curState][elemIndex];
                 if (newState != -1 && fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
                     if (newMatchingDecl != null) {
                         matchingDecl = newMatchingDecl;
                         nextState = newState;
@@ -537,7 +537,7 @@ public class XSDFACM
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
                 if (matchingDecl != null) {
                     return matchingDecl;
                 }

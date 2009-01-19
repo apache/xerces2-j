@@ -257,7 +257,8 @@ abstract class XSDAbstractTraverser {
     }
     
     // the QName simple type used to resolve qnames
-    private static final XSSimpleType fQNameDV = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
+    // REVISIT: using 1.0 xs:QName
+    private static final XSSimpleType fQNameDV = (XSSimpleType)SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_0).getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
     // Temp data structures to be re-used in traversing facets
     private StringBuffer fPattern = new StringBuffer();
     private final XSFacets xsFacets = new XSFacets();

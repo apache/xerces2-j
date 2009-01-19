@@ -246,13 +246,13 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         if (ancestor == null)
             return false;
         // ancestor is anyType, return true
-        if (ancestor == SchemaGrammar.fAnyType)
+        if (SchemaGrammar.isAnyType(ancestor))
             return true;
         // recursively get base, and compare it with ancestor
         XSTypeDefinition type = this;
         while (type != ancestor &&                     // compare with ancestor
                type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
-               type != SchemaGrammar.fAnyType) {        // reached anyType
+               !SchemaGrammar.isAnyType(type)) {        // reached anyType
             type = type.getBaseType();
         }
 
@@ -276,12 +276,11 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
                  ((ancestorNS == null && type.getNamespace() == null) ||
                   (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
                type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
-               type != SchemaGrammar.fAnyType) {        // reached anyType
+               !SchemaGrammar.isAnyType(type)) {        // reached anyType
             type = (XSTypeDefinition)type.getBaseType();
         }
 
-        return type != SchemaGrammar.fAnySimpleType &&
-        type != SchemaGrammar.fAnyType;
+        return type != SchemaGrammar.fAnySimpleType && !SchemaGrammar.isAnyType(type);
     }
 
     /**

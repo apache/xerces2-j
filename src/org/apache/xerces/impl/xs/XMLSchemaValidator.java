@@ -1161,8 +1161,9 @@ public class XMLSchemaValidator
     /** the DV usd to convert xsi:type to a QName */
     // REVISIT: in new simple type design, make things in DVs static,
     //          so that we can QNameDV.getCompiledForm()
+    //          using 1.0 xs:QName
     private final XSSimpleType fQNameDV =
-        (XSSimpleType) SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
+        (XSSimpleType) SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_0).getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
 
     private final CMNodeFactory nodeFactory = new CMNodeFactory();
     /** used to build content models */
@@ -2099,7 +2100,7 @@ public class XMLSchemaValidator
             // no element decl or type found for this element.
             // Allowed by the spec, we can choose to either laxly assess this
             // element, or to skip it. Now we choose lax assessment.
-            fCurrentType = SchemaGrammar.fAnyType;
+            fCurrentType = SchemaGrammar.getXSAnyType(fSchemaVersion);
             fStrictAssess = false;
             fNFullValidationDepth = fElementDepth;
             // any type has mixed content, so we don't need to append buffer
@@ -2122,7 +2123,7 @@ public class XMLSchemaValidator
                 // If it fails, use the old type. Use anyType if ther is no old type.
                 if (fCurrentType == null) {
                     if (oldType == null)
-                        fCurrentType = SchemaGrammar.fAnyType;
+                        fCurrentType = SchemaGrammar.getXSAnyType(fSchemaVersion);
                     else
                         fCurrentType = oldType;
                 }
@@ -2337,7 +2338,8 @@ public class XMLSchemaValidator
                     fGrammarBucket,
                     fSubGroupHandler,
                     fCMBuilder,
-                    fXSIErrorReporter.fErrorReporter);
+                    fXSIErrorReporter.fErrorReporter,
+                    fSchemaVersion);
             }
 
             if (fAugPSVI)
@@ -2666,6 +2668,16 @@ public class XMLSchemaValidator
 
     } //findSchemaGrammar
 
+    private boolean isValidBuiltInTypeName(String localpart) {
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_0_EXTENDED) {
+            if (localpart.equals("duration") ||
+                    localpart.equals("yearMonthDuration") ||
+                    localpart.equals("dayTimeDuration")) {
+                return false;
+            }
+        }
+        return true;
+    }
     XSTypeDefinition getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint
         // Validation Rule: Schema-Validity Assessment (Element)
@@ -2691,7 +2703,10 @@ public class XMLSchemaValidator
         XSTypeDefinition type = null;
         // if the namespace is schema namespace, first try built-in types
         if (typeName.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
-            type = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(typeName.localpart);
+            if (isValidBuiltInTypeName(typeName.localpart)) {
+                SchemaGrammar s4s = SchemaGrammar.getS4SGrammar(fSchemaVersion);
+                type = s4s.getGlobalTypeDecl(typeName.localpart);
+            }
         }
         // if it's not schema built-in types, then try to get a grammar
         if (type == null) {
@@ -3421,7 +3436,11 @@ public class XMLSchemaValidator
             rootTypeNamespace = null;
         }
         if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
-            fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(rootTypeQName.getLocalPart());
+            String rootLocalPart = rootTypeQName.getLocalPart();
+            if (isValidBuiltInTypeName(rootLocalPart)) {
+                SchemaGrammar s4s = SchemaGrammar.getS4SGrammar(fSchemaVersion);
+                fCurrentType = s4s.getGlobalTypeDecl(rootLocalPart);
+            }
         }
         else {
             final SchemaGrammar grammarForRootType = findSchemaGrammar(

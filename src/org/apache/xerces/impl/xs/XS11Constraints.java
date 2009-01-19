@@ -17,6 +17,10 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -32,7 +36,7 @@ import org.apache.xerces.xni.QName;
 class XS11Constraints extends XSConstraints {
 
     public XS11Constraints() {
-        super(SchemaGrammar.fAnyType);
+        super(SchemaGrammar.getXSAnyType(Constants.SCHEMA_VERSION_1_1));
     }
 
     public boolean overlapUPA(XSElementDecl element,
@@ -52,6 +56,26 @@ class XS11Constraints extends XSConstraints {
         }
 
         return false;
+    }
+
+    public boolean overlapUPA(XSElementDecl element1,
+            XSElementDecl element2,
+            SubstitutionGroupHandler sgHandler) {
+        return overlapUPA(element1, element2, sgHandler, Constants.SCHEMA_VERSION_1_1);
+    }
+    
+    public void checkElementDeclsConsistent(XSComplexTypeDecl type,
+            XSParticleDecl particle,
+            SymbolHash elemDeclHash,
+            SubstitutionGroupHandler sgHandler) throws XMLSchemaException {
+        checkElementDeclsConsistent(type, particle, elemDeclHash, sgHandler, Constants.SCHEMA_VERSION_1_1);
+    }
+    
+    public void fullSchemaChecking(XSGrammarBucket grammarBucket,
+            SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder,
+            XMLErrorReporter errorReporter) {
+        fullSchemaChecking(grammarBucket, SGHandler, cmBuilder, errorReporter, Constants.SCHEMA_VERSION_1_1);
     }
 
     /**

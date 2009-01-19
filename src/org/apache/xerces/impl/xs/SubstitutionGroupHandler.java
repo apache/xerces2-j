@@ -51,7 +51,7 @@ public class SubstitutionGroupHandler {
 
     // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
     // check whether one element decl matches an element with the given qname
-    public XSElementDecl getMatchingElemDecl(QName element, XSElementDecl exemplar) {
+    public XSElementDecl getMatchingElemDecl(QName element, XSElementDecl exemplar, short schemaVersion) {
         if (element.localpart == exemplar.fName &&
             element.uri == exemplar.fTargetNamespace) {
             return exemplar;
@@ -81,7 +81,7 @@ public class SubstitutionGroupHandler {
         }
 
         // and check by using substitutionGroup information
-        if (substitutionGroupOK(eDecl, exemplar, exemplar.fBlock)) {
+        if (substitutionGroupOK(eDecl, exemplar, exemplar.fBlock, schemaVersion)) {
             return eDecl;
         }
 
@@ -90,7 +90,7 @@ public class SubstitutionGroupHandler {
 
     // 3.3.6 Substitution Group OK (Transitive)
     // check whether element can substitute exemplar
-    protected boolean substitutionGroupOK(XSElementDecl element, XSElementDecl exemplar, short blockingConstraint) {
+    protected boolean substitutionGroupOK(XSElementDecl element, XSElementDecl exemplar, short blockingConstraint, short schemaVersion) {
         // For an element declaration (call it D) to be validly substitutable for another element declaration (call it C) subject to a blocking constraint (a subset of {substitution, extension, restriction}, the value of a {disallowed substitutions}) one of the following must be true:
         // 1. D and C are the same element declaration.
         if (element == exemplar) {
@@ -112,7 +112,7 @@ public class SubstitutionGroupHandler {
         // 2.3 The set of all {derivation method}s involved in the derivation of D's {type definition} from C's {type definition} does not intersect with the union of the blocking constraint, C's {prohibited substitutions} (if C is complex, otherwise the empty set) and the {prohibited substitutions} (respectively the empty set) of any intermediate {type definition}s in the derivation of D's {type definition} from C's {type definition}.
         // prepare the combination of {derivation method} and
         // {disallowed substitution}
-        return typeDerivationOK(element.fType, exemplar.fType, blockingConstraint);   
+        return typeDerivationOK(element.fType, exemplar.fType, blockingConstraint, schemaVersion);   
     }
     
     // Recursively check if there is a element in substitution group matching exemplar
@@ -127,7 +127,7 @@ public class SubstitutionGroupHandler {
         return false;
     }
     
-    private boolean typeDerivationOK(XSTypeDefinition derived, XSTypeDefinition base, short blockingConstraint) {
+    private boolean typeDerivationOK(XSTypeDefinition derived, XSTypeDefinition base, short blockingConstraint, short schemaVersion) {
         
         short devMethod = 0, blockConstraint = blockingConstraint;
 
@@ -135,7 +135,7 @@ public class SubstitutionGroupHandler {
         // add derivation methods of derived types to devMethod;
         // add block of base types to blockConstraint.
         XSTypeDefinition type = derived;
-        while (type != base && type != SchemaGrammar.fAnyType) {
+        while (type != base && !SchemaGrammar.isAnyType(type)) {
             if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
             }
@@ -146,7 +146,7 @@ public class SubstitutionGroupHandler {
             // type == null means the current type is anySimpleType,
             // whose base type should be anyType
             if (type == null) {
-                type = SchemaGrammar.fAnyType;
+                type = SchemaGrammar.getXSAnyType(schemaVersion);
             }
             if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
@@ -160,7 +160,7 @@ public class SubstitutionGroupHandler {
                     XSObjectList memberTypes = st.getMemberTypes();
                     final int length = memberTypes.getLength();
                     for (int i = 0; i < length; ++i) {
-                        if (typeDerivationOK(derived, (XSTypeDefinition) memberTypes.item(i), blockingConstraint)) {
+                        if (typeDerivationOK(derived, (XSTypeDefinition) memberTypes.item(i), blockingConstraint, schemaVersion)) {
                             return true;
                         }
                     }
@@ -175,7 +175,7 @@ public class SubstitutionGroupHandler {
     }
 
     // check whether element is in exemplar's substitution group
-    public boolean inSubstitutionGroup(XSElementDecl element, XSElementDecl exemplar) {
+    public boolean inSubstitutionGroup(XSElementDecl element, XSElementDecl exemplar, short schemaVersion) {
         // [Definition:]  Every element declaration (call this HEAD) in the {element declarations} of a schema defines a substitution group, a subset of those {element declarations}, as follows:
         // Define PSG, the potential substitution group for HEAD, as follows:
         // 1 The element declaration itself is in PSG;
@@ -183,7 +183,7 @@ public class SubstitutionGroupHandler {
         // HEAD's actual substitution group is then the set consisting of each member of PSG such that all of the following must be true:
         // 1 Its {abstract} is false.
         // 2 It is validly substitutable for HEAD subject to an empty blocking constraint, as defined in Substitution Group OK (Transitive) (3.3.6).
-        return substitutionGroupOK(element, exemplar, exemplar.fBlock);
+        return substitutionGroupOK(element, exemplar, exemplar.fBlock, schemaVersion);
     }
 
     // to store substitution group information
@@ -239,7 +239,7 @@ public class SubstitutionGroupHandler {
      * the element itself. but the array returned from this method doesn't
      * containt this element.
      */
-    public XSElementDecl[] getSubstitutionGroup(XSElementDecl element) {
+    public XSElementDecl[] getSubstitutionGroup(XSElementDecl element, short schemaVersion) {
         // If we already have sub group for this element, just return it.
         Object subGroup = fSubGroups.get(element);
         if (subGroup != null)
@@ -252,7 +252,7 @@ public class SubstitutionGroupHandler {
         
         // Otherwise, get all potential sub group elements
         // (without considering "block" on this element
-        OneSubGroup[] groupB = getSubGroupB(element, new OneSubGroup());
+        OneSubGroup[] groupB = getSubGroupB(element, new OneSubGroup(), schemaVersion);
         int len = groupB.length, rlen = 0;
         XSElementDecl[] ret = new XSElementDecl[len];
         // For each of such elements, check whether the derivation methods
@@ -274,7 +274,7 @@ public class SubstitutionGroupHandler {
     }
 
     // Get potential sub group element (without considering "block")
-    private OneSubGroup[] getSubGroupB(XSElementDecl element, OneSubGroup methods) {
+    private OneSubGroup[] getSubGroupB(XSElementDecl element, OneSubGroup methods, short schemaVersion) {
         Object subGroup = fSubGroupsB.get(element);
 
         // substitution group for this one is empty
@@ -296,7 +296,7 @@ public class SubstitutionGroupHandler {
         for (int i = group.size()-1, j; i >= 0; i--) {
             // Check whether this element is blocked. If so, ignore it.
             XSElementDecl sub = (XSElementDecl)group.elementAt(i);
-            if (!getDBMethods(sub.fType, element.fType, methods))
+            if (!getDBMethods(sub.fType, element.fType, methods, schemaVersion))
                 continue;
             // Remember derivation methods and blocks from the types
             dMethod = methods.dMethod;
@@ -304,7 +304,7 @@ public class SubstitutionGroupHandler {
             // Add this one to potential group
             newGroup.addElement(new OneSubGroup(sub, methods.dMethod, methods.bMethod));
             // Get potential group for this element
-            group1 = getSubGroupB(sub, methods);
+            group1 = getSubGroupB(sub, methods, schemaVersion);
             for (j = group1.length-1; j >= 0; j--) {
                 // For each of them, check whether it's blocked (by type)
                 dSubMethod = (short)(dMethod | group1[j].dMethod);
@@ -327,9 +327,9 @@ public class SubstitutionGroupHandler {
     }
 
     private boolean getDBMethods(XSTypeDefinition typed, XSTypeDefinition typeb,
-                                 OneSubGroup methods) {
+                                 OneSubGroup methods, short schemaVersion) {
         short dMethod = 0, bMethod = 0;
-        while (typed != typeb && typed != SchemaGrammar.fAnyType) {
+        while (typed != typeb && !SchemaGrammar.isAnyType(typed)) {
             if (typed.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
                 dMethod |= ((XSComplexTypeDecl)typed).fDerivedBy;
             else
@@ -338,7 +338,7 @@ public class SubstitutionGroupHandler {
             // type == null means the current type is anySimpleType,
             // whose base type should be anyType
             if (typed == null)
-                typed = SchemaGrammar.fAnyType;
+                typed = SchemaGrammar.getXSAnyType(schemaVersion);
             if (typed.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
                 bMethod |= ((XSComplexTypeDecl)typed).fBlock;
         }

@@ -400,7 +400,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                     reportSchemaError ("src-attribute.6.3.1", new Object[] {nameAtt}, attrDecl);
                 }
                 // 6.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the ·actual value· of the base [attribute] of <restriction> does not ·match· the name of ·xs:anyType·.
-                else if ((enclCT.getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || enclCT.getBaseType() == SchemaGrammar.fAnyType) {
+                else if ((enclCT.getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || enclCT.getBaseType() == SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion)) {
                     reportSchemaError ("src-attribute.6.3.2", new Object[] {nameAtt}, attrDecl);
                 }
             }

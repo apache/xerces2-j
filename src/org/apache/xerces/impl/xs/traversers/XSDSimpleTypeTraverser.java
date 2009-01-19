@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs.traversers;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -78,9 +79,12 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
-    
+
+    private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
+    private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
+
     // the factory used to query/create simple types
-    private final SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
+    private final SchemaDVFactory schemaFactory;
     
     // whether the type being parsed is a S4S built-in type.
     private boolean fIsBuiltIn = false;
@@ -88,11 +92,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     XSDSimpleTypeTraverser (XSDHandler handler,
             XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
+        schemaFactory = getSchemaDVFactory(handler.fSchemaVersion);
         if (schemaFactory instanceof SchemaDVFactoryImpl) {
             ((SchemaDVFactoryImpl)schemaFactory).setDeclPool(handler.fDeclPool);
         }
     }
-    
+
     //return qualified name of simpleType or empty string if error occured
     XSSimpleType traverseGlobal(Element elmNode,
             XSDocumentInfo schemaDoc,
@@ -143,7 +148,17 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         String name = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         return getSimpleType(name, simpleTypeDecl, attrValues, schemaDoc, grammar);
     }
-    
+
+    private SchemaDVFactory getSchemaDVFactory(short schemaVersion) {
+        if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+            return SchemaDVFactory.getInstance();
+        }
+        else if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            return SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
+        }
+
+        return SchemaDVFactory.getInstance(EXTENDED_SCHEMA_FACTORY_CLASS);
+    }
     /*
      * Generate a name for an anonymous type
      */
@@ -456,7 +471,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     private final boolean checkBuiltIn(String name, String namespace) {
         if (namespace != SchemaSymbols.URI_SCHEMAFORSCHEMA)
             return false;
-        if (SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(name) != null)
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_0_EXTENDED) {
+            if (name.equals("duration") || name.equals("yearMonthDuration") || name.equals("dayTimeDuration")) {
+                return false;
+            }
+        }
+        SchemaGrammar s4s = SchemaGrammar.getS4SGrammar(fSchemaHandler.fSchemaVersion);
+        if (s4s.getGlobalTypeDecl(name) != null)
             fIsBuiltIn = true;
         return fIsBuiltIn;
     }

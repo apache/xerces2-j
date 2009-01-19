@@ -17,6 +17,10 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.util.SymbolHash;
+
 /**
  * XML Schema 1.0 constraints
  *
@@ -30,8 +34,12 @@ package org.apache.xerces.impl.xs;
  */
 class XS10Constraints extends XSConstraints {
 
-    public XS10Constraints() {
-        super(SchemaGrammar.fAnyType);
+    // accomodate 1.0 extended
+    private short fSchemaVersion;
+
+    public XS10Constraints(short schemaVersion) {
+        super(SchemaGrammar.getXSAnyType(schemaVersion));
+        fSchemaVersion = schemaVersion;
     }
 
     public boolean overlapUPA(XSElementDecl element,
@@ -42,7 +50,7 @@ class XS10Constraints extends XSConstraints {
             return true;
 
         // or if the wildcard allows any element in the substitution group
-        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element);
+        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element, fSchemaVersion);
         for (int i = subGroup.length-1; i >= 0; i--) {
             if (wildcard.allowNamespace(subGroup[i].fTargetNamespace))
                 return true;
@@ -62,6 +70,26 @@ class XS10Constraints extends XSConstraints {
         }
 
         return false;
+    }
+    
+    public boolean overlapUPA(XSElementDecl element1,
+            XSElementDecl element2,
+            SubstitutionGroupHandler sgHandler) {
+        return overlapUPA(element1, element2, sgHandler, fSchemaVersion);
+    }
+    
+    public void checkElementDeclsConsistent(XSComplexTypeDecl type,
+            XSParticleDecl particle,
+            SymbolHash elemDeclHash,
+            SubstitutionGroupHandler sgHandler) throws XMLSchemaException {
+        checkElementDeclsConsistent(type, particle, elemDeclHash, sgHandler, fSchemaVersion);
+    }
+    
+    public void fullSchemaChecking(XSGrammarBucket grammarBucket,
+            SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder,
+            XMLErrorReporter errorReporter) {
+        fullSchemaChecking(grammarBucket, SGHandler, cmBuilder, errorReporter, fSchemaVersion);
     }
 
     /**

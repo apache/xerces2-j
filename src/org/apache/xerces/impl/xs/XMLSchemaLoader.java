@@ -486,13 +486,17 @@ XSLoader, DOMConfiguration {
      * Sets the XML Schema Version
      */
     void setSchemaVersion(String version) {
-        if (version.equals(Constants.W3C_XML_SCHEMA11_NS_URI)) {
+        if (version.equals(Constants.W3C_XML_SCHEMA10_NS_URI)) {
+            fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
+            fXSConstraints = XSConstraints.XS_1_0_CONSTRAINTS;
+        }
+        else if (version.equals(Constants.W3C_XML_SCHEMA11_NS_URI)) {
             fSchemaVersion = Constants.SCHEMA_VERSION_1_1;
             fXSConstraints = XSConstraints.XS_1_1_CONSTRAINTS;
         }
         else {
-            fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
-            fXSConstraints = XSConstraints.XS_1_0_CONSTRAINTS;
+            fSchemaVersion = Constants.SCHEMA_VERSION_1_0_EXTENDED;
+            fXSConstraints = XSConstraints.XS_1_0_CONSTRAINTS_EXTENDED;
         }
         fSchemaHandler.setSchemaVersionInfo(fSchemaVersion, fXSConstraints);
         fCMBuilder.setSchemaVersion(fSchemaVersion);

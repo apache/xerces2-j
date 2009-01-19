@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.models;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
@@ -120,7 +121,7 @@ public class XS11AllCM implements XSCMValidator {
         Object matchingDecl = null;
 
         for (int i = 0; i < fNumElements; i++) {
-            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i]);
+            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i], Constants.SCHEMA_VERSION_1_1);
             if (matchingDecl != null)
                 return matchingDecl;
         }
@@ -138,7 +139,7 @@ public class XS11AllCM implements XSCMValidator {
     // convinient method: to find a matching element decl 
     XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
         for (int i = 0; i < fNumElements; i++) {
-            final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i]);
+            final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i], Constants.SCHEMA_VERSION_1_1);
             if (matchingDecl != null) {
                 return matchingDecl;
             }
@@ -196,7 +197,7 @@ public class XS11AllCM implements XSCMValidator {
             if (currentState[i + 1] == fDeclsOccurs[declMaxOccurs]) {
                 continue;
             }
-            Object matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i]);
+            Object matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i], Constants.SCHEMA_VERSION_1_1);
             if (matchingDecl != null) {
                 // found the decl, mark this element as "seen".
                 ++currentState[i + 1];

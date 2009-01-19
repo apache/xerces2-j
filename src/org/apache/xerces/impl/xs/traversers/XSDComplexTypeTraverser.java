@@ -68,6 +68,9 @@ import org.w3c.dom.Element;
  */
 
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
+
+    private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
+    private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
     
     // size of stack to hold globals:
     private final static int GLOBAL_NUM = 13;
@@ -98,12 +101,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     XSDComplexTypeTraverser (XSDHandler handler,
             XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
+        if (handler.fSchemaVersion == Constants.SCHEMA_VERSION_1_0) {
+            schemaFactory = SchemaDVFactory.getInstance();
+        }
+        else if (handler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            schemaFactory = SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
+        }
+        else {
+            schemaFactory =  SchemaDVFactory.getInstance(EXTENDED_SCHEMA_FACTORY_CLASS);
+        }
     }
     
     
     private static final boolean DEBUG=false;
     
-    private SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
+    private SchemaDVFactory schemaFactory;
     
     private static final class ComplexTypeRecoverableError extends Exception {
         
@@ -330,7 +342,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //
                 
                 // set the base to the anyType
-                fBaseType = SchemaGrammar.fAnyType;
+                fBaseType = SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion);
                 fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
                 
                 // xsd 1.1 - the baseType and derivedBy fields are required to be set on the 
@@ -377,7 +389,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //
                 
                 // set the base to the anyType
-                fBaseType = SchemaGrammar.fAnyType;
+                fBaseType = SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion);
                 fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
                 
                 // xsd 1.1 - these fields are set on the complex type declaration
@@ -976,7 +988,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // Remove prohibited uses.   Must be done after merge for RESTRICTION.
             fAttrGrp.removeProhibitedAttrs();
 
-            if (baseType != SchemaGrammar.fAnyType) {
+            if (baseType != SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion)) {
                 Object[] errArgs = fAttrGrp.validRestrictionOf(fName, baseType.getAttrGrp(), fSchemaHandler.fXSConstraints);
                 if (errArgs != null) {
                     fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
@@ -1557,7 +1569,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         //  Mock up the typeInfo structure so that there won't be problems during
         //  validation
         //
-        fBaseType = SchemaGrammar.fAnyType;
+        fBaseType = SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion);
         fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
         fParticle = getErrorContent();
         // REVISIT: do we need to remove all attribute uses already added into

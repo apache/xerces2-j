@@ -406,7 +406,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
         
         if (elementType == null) {
-            elementType = SchemaGrammar.fAnyType;
+            elementType = SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion);
         }
         
         element.fType = elementType;
@@ -523,7 +523,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                     reportSchemaError ("src-element.4.3.1", new Object[] {nameAtt}, elmDecl);
                 }
                 // 4.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the ·actual value· of the base [attribute] of <restriction> does not ·match· the name of ·xs:anyType·.
-                else if ((((XSComplexTypeDecl)parent).getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || (((XSComplexTypeDecl)parent).getBaseType() == SchemaGrammar.fAnyType)) {
+                else if ((((XSComplexTypeDecl)parent).getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || (((XSComplexTypeDecl)parent).getBaseType() == SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion))) {
                     reportSchemaError ("src-element.4.3.2", new Object[] {nameAtt}, elmDecl);
                 }
             }

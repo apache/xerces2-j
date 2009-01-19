@@ -129,7 +129,7 @@ public class CMBuilder {
         XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
         // create an all content model. the parameter indicates whether
         // the <all> itself is optional
-        XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0, group.fParticleCount);
+        XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0, group.fParticleCount, fSchemaVersion);
         for (int i = 0; i < group.fParticleCount; i++) {
             // add the element decl to the all content model
             allContent.addElement((XSElementDecl)group.fParticles[i].fValue,

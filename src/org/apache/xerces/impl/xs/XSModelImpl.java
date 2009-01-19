@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs;
 import java.util.AbstractList;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
@@ -104,6 +105,10 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
     * @param grammars   the array of schema grammars
     */
     public XSModelImpl(SchemaGrammar[] grammars) {
+        this(grammars, Constants.SCHEMA_VERSION_1_0);
+    }
+
+    public XSModelImpl(SchemaGrammar[] grammars, short s4sVersion) {
         // copy namespaces/grammars from the array to our arrays
         int len = grammars.length;
         final int initialSize = Math.max(len+1, 5);
@@ -122,7 +127,7 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
         // If a schema for the schema namespace isn't included, include it here.
         if (!hasS4S) {
             namespaces[len] = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-            grammarList[len++] = SchemaGrammar.SG_SchemaNS;
+            grammarList[len++] = SchemaGrammar.getS4SGrammar(s4sVersion);
         }
 
         SchemaGrammar sg1, sg2;
@@ -181,10 +186,10 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
         fNamespacesList = new StringListImpl(fNamespaces, fGrammarCount);
         
         // build substitution groups
-        fSubGroupMap = buildSubGroups();
+        fSubGroupMap = buildSubGroups(s4sVersion);
     }
     
-    private SymbolHash buildSubGroups() {
+    private SymbolHash buildSubGroups(short s4sVersion) {
         SubstitutionGroupHandler sgHandler = new SubstitutionGroupHandler(null);
         for (int i = 0 ; i < fGrammarCount; i++) {
             sgHandler.addSubstitutionGroup(fGrammarList[i].getSubstitutionGroups());
@@ -197,7 +202,7 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
         XSElementDeclaration[] subGroup;
         for (int i = 0; i < len; i++) {
             head = (XSElementDecl)elements.item(i);
-            subGroup = sgHandler.getSubstitutionGroup(head);
+            subGroup = sgHandler.getSubstitutionGroup(head, s4sVersion);
             subGroupMap.put(head, subGroup.length > 0 ? 
                     new XSObjectListImpl(subGroup, subGroup.length) : XSObjectListImpl.EMPTY_LIST);
         }

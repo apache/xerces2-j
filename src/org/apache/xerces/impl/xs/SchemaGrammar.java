@@ -123,6 +123,20 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      */
     public SchemaGrammar(String targetNamespace, XSDDescription grammarDesc,
                 SymbolTable symbolTable) {
+        this(targetNamespace, grammarDesc, symbolTable, Constants.SCHEMA_VERSION_1_0);
+    }
+    
+    /**
+     * Default constructor.
+     *
+     * @param targetNamespace
+     * @param grammarDesc the XMLGrammarDescription corresponding to this objec
+     *      at the least a systemId should always be known.
+     * @param symbolTable   needed for annotation support
+     * @param schemaVersion the XML schema version
+     */
+    public SchemaGrammar(String targetNamespace, XSDDescription grammarDesc,
+                SymbolTable symbolTable, short schemaVersion) {
         fTargetNamespace = targetNamespace;
         fGrammarDescription = grammarDesc;
         fSymbolTable = symbolTable;
@@ -140,10 +154,12 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         // if we are parsing S4S, put built-in types in first
         // they might get overwritten by the types from S4S, but that's
         // considered what the application wants to do.
-        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA)
-            fGlobalTypeDecls = SG_SchemaNS.fGlobalTypeDecls.makeClone();
-        else
+        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA){
+            fGlobalTypeDecls = getS4SGrammar(schemaVersion).fGlobalTypeDecls.makeClone();
+        }
+        else {
             fGlobalTypeDecls = new SymbolHash();
+        }
     } // <init>(String, XSDDescription)
 
     // number of built-in XSTypes we need to create for base and full
@@ -157,13 +173,26 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     // this class makes sure the static, built-in schema grammars
     // are immutable.
     public static class BuiltinSchemaGrammar extends SchemaGrammar {
+
+        private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
+        private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
+
         /**
          * Special constructor to create the grammars for the schema namespaces
          *
          * @param grammar
          */
-        public BuiltinSchemaGrammar(int grammar) {
-            SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
+        public BuiltinSchemaGrammar(int grammar, short schemaVersion) {
+            SchemaDVFactory schemaFactory;
+            if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+                schemaFactory = SchemaDVFactory.getInstance();
+            }
+            else if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                schemaFactory = SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
+            }
+            else {
+                schemaFactory = SchemaDVFactory.getInstance(EXTENDED_SCHEMA_FACTORY_CLASS);
+            }
     
             if (grammar == GRAMMAR_XS) {
                 // target namespace
@@ -198,7 +227,8 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 }
 
                 // add anyType
-                fGlobalTypeDecls.put(fAnyType.getName(), fAnyType);
+                final XSComplexTypeDecl anyType = getXSAnyType(schemaVersion);
+                fGlobalTypeDecls.put(anyType.getName(), anyType);
             }
             else if (grammar == GRAMMAR_XSI) {
                 // target namespace
@@ -317,13 +347,24 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         /**
          * Singleton instance.
          */
-        public static final Schema4Annotations INSTANCE = new Schema4Annotations();
+        private static final Schema4Annotations INSTANCE_10 = new Schema4Annotations(Constants.SCHEMA_VERSION_1_0);
+        private static final Schema4Annotations INSTANCE_Extended = new Schema4Annotations(Constants.SCHEMA_VERSION_1_0_EXTENDED);
+        private static final Schema4Annotations INSTANCE_11 = new Schema4Annotations(Constants.SCHEMA_VERSION_1_1);
 
+        public static Schema4Annotations getSchema4Annotations(short schemaVersion) {
+            if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+                return INSTANCE_10;
+            }
+            else if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                return INSTANCE_11;
+            }
+            return INSTANCE_Extended;
+        }
         /**
          * Special constructor to create a schema 
          * capable of validating annotations.
          */
-        private Schema4Annotations() {
+        private Schema4Annotations(short schemaVersion) {
             
             // target namespace
             fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
@@ -343,7 +384,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fGlobalIDConstraintDecls = new SymbolHash(1);
             
             // get all built-in types
-            fGlobalTypeDecls = SG_SchemaNS.fGlobalTypeDecls;
+            fGlobalTypeDecls = getS4SGrammar(schemaVersion).fGlobalTypeDecls;
             
             // create element declarations for <annotation>, <documentation> and <appinfo>
             XSElementDecl annotationDecl = createAnnotationElementDecl(SchemaSymbols.ELT_ANNOTATION);
@@ -433,21 +474,22 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             
             // create wildcard particle for <documentation> and <appinfo>
             XSParticleDecl anyWCSequenceParticle = createUnboundedAnyWildcardSequenceParticle();
-            
+
             // fill complex types
-            annotationType.setValues("#AnonType_" + SchemaSymbols.ELT_ANNOTATION, fTargetNamespace, SchemaGrammar.fAnyType,
+            XSComplexTypeDecl anyType = getXSAnyType(schemaVersion);
+            annotationType.setValues("#AnonType_" + SchemaSymbols.ELT_ANNOTATION, fTargetNamespace, anyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
                     XSComplexTypeDecl.CONTENTTYPE_ELEMENT, false, annotationAttrs, null, annotationParticle, new XSObjectListImpl(null, 0), null);
             annotationType.setName("#AnonType_" + SchemaSymbols.ELT_ANNOTATION);
             annotationType.setIsAnonymous();
             
-            documentationType.setValues("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION, fTargetNamespace, SchemaGrammar.fAnyType,
+            documentationType.setValues("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION, fTargetNamespace, anyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
                     XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0), null);
             documentationType.setName("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION);
             documentationType.setIsAnonymous();
             
-            appinfoType.setValues("#AnonType_" + SchemaSymbols.ELT_APPINFO, fTargetNamespace, SchemaGrammar.fAnyType,
+            appinfoType.setValues("#AnonType_" + SchemaSymbols.ELT_APPINFO, fTargetNamespace, anyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
                     XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0), null);
             appinfoType.setName("#AnonType_" + SchemaSymbols.ELT_APPINFO);
@@ -862,7 +904,24 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     // anyType and anySimpleType: because there are so many places where
     // we need direct access to these two types
-    public final static XSComplexTypeDecl fAnyType = new XSAnyType();
+    private final static XSComplexTypeDecl fAnyType = new XSAnyType();
+    private final static XSComplexTypeDecl fAnyTypeExtended = new XSAnyTypeExtended();
+    private final static XSComplexTypeDecl fAnyType11 = new XS11AnyType();
+    
+    public static XSComplexTypeDecl getXSAnyType(short schemaVersion) {
+        if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+            return fAnyType;
+        }
+        else if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            return fAnyType11;
+        }
+        return fAnyTypeExtended;
+    }
+    
+    public static boolean isAnyType(XSTypeDefinition type) {
+        return type == fAnyType || type == fAnyType11 || type == fAnyTypeExtended;
+    }
+
     private static class XSAnyType extends XSComplexTypeDecl {
         public XSAnyType () {
             fName = SchemaSymbols.ATTVAL_ANYTYPE;
@@ -955,6 +1014,20 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             return SG_SchemaNS;
         }
     }
+    
+    private static class XS11AnyType extends XSAnyType {
+        public XSNamespaceItem getNamespaceItem() {
+            return SG_Schema11NS;
+        }
+    }
+    
+    private static class XSAnyTypeExtended extends XSAnyType {
+        public XSNamespaceItem getNamespaceItem() {
+            return SG_SchemaNSExtended;
+        }
+    }
+
+
     private static class BuiltinAttrDecl extends XSAttributeDecl {
         public BuiltinAttrDecl(String name, String tns, 
                 XSSimpleType type, short scope) {
@@ -985,12 +1058,25 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     } // class BuiltinAttrDecl
 
     // the grammars to hold components of the schema namespace
-    public final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS);
+    private final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS, Constants.SCHEMA_VERSION_1_0);
+    private final static BuiltinSchemaGrammar SG_SchemaNSExtended = new BuiltinSchemaGrammar(GRAMMAR_XS, Constants.SCHEMA_VERSION_1_0_EXTENDED);
+    private final static BuiltinSchemaGrammar SG_Schema11NS = new BuiltinSchemaGrammar(GRAMMAR_XS, Constants.SCHEMA_VERSION_1_1);
 
     public final static XSSimpleType fAnySimpleType = (XSSimpleType)SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
 
     // the grammars to hold components of the schema-instance namespace
-    public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI);
+    public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI, Constants.SCHEMA_VERSION_1_0);
+    
+    public static SchemaGrammar getS4SGrammar(short schemaVersion) {
+        if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
+            return SG_SchemaNS;
+        }
+        else if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            return SG_Schema11NS;
+        }
+
+        return SG_SchemaNSExtended;
+    }
 
     static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
         XSComplexTypeDecl[] newArray = new XSComplexTypeDecl[newSize];

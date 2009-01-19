@@ -191,7 +191,8 @@ public class XSAttributeChecker {
     private static final XSSimpleType[] fExtraDVs = new XSSimpleType[DT_COUNT];
     static {
         // step 5: register all datatype validators for new types
-        SchemaGrammar grammar = SchemaGrammar.SG_SchemaNS;
+        // REVISIT: using 1.0 dataypes for validation
+        SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_0);
         // anyURI
         fExtraDVs[DT_ANYURI] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYURI);
         // ID
