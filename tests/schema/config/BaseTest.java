@@ -243,7 +243,7 @@ public abstract class BaseTest extends TestCase {
     }
     
     protected void assertAnyType(XSTypeDefinition type) {
-        assertEquals("Type is supposed to be anyType", SchemaGrammar.fAnyType,
-                type);
+        assertTrue("Type is supposed to be anyType", SchemaGrammar.isAnyType(type));
     }
+    
 }
