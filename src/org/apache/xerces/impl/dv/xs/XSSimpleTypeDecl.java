@@ -1900,7 +1900,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                             (fMemberTypes[i].fFacetsDefined != 0 && fMemberTypes[i].fFacetsDefined != FACET_WHITESPACE)) {
                         fMemberTypes[i].checkFacets(validatedInfo);
                     }
-                    validatedInfo.memberType = fMemberTypes[i];
+
+                    if (fMemberTypes[i].fVariety != VARIETY_UNION) {
+                        validatedInfo.memberType = fMemberTypes[i];
+                    }
+
                     return aValue;
                 } catch(InvalidDatatypeValueException invalidValue) {
                 }
@@ -2348,27 +2352,36 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 this.fOrdered = ORDERED_PARTIAL;
                 return;
             }
-            // we need to process the first member type before entering the loop
-            short ancestorId = getPrimitiveDV(fMemberTypes[0].fValidationDV);
-            boolean commonAnc = ancestorId != DV_ANYSIMPLETYPE;
-            boolean allFalse = fMemberTypes[0].fOrdered == ORDERED_FALSE;
-            // for the other member types, check whether the value is false
-            // and whether they have the same ancestor as the first one
-            for (int i = 1; i < fMemberTypes.length && (commonAnc || allFalse); i++) {
-                if (commonAnc)
-                    commonAnc = ancestorId == getPrimitiveDV(fMemberTypes[i].fValidationDV);
-                if (allFalse)
-                    allFalse = fMemberTypes[i].fOrdered == ORDERED_FALSE;
-            }
-            if (commonAnc) {
-                // REVISIT: all member types should have the same ordered value
-                //          just use the first one. Can we assume this?
-                this.fOrdered = fMemberTypes[0].fOrdered;
-            } else if (allFalse) {
-                this.fOrdered = ORDERED_FALSE;
-            } else {
+
+            short firstMemberOrderVal = fMemberTypes[0].fOrdered;   
+            // if any one of the memberTypes have partial order, set the order of this union to partial
+            if (firstMemberOrderVal==ORDERED_PARTIAL) {
                 this.fOrdered = ORDERED_PARTIAL;
+                return;
             }
+
+            // if any of the memberTypes are of different order, set the order of this union to partial
+            short ancestorId = getPrimitiveDV(getFirstExpandedSimpleTypeValidationDV(fMemberTypes[0]));
+            boolean commonAnc = true;
+            for (int i=1; i<fMemberTypes.length; i++) {
+                if (fMemberTypes[i].fOrdered != firstMemberOrderVal) {
+                    this.fOrdered = ORDERED_PARTIAL;
+                    return;
+                }
+                if (commonAnc) {
+                    commonAnc = (getPrimitiveDV(getFirstExpandedSimpleTypeValidationDV(fMemberTypes[i])) == ancestorId);
+                }
+            }
+
+            // if all the memberTypes are false order, set the order of this union to false
+            if (firstMemberOrderVal == ORDERED_FALSE) {
+                this.fOrdered = ORDERED_FALSE;
+                return;
+            }
+
+            // all the memberTypes are total order
+            // if they're from the same primitive type, set the order of this union to total, otherwise partial            
+            this.fOrdered = commonAnc ? ORDERED_TOTAL : ORDERED_PARTIAL;
         }
 
     }//setOrdered
@@ -2419,11 +2432,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             short ancestorId = 0 ;
 
             if(memberTypes.length > 0){
-                ancestorId = getPrimitiveDV(memberTypes[0].fValidationDV);
+                ancestorId = getPrimitiveDV(getFirstExpandedSimpleTypeValidationDV(memberTypes[0]));
             }
 
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if(!memberTypes[i].getBounded() || (ancestorId != getPrimitiveDV(memberTypes[i].fValidationDV)) ){
+                if(!memberTypes[i].getBounded() || (ancestorId != getPrimitiveDV(getFirstExpandedSimpleTypeValidationDV(memberTypes[i]))) ){
                     this.fBounded = false;
                     return;
                 }
@@ -2432,6 +2445,20 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         }
 
     }//setBounded
+
+    // returns the validation DV of the first simple type not a union
+    private short getFirstExpandedSimpleTypeValidationDV(XSSimpleTypeDecl simpleType) {
+        if (simpleType.fVariety == VARIETY_UNION) {            
+            for (int i=0; i<simpleType.fMemberTypes.length; i++) {
+                short validationDV = getFirstExpandedSimpleTypeValidationDV(simpleType.fMemberTypes[i]);
+                if (validationDV != -1) {
+                    return validationDV;
+                }
+            }            
+            return -1;
+        }
+        return simpleType.fValidationDV;
+    } // getFirstPrimitiveValidationDV()
 
     private boolean specialCardinalityCheck(){
         if( (fBase.fValidationDV == XSSimpleTypeDecl.DV_DATE) || (fBase.fValidationDV == XSSimpleTypeDecl.DV_GYEARMONTH)

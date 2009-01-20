@@ -297,7 +297,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         XSConstants.DERIVATION_UNION, schemaDoc);
                 if (dv != null) {
                     // if it's a union, expand it
-                    if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
+                    // In XML Schema 1.1, we do not expand
+                    if (dv.getVariety() == XSSimpleType.VARIETY_UNION &&
+                            fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
                         dvs = dv.getMemberTypes();
                         for (int j = 0; j < dvs.getLength(); j++)
                             dTValidators.add(dvs.item(j));
@@ -333,8 +335,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     // traverse this child to get the member type
                     dv = traverseLocal(content, schemaDoc, grammar);
                     if (dv != null) {
-                        // if it's a union, expand it
-                        if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
+                        // if it's a union, expand it (only in XML 1.0)
+                        if (dv.getVariety() == XSSimpleType.VARIETY_UNION &&
+                                fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
                             dvs = dv.getMemberTypes();
                             for (int j = 0; j < dvs.getLength(); j++) {
                                 dTValidators.add(dvs.item(j));
@@ -492,6 +495,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             for (int i = 0; i < temp.getLength(); i++) {
                 if (((XSSimpleType)temp.item(i)).getVariety() == XSSimpleType.VARIETY_LIST) {
                     return true;
+                }
+                /* In XML Schema 1.1, unions are not expanded */
+                else if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && ((XSSimpleType)temp.item(i)).getVariety() == XSSimpleType.VARIETY_UNION) {
+                    if (isListDatatype((XSSimpleType)temp.item(i))) {
+                        return true;
+                    }
                 }
             }
         }
