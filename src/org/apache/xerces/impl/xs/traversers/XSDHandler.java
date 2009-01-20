@@ -1232,7 +1232,7 @@ public class XSDHandler {
             // if XML Schema 1.1, set default attribute group 
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
                 // Check that we have a 'defaultAttributes' and that we have not already processed it
-                if (currSchemaDoc.fDefaultAttributes != null && currSchemaDoc.fDefaultAGroup != null) {
+                if (currSchemaDoc.fDefaultAttributes != null && currSchemaDoc.fDefaultAGroup == null) {
                     currSchemaDoc.fDefaultAGroup = (XSAttributeGroupDecl) getGlobalDecl(
                             currSchemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, currSchemaDoc.fDefaultAttributes, currRoot);
                 }

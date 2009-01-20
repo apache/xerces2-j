@@ -110,6 +110,11 @@ class XSDocumentInfo {
 
         if (schemaRoot != null) {
             Element root = schemaRoot;
+            
+            // set namespace support
+            fValidationContext.setNamespaceSupport(fNamespaceSupport);
+            fValidationContext.setSymbolTable(symbolTable);
+            
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element
             // throw an exception, but we don't know the document systemId,
@@ -132,11 +137,12 @@ class XSDocumentInfo {
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 
-            fDefaultAttributes = (QName) fSchemaAttrs[XSAttributeChecker.ATTIDX_DEFAULTATTRAPPLY];
+            fDefaultAttributes = (QName) fSchemaAttrs[XSAttributeChecker.ATTIDX_DEFAULTATTRIBUTES];
 
             //set namespace support
-            fValidationContext.setNamespaceSupport(fNamespaceSupport);
-            fValidationContext.setSymbolTable(symbolTable);
+            //fValidationContext.setNamespaceSupport(fNamespaceSupport);
+            //fValidationContext.setSymbolTable(symbolTable);
+            
             // pass null as the schema document, so that the namespace
             // context is not popped.
 
