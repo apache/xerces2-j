@@ -23,6 +23,8 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.xs.XSOpenContentDecl;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -51,6 +53,21 @@ public class XSEmptyCM  implements XSCMValidator {
     //
     // Data
     //
+    private XSOpenContentDecl fOpenContent = null;
+
+    //
+    // Constructors
+    //
+  
+    // Only one instance of an XSEmptyCM with no openContent will be created.
+    public XSEmptyCM(){     
+    }
+
+    // This constructor will be called when the complexType is empty but
+    // contains openContent wildcard
+    public XSEmptyCM(XSOpenContentDecl openContent) {
+        fOpenContent = openContent;
+    }
 
     //
     // XSCMValidator methods
@@ -83,6 +100,12 @@ public class XSEmptyCM  implements XSCMValidator {
             return null;
         }
 
+        if (fOpenContent != null) {
+            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, grammar)) {
+                return fOpenContent;
+            }
+        }
+
         currentState[0] = XSCMValidator.FIRST_ERROR;
         return null;
     }
@@ -95,7 +118,6 @@ public class XSEmptyCM  implements XSCMValidator {
      * @return true if the last state was a valid final state
      */
     public boolean endContentModel (int[] currentState){
-        boolean isFinal =  false;
         int state = currentState[0];
 
         // restore content model state:
@@ -136,4 +158,18 @@ public class XSEmptyCM  implements XSCMValidator {
     public boolean isCompactedForUPA() {
         return false;
     }
+    
+    private boolean allowExpandedName(XSWildcardDecl wildcard,
+            QName curElem,
+            SubstitutionGroupHandler subGroupHandler,
+            SchemaGrammar grammar) {
+        if (wildcard.allowQName(curElem)) {
+            if (wildcard.fDisallowedDefined && grammar.getElementDeclaration(curElem.localpart) != null) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
 } // class XSEmptyCM

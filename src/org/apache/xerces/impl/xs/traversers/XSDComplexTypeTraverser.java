@@ -199,7 +199,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             boolean isDefault) {
 
         // General Attribute Checking for elmNode
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, isDefault, schemaDoc);
 
         // Create open content declaration
         XSOpenContentDecl ocDecl = new XSOpenContentDecl();
@@ -250,6 +250,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         }
         else {
+            String childName = DOMUtil.getLocalName(child);
+            if (!childName.equals(SchemaSymbols.ELT_ANY) || 
+                    DOMUtil.getNextSiblingElement(child) != null) {                
+                reportSchemaError("s4s-elt-must-match.1",
+                                    new Object[]{SchemaSymbols.ELT_OPENCONTENT, "(annotation?, any?)", childName}, child);
+                fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                return ocDecl;
+            }
             Object[] wcAttrValues = fAttrChecker.checkAttributes(child, false, schemaDoc);
             ocDecl.fWildcard = fSchemaHandler.fWildCardTraverser.traverseWildcardDecl(child, wcAttrValues, schemaDoc, grammar);
             fAttrChecker.returnAttrArray(wcAttrValues, schemaDoc);
@@ -1280,21 +1288,24 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         
         // whether there is a particle with empty model group
         boolean emptyParticle = false;
-        if (complexContentChild != null) {
-            // -------------------------------------------------------------
-            // OPENCONTENT?, followed by GROUP, ALL, SEQUENCE or CHOICE, 
-            //   followed by attributes, if specified, followed by
-            //   assertions if specified.
-            // Note that it's possible that only attributes are specified.
-            // -------------------------------------------------------------
-            String childName = DOMUtil.getLocalName(complexContentChild);
+        String childName = (complexContentChild != null) ? DOMUtil.getLocalName(complexContentChild) : null;
 
-            // XML Schema 1.1
-            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && childName.equals(SchemaSymbols.ELT_OPENCONTENT)) {
-                fOpenContent = traverseOpenContent(complexContentChild, schemaDoc, grammar, false);
-                complexContentChild = DOMUtil.getNextSiblingElement(complexContentChild);
-                childName = DOMUtil.getLocalName(complexContentChild);
-            }
+        // -------------------------------------------------------------
+        // OPENCONTENT?, followed by GROUP, ALL, SEQUENCE or CHOICE, 
+        //   followed by attributes, if specified, followed by
+        //   assertions if specified.
+        // Note that it's possible that only attributes are specified.
+        // -------------------------------------------------------------
+
+        // XML Schema 1.1
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && childName != null &&
+                childName.equals(SchemaSymbols.ELT_OPENCONTENT)) {
+            fOpenContent = traverseOpenContent(complexContentChild, schemaDoc, grammar, false);
+            complexContentChild = DOMUtil.getNextSiblingElement(complexContentChild);
+            childName = (complexContentChild != null) ? DOMUtil.getLocalName(complexContentChild) : null;
+        }
+
+        if (childName != null) {
 
             if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 
@@ -1338,6 +1349,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         }
         
+        // Explicit content
+        //
         // if the particle is empty because there is no non-annotation chidren,
         // we need to make the particle itself null (so that the effective
         // content is empty).
@@ -1356,8 +1369,49 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // child != null means we might have seen an element with
             // minOccurs == maxOccurs == 0
         }
-        
-        if (particle == null && isMixed) {
+
+        // XML Schema 1.1
+        //
+        // When dealing with a complex type that does not have a complexContent
+        // or a simpleContent children, handle the wildcard element rules (open content)
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && !isDerivation) {
+            // Let the wildcard element be  the appropriate case among the following:
+            //    5.1 If the <openContent> [child] is present , then the <openContent> [child].
+            //    5.2 If the <openContent> [child] is not present, the <schema> ancestor has an <defaultOpenContent> [child], and one of the following is true
+            //      5.2.1 the {variety} of the explicit content type is not empty
+            //      5.2.2 the {variety} of the explicit content type is empty and the actual value of the appliesToEmpty [attribute] is true
+            //            , then the <defaultOpenContent> [child] of the <schema>.
+            //    5.3 otherwise absent.
+            if (fOpenContent == null) {
+                if (schemaDoc.fDefaultOpenContent != null) {
+                    if (particle != null || schemaDoc.fDefaultOpenContent.fAppliesToEmpty) {
+                        fOpenContent = schemaDoc.fDefaultOpenContent;
+                    }
+                }
+            }
+            // 6.2 If the actual value of its mode [attribute] is 'none', then an absent {open content}
+            else if (fOpenContent.fMode == XSOpenContentDecl.MODE_NONE) {
+                fOpenContent = null;
+            }
+        }
+
+        // Effective content
+        //
+        // 3.1 If the explicit content is empty then the appropriate case among the following:
+        //     3.1.1 If the effective mixed is true, then A particle whose properties are as follows:
+        //           {min occurs} 1
+        //           {max occurs} 1
+        //           {term}       a model group whose {compositor} is sequence and whose {particles} is empty
+        //     3.1.2 otherwise empty
+        // 3.2 otherwise the explicit content
+        //
+        // XML Schema 1.1
+        //
+        // Dealing with a complex type that has no complexContent/simpleContent child
+        //
+        // 6.3 Particle of Content type - based on wildcard element
+        //    
+        if (particle == null && (isMixed || (!isDerivation && fOpenContent != null))) {
             if (fEmptyParticle == null) {
                 XSModelGroupImpl group = new XSModelGroupImpl();
                 group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
@@ -1372,7 +1426,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             particle = fEmptyParticle;
         }
         fParticle = particle;
-        
+
         // -----------------------------------------------------------------------
         // Set the content type
         // -----------------------------------------------------------------------
@@ -1397,7 +1451,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (!isDerivation) {
                     fAttrGrp.removeProhibitedAttrs();
                 }
-                
+
                 if (node != null) {
                     if (isAssert(node)) {
                         traverseAsserts(node, schemaDoc, grammar,

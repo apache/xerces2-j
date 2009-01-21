@@ -115,8 +115,15 @@ public class CMBuilder {
 
         // if the validator returned is null, it means there is nothing in
         // the content model, so we return the empty content model.
-        if (cmValidator == null)
-            cmValidator = fEmptyCM;
+        if (cmValidator == null) {
+            XSOpenContentDecl oc = (XSOpenContentDecl)typeDecl.getOpenContent();
+            if (oc == null) {
+                cmValidator = fEmptyCM;
+            }
+            else {
+                cmValidator = new XSEmptyCM(oc);
+            }
+        }
 
         return cmValidator;
     }
