@@ -2193,6 +2193,15 @@ public class XSDHandler {
             fKeyrefsMapXSDocumentInfo[i] = null;
         }
         fKeyrefStackPos = 0;
+
+        // and do same for idc referrals
+        for (int i = 0; i < fICReferralStackPos;  i++) {
+            fICReferrals[i] = null;
+            fICReferralsMapXSDocumentInfo[i] = null;
+            fICReferralElems[i] = null;
+            fICReferralNamespaceContext[i] = null;
+        }
+        fICReferralStackPos = 0;
         
         // create traversers if necessary
         if (fAttributeChecker == null) {
