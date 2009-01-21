@@ -405,7 +405,7 @@ public class XSElementDecl implements XSElementDeclaration {
         if (fAnnotations == XSObjectListImpl.EMPTY_LIST) {
             fAnnotations = new XSObjectListImpl();
         }
-        ((XSObjectListImpl)fAnnotations).add(annotation);        
+        ((XSObjectListImpl)fAnnotations).addXSObject(annotation);        
     }    
     
     /**
