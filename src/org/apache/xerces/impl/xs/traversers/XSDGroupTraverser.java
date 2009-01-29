@@ -209,6 +209,8 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             if (strNameAttr != null) {
                 group.fName = strNameAttr;
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
+                // TODO: if particle == null (error situation?), should we
+                //       recover by synthesizing an empty sequence?
                 if (particle != null)
                     group.fModelGroup = (XSModelGroupImpl)particle.fValue;
                 XSObjectList annotations;
