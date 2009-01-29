@@ -334,13 +334,15 @@ public class XSDFACM
         // We matched against a wildcard, but need to also check
         // if we can find a matching element declaration
         if (toMatchElementDecl) {
+            int newIndex = elemIndex;
             int newState = 0;
             Object newMatchingDecl = null;
-            while (++elemIndex < fElemMapSize) {
-                newState = fTransTable[curState][elemIndex];
-                if (newState != -1 && fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
+            while (++newIndex < fElemMapSize) {
+                newState = fTransTable[curState][newIndex];
+                if (newState != -1 && fElemMapType[newIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
+                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[newIndex], fSchemaVersion);
                     if (newMatchingDecl != null) {
+                        elemIndex = newIndex;
                         matchingDecl = newMatchingDecl;
                         nextState = newState;
                         break;
