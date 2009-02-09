@@ -717,6 +717,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      */
     public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
     throws InvalidDatatypeFacetException {
+        if (context == null) {
+            context = fEmptyContext;
+        }
         applyFacets(facets, presentFacet, fixedFacet, SPECIAL_PATTERN_NONE, context);
     }
 
