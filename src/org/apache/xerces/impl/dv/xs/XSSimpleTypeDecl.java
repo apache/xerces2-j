@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.util.AbstractList;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -2222,7 +2223,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      */
     public ObjectList getActualEnumeration() {
         if (fActualEnumeration == null) {
-            fActualEnumeration = new ObjectList () {
+            fActualEnumeration = new AbstractObjectList() {
                 public int getLength() {
                     return (fEnumeration != null) ? fEnumeration.size() : 0;
                 }
@@ -2248,7 +2249,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if (fEnumerationItemTypeList == null) {
             if(fEnumerationItemType == null)
                 return null;
-            fEnumerationItemTypeList = new ObjectList () {
+            fEnumerationItemTypeList = new AbstractObjectList() {
                 public int getLength() {
                     return (fEnumerationItemType != null) ? fEnumerationItemType.length : 0;
                 }
@@ -3337,6 +3338,18 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
          */
         public short getType() {
             return XSConstants.MULTIVALUE_FACET;
+        }
+    }
+    
+    private static abstract class AbstractObjectList extends AbstractList implements ObjectList {
+        public Object get(int index) {
+            if (index >= 0 && index < getLength()) {
+                return item(index);
+            }
+            throw new IndexOutOfBoundsException("Index: " + index);
+        }
+        public int size() {
+            return getLength();
         }
     }
 

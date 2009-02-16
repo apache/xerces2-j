@@ -17,6 +17,8 @@
 
 package org.apache.xerces.xs;
 
+import java.util.Map;
+
 /**
  * Objects implementing the <code>XSNamedMap</code> interface are used to 
  * represent immutable collections of XML Schema components that can be 
@@ -24,7 +26,7 @@ package org.apache.xerces.xs;
  * <code>XSObjectList</code>. The <code>XSObject</code>s in 
  * <code>XSNamedMap</code>s are not maintained in any particular order. 
  */
-public interface XSNamedMap {
+public interface XSNamedMap extends Map {
     /**
      * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
      * The range of valid child object indices is 0 to <code>length-1</code> 

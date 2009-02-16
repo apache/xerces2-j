@@ -17,11 +17,13 @@
 
 package org.apache.xerces.xs;
 
+import java.util.List;
+
 /**
  *  The <code>ShortList</code> is an immutable ordered collection of 
  * <code>unsigned short</code>. 
  */
-public interface ShortList {
+public interface ShortList extends List {
     /**
      *  The number of <code>unsigned short</code>s in the list. The range of 
      * valid child object indices is 0 to <code>length-1</code> inclusive. 
