@@ -17,12 +17,14 @@
 
 package org.apache.xerces.xs;
 
+import java.util.List;
+
 /**
  *  The <code>XSObjectList</code> interface provides the abstraction of an 
  * immutable ordered collection of <code>XSObject</code>s, without defining 
  * or constraining how this collection is implemented. 
  */
-public interface XSObjectList {
+public interface XSObjectList extends List {
     /**
      *  The number of <code>XSObjects</code> in the list. The range of valid 
      * child object indices is 0 to <code>length-1</code> inclusive. 

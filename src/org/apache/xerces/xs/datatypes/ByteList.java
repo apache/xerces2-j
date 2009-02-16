@@ -16,6 +16,8 @@
  */
 package org.apache.xerces.xs.datatypes;
 
+import java.util.List;
+
 import org.apache.xerces.xs.XSException;
 
 /**
@@ -26,7 +28,7 @@ import org.apache.xerces.xs.XSException;
  * 
  * @version $Id$
  */
-public interface ByteList {
+public interface ByteList extends List {
     
     /**
      * The number of <code>byte</code>s in the list. The range of 

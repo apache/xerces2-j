@@ -16,6 +16,8 @@
  */
 package org.apache.xerces.xs.datatypes;
 
+import java.util.List;
+
 /**
  * <p>The <code>ObjectList</code> is an immutable ordered collection of 
  * <code>Object</code>.</p> 
@@ -24,7 +26,7 @@ package org.apache.xerces.xs.datatypes;
  * 
  * @version $Id$
  */
-public interface ObjectList {
+public interface ObjectList extends List {
     
     /**
      * The number of <code>Object</code>s in the list. The range of 
