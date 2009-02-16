@@ -21,6 +21,7 @@ import org.apache.xerces.util.URI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
+import org.w3c.dom.ElementTraversal;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -57,7 +58,7 @@ import org.w3c.dom.TypeInfo;
  */
 public class ElementImpl
     extends ParentNode
-    implements Element, TypeInfo {
+    implements Element, ElementTraversal, TypeInfo {
 
     //
     // Constants
