@@ -192,7 +192,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     // the string we saw: starting from the first non-whitespace character.
                     String txt = new String(text.ch, i, text.length+text.offset-i);
                     // report an error
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                    fErrorReporter.reportError(fLocator, 
+                            XSMessageFormatter.SCHEMA_DOMAIN,
                             "s4s-elt-character",
                             new Object[]{txt},
                             XMLErrorReporter.SEVERITY_ERROR);

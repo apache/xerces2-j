@@ -55,12 +55,16 @@ import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.DOMInputSource;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.DefaultErrorHandler;
+import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXInputSource;
 import org.apache.xerces.util.StAXInputSource;
+import org.apache.xerces.util.StAXLocationWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -70,6 +74,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSParticle;
 import org.w3c.dom.Document;
@@ -77,6 +82,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
@@ -387,7 +393,7 @@ public class XSDHandler {
     private XSDocumentInfo [] fKeyrefsMapXSDocumentInfo = new XSDocumentInfo[INIT_KEYREF_STACK];
     private XSElementDecl [] fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];
     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
-    
+
     // Constructors
     public XSDHandler(){
         fHiddenNodes = new Hashtable();       
@@ -1802,7 +1808,11 @@ public class XSDHandler {
                 hasInput = false;
             }
         }
-        catch (SAXException se) {    
+        catch (SAXParseException spe) {
+            throw SAX2XNIUtil.createXMLParseException0(spe);
+        }
+        catch (SAXException se) {
+            throw SAX2XNIUtil.createXNIException0(se);
         }
         catch (IOException ioe) {
         }
@@ -1939,6 +1949,9 @@ public class XSDHandler {
             return getSchemaDocument0(key, schemaId, schemaElement);
         }
         catch (XMLStreamException e) {
+            StAXLocationWrapper slw = new StAXLocationWrapper();
+            slw.setLocation(e.getLocation());
+            throw new XMLParseException(slw, e.getMessage(), e);
         }
         catch (IOException e) {
         }
@@ -2842,6 +2855,15 @@ public class XSDHandler {
             }
             
             return true;
+        }
+    }
+    
+    private static final class SAX2XNIUtil extends ErrorHandlerWrapper {
+        public static XMLParseException createXMLParseException0(SAXParseException exception) {
+            return createXMLParseException(exception);
+        }
+        public static XNIException createXNIException0(SAXException exception) {
+            return createXNIException(exception);
         }
     }
     
