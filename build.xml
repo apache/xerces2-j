@@ -836,6 +836,12 @@ Authors:
         <arg value="${data.dir}/personal-schema.xml"/>
         <arg value="out.xml"/>
     </java>
+    <echo message="Running dom.traversal.AllTests ..." />
+    <java fork="yes"
+          classname="dom.traversal.AllTests"
+          failOnError="yes">
+        <jvmarg value="-Xbootclasspath/p:${tools.dir}/${jar.apis}${path.separator}${tools.dir}/${jar.resolver}${path.separator}${tools.dir}/${jar.serializer}${path.separator}${tools.dir}/${jar.junit}${path.separator}${build.dir}/classes${path.separator}${build.dir}/tests"/>
+    </java>
     <echo message="Running schema.Test ..." />
     <java fork="yes"
           classname="schema.Test"
