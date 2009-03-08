@@ -44,6 +44,7 @@ public abstract class AbstractTestCase extends TestCase {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
+            dbf.setExpandEntityReferences(false);
             fDocumentBuilder = dbf.newDocumentBuilder();
         }
         catch (ParserConfigurationException pce) {

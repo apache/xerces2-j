@@ -36,6 +36,7 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Tests for the Element Traversal API.");
         suite.addTestSuite(BasicTest.class);
+        suite.addTestSuite(ComplexTest.class);
         return suite;
     }
 
