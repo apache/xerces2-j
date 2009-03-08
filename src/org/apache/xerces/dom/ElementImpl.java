@@ -1237,7 +1237,7 @@ public class ElementImpl
      * Element Traversal Specification</a>
      */
     public final Element getNextElementSibling() {
-        Node n = getNextSibling();
+        Node n = getNextLogicalSibling(this);
         while (n != null) {
             switch (n.getNodeType()) {
                 case Node.ELEMENT_NODE:
@@ -1249,31 +1249,17 @@ public class ElementImpl
                     }
                     break;
             }
-            Node next = n.getNextSibling();
-            // If "n" has no following sibling and its parent is an entity reference node we 
-            // need to continue the search through the following siblings of the entity 
-            // reference as these are logically siblings of *this* element node.
-            if (next == null) {
-                Node parent = n.getParentNode();
-                while (parent != null && parent.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
-                    next = parent.getNextSibling();
-                    if (next != null) {
-                        break;
-                    }
-                    parent = parent.getParentNode();
-                }
-            }
-            n = next;
+            n = getNextLogicalSibling(n);
         }
         return null;
     } // getNextElementSibling():Element
-
+    
     /**
      * @see <a href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/#attribute-previousElementSibling">
      * Element Traversal Specification</a>
      */
     public final Element getPreviousElementSibling() {
-        Node n = getPreviousSibling();
+        Node n = getPreviousLogicalSibling(this);
         while (n != null) {
             switch (n.getNodeType()) {
                 case Node.ELEMENT_NODE:
@@ -1285,21 +1271,7 @@ public class ElementImpl
                     }
                     break;
             }
-            Node prev = n.getPreviousSibling();
-            // If "n" has no previous sibling and its parent is an entity reference node we 
-            // need to continue the search through the previous siblings of the entity 
-            // reference as these are logically siblings of *this* element node.
-            if (prev == null) {
-                Node parent = n.getParentNode();
-                while (parent != null && parent.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
-                    prev = parent.getPreviousSibling();
-                    if (prev != null) {
-                        break;
-                    }
-                    parent = parent.getParentNode();
-                }
-            }
-            n = prev;
+            n = getPreviousLogicalSibling(n);
         }
         return null;
     } // getPreviousElementSibling():Element
@@ -1355,5 +1327,43 @@ public class ElementImpl
         }
         return null;
     } // getLastElementChild(Node):Element
+    
+    // Returns the next logical sibling with respect to the given node.
+    private Node getNextLogicalSibling(Node n) {
+        Node next = n.getNextSibling();
+        // If "n" has no following sibling and its parent is an entity reference node we 
+        // need to continue the search through the following siblings of the entity 
+        // reference as these are logically siblings of the given node.
+        if (next == null) {
+            Node parent = n.getParentNode();
+            while (parent != null && parent.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                next = parent.getNextSibling();
+                if (next != null) {
+                    break;
+                }
+                parent = parent.getParentNode();
+            }
+        }
+        return next;
+    } // getNextLogicalSibling(Node):Node
+    
+    // Returns the previous logical sibling with respect to the given node.
+    private Node getPreviousLogicalSibling(Node n) {
+        Node prev = n.getPreviousSibling();
+        // If "n" has no previous sibling and its parent is an entity reference node we 
+        // need to continue the search through the previous siblings of the entity 
+        // reference as these are logically siblings of the given node.
+        if (prev == null) {
+            Node parent = n.getParentNode();
+            while (parent != null && parent.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                prev = parent.getPreviousSibling();
+                if (prev != null) {
+                    break;
+                }
+                parent = parent.getParentNode();
+            }
+        }
+        return prev;
+    } // getPreviousLogicalSibling(Node):Node
 
 } // class ElementImpl
