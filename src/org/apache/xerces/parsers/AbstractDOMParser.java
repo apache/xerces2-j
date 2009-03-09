@@ -1042,6 +1042,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                             }
                         case LSParserFilter.FILTER_SKIP :
                             {
+                                // make sure that if any char data is available
+                                // the fFirstChunk is true, so that if the next event
+                                // is characters(), and the last node is text, we will copy
+                                // the value already in the text node to fStringBuffer
+                                // (not to lose it).
+                                fFirstChunk = true;
                                 fSkippedElemStack.push(Boolean.TRUE);
                                 return;
                             }
@@ -1335,7 +1341,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                             // the fFirstChunk is true, so that if the next event
                             // is characters(), and the last node is text, we will copy
                             // the value already in the text node to fStringBuffer
-                            // (not to loose it).
+                            // (not to lose it).
                             fFirstChunk = true;
 
                             // replace children
