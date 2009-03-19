@@ -17,6 +17,7 @@
 
 package org.apache.xerces.jaxp.datatype;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -179,6 +180,11 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
 class XMLGregorianCalendarImpl
 	extends XMLGregorianCalendar
 	implements Serializable, Cloneable {
+    
+    /**
+     * <p>Stream Unique Identifier.</p>
+     */
+    private static final long serialVersionUID = 3905403108073447394L;
 
     /** Backup values **/
     private BigInteger orig_eon;
@@ -334,15 +340,7 @@ class XMLGregorianCalendarImpl
         "Second",
         "Millisecond",
         "Timezone"
-    }; 
-
-    /**
-     * <p>Stream Unique Identifier.</p>
-     * 
-     * <p>TODO: Serialization should use the XML string representation as
-     * the serialization format to ensure future compatibility.</p>
-     */
-    private static final long serialVersionUID = 1L; 
+    };
 
     /**
      * <p>Use as a template for default field values when 
@@ -3176,6 +3174,18 @@ class XMLGregorianCalendarImpl
         second = orig_second;
         fractionalSecond = orig_fracSeconds;
         timezone = orig_timezone;
+    }
+    
+    /**
+     * Writes {@link XMLGregorianCalendar} as a lexical representation
+     * for maximum future compatibility.
+     * 
+     * @return
+     *      An object that encapsulates the string
+     *      returned by <code>this.toXMLFormat()</code>.
+     */
+    private Object writeReplace() throws IOException {
+        return new SerializedXMLGregorianCalendar(toXMLFormat());
     }
 }
 

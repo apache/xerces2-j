@@ -18,7 +18,6 @@
 package org.apache.xerces.jaxp.datatype;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -100,6 +99,11 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
 class DurationImpl
 	extends Duration
 	implements Serializable {
+    
+    /**
+     * <p>Stream Unique Identifier.</p>
+     */
+    private static final long serialVersionUID = -2650025807136350131L;
 
     /**
      * <p>Internal array of value Fields.</p>
@@ -1936,49 +1940,6 @@ class DurationImpl
     }
     
     /**
-     * <p>Stream Unique Identifier.</p>
-     * 
-     * <p>TODO: Serialization should use the XML string representation as
-     * the serialization format to ensure future compatibility.</p>
-     */
-    private static final long serialVersionUID = 1L; 
-    
-    /**
-     * Writes {@link Duration} as a lexical representation
-     * for maximum future compatibility.
-     * 
-     * @return
-     *      An object that encapsulates the string
-     *      returned by <code>this.toString()</code>.
-     */
-    private Object writeReplace() throws IOException {
-        return new DurationStream(this.toString());
-    }
-    
-    /**
-     * Representation of {@link Duration} in the object stream.
-     * 
-     * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
-     */
-    private static class DurationStream implements Serializable {
-        private final String lexical;
-
-        private DurationStream(String _lexical) {
-            this.lexical = _lexical;
-        }
-        
-        private Object readResolve() throws ObjectStreamException {
-            //            try {
-            return new DurationImpl(lexical);
-            //            } catch( ParseException e ) {
-            //                throw new StreamCorruptedException("unable to parse "+lexical+" as duration");
-            //            }
-        }
-        
-        private static final long serialVersionUID = 1L; 
-    }
-    
-    /**
      * Calls the {@link Calendar#getTimeInMillis} method.
      * Prior to JDK1.4, this method was protected and therefore
      * cannot be invoked directly.
@@ -1989,5 +1950,16 @@ class DurationImpl
     private static long getCalendarTimeInMillis(Calendar cal) {
         return cal.getTime().getTime();
     }
+    
+    /**
+     * Writes {@link Duration} as a lexical representation
+     * for maximum future compatibility.
+     * 
+     * @return
+     *      An object that encapsulates the string
+     *      returned by <code>this.toString()</code>.
+     */
+    private Object writeReplace() throws IOException {
+        return new SerializedDuration(toString());
+    }
 }
-
