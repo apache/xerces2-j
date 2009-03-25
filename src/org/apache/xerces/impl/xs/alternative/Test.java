@@ -53,9 +53,8 @@ public class Test {
     /** Evaluate the test expression with respect to the specified element and its attributes */
     public boolean evaluateTest(QName element, XMLAttributes attributes) {
         if (fXPath != null) {
-            return fXPath.traverseTree(element, attributes);
-        }
-        else {
+            return fXPath.evaluateTest(element, attributes);
+        } else {
             return false;
         }
     }

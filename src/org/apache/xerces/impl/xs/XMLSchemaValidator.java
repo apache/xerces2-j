@@ -2021,6 +2021,30 @@ public class XMLSchemaValidator
             }
         }
         
+        //process type alternatives
+        if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
+            boolean typeSelected = false;
+            XSTypeAlternativeImpl[] alternatives = fCurrentElemDecl.getTypeAlternatives();
+            if (alternatives != null) {
+                for (int i = 0; i < alternatives.length; i++) {
+                    Test test = alternatives[i].getTest();
+                    if (test != null && test.evaluateTest(element, attributes)) {
+                        fCurrentType = alternatives[i].getTypeDefinition();
+                        typeSelected = true;
+                        break;
+                    }
+
+                }
+                //if a type is not selected try to assign the default type
+                if (!typeSelected) {
+                    XSTypeAlternativeImpl defType = fCurrentElemDecl.getDefaultTypeDefinition();
+                    if (defType != null) {
+                        fCurrentType = defType.getTypeDefinition();
+                    }
+                }
+            }
+        }
+        
         // if there was no processor stipulated type
         if (fCurrentType == null) {
             // try again to get the element decl:
@@ -2250,29 +2274,6 @@ public class XMLSchemaValidator
         for (int i = 0; i < count; i++) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
             matcher.startElement( element, attributes);
-        }
-
-        //process type alternatives
-        if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-            boolean typeSelected = false;
-            XSTypeAlternativeImpl[] alternatives = fCurrentElemDecl.getTypeAlternatives();
-            if (alternatives != null) {
-                for (int i = 0; i < alternatives.length; i++) {
-                    Test test = alternatives[i].getTest();
-                    if (test != null && test.evaluateTest(element, attributes)) {
-                        fCurrentType = alternatives[i].getTypeDefinition();
-                        typeSelected = true;
-                        break;
-                    }
-                }
-                //if a type is not selected try to assign the default type
-                if (!typeSelected) {
-                    XSTypeAlternativeImpl defType = fCurrentElemDecl.getDefaultTypeDefinition();
-                    if (defType != null) {
-                        fCurrentType = defType.getTypeDefinition();
-                    }
-                }
-            }
         }
 
         if (fAugPSVI) {
