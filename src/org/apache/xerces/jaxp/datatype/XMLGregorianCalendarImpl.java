@@ -1707,11 +1707,13 @@ class XMLGregorianCalendarImpl
      * @return <code>true</code> when <code>compare(this,(XMLGregorianCalendar)obj) == EQUAL.</code>.
      */
     public boolean equals(Object obj) {
-	   boolean result = false;
-	   if (obj instanceof XMLGregorianCalendar) {
-	       result = compare((XMLGregorianCalendar) obj) == DatatypeConstants.EQUAL;
-	   }
-	   return result;
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof XMLGregorianCalendar) {
+            return compare((XMLGregorianCalendar) obj) == DatatypeConstants.EQUAL;
+        }
+        return false;
     }
 
     /**
