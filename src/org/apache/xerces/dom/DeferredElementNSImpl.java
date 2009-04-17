@@ -26,6 +26,7 @@
 
 package org.apache.xerces.dom;
 
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.NamedNodeMap;
 
@@ -124,7 +125,8 @@ public class DeferredElementNSImpl
                 // non-namespace aware setAttributeNode() method could overwrite
                 // another attribute with the same local name.
                 if (!attr.getSpecified() && (seenSchemaDefault ||
-                    (attr.getNamespaceURI() != null && 
+                    (attr.getNamespaceURI() != null &&
+                    attr.getNamespaceURI() != NamespaceContext.XMLNS_URI &&
                     attr.getName().indexOf(':') < 0))) {
                     seenSchemaDefault = true;
                     attrs.setNamedItemNS(attr);
