@@ -951,7 +951,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 // Take special care of schema defaulted attributes. Calling the 
                 // non-namespace aware setAttributeNode() method could overwrite
                 // another attribute with the same local name.
-                if (!specified && (seenSchemaDefault || (fAttrQName.uri != null && fAttrQName.prefix == null))) {
+                if (!specified && (seenSchemaDefault || (fAttrQName.uri != null && 
+                    fAttrQName.uri != NamespaceContext.XMLNS_URI && fAttrQName.prefix == null))) {
                     el.setAttributeNodeNS(attr);
                     seenSchemaDefault = true;
                 }
@@ -2424,8 +2425,23 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     fDeferredDocumentImpl.appendChild (fDocumentTypeIndex, elementDefIndex);
                 }
                 // add default attribute
+                boolean nsEnabled = fNamespaceAware;
+                String namespaceURI = null;
+                if (nsEnabled) {
+                    // DOM Level 2 wants all namespace declaration attributes
+                    // to be bound to "http://www.w3.org/2000/xmlns/"
+                    // So as long as the XML parser doesn't do it, it needs to
+                    // done here.
+                    if (attributeName.startsWith("xmlns:") ||
+                        attributeName.equals("xmlns")) {
+                        namespaceURI = NamespaceContext.XMLNS_URI;
+                    }
+                    else if (attributeName.startsWith("xml:")) {
+                        namespaceURI = NamespaceContext.XML_URI;
+                    }
+                }
                 int attrIndex = fDeferredDocumentImpl.createDeferredAttribute (
-                attributeName, defaultValue.toString (), false);
+                        attributeName, namespaceURI, defaultValue.toString(), false);
                 if ("ID".equals (type)) {
                     fDeferredDocumentImpl.setIdAttribute (attrIndex);
                 }
@@ -2460,9 +2476,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     // to be bound to "http://www.w3.org/2000/xmlns/"
                     // So as long as the XML parser doesn't do it, it needs to
                     // done here.
-                    if (attributeName.startsWith ("xmlns:") ||
-                    attributeName.equals ("xmlns")) {
+                    if (attributeName.startsWith("xmlns:") ||
+                        attributeName.equals("xmlns")) {
                         namespaceURI = NamespaceContext.XMLNS_URI;
+                    }
+                    else if (attributeName.startsWith("xml:")) {
+                        namespaceURI = NamespaceContext.XML_URI;
                     }
                     attr = (AttrImpl)fDocumentImpl.createAttributeNS (namespaceURI,
                     attributeName);
