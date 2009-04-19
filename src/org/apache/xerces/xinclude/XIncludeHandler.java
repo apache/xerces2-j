@@ -1567,7 +1567,7 @@ public class XIncludeHandler
             catch (IOException e) {
                 reportResourceError(
                     "XMLResourceError",
-                    new Object[] { href, e.getMessage()});
+                    new Object[] { href, e.getMessage()}, e);
                 return false;
             }
         }
@@ -1742,7 +1742,7 @@ public class XIncludeHandler
                 // send a resource error, not a fatal error.
                 reportResourceError(
                     "XMLResourceError",
-                    new Object[] { href, e.getMessage()});
+                    new Object[] { href, e.getMessage()}, e);
                 return false;
             }
             finally {
@@ -1798,7 +1798,7 @@ public class XIncludeHandler
                 }
                 reportResourceError(
                     "TextResourceError",
-                    new Object[] { href, e.getMessage()});
+                    new Object[] { href, e.getMessage()}, e);
                 return false;
             }
             finally {
@@ -1809,7 +1809,7 @@ public class XIncludeHandler
                     catch (IOException e) {
                         reportResourceError(
                             "TextResourceError",
-                            new Object[] { href, e.getMessage()});
+                            new Object[] { href, e.getMessage()}, e);
                         return false;
                     }
                 }
@@ -2368,11 +2368,15 @@ public class XIncludeHandler
     }
 
     protected void reportResourceError(String key) {
-        this.reportFatalError(key, null);
+        this.reportResourceError(key, null);
     }
 
     protected void reportResourceError(String key, Object[] args) {
-        this.reportError(key, args, XMLErrorReporter.SEVERITY_WARNING);
+        this.reportResourceError(key, args, null);
+    }
+    
+    protected void reportResourceError(String key, Object[] args, Exception exception) {
+        this.reportError(key, args, XMLErrorReporter.SEVERITY_WARNING, exception);
     }
 
     protected void reportFatalError(String key) {
@@ -2380,16 +2384,21 @@ public class XIncludeHandler
     }
 
     protected void reportFatalError(String key, Object[] args) {
-        this.reportError(key, args, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        this.reportFatalError(key, args, null);
+    }
+    
+    protected void reportFatalError(String key, Object[] args, Exception exception) {
+        this.reportError(key, args, XMLErrorReporter.SEVERITY_FATAL_ERROR, exception);
     }
 
-    private void reportError(String key, Object[] args, short severity) {
+    private void reportError(String key, Object[] args, short severity, Exception exception) {
         if (fErrorReporter != null) {
             fErrorReporter.reportError(
                 XIncludeMessageFormatter.XINCLUDE_DOMAIN,
                 key,
                 args,
-                severity);
+                severity,
+                exception);
         }
         // we won't worry about when error reporter is null, since there should always be
         // at least the default error reporter
