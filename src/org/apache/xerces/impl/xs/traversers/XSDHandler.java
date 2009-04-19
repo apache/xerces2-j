@@ -1672,6 +1672,7 @@ public class XSDHandler {
             boolean mustResolve, short referType, Element referElement) {
         
         boolean hasInput = true;
+        IOException exception = null;
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         Element schemaElement = null;
         try {
@@ -1711,8 +1712,9 @@ public class XSDHandler {
             }
         }
         catch (IOException ex) {
+            exception = ex;
         }
-        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement);
+        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement, exception);
     } // getSchemaDocument(String, XMLInputSource, boolean, short, Element): Element
     
     /**
@@ -1729,6 +1731,7 @@ public class XSDHandler {
         XMLReader parser = schemaSource.getXMLReader();
         InputSource inputSource = schemaSource.getInputSource();
         boolean hasInput = true;
+        IOException exception = null;
         Element schemaElement = null;
         try {
             if (inputSource != null &&
@@ -1815,8 +1818,9 @@ public class XSDHandler {
             throw SAX2XNIUtil.createXNIException0(se);
         }
         catch (IOException ioe) {
+            exception = ioe;
         }
-        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement);
+        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement, exception);
     } // getSchemaDocument(String, SAXInputSource, boolean, short, Element): Element
     
     /**
@@ -1831,6 +1835,7 @@ public class XSDHandler {
     private Element getSchemaDocument(String schemaNamespace, DOMInputSource schemaSource,
             boolean mustResolve, short referType, Element referElement) {
         boolean hasInput = true;
+        IOException exception = null;
         Element schemaElement = null;
         Element schemaRootElement = null;
         
@@ -1878,8 +1883,9 @@ public class XSDHandler {
             }
         }
         catch (IOException ioe) {
+            exception = ioe;
         }
-        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement);
+        return getSchemaDocument1(mustResolve, hasInput, schemaSource, referElement, exception);
     } // getSchemaDocument(String, DOMInputSource, boolean, short, Element): Element
     
     /**
@@ -1893,6 +1899,7 @@ public class XSDHandler {
      */
     private Element getSchemaDocument(String schemaNamespace, StAXInputSource schemaSource,
             boolean mustResolve, short referType, Element referElement) {
+        IOException exception = null;
         Element schemaElement = null;
         try {
             final boolean consumeRemainingContent = schemaSource.shouldConsumeRemainingContent();
@@ -1954,8 +1961,9 @@ public class XSDHandler {
             throw new XMLParseException(slw, e.getMessage(), e);
         }
         catch (IOException e) {
+            exception = e;
         }
-        return getSchemaDocument1(mustResolve, true, schemaSource, referElement);
+        return getSchemaDocument1(mustResolve, true, schemaSource, referElement, exception);
     } // getSchemaDocument(String, StAXInputSource, boolean, short, Element): Element
     
     /**
@@ -1979,25 +1987,25 @@ public class XSDHandler {
      * Error handling code shared between the various getSchemaDocument() methods.
      */
     private Element getSchemaDocument1(boolean mustResolve, boolean hasInput, 
-            XMLInputSource schemaSource, Element referElement) {
+            XMLInputSource schemaSource, Element referElement, IOException ioe) {
         // either an error occured (exception), or empty input source was
         // returned, we need to report an error or a warning
         if (mustResolve) {
             if (hasInput) {
                 reportSchemaError("schema_reference.4",
                         new Object[]{schemaSource.getSystemId()},
-                        referElement);
+                        referElement, ioe);
             }
             else {
                 reportSchemaError("schema_reference.4",
                         new Object[]{schemaSource == null ? "" : schemaSource.getSystemId()},
-                        referElement);
+                        referElement, ioe);
             }
         }
         else if (hasInput) {
             reportSchemaWarning("schema_reference.4",
                     new Object[]{schemaSource.getSystemId()},
-                    referElement);
+                    referElement, ioe);
         }
         
         fLastSchemaWasDuplicate = false;
@@ -2682,24 +2690,32 @@ public class XSDHandler {
     }
     
     void reportSchemaError(String key, Object[] args, Element ele) {
+        reportSchemaError(key, args, ele, null);
+    }
+    
+    void reportSchemaError(String key, Object[] args, Element ele, Exception exception) {
         if (element2Locator(ele, xl)) {
             fErrorReporter.reportError(xl, XSMessageFormatter.SCHEMA_DOMAIN,
-                    key, args, XMLErrorReporter.SEVERITY_ERROR);
+                    key, args, XMLErrorReporter.SEVERITY_ERROR, exception);
         }
         else {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                    key, args, XMLErrorReporter.SEVERITY_ERROR);
+                    key, args, XMLErrorReporter.SEVERITY_ERROR, exception);
         }
     }
     
     void reportSchemaWarning(String key, Object[] args, Element ele) {
+        reportSchemaWarning(key, args, ele, null);
+    }
+    
+    void reportSchemaWarning(String key, Object[] args, Element ele, Exception exception) {
         if (element2Locator(ele, xl)) {
             fErrorReporter.reportError(xl, XSMessageFormatter.SCHEMA_DOMAIN,
-                    key, args, XMLErrorReporter.SEVERITY_WARNING);
+                    key, args, XMLErrorReporter.SEVERITY_WARNING, exception);
         }
         else {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                    key, args, XMLErrorReporter.SEVERITY_WARNING);
+                    key, args, XMLErrorReporter.SEVERITY_WARNING, exception);
         }
     }
     
