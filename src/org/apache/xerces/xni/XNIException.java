@@ -42,7 +42,7 @@ public class XNIException
     //
 
     /** The wrapped exception. */
-    private Exception fException;
+    private Exception fException = this;
 
     //
     // Constructors
@@ -84,7 +84,37 @@ public class XNIException
 
     /** Returns the wrapped exception. */
     public Exception getException() {
-        return fException;
+        return fException != this ? fException : null;
     } // getException():Exception
+    
+    /**
+     * Initializes the cause of this <code>XNIException</code>.
+     * The value must be an instance of <code>Exception</code> or
+     * <code>null</code>.
+     * 
+     * @param throwable the cause
+     * @return this exception
+     * 
+     * @throws IllegalStateException if a cause has already been set
+     * @throws IllegalArgumentException if the cause is this exception
+     * @throws ClassCastException if the cause is not assignable to <code>Exception</code>
+     */
+    public synchronized Throwable initCause(Throwable throwable) {
+        if (fException != this) {
+            // TODO: Add error message.
+            throw new IllegalStateException();
+        }
+        if (throwable == this) {
+            // TODO: Add error message.
+            throw new IllegalArgumentException();
+        }
+        fException = (Exception) throwable;
+        return this;
+    } // initCause(Throwable):Throwable
+    
+    /** Returns the cause of this <code>XNIException</code>. */
+    public Throwable getCause() {
+        return getException();
+    } // getCause():Throwable
 
-} // class QName
+} // class XNIException
