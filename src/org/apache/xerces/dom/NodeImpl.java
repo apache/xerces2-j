@@ -1586,15 +1586,14 @@ public abstract class NodeImpl
         }
     }
 
-
-    Node getElementAncestor (Node currentNode){
+    Node getElementAncestor(Node currentNode) {
         Node parent = currentNode.getParentNode();
-        if (parent != null) {
+        while (parent != null) {
             short type = parent.getNodeType();
             if (type == Node.ELEMENT_NODE) {
                 return parent;
             }
-            return getElementAncestor(parent);
+            parent = parent.getParentNode();
         }
         return null;
     }
