@@ -50,16 +50,21 @@ public class XSGrammarPool extends XMLGrammarPoolImpl {
         ArrayList list = new ArrayList();
         for (int i = 0; i < fGrammars.length; i++) {
             for (Entry entry = fGrammars[i] ; entry != null ; entry = entry.next) {
-                if (entry.desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA))
+                if (entry.desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
                     list.add(entry.grammar);
+                }
             }
         }
         int size = list.size();
         if (size == 0) {
-            return new XSModelImpl(new SchemaGrammar[0]);
+            return toXSModel(new SchemaGrammar[0], schemaVersion);
         }
         SchemaGrammar[] gs = (SchemaGrammar[])list.toArray(new SchemaGrammar[size]);
-        return new XSModelImpl(gs, schemaVersion);
+        return toXSModel(gs, schemaVersion);
+    }
+    
+    protected XSModel toXSModel(SchemaGrammar[] grammars, short schemaVersion) {
+        return new XSModelImpl(grammars, schemaVersion);
     }
 
 } // class XSGrammarPool
