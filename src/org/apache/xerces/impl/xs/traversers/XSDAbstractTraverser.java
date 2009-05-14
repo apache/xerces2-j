@@ -335,13 +335,13 @@ abstract class XSDAbstractTraverser {
                 if (child != null &&
                     DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     // traverse annotation if any
-                    enumAnnotations.add(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
+                    enumAnnotations.addXSObject(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
                     child = DOMUtil.getNextSiblingElement(child);
                 }
                 else {
                     String text = DOMUtil.getSyntheticAnnotation(content);
                     if (text != null) {
-                        enumAnnotations.add(enumAnnotations.getLength()-1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
+                        enumAnnotations.addXSObject(enumAnnotations.getLength()-1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
                     }
                 }
                 if (child !=null) {
