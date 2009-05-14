@@ -302,14 +302,19 @@ abstract class XSDAbstractTraverser {
                         baseValidator.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
                     // need to use the namespace context returned from checkAttributes
                     schemaDoc.fValidationContext.setNamespaceSupport(nsDecls);
+                    Object notation = null;
                     try{
                         QName temp = (QName)fQNameDV.validate(enumVal, schemaDoc.fValidationContext, null);
                         // try to get the notation decl. if failed, getGlobalDecl
                         // reports an error, so we don't need to report one again.
-                        fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp, content);
+                        notation = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp, content);
                     }catch(InvalidDatatypeValueException ex){
-                        // Ignore this facet, to avoid instance validation problems
                         reportSchemaError(ex.getKey(), ex.getArgs(), content);
+                    }
+                    if (notation == null) {
+                        // Either the QName value is invalid, or it doens't
+                        // resolve to a notation declaration.
+                        // Ignore this facet, to avoid instance validation problems
                         fAttrChecker.returnAttrArray (attrs, schemaDoc);
                         content = DOMUtil.getNextSiblingElement(content);
                         continue;
