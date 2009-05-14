@@ -477,6 +477,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault) == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue}, elmDecl);
+                element.fDefault = null;
                 element.setConstraintType(XSConstants.VC_NONE);
             }
         }
@@ -485,6 +486,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         if (element.fSubGroup != null) {
             if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
                 reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
+                element.fSubGroup = null;
             }
         }
         
@@ -495,6 +497,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                     (elementType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
                             ((XSComplexTypeDecl)elementType).containsTypeID())) {
                 reportSchemaError ("e-props-correct.5", new Object[]{element.fName}, elmDecl);
+                element.fDefault = null;
+                element.setConstraintType(XSConstants.VC_NONE);
             }
         }
         

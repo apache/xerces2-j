@@ -76,7 +76,6 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // get global decl
         attrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, refAttr, elmNode);
         
-        
         // no children are allowed here except annotation, which is optional.
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null) {
@@ -116,7 +115,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // global declaration must have a name
         if (nameAttr == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (global)", "name"}, elmNode);
-            nameAttr = "no name";
+            nameAttr = NO_NAME;
         }
         
         attrGrp.fName = nameAttr;
@@ -147,6 +146,12 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-elt-must-match.1", args, nextNode);
         } 
         
+        if (nameAttr.equals(NO_NAME)) {
+            // if a global group doesn't have a name, then don't add it.
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+            return null;
+        }
+
         // Remove prohibited attributes from the set
         attrGrp.removeProhibitedAttrs();
         

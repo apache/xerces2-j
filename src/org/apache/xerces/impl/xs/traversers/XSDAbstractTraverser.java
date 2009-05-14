@@ -39,6 +39,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
@@ -119,12 +120,13 @@ abstract class XSDAbstractTraverser {
                         (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
                     reportSchemaError("src-annotation", new Object[]{name}, child);
                 }
-                
-                // General Attribute Checking
-                // There is no difference between global or local appinfo/documentation,
-                // so we assume it's always global.
-                attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc);
-                fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                else {
+                    // General Attribute Checking
+                    // There is no difference between global or local appinfo/documentation,
+                    // so we assume it's always global.
+                    attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc);
+                    fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                }
                 
                 child = DOMUtil.getNextSiblingElement(child);
             }
@@ -306,7 +308,11 @@ abstract class XSDAbstractTraverser {
                         // reports an error, so we don't need to report one again.
                         fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp, content);
                     }catch(InvalidDatatypeValueException ex){
+                        // Ignore this facet, to avoid instance validation problems
                         reportSchemaError(ex.getKey(), ex.getArgs(), content);
+                        fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                        content = DOMUtil.getNextSiblingElement(content);
+                        continue;
                     }
                     // restore to the normal namespace context
                     schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
@@ -410,7 +416,11 @@ abstract class XSDAbstractTraverser {
                 
                 // check for duplicate facets
                 if ((facetsPresent & currentFacet) != 0) {
+                    // Ignore this facet, to avoid corrupting the previous facet
                     reportSchemaError("src-single-facet-value", new Object[]{facet}, content);
+                    fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                    continue;
                 } else if (attrs[XSAttributeChecker.ATTIDX_VALUE] != null) {
                     facetsPresent |= currentFacet;
                     // check for fixed facet
@@ -554,6 +564,7 @@ abstract class XSDAbstractTraverser {
         Element child=null;
         XSAttributeGroupDecl tempAttrGrp = null;
         XSAttributeUseImpl tempAttrUse = null;
+        XSAttributeUse otherUse = null;
         String childName;
         
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
@@ -563,9 +574,15 @@ abstract class XSDAbstractTraverser {
                         schemaDoc,
                         grammar,
                         enclosingCT);
-                if (tempAttrUse == null) break;
-                if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.getNamespace(),
-                        tempAttrUse.fAttrDecl.getName())==null) {
+                if (tempAttrUse == null) continue;
+                if (tempAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                    attrGrp.addAttributeUse(tempAttrUse);
+                    continue;
+                }
+                otherUse = attrGrp.getAttributeUseNoProhibited(
+                        tempAttrUse.fAttrDecl.getNamespace(),
+                        tempAttrUse.fAttrDecl.getName());
+                if (otherUse==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     if (idName != null) {
                         String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
@@ -573,8 +590,7 @@ abstract class XSDAbstractTraverser {
                         reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName(), idName}, child);
                     }
                 }
-                else {
-                    // REVISIT: what if one of the attribute uses is "prohibited"
+                else if (otherUse != tempAttrUse) {
                     String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
                     String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                     reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName()}, child);
@@ -584,14 +600,20 @@ abstract class XSDAbstractTraverser {
                 //REVISIT: do we need to save some state at this point??
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
                         child, schemaDoc, grammar);
-                if(tempAttrGrp == null ) break;
+                if(tempAttrGrp == null ) continue;
                 XSObjectList attrUseS = tempAttrGrp.getAttributeUses();
-                XSAttributeUseImpl existingAttrUse = null, oneAttrUse;
+                XSAttributeUseImpl oneAttrUse;
                 int attrCount = attrUseS.getLength();
                 for (int i=0; i<attrCount; i++) {
                     oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
-                    if (existingAttrUse == attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
-                            oneAttrUse.fAttrDecl.getName())) {
+                    if (oneAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                        attrGrp.addAttributeUse(oneAttrUse);
+                        continue;
+                    }
+                    otherUse = attrGrp.getAttributeUseNoProhibited(
+                            oneAttrUse.fAttrDecl.getNamespace(),
+                            oneAttrUse.fAttrDecl.getName());
+                    if (otherUse==null) {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
                         if (idName != null) {
                             String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
@@ -599,8 +621,7 @@ abstract class XSDAbstractTraverser {
                             reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName(), idName}, child);
                         }
                     }
-                    else {
-                        // REVISIT: what if one of the attribute uses is "prohibited"
+                    else if (oneAttrUse != otherUse) {
                         String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
                         String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                         reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName()}, child);

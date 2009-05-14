@@ -68,11 +68,12 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         // duplication (or if there is that restriction is involved
         // and there's identity).
 
-        // get selector and fields
-        traverseIdentityConstraint(uniqueOrKey, uElem, schemaDoc, attrValues);
-
-        // and stuff this in the grammar
-        grammar.addIDConstraintDecl(element, uniqueOrKey);
+        // If errors occurred in traversing the identity constraint, then don't
+        // add it to the schema, to avoid errors when processing the instance.
+        if (traverseIdentityConstraint(uniqueOrKey, uElem, schemaDoc, attrValues)) {
+            // and stuff this in the grammar
+            grammar.addIDConstraintDecl(element, uniqueOrKey);
+        }
 
         // and fix up attributeChecker
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);

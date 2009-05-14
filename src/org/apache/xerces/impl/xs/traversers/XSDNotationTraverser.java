@@ -68,8 +68,10 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             return null;
         }
         
-        if (systemAttr == null && publicAttr == null)
+        if (systemAttr == null && publicAttr == null) {
             reportSchemaError("PublicSystemOnNotation", null, elmNode);
+            publicAttr = "missing";
+        }
         
         XSNotationDecl notation = new XSNotationDecl();
         notation.fName = nameAttr;

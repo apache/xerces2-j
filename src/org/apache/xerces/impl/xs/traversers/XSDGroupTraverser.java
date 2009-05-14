@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
+import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
@@ -152,7 +153,9 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             reportSchemaError("s4s-att-must-appear", new Object[]{"group (global)", "name"}, elmNode);
         }
         
-        XSGroupDecl group = null;
+        // Create the group defi up-front, so it can be passed
+        // to the traversal methods
+        XSGroupDecl group = new XSGroupDecl();
         XSParticleDecl particle = null;
         
         // must have at least one child
@@ -163,10 +166,6 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                     new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
                     elmNode);
         } else {
-            // Create the group defi up-front, so it can be passed
-            // to the traversal methods
-            group = new XSGroupDecl();
-            
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 annotation = traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
@@ -204,30 +203,31 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                         DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(l_elmChild))},
                         DOMUtil.getNextSiblingElement(l_elmChild));
             }
-            
-            // add global group declaration to the grammar
-            if (strNameAttr != null) {
-                group.fName = strNameAttr;
-                group.fTargetNamespace = schemaDoc.fTargetNamespace;
-                // TODO: if particle == null (error situation?), should we
-                //       recover by synthesizing an empty sequence?
-                if (particle != null)
-                    group.fModelGroup = (XSModelGroupImpl)particle.fValue;
-                XSObjectList annotations;
-                if (annotation != null) {
-                    annotations = new XSObjectListImpl();
-                    ((XSObjectListImpl) annotations).addXSObject(annotation);
-                } else {
-                    annotations = XSObjectListImpl.EMPTY_LIST;
-                }
-                group.fAnnotations = annotations;                
-                grammar.addGlobalGroupDecl(group);
-            }
-            else {
-                // name attribute is not there, don't return this group.
-                group = null;
-            }
         }
+        
+        // add global group declaration to the grammar
+        if (strNameAttr != null) {
+            group.fName = strNameAttr;
+            group.fTargetNamespace = schemaDoc.fTargetNamespace;
+            if (particle == null) {
+                particle = XSConstraints.getEmptySequence(); 
+            }
+            group.fModelGroup = (XSModelGroupImpl)particle.fValue;
+            XSObjectList annotations;
+            if (annotation != null) {
+                annotations = new XSObjectListImpl();
+                ((XSObjectListImpl) annotations).addXSObject(annotation);
+            } else {
+                annotations = XSObjectListImpl.EMPTY_LIST;
+            }
+            group.fAnnotations = annotations;                
+            grammar.addGlobalGroupDecl(group);
+        }
+        else {
+            // name attribute is not there, don't return this group.
+            group = null;
+        }
+
         if(group != null) { 
             // store groups redefined by restriction in the grammar so
             // that we can get at them at full-schema-checking time.

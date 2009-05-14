@@ -67,6 +67,36 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     // size of stack to hold globals:
     private final static int GLOBAL_NUM = 11;
     
+    private static XSParticleDecl fErrorContent = null;
+    private static XSWildcardDecl fErrorWildcard = null;
+    private static XSParticleDecl getErrorContent() {
+        if (fErrorContent == null) {
+            XSParticleDecl particle = new XSParticleDecl();
+            particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
+            particle.fValue = getErrorWildcard();
+            particle.fMinOccurs = 0;
+            particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+            group.fParticleCount = 1;
+            group.fParticles = new XSParticleDecl[1];
+            group.fParticles[0] = particle;
+            XSParticleDecl errorContent = new XSParticleDecl();
+            errorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            errorContent.fValue = group;
+            fErrorContent = errorContent;
+        }
+        return fErrorContent;
+    }
+    private static XSWildcardDecl getErrorWildcard() {
+        if (fErrorWildcard == null) {
+            XSWildcardDecl wildcard = new XSWildcardDecl();
+            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
+            fErrorWildcard = wildcard;
+        }
+        return fErrorWildcard;
+    }
+    
     // globals for building XSComplexTypeDecls
     private String fName = null;
     private String fTargetNamespace = null;
@@ -81,8 +111,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private boolean fIsAbstract = false;
     private XSComplexTypeDecl fComplexTypeDecl = null;
     private XSAnnotationImpl [] fAnnotations = null;
-    
-    private XSParticleDecl fEmptyParticle = null;
     
     // our own little stack to retain state when getGlobalDecls is called:
     private Object [] fGlobalStore = null;
@@ -162,13 +190,16 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                 complexTypeName, attrValues, schemaDoc, grammar);
         contentRestore();
+        // need to add the type to the grammar for later constraint checking
+        grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
+
         if (complexTypeName == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_COMPLEXTYPE, SchemaSymbols.ATT_NAME}, complexTypeNode);
+            type = null;
         } else {
             grammar.addGlobalComplexTypeDecl(type);
         }
-        // need to add the type to the grammar for later constraint checking
-        grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
+
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
         return type;
@@ -532,14 +563,16 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             
             String name = genAnonTypeName(simpleContentElement);
             fXSSimpleType = schemaFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
-            if (fXSSimpleType instanceof XSSimpleTypeDecl) {
-                ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
-            }
             try{
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
             }catch(InvalidDatatypeFacetException ex){
                 reportSchemaError(ex.getKey(), ex.getArgs(), simpleContent);
+                // Recreate the type, ignoring the facets
+                fXSSimpleType = schemaFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
+            }
+            if (fXSSimpleType instanceof XSSimpleTypeDecl) {
+                ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
             }
             
             // -----------------------------------------------------------------------
@@ -933,7 +966,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                             elem);
                 }
             }
-            else {
+            else if (existingAttrUse != oneAttrUse) {
                 if (extension) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.4",
                             new Object[]{typeName, oneAttrUse.fAttrDecl.getName()},
@@ -1040,18 +1073,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         
         if (particle == null && isMixed) {
-            if (fEmptyParticle == null) {
-                XSModelGroupImpl group = new XSModelGroupImpl();
-                group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-                group.fParticleCount = 0;
-                group.fParticles = null;
-                group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-                fEmptyParticle = new XSParticleDecl();
-                fEmptyParticle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-                fEmptyParticle.fValue = group;
-                fEmptyParticle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-            }
-            particle = fEmptyParticle;
+            particle = XSConstraints.getEmptySequence();
         }
         fParticle = particle;
         
@@ -1144,6 +1166,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         //
         fBaseType = SchemaGrammar.fAnyType;
         fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+        fXSSimpleType = null;
         fParticle = getErrorContent();
         // REVISIT: do we need to remove all attribute uses already added into
         // the attribute group? maybe it's ok to leave them there. -SG
@@ -1151,30 +1174,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         
         return;
         
-    }
-    
-    private XSParticleDecl getErrorContent() {
-        XSParticleDecl particle = new XSParticleDecl();
-        particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
-        particle.fValue = getErrorWildcard();
-        particle.fMinOccurs = 0;
-        particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-        XSModelGroupImpl group = new XSModelGroupImpl();
-        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-        group.fParticleCount = 1;
-        group.fParticles = new XSParticleDecl[1];
-        group.fParticles[0] = particle;
-        XSParticleDecl errorContent = new XSParticleDecl();
-        errorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-        errorContent.fValue = group;
-        
-        return errorContent;
-    }
-    
-    private XSWildcardDecl getErrorWildcard() {
-        XSWildcardDecl errorWildcard = new XSWildcardDecl();
-        errorWildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
-        return errorWildcard;
     }
     
     private void contentBackup() {

@@ -794,11 +794,6 @@ public class XSDHandler {
                 schemaNamespace = (String)importAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
                 if (schemaNamespace != null)
                     schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
-                // a document can't import another document with the same namespace
-                if (schemaNamespace == currSchemaInfo.fTargetNamespace) {
-                    reportSchemaError(schemaNamespace != null ? 
-                            "src-import.1.1" : "src-import.1.2", new Object [] {schemaNamespace}, child);
-                }
                 
                 // check contents and process optional annotations
                 Element importChild = DOMUtil.getFirstChildElement(child);
@@ -823,6 +818,13 @@ public class XSDHandler {
                 }
                 fAttributeChecker.returnAttrArray(importAttrs, currSchemaInfo);
                 
+                // a document can't import another document with the same namespace
+                if (schemaNamespace == currSchemaInfo.fTargetNamespace) {
+                    reportSchemaError(schemaNamespace != null ? 
+                            "src-import.1.1" : "src-import.1.2", new Object [] {schemaNamespace}, child);
+                    continue;
+                }
+
                 // if this namespace has not been imported by this document,
                 //  then import if multiple imports support is enabled.
                 if(currSchemaInfo.isAllowedNS(schemaNamespace)) {
