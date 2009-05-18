@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -588,6 +589,31 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
     
     private ListIterator listIterator0(int index) {
         return new XSNamespaceItemListIterator(index);
+    }
+    
+    public Object[] toArray() {
+        Object[] a = new Object[fGrammarCount];
+        toArray0(a);
+        return a;
+    }
+    
+    public Object[] toArray(Object[] a) {
+        if (a.length < fGrammarCount) {
+            Class arrayClass = a.getClass();
+            Class componentType = arrayClass.getComponentType();
+            a = (Object[]) Array.newInstance(componentType, fGrammarCount);
+        }
+        toArray0(a);
+        if (a.length > fGrammarCount) {
+            a[fGrammarCount] = null;
+        }
+        return a;
+    }
+    
+    private void toArray0(Object[] a) {
+        if (fGrammarCount > 0) {
+            System.arraycopy(fGrammarList, 0, a, 0, fGrammarCount);
+        }
     }
     
     private final class XSNamespaceItemListIterator implements ListIterator {
