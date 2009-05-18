@@ -18,6 +18,9 @@
 package org.apache.xerces.impl.xs;
 
 import java.util.AbstractList;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -566,6 +569,65 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
 
     public int size() {
         return getLength();
+    }
+    
+    public Iterator iterator() {
+        return listIterator0(0);
+    }
+    
+    public ListIterator listIterator() {
+        return listIterator0(0);
+    }
+    
+    public ListIterator listIterator(int index) {
+        if (index >= 0 && index < fGrammarCount) {
+            return listIterator0(index);
+        }
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+    
+    private ListIterator listIterator0(int index) {
+        return new XSNamespaceItemListIterator(index);
+    }
+    
+    private final class XSNamespaceItemListIterator implements ListIterator {
+        private int index;
+        public XSNamespaceItemListIterator(int index) {
+            this.index = index;
+        }
+        public boolean hasNext() {
+            return (index < fGrammarCount);
+        }
+        public Object next() {
+            if (index < fGrammarCount) {
+                return fGrammarList[index++];
+            }
+            throw new NoSuchElementException();
+        }
+        public boolean hasPrevious() {
+            return (index > 0);
+        }
+        public Object previous() {
+            if (index > 0) {
+                return fGrammarList[--index];
+            }
+            throw new NoSuchElementException();
+        }
+        public int nextIndex() {
+            return index;
+        }
+        public int previousIndex() {
+            return index - 1;
+        }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        public void set(Object o) {
+            throw new UnsupportedOperationException();
+        }
+        public void add(Object o) {
+            throw new UnsupportedOperationException();
+        }
     }
 
 } // class XSModelImpl
