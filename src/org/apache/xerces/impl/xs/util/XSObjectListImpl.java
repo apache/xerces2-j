@@ -118,7 +118,7 @@ public class XSObjectListImpl extends AbstractList implements XSObjectList {
     }
 
     // clear this object
-    public void clear() {
+    public void clearXSObjectList() {
         for (int i=0; i<fLength; i++) {
             fArray[i] = null;
         }

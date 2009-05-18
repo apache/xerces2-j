@@ -570,7 +570,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         fUPACMValidator = null;
         if(fAnnotations != null) {
             // help out the garbage collector
-            fAnnotations.clear();
+            fAnnotations.clearXSObjectList();
         }
         fAnnotations = null;
         if (fAssertions != null) {
