@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.lang.reflect.Array;
 import java.util.AbstractList;
 
 import org.apache.xerces.xs.LSInputList;
@@ -91,6 +92,31 @@ public final class LSInputListImpl extends AbstractList implements LSInputList {
 
     public int size() {
         return getLength();
+    }
+    
+    public Object[] toArray() {
+        Object[] a = new Object[fLength];
+        toArray0(a);
+        return a;
+    }
+    
+    public Object[] toArray(Object[] a) {
+        if (a.length < fLength) {
+            Class arrayClass = a.getClass();
+            Class componentType = arrayClass.getComponentType();
+            a = (Object[]) Array.newInstance(componentType, fLength);
+        }
+        toArray0(a);
+        if (a.length > fLength) {
+            a[fLength] = null;
+        }
+        return a;
+    }
+    
+    private void toArray0(Object[] a) {
+        if (fLength > 0) {
+            System.arraycopy(fArray, 0, a, 0, fLength);
+        }
     }
     
 } // LSInputListImpl

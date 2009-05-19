@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Vector;
 
@@ -126,6 +127,37 @@ public final class StringListImpl extends AbstractList implements StringList {
 
     public int size() {
         return getLength();
+    }
+    
+    public Object[] toArray() {
+        if (fVector != null) {
+            return fVector.toArray();
+        }
+        Object[] a = new Object[fLength];
+        toArray0(a);
+        return a;
+    }
+    
+    public Object[] toArray(Object[] a) {
+        if (fVector != null) {
+            return fVector.toArray(a);
+        }
+        if (a.length < fLength) {
+            Class arrayClass = a.getClass();
+            Class componentType = arrayClass.getComponentType();
+            a = (Object[]) Array.newInstance(componentType, fLength);
+        }
+        toArray0(a);
+        if (a.length > fLength) {
+            a[fLength] = null;
+        }
+        return a;
+    }
+    
+    private void toArray0(Object[] a) {
+        if (fLength > 0) {
+            System.arraycopy(fArray, 0, a, 0, fLength);
+        }
     }
 
 } // class StringListImpl
