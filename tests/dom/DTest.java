@@ -627,7 +627,7 @@ public void testAttr(org.w3c.dom.Document document)
 	}
 	
 	attributeNode.setValue(null);
-	if (! attributeNode.getValue().equals(""))
+	if (attributeNode.getValue().length() != 0)
 	{
 		System.out.println("Warning!!! Attr's 'setValue' to 'null' method failed to work properly!");
 		OK = false;
