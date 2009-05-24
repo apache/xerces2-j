@@ -400,7 +400,7 @@ public class TreeWalkerView
             if (nameNodeFilter==null) {
                 nameNodeFilter = new NameNodeFilter();
             }
-            if (nameText.equals("")) {
+            if (nameText.length() == 0) {
                 setMessage("NodeNameFilter name is \"\". Assuming null.");
                 nameText = null;
             }
