@@ -279,7 +279,7 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
         messageText.selectAll();
         messageText.cut();
 
-        if (filename == null || filename.equals("")) {
+        if (filename == null || filename.length() == 0) {
             messageText.setForeground(Color.red);
             messageText.append("No input XML filename specified:"+filename+"\n");
             return;
@@ -330,7 +330,7 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
     public Document getRoot(String filename) {
         if (DEBUG) System.out.println("START getRoot:"+filename);
 
-        if (filename == null || filename.equals(""))
+        if (filename == null || filename.length() == 0)
         return null;
 
         try {
@@ -360,7 +360,7 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
     synchronized void readXMLFile(String filename, JTextArea ta) {
 
         if (DEBUG) System.out.println("START readXMLFile"+filename);
-        if (filename == null || filename.equals(""))
+        if (filename == null || filename.length() == 0)
             return;
         InputStream fis = null;
         BufferedReader dis = null;

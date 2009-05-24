@@ -1986,7 +1986,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         String elementName,
         Vector attributes,
         XMLString elementValue) {
-        if (elementValue == null || elementValue.equals("")) {
+        if (elementValue == null || elementValue.length == 0) {
             if (attributes == null) {
                 attributes = new Vector();
             }
