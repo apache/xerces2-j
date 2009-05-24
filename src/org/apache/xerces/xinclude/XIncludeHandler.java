@@ -2136,7 +2136,7 @@ public class XIncludeHandler
             return relativeURI;
         }
         else {
-            if (relativeURI.equals("")) {
+            if (relativeURI.length() == 0) {
                 relativeURI = fCurrentBaseURI.getLiteralSystemId();
             }
 
@@ -2145,7 +2145,7 @@ public class XIncludeHandler
                     fParentRelativeURI =
                         fParentXIncludeHandler.getRelativeBaseURI();
                 }
-                if (fParentRelativeURI.equals("")) {
+                if (fParentRelativeURI.length() == 0) {
                     return relativeURI;
                 }
 

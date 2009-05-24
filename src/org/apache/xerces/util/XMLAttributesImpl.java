@@ -175,7 +175,7 @@ public class XMLAttributesImpl
 
         int index;
         if (fLength < SIZE_LIMIT) {
-            index = name.uri != null && !name.uri.equals("") 
+            index = name.uri != null && name.uri.length() != 0
                 ? getIndexFast(name.uri, name.localpart)
                 : getIndexFast(name.rawname);
 

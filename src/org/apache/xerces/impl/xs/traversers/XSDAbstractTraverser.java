@@ -159,7 +159,7 @@ abstract class XSDAbstractTraverser {
                     localpart = rawname.substring(colonIndex+1);
                 }
                 String uri = schemaDoc.fNamespaceSupport.getURI(fSymbolTable.addSymbol(prefix));
-                if (!annotationDecl.getAttributeNS(uri, localpart).equals("")) {
+                if (annotationDecl.getAttributeNS(uri, localpart).length() != 0) {
                     i++; // skip the next value, too
                     continue;
                 }

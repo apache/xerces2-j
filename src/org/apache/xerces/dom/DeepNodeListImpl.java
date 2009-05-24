@@ -101,7 +101,7 @@ public class DeepNodeListImpl
     public DeepNodeListImpl(NodeImpl rootNode,
                             String nsName, String tagName) {
         this(rootNode, tagName);
-        this.nsName = (nsName != null && !nsName.equals("")) ? nsName : null;
+        this.nsName = (nsName != null && nsName.length() != 0) ? nsName : null;
         enableNS = true;
     }
     
