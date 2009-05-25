@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
@@ -262,7 +263,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
      */
     public ShortList getItemValueTypes() {
-        return this.fItemValueTypes;
+        return this.fItemValueTypes != null ? this.fItemValueTypes : ShortListImpl.EMPTY_LIST;
     }
 
     /**
