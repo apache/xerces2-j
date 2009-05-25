@@ -80,8 +80,10 @@ public class ValidatedInfo {
     public void reset() {
         this.normalizedValue = null;
         this.actualValue = null;
+        this.actualValueType = XSConstants.UNAVAILABLE_DT;
         this.memberType = null;
         this.memberTypes = null;
+        this.itemValueTypes = null;
     }
     
     /**
@@ -89,10 +91,12 @@ public class ValidatedInfo {
      * value, use toString; otherwise, use the normalized value.
      */
     public String stringValue() {
-        if (actualValue == null)
+        if (actualValue == null) {
             return normalizedValue;
-        else
+        }
+        else {
             return actualValue.toString();
+        }
     }
     
     /**
