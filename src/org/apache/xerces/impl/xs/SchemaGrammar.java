@@ -248,7 +248,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 // xsi:schemaLocation
                 name = SchemaSymbols.XSI_SCHEMALOCATION;
                 tns = SchemaSymbols.URI_XSI;
-                type = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI, null);
+                type = schemaFactory.createTypeList("#AnonType_schemaLocation", SchemaSymbols.URI_XSI, (short)0, anyURI, null);
+                if (type instanceof XSSimpleTypeDecl) {
+                    ((XSSimpleTypeDecl)type).setAnonymous(true);
+                }
                 fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
                 
                 // xsi:noNamespaceSchemaLocation
