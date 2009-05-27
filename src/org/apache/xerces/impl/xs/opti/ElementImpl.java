@@ -186,7 +186,7 @@ public class ElementImpl extends DefaultElement {
     
     public String getAttributeNS(String namespaceURI, String localName) {
         for (int i=0; i<attrs.length; i++) {
-            if (attrs[i].getLocalName().equals(localName) && attrs[i].getNamespaceURI().equals(namespaceURI)) {
+            if (attrs[i].getLocalName().equals(localName) && nsEquals(attrs[i].getNamespaceURI(), namespaceURI)) {
                 return attrs[i].getValue();
             }
         }
@@ -196,7 +196,7 @@ public class ElementImpl extends DefaultElement {
     
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
         for (int i=0; i<attrs.length; i++) {
-            if (attrs[i].getName().equals(localName) && attrs[i].getNamespaceURI().equals(namespaceURI)) {
+            if (attrs[i].getName().equals(localName) && nsEquals(attrs[i].getNamespaceURI(), namespaceURI)) {
                 return attrs[i];
             }
         }
@@ -216,7 +216,7 @@ public class ElementImpl extends DefaultElement {
     
     public boolean hasAttributeNS(String namespaceURI, String localName) {
         for (int i=0; i<attrs.length; i++) {
-            if (attrs[i].getName().equals(localName) && attrs[i].getNamespaceURI().equals(namespaceURI)) {
+            if (attrs[i].getName().equals(localName) && nsEquals(attrs[i].getNamespaceURI(), namespaceURI)) {
                 return true;
             }
         }
@@ -255,4 +255,17 @@ public class ElementImpl extends DefaultElement {
     public String getSyntheticAnnotation() {
         return fSyntheticAnnotation;
     }
+    
+    /**
+     * Compares two namespace URIs with an extra case for null entries
+     */
+    private static boolean nsEquals(String nsURI_1, String nsURI_2) {
+        if (nsURI_1 == null) {
+            return (nsURI_2 == null);
+        }
+        else {
+            return nsURI_1.equals(nsURI_2);
+        }
+    }
+    
 }
