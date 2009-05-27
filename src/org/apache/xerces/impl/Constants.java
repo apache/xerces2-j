@@ -277,6 +277,9 @@ public final class Constants {
     /** Honour all schemaLocations feature ("honour-all-schemaLocations"). */
     public static final String HONOUR_ALL_SCHEMALOCATIONS_FEATURE = "honour-all-schemaLocations";
     
+    /** Namespace growth feature ("namespace-growth"). */
+    public static final String NAMESPACE_GROWTH_FEATURE = "namespace-growth";
+    
     /** XInclude processing feature ("xinclude"). */
     public static final String XINCLUDE_FEATURE = "xinclude";
     
@@ -514,6 +517,7 @@ public final class Constants {
             ID_IDREF_CHECKING_FEATURE,
             IDC_CHECKING_FEATURE,
             UNPARSED_ENTITY_CHECKING_FEATURE,
+            NAMESPACE_GROWTH_FEATURE,
     };
     
     /** Xerces properties. */

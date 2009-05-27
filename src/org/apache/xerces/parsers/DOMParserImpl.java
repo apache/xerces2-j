@@ -114,6 +114,10 @@ public class DOMParserImpl
     protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+
     // internal properties
     protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -451,6 +455,9 @@ public class DOMParserImpl
                     if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
                         normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
                     }
+                    else if (name.equals(NAMESPACE_GROWTH)) {
+                        normalizedName = NAMESPACE_GROWTH;
+                    }
                     else {
                         normalizedName = name.toLowerCase(Locale.ENGLISH);
                     }
@@ -586,6 +593,9 @@ public class DOMParserImpl
                     if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
                         normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
                     }
+                    else if (name.equals(NAMESPACE_GROWTH)) {
+                        normalizedName = NAMESPACE_GROWTH;
+                    }
                     fConfiguration.getFeature(normalizedName);
                     throw newTypeMismatchError(name);
                     
@@ -716,6 +726,9 @@ public class DOMParserImpl
             if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
                 normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
             }
+            else if (name.equals(NAMESPACE_GROWTH)) {
+                normalizedName = NAMESPACE_GROWTH;
+            }
             else {
                 normalizedName = name.toLowerCase(Locale.ENGLISH);
             }
@@ -778,6 +791,9 @@ public class DOMParserImpl
                 if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
                     normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
                 }
+                else if (name.equalsIgnoreCase(NAMESPACE_GROWTH)) {
+                    normalizedName = NAMESPACE_GROWTH;
+                } 
                 else {
                     normalizedName = name.toLowerCase(Locale.ENGLISH);
                 }

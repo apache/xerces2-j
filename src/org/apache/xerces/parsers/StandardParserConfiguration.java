@@ -104,6 +104,10 @@ public class StandardParserConfiguration
     protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+
     /** Feature identifier: whether to ignore xsi:type attributes until a global element declaration is encountered */
     protected static final String IGNORE_XSI_TYPE =
         Constants.XERCES_FEATURE_PREFIX + Constants.IGNORE_XSI_TYPE_FEATURE;
@@ -210,6 +214,7 @@ public class StandardParserConfiguration
             GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS,
             HONOUR_ALL_SCHEMALOCATIONS,
+            NAMESPACE_GROWTH,
             // NOTE: These shouldn't really be here but since the XML Schema
             //       validator is constructed dynamically, its recognized
             //       features might not have been set and it would cause a
@@ -230,6 +235,7 @@ public class StandardParserConfiguration
         setFeature(GENERATE_SYNTHETIC_ANNOTATIONS, false);
         setFeature(VALIDATE_ANNOTATIONS, false);
         setFeature(HONOUR_ALL_SCHEMALOCATIONS, false);
+        setFeature(NAMESPACE_GROWTH, false);
         
         setFeature(IGNORE_XSI_TYPE, false);
         setFeature(ID_IDREF_CHECKING, true);

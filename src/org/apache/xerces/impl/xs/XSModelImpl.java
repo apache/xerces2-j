@@ -392,6 +392,25 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
     }
 
     /**
+     * Convenience method. Returns a top-level simple or complex type
+     * definition.
+     * @param name The name of the definition.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @param loc The schema location where the component was defined
+     * @return An <code>XSTypeDefinition</code> or null if such definition
+     *   does not exist.
+     */
+    public XSTypeDefinition getTypeDefinition(String name,
+                                              String namespace,
+                                              String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getGlobalTypeDecl(name, loc);
+    }
+
+    /**
      * Convenience method. Returns a top-level attribute declaration.
      * @param name The name of the declaration.
      * @param namespace The namespace of the definition, otherwise null.
@@ -405,6 +424,24 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
             return null;
         }
         return (XSAttributeDeclaration)sg.fGlobalAttrDecls.get(name);
+    }
+
+    /**
+     * Convenience method. Returns a top-level attribute declaration.
+     * @param name The name of the declaration.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @param loc The schema location where the component was defined
+     * @return A top-level attribute declaration or null if such declaration
+     *   does not exist.
+     */
+    public XSAttributeDeclaration getAttributeDeclaration(String name,
+                                                   String namespace,
+                                                   String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getGlobalAttributeDecl(name, loc);
     }
 
     /**
@@ -424,6 +461,24 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
     }
 
     /**
+     * Convenience method. Returns a top-level element declaration.
+     * @param name The name of the declaration.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @param loc The schema location where the component was defined
+     * @return A top-level element declaration or null if such declaration
+     *   does not exist.
+     */
+    public XSElementDeclaration getElementDeclaration(String name,
+                                               String namespace,
+                                               String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getGlobalElementDecl(name, loc);
+    }
+
+    /**
      * Convenience method. Returns a top-level attribute group definition.
      * @param name The name of the definition.
      * @param namespace The namespace of the definition, otherwise null.
@@ -437,6 +492,24 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
             return null;
         }
         return (XSAttributeGroupDefinition)sg.fGlobalAttrGrpDecls.get(name);
+    }
+    
+    /**
+     * Convenience method. Returns a top-level attribute group definition.
+     * @param name The name of the definition.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @param loc The schema location where the component was defined
+     * @return A top-level attribute group definition or null if such
+     *   definition does not exist.
+     */
+    public XSAttributeGroupDefinition getAttributeGroup(String name,
+                                                        String namespace,
+                                                        String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getGlobalAttributeGroupDecl(name, loc);
     }
 
     /**
@@ -455,6 +528,25 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
         }
         return (XSModelGroupDefinition)sg.fGlobalGroupDecls.get(name);
     }
+    
+    /**
+     * Convenience method. Returns a top-level model group definition.
+     *
+     * @param name      The name of the definition.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @param loc The schema location where the component was defined
+     * @return A top-level model group definition definition or null if such
+     *         definition does not exist.
+     */
+    public XSModelGroupDefinition getModelGroupDefinition(String name,
+                                                          String namespace,
+                                                          String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getGlobalGroupDecl(name, loc);
+    }
 
 
     /**
@@ -467,6 +559,16 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
             return null;
         }
         return (XSNotationDeclaration)sg.fGlobalNotationDecls.get(name);
+    }
+
+    public XSNotationDeclaration getNotationDeclaration(String name,
+                                                 String namespace,
+                                                 String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getGlobalNotationDecl(name, loc);
     }
 
     /**

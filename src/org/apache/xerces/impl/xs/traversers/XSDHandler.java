@@ -140,6 +140,10 @@ public class XSDHandler {
     protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
       Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
     
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+      Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+    
     /** Feature identifier: namespace prefixes. */
     private static final String NAMESPACE_PREFIXES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
@@ -324,6 +328,9 @@ public class XSDHandler {
     
     //handle multiple import feature
     private boolean fHonourAllSchemaLocations = false;
+    
+    //handle namespace growth feature
+    boolean fNamespaceGrowth = false;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -440,14 +447,28 @@ public class XSDHandler {
         // no namespace schema.
         if (referType != XSDDescription.CONTEXT_PREPARSE){
             // first try to find it in the bucket/pool, return if one is found
-            if(fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT && isExistingGrammar(desc)) {
+            if (fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT && isExistingGrammar(desc, fNamespaceGrowth)) {
                 grammar = fGrammarBucket.getGrammar(desc.getTargetNamespace());
             }
             else {
-                grammar = findGrammar(desc);
+                grammar = findGrammar(desc, fNamespaceGrowth);
             }
-            if (grammar != null)
-                return grammar;
+            if (grammar != null) {
+                if (!fNamespaceGrowth) {
+                    return grammar;
+                }
+                else {
+                    try {
+                        if (grammar.getDocumentLocations().contains(XMLEntityManager.expandSystemId(is.getSystemId(), is.getBaseSystemId(), false))) {
+                            return grammar; 
+                        }
+                    }
+                    catch (MalformedURIException e) {
+                        //REVISIT: return the grammar?
+                    }
+                }
+            }
+
             schemaNamespace = desc.getTargetNamespace();
             // handle empty string URI as null
             if (schemaNamespace != null) {
@@ -500,10 +521,14 @@ public class XSDHandler {
             else {
                 schemaNamespace = null;
             }
-            grammar = findGrammar(desc);
-            if (grammar != null)
-                return grammar;
+            grammar = findGrammar(desc, fNamespaceGrowth);
             String schemaId = XMLEntityManager.expandSystemId(is.getSystemId(), is.getBaseSystemId(), false);
+            if (grammar != null) {
+                if (!fNamespaceGrowth || grammar.getDocumentLocations().contains(schemaId)) {
+                    return grammar; 
+                }
+            }
+
             XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
             fTraversed.put(key, schemaRoot);
             if (schemaId != null) {
@@ -515,7 +540,7 @@ public class XSDHandler {
         // all traversers and clear all registries
         prepareForTraverse();
         
-        fRoot = constructTrees(schemaRoot, is.getSystemId(), desc);
+        fRoot = constructTrees(schemaRoot, is.getSystemId(), desc, grammar != null);
         if (fRoot == null) {
             return null;
         }
@@ -620,7 +645,7 @@ public class XSDHandler {
      * grammar pool. If a grammar is found in the pool, then add it (and all
      * imported ones) into the bucket.
      */
-    protected SchemaGrammar findGrammar(XSDDescription desc) {
+    protected SchemaGrammar findGrammar(XSDDescription desc, boolean ignoreConflict) {
         SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
         if (sg == null) {
             if (fGrammarPool != null) {
@@ -628,7 +653,7 @@ public class XSDHandler {
                 if (sg != null) {
                     // put this grammar into the bucket, along with grammars
                     // imported by it (directly or indirectly)
-                    if (!fGrammarBucket.putGrammar(sg, true)) {
+                    if (!fGrammarBucket.putGrammar(sg, true, ignoreConflict)) {
                         // REVISIT: a conflict between new grammar(s) and grammars
                         // in the bucket. What to do? A warning? An exception?
                         reportSchemaWarning("GrammarConflict", null, null);
@@ -669,7 +694,7 @@ public class XSDHandler {
     // depends on.
     // It also makes sure the targetNamespace of the schema it was
     // called to parse is correct.
-    protected XSDocumentInfo constructTrees(Element schemaRoot, String locationHint, XSDDescription desc) {
+    protected XSDocumentInfo constructTrees(Element schemaRoot, String locationHint, XSDDescription desc, boolean nsCollision) {
         if (schemaRoot == null) return null;
         String callerTNS = desc.getTargetNamespace();
         short referType = desc.getContextType();
@@ -749,12 +774,28 @@ public class XSDHandler {
         
         SchemaGrammar sg = null;
         
-        if (referType == XSDDescription.CONTEXT_INCLUDE ||
+        // we have a namespace collision
+        if (nsCollision) {
+            SchemaGrammar sg2 = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
+            if (sg2.isImmutable()) {
+                sg = new SchemaGrammar(sg2);
+                fGrammarBucket.putGrammar(sg);
+                // update all the grammars in the bucket to point to the new grammar.
+                updateImportListWith(sg);
+            }
+            else {
+                sg = sg2;
+            }
+            
+            // update import list of the new grammar
+            updateImportListFor(sg);
+        }
+        else if (referType == XSDDescription.CONTEXT_INCLUDE ||
                 referType == XSDDescription.CONTEXT_REDEFINE) {
             sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
         }
         else if(fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT) {
-            sg = findGrammar(desc);
+            sg = findGrammar(desc, false);
             if(sg == null) {
                 sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
                 fGrammarBucket.putGrammar(sg);
@@ -782,6 +823,7 @@ public class XSDHandler {
             String localName = DOMUtil.getLocalName(child);
             
             short refType = -1;
+            boolean importCollision = false;
             
             if (localName.equals(SchemaSymbols.ELT_ANNOTATION))
                 continue;
@@ -828,7 +870,7 @@ public class XSDHandler {
                 // if this namespace has not been imported by this document,
                 //  then import if multiple imports support is enabled.
                 if(currSchemaInfo.isAllowedNS(schemaNamespace)) {
-                    if(!fHonourAllSchemaLocations)
+                    if(!fHonourAllSchemaLocations && !fNamespaceGrowth)
                         continue;
                 }
                 else  {
@@ -860,15 +902,33 @@ public class XSDHandler {
                 
                 // if a grammar with the same namespace and location exists (or being
                 // built), ignore this one (don't traverse it).
-                if ((!fHonourAllSchemaLocations && findGrammar(fSchemaGrammarDescription) != null) || isExistingGrammar(fSchemaGrammarDescription))
-                    continue;
+                SchemaGrammar isg = findGrammar(fSchemaGrammarDescription, fNamespaceGrowth);
+                if (isg != null) {
+                    if (fNamespaceGrowth) {
+                        try {
+                            if (isg.getDocumentLocations().contains(XMLEntityManager.expandSystemId(schemaHint, fSchemaGrammarDescription.getBaseSystemId(), false))) {
+                                continue;
+                            }
+                            else {
+                                importCollision = true;
+                            }
+                        } 
+                        catch (MalformedURIException e) {
+                        }
+                    }
+                    else if (!fHonourAllSchemaLocations || isExistingGrammar(fSchemaGrammarDescription, false)) {
+                        continue;
+                    }
+                }
+                //if ((!fHonourAllSchemaLocations && findGrammar(fSchemaGrammarDescription) != null) || isExistingGrammar(fSchemaGrammarDescription))
+                //    continue;
+
                 // If "findGrammar" returns a grammar, then this is not the
                 // the first time we see a location for a given namespace.
                 // Don't consult the location pair hashtable in this case,
                 // otherwise the location will be ignored because it'll get
                 // resolved to the same location as the first hint.
-                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child,
-                                              findGrammar(fSchemaGrammarDescription) == null);
+                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child, isg == null);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                     (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -961,7 +1021,7 @@ public class XSDHandler {
                 newSchemaInfo = newSchemaRoot == null ? null : (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
             }
             else {
-               	newSchemaInfo = constructTrees(newSchemaRoot, schemaHint, fSchemaGrammarDescription);
+               	newSchemaInfo = constructTrees(newSchemaRoot, schemaHint, fSchemaGrammarDescription, importCollision);
             }
             
             if (localName.equals(SchemaSymbols.ELT_REDEFINE) &&
@@ -981,10 +1041,10 @@ public class XSDHandler {
         return currSchemaInfo;
     } // end constructTrees
     
-    private boolean isExistingGrammar(XSDDescription desc) {
+    private boolean isExistingGrammar(XSDDescription desc, boolean ignoreConflict) {
         SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
         if (sg == null) {
-            return findGrammar(desc) != null;
+            return findGrammar(desc, ignoreConflict) != null;
         }
         else if (sg.isImmutable()) {
             return true;
@@ -998,7 +1058,56 @@ public class XSDHandler {
             }
         }
     }
-    
+
+    /**
+     * Namespace growth
+     * 
+     * Go through the import list of a given grammar and for each imported
+     * grammar, check to see if the grammar bucket has a newer version.
+     * If a new instance is found, we update the import list with the
+     * newer version.
+     */
+    private void updateImportListFor(SchemaGrammar grammar) {
+        Vector importedGrammars = grammar.getImportedGrammars();
+        if (importedGrammars != null) {
+            for (int i=0; i<importedGrammars.size(); i++) {
+                SchemaGrammar isg1 = (SchemaGrammar) importedGrammars.elementAt(i);
+                SchemaGrammar isg2 = fGrammarBucket.getGrammar(isg1.getTargetNamespace());
+                if (isg1 != isg2) {
+                    importedGrammars.set(i, isg2);
+                }
+            }
+        }
+    }
+
+    /**
+     * Namespace growth
+     * 
+     * Go throuth the grammar bucket, and for each grammar in the bucket
+     * check the import list. If there exists a grammar in import list
+     * that has the same namespace as newGrammar, but a different instance,
+     * then update the import list and replace the old grammar instance with
+     * the new one
+     */
+    private void updateImportListWith(SchemaGrammar newGrammar) {
+        SchemaGrammar[] schemaGrammars = fGrammarBucket.getGrammars();
+        for (int i = 0; i < schemaGrammars.length; ++i) {
+            SchemaGrammar sg = schemaGrammars[i];
+            if (sg != newGrammar) {
+                Vector importedGrammars = sg.getImportedGrammars();
+                for (int j=0; j<importedGrammars.size(); j++) {
+                    SchemaGrammar isg = (SchemaGrammar) importedGrammars.elementAt(j);
+                    if (isg.getTargetNamespace().equals(newGrammar.getTargetNamespace())) {
+                        if (isg != newGrammar) {
+                            importedGrammars.set(j, newGrammar);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     // This method builds registries for all globally-referenceable
     // names.  A registry will be built for each symbol space defined
     // by the spec.  It is also this method's job to rename redefined
@@ -1362,41 +1471,29 @@ public class XSDHandler {
                 reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
             return null;
         }
-        
+
         // if there is such grammar, check whether the requested component is in the grammar
-        Object retObj = null;
-        switch (declType) {
-        case ATTRIBUTE_TYPE :
-            retObj = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
-            break;
-        case ATTRIBUTEGROUP_TYPE :
-            retObj = sGrammar.getGlobalAttributeGroupDecl(declToTraverse.localpart);
-            break;
-        case ELEMENT_TYPE :
-            retObj = sGrammar.getGlobalElementDecl(declToTraverse.localpart);
-            break;
-        case GROUP_TYPE :
-            retObj = sGrammar.getGlobalGroupDecl(declToTraverse.localpart);
-            break;
-        case IDENTITYCONSTRAINT_TYPE :
-            retObj = sGrammar.getIDConstraintDecl(declToTraverse.localpart);
-            break;
-        case NOTATION_TYPE :
-            retObj = sGrammar.getGlobalNotationDecl(declToTraverse.localpart);
-            break;
-        case TYPEDECL_TYPE :
-            retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
-            break;
-        }
+        Object retObj = getGlobalDeclFromGrammar(sGrammar, declType, declToTraverse.localpart);
         
         // if the component is parsed, return it
-        if (retObj != null)
-            return retObj;
-        
+        if (!fNamespaceGrowth) {
+            if (retObj != null) {
+                return retObj;
+            }
+        }
+        // namespace growth is allowed, use schema location to get global component
+        else if (declToTraverse.uri.equals(currSchema.fTargetNamespace)) {
+            String schemaLoc = (String) fDoc2SystemId.get(currSchema.fSchemaElement);
+            Object retObj2 = getGlobalDeclFromGrammar(sGrammar, declType, declToTraverse.localpart, schemaLoc);
+            if (retObj2 != null) {
+                return retObj2;
+            }
+        }
+
         XSDocumentInfo schemaWithDecl = null;
         Element decl = null;
         XSDocumentInfo declDoc = null;
-        
+
         // the component is not parsed, try to find a DOM element for it
         String declKey = declToTraverse.uri == null? ","+declToTraverse.localpart:
             declToTraverse.uri+","+declToTraverse.localpart;
@@ -1432,37 +1529,111 @@ public class XSDHandler {
         default:
             reportSchemaError("Internal-Error", new Object [] {"XSDHandler asked to locate component of type " + declType + "; it does not recognize this type!"}, elmNode);
         }
-        
+
         // no DOM element found, so the component can't be located
         if (decl == null) {
-            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
-            return null;
+            if (retObj == null) {
+                reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
+            }
+            return retObj;
         }
-        
+
         // get the schema doc containing the component to be parsed
         // it should always return non-null value, but since null-checking
         // comes for free, let's be safe and check again
         schemaWithDecl = findXSDocumentForDecl(currSchema, decl, declDoc);
         if (schemaWithDecl == null) {
             // cannot get to this schema from the one containing the requesting decl
-            String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
-            reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaElement), declToTraverse.uri, declToTraverse.rawname}, elmNode);
-            return null;
+            if (retObj == null) {
+                String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
+                reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaElement), declToTraverse.uri, declToTraverse.rawname}, elmNode);
+            }
+            return retObj;
         }
+
         // a component is hidden, meaning either it's traversed, or being traversed.
         // but we didn't find it in the grammar, so it's the latter case, and
         // a circular reference. error!
         if (DOMUtil.isHidden(decl, fHiddenNodes)) {
-            String code = CIRCULAR_CODES[declType];
-            if (declType == TYPEDECL_TYPE) {
-                if (SchemaSymbols.ELT_COMPLEXTYPE.equals(DOMUtil.getLocalName(decl)))
-                    code = "ct-props-correct.3";
+            if (retObj == null) {
+                String code = CIRCULAR_CODES[declType];
+                if (declType == TYPEDECL_TYPE) {
+                    if (SchemaSymbols.ELT_COMPLEXTYPE.equals(DOMUtil.getLocalName(decl))) {
+                        code = "ct-props-correct.3";
+                    }
+                }
+                // decl must not be null if we're here...
+                reportSchemaError(code, new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart}, elmNode);
             }
-            // decl must not be null if we're here...
-            reportSchemaError(code, new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart}, elmNode);
-            return null;
+            return retObj;
         }
-        
+
+        return traverseGlobalDecl(declType, decl, schemaWithDecl, sGrammar);
+    } // getGlobalDecl(XSDocumentInfo, int, QName):  Object
+
+    protected Object getGlobalDeclFromGrammar(SchemaGrammar sGrammar, int declType, String localpart) {
+        Object retObj = null;
+
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            retObj = sGrammar.getGlobalAttributeDecl(localpart);
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            retObj = sGrammar.getGlobalAttributeGroupDecl(localpart);
+            break;
+        case ELEMENT_TYPE :
+            retObj = sGrammar.getGlobalElementDecl(localpart);
+            break;
+        case GROUP_TYPE :
+            retObj = sGrammar.getGlobalGroupDecl(localpart);
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            retObj = sGrammar.getIDConstraintDecl(localpart);
+            break;
+        case NOTATION_TYPE :
+            retObj = sGrammar.getGlobalNotationDecl(localpart);
+            break;
+        case TYPEDECL_TYPE :
+            retObj = sGrammar.getGlobalTypeDecl(localpart);
+            break;
+        }
+
+        return retObj;
+    }
+
+    protected Object getGlobalDeclFromGrammar(SchemaGrammar sGrammar, int declType, String localpart, String schemaLoc) {
+        Object retObj = null;
+
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            retObj = sGrammar.getGlobalAttributeDecl(localpart, schemaLoc);
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            retObj = sGrammar.getGlobalAttributeGroupDecl(localpart, schemaLoc);
+            break;
+        case ELEMENT_TYPE :
+            retObj = sGrammar.getGlobalElementDecl(localpart, schemaLoc);
+            break;
+        case GROUP_TYPE :
+            retObj = sGrammar.getGlobalGroupDecl(localpart, schemaLoc);
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            retObj = sGrammar.getIDConstraintDecl(localpart, schemaLoc);
+            break;
+        case NOTATION_TYPE :
+            retObj = sGrammar.getGlobalNotationDecl(localpart, schemaLoc);
+            break;
+        case TYPEDECL_TYPE :
+            retObj = sGrammar.getGlobalTypeDecl(localpart, schemaLoc);
+            break;
+        }
+
+        return retObj;
+    }
+
+    protected Object traverseGlobalDecl(int declType, Element decl, XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
+        Object retObj = null;
+
         DOMUtil.setHidden(decl, fHiddenNodes);
         SchemaNamespaceSupport nsSupport = null;
         // if the parent is <redefine> use the namespace delcs for it.
@@ -1471,43 +1642,49 @@ public class XSDHandler {
             nsSupport = (SchemaNamespaceSupport)fRedefine2NSSupport.get(parent);
         // back up the current SchemaNamespaceSupport, because we need to provide
         // a fresh one to the traverseGlobal methods.
-        schemaWithDecl.backupNSSupport(nsSupport);
-        
+        schemaDoc.backupNSSupport(nsSupport);
+
         // traverse the referenced global component
         switch (declType) {
+        case TYPEDECL_TYPE :
+            if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+                retObj = fComplexTypeTraverser.traverseGlobal(decl, schemaDoc, grammar);
+            }
+            else {
+                retObj = fSimpleTypeTraverser.traverseGlobal(decl, schemaDoc, grammar);
+            }
+            break;
         case ATTRIBUTE_TYPE :
-            retObj = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            retObj = fAttributeTraverser.traverseGlobal(decl, schemaDoc, grammar);
+            break;            
+        case ELEMENT_TYPE :
+            retObj = fElementTraverser.traverseGlobal(decl, schemaDoc, grammar);
             break;
         case ATTRIBUTEGROUP_TYPE :
-            retObj = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-            break;
-        case ELEMENT_TYPE :
-            retObj = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            retObj = fAttributeGroupTraverser.traverseGlobal(decl, schemaDoc, grammar);
             break;
         case GROUP_TYPE :
-            retObj = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            retObj = fGroupTraverser.traverseGlobal(decl, schemaDoc, grammar);
+            break;
+        case NOTATION_TYPE :
+            retObj = fNotationTraverser.traverse(decl, schemaDoc, grammar);
             break;
         case IDENTITYCONSTRAINT_TYPE :
             // identity constraints should have been parsed already...
             // we should never get here
-            retObj = null;
-            break;
-        case NOTATION_TYPE :
-            retObj = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
-            break;
-        case TYPEDECL_TYPE :
-            if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
-                retObj = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-            else
-                retObj = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            break;            
         }
-        
+
         // restore the previous SchemaNamespaceSupport, so that the caller can get
         // proper namespace binding.
-        schemaWithDecl.restoreNSSupport();
-        
+        schemaDoc.restoreNSSupport();
+
         return retObj;
-    } // getGlobalDecl(XSDocumentInfo, int, QName):  Object
+    }
+
+    public String schemaDocument2SystemId(XSDocumentInfo schemaDoc) {
+        return (String)fDoc2SystemId.get(schemaDoc.fSchemaElement);
+    }
     
     // This method determines whether there is a group
     // (attributeGroup) which the given one has redefined by
@@ -2159,6 +2336,12 @@ public class XSDHandler {
             fHonourAllSchemaLocations = componentManager.getFeature(HONOUR_ALL_SCHEMALOCATIONS);
         } catch (XMLConfigurationException e) {
             fHonourAllSchemaLocations = false;
+        }
+        
+        try {
+            fNamespaceGrowth = componentManager.getFeature(NAMESPACE_GROWTH);
+        } catch (XMLConfigurationException e) {
+            fNamespaceGrowth = false;
         }
 
         try {

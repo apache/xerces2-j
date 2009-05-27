@@ -221,7 +221,9 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
             group.fAnnotations = annotations;                
-            grammar.addGlobalGroupDecl(group);
+            final String loc = (fSchemaHandler.fNamespaceGrowth)
+                ? fSchemaHandler.schemaDocument2SystemId(schemaDoc) : null;
+            grammar.addGlobalGroupDecl(group, loc);
         }
         else {
             // name attribute is not there, don't return this group.

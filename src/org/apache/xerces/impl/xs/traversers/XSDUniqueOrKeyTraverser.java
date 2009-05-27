@@ -72,7 +72,9 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         // add it to the schema, to avoid errors when processing the instance.
         if (traverseIdentityConstraint(uniqueOrKey, uElem, schemaDoc, attrValues)) {
             // and stuff this in the grammar
-            grammar.addIDConstraintDecl(element, uniqueOrKey);
+            final String loc = (fSchemaHandler.fNamespaceGrowth)
+                    ? fSchemaHandler.schemaDocument2SystemId(schemaDoc) : null;
+            grammar.addIDConstraintDecl(element, uniqueOrKey, loc);
         }
 
         // and fix up attributeChecker

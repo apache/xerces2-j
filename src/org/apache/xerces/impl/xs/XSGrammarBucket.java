@@ -134,6 +134,77 @@ public class XSGrammarBucket {
     }
 
     /**
+     * put a schema grammar and any grammars imported by it (directly or
+     * inderectly) into the registry. when a grammar with the same target
+     * namespace is already in the bucket, and different from the one being
+     * added, no grammar will be added into the bucket.
+     *
+     * @param grammar        the grammar to put in the registry
+     * @param deep           whether to add imported grammars
+     * @param ignoreConflict whether to ignore grammars that already exist in the grammar
+     *                       bucket or not - including 'grammar' parameter. 
+     * @return               whether the process succeeded
+     */
+    public boolean putGrammar(SchemaGrammar grammar, boolean deep, boolean ignoreConflict) {
+        if (!ignoreConflict) {
+            return putGrammar(grammar, deep);
+        }
+
+        // if grammar already exist in the bucket, we ignore the request
+        SchemaGrammar sg = getGrammar(grammar.fTargetNamespace);
+        if (sg == null) {
+            putGrammar(grammar);
+        }
+        
+        // not adding the imported grammars
+        if (!deep) {
+            return true;
+        }
+
+        // get all imported grammars, and make a copy of the Vector, so that
+        // we can recursively process the grammars, and add distinct ones
+        // to the same vector
+        Vector currGrammars = (Vector)grammar.getImportedGrammars();
+        if (currGrammars == null) {
+            return true;
+        }
+        
+        Vector grammars = ((Vector)currGrammars.clone());
+        SchemaGrammar sg1, sg2;
+        Vector gs;
+        // for all (recursively) imported grammars
+        for (int i = 0; i < grammars.size(); i++) {
+            // get the grammar
+            sg1 = (SchemaGrammar)grammars.elementAt(i);
+            // check whether the bucket has one with the same tns
+            sg2 = getGrammar(sg1.fTargetNamespace);
+            if (sg2 == null) {
+                // we need to add grammars imported by sg1 too
+                gs = sg1.getImportedGrammars();
+                // for all grammars imported by sg2, but not in the vector
+                // we add them to the vector
+                if(gs == null) continue;
+                for (int j = gs.size() - 1; j >= 0; j--) {
+                    sg2 = (SchemaGrammar)gs.elementAt(j);
+                    if (!grammars.contains(sg2))
+                        grammars.addElement(sg2);
+                }
+            }
+            // we found one with the same target namespace, ignore it
+            else  {
+                grammars.remove(sg1);
+            }
+        }
+
+        // now we have all imported grammars stored in the vector. add them
+        for (int i = grammars.size() - 1; i >= 0; i--) {
+            putGrammar((SchemaGrammar)grammars.elementAt(i));
+        }
+
+        return true;
+    }
+
+    /**
      * get all grammars in the registry
      *
      * @return an array of SchemaGrammars.

@@ -106,7 +106,9 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-elt-must-match.1", args, content);
             
         }
-        grammar.addGlobalNotationDecl(notation);
+        final String loc = (fSchemaHandler.fNamespaceGrowth)
+                ? fSchemaHandler.schemaDocument2SystemId(schemaDoc) : null;
+        grammar.addGlobalNotationDecl(notation, loc);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
         return notation;

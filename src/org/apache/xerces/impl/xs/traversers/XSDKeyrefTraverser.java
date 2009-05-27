@@ -93,7 +93,9 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
             } else {
                 // add key reference to element decl
                 // and stuff this in the grammar
-                grammar.addIDConstraintDecl(element, keyRef);
+                final String loc = (fSchemaHandler.fNamespaceGrowth)
+                    ? fSchemaHandler.schemaDocument2SystemId(schemaDoc) : null;
+                grammar.addIDConstraintDecl(element, keyRef, loc);
             }
         }
 

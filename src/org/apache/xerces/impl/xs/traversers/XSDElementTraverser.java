@@ -504,7 +504,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // Step 5: register the element decl to the grammar
         if (isGlobal) {
-            grammar.addGlobalElementDecl(element);
+            final String loc = (fSchemaHandler.fNamespaceGrowth)
+                ? fSchemaHandler.schemaDocument2SystemId(schemaDoc) : null;
+            grammar.addGlobalElementDecl(element, loc);
         }
         
         return element;
