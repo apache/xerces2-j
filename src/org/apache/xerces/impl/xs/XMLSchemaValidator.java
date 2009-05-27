@@ -67,6 +67,7 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLAssertHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -77,9 +78,14 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * The XML Schema validator. The validator implements a document
@@ -374,6 +380,9 @@ public class XMLSchemaValidator
      * While parsing a document, keep the location of the document.
      */
     private XMLLocator fLocator;
+
+    // assertion processor object reference
+    private XMLAssertHandler assertionProcessor = null;
 
     /**
      * A wrapper of the standard error reporter. We'll store all schema errors
@@ -786,6 +795,34 @@ public class XMLSchemaValidator
         }
 
     } // startElement(QName,XMLAttributes, Augmentations)
+
+    
+    /*
+     * Helper method to initialize the assertion processor
+     */
+    private void initializeAssertProcessor() {
+        String assertProcessorProp = System
+                .getProperty("org.apache.xerces.assertProcessor");
+        if (assertProcessorProp == null || assertProcessorProp.equals("")) {
+            // if assertion processor is not specified via a system
+            // property, default to the Psychopath processor
+            assertionProcessor = new XMLAssertPsychopathImpl();
+        } else {
+            try {
+                Class assertClass = ClassLoader.getSystemClassLoader()
+                        .loadClass(assertProcessorProp);
+                assertionProcessor = (XMLAssertHandler) assertClass.newInstance();
+            } catch (ClassNotFoundException ex) {
+                throw new XNIException(ex.getMessage(), ex);
+            } catch (InstantiationException ex) {
+                throw new XNIException(ex.getMessage(), ex);
+            } catch (IllegalAccessException ex) {
+                throw new XNIException(ex.getMessage(), ex);
+            }
+        }
+        assertionProcessor.setAttribute("http://apache.org/xml/properties/assert/validator", this);
+    }
+    
 
     /**
      * An empty element.
@@ -1749,6 +1786,11 @@ public class XMLSchemaValidator
                 }
             }
         }
+        
+        // invoke the assertions processor method
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && assertionProcessor != null) {
+            assertionProcessor.characters(text);
+        }
 
         return text;
     } // handleCharacters(XMLString)
@@ -2290,6 +2332,43 @@ public class XMLSchemaValidator
             // PSVI: add nil
             fCurrentPSVI.fNil = fNil;
         }
+        
+        // process assertions
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            XSTypeDefinition typeDef = fCurrentPSVI.getTypeDefinition();
+
+            Object assertObject = null;
+            if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+                XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
+                XSObjectList assertions = complexTypeDef.getAssertions();
+                if (assertions.getLength() > 0) {
+                    assertObject = assertions;
+                    // instantiate the assertions processor
+                    if (assertionProcessor == null) {
+                        initializeAssertProcessor();
+                    }
+                }
+            } else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+                XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
+                XSObjectList facets = simpleTypeDef.getMultiValueFacets();
+                for (int i = 0; i < facets.getLength(); i++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                        assertObject = facet.getAsserts();
+                        // instantiate the assertions processor
+                        if (assertionProcessor == null) {
+                            initializeAssertProcessor();
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // invoke the assertions processor method
+            if (assertionProcessor != null) {
+                assertionProcessor.startElement(element, attributes, assertObject);
+            }
+        }
 
         return augs;
 
@@ -2475,6 +2554,21 @@ public class XMLSchemaValidator
             fAppendBuffer = false;
             // same here.
             fUnionType = false;
+        }
+        
+        // invoke the assertions processor method
+        // TODO: This code should be after Identity constraint checking and
+        //       should create its own PSVIElement and set the grammars info
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && assertionProcessor != null) {
+            try {
+                // construct the augmentations object, for assertions
+                AugmentationsImpl assertAugs = new AugmentationsImpl();
+                assertAugs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+                
+                assertionProcessor.endElement(element, assertAugs);
+            } catch (Exception ex) {
+                throw new XNIException(ex.getMessage(), ex);
+            }
         }
 
         return augs;

@@ -268,6 +268,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private Object fMaxExclusive;
     private Object fMinExclusive;
     private Object fMinInclusive;
+    private Vector fAssertion; // added for XML Schema 1.1, assertions
 
     // annotations for constraining facets
     public XSAnnotation lengthAnnotation;
@@ -375,6 +376,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fEnumeration = fBase.fEnumeration;
         fEnumerationType = fBase.fEnumerationType;
         fEnumerationItemType = fBase.fEnumerationItemType;
+        fAssertion = fBase.fAssertion; // added for XML Schema 1.1
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
         fMaxInclusive = fBase.fMaxInclusive;
@@ -873,6 +875,19 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     fFixedFacet |= FACET_ENUMERATION;
             }
         }
+
+        // assertion. added for XML Schema 1.1
+        if ((presentFacet & FACET_ASSERT) != 0) {
+            fAssertion = new Vector();
+            Vector asserts = facets.assertFacets;
+            for (int i = 0; i < asserts.size(); i++) {
+                fAssertion.addElement(asserts.elementAt(i));
+            }
+            fFacetsDefined |= FACET_ASSERT;
+            if ((fixedFacet & FACET_ASSERT) != 0)
+                fFixedFacet |= FACET_ASSERT;
+        }
+
         // whiteSpace
         if ((presentFacet & FACET_WHITESPACE) != 0) {
             if ((allowedFacet & FACET_WHITESPACE) == 0) {
@@ -3133,11 +3148,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     public XSObjectList getMultiValueFacets() {
         if (fMultiValueFacets == null &&
                 ((fFacetsDefined & FACET_ENUMERATION) != 0 ||
+                        (fFacetsDefined & FACET_ASSERT) != 0 ||
                         (fFacetsDefined & FACET_PATTERN) != 0 ||
                         fPatternType != SPECIAL_PATTERN_NONE ||
                         fValidationDV == DV_INTEGER)) {
 
-            XSMVFacetImpl[] facets = new XSMVFacetImpl[2];
+            XSMVFacetImpl[] facets = new XSMVFacetImpl[3];
             int count = 0;
             if ((fFacetsDefined & FACET_PATTERN) != 0 ||
                     fPatternType != SPECIAL_PATTERN_NONE ||
@@ -3155,6 +3171,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                             FACET_ENUMERATION,
                             this.getLexicalEnumeration(),
                             enumerationAnnotations);
+                count++;
+            }
+            if (fAssertion != null) {
+                facets[count] = new XSMVFacetImpl(FACET_ASSERT, fAssertion);
                 count++;
             }
             fMultiValueFacets = new XSObjectListImpl(facets, count);
@@ -3283,12 +3303,23 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         final short kind;
         final XSObjectList annotations;
         final StringList values;
+        final Vector asserts;
 
         public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
             this.kind = kind;
             this.values = values;
             this.annotations = (annotations != null) ? annotations : XSObjectListImpl.EMPTY_LIST;
+            this.asserts = null;
         }		
+        /*
+         * overloaded constructor. added to support assertions.
+         */
+        public XSMVFacetImpl(short kind, Vector asserts) {
+            this.kind = kind;
+            this.asserts = asserts;
+            this.values = null;
+            this.annotations = null;
+        }
 
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#getFacetKind()
@@ -3338,6 +3369,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
          */
         public short getType() {
             return XSConstants.MULTIVALUE_FACET;
+        }
+        
+        public Vector getAsserts() {
+            return asserts;
         }
     }
     

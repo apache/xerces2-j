@@ -1,0 +1,102 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.xerces.xni.parser;
+
+import java.util.Hashtable;
+
+import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLString;
+
+/**
+ * A convenience implementation of the assertions interface. All compliant assertions
+ * processors (using a specific XPath 2.0 engine), should extend this class.
+ * 
+ * @version $Id$
+ * @author: Mukul Gandhi, IBM
+ */
+public class XMLAssertAdapter implements XMLAssertHandler {
+    
+    // this hashtable contains any implementation specific
+    // attributes/properties
+    private Hashtable attributes = null;
+
+    public void startElement(QName element, XMLAttributes attributes,
+                                              Object assertObject) {
+        // TODO Auto-generated method stub
+
+    }
+    
+    public void endElement(QName element, Augmentations augs) throws Exception {
+        // TODO Auto-generated method stub
+
+    }
+    
+    public void characters(XMLString text) {
+        // TODO Auto-generated method stub
+
+    }
+    
+    /**
+     * Allows the user to set specific attributes on the underlying 
+     * implementation.
+     * @param name    name of attribute
+     * @param value   null means to remove attribute
+     */
+    public void setAttribute(String name, Object value)
+                     throws IllegalArgumentException {
+        // This handles removal of attributes
+        if (value == null) {
+          if (attributes != null) {
+            attributes.remove(name);
+          }
+          // Unrecognized attributes do not cause an exception
+          return;
+        }
+        
+        // Create Hashtable if none existed before
+        if (attributes == null) {
+            attributes = new Hashtable();
+        }
+        
+        attributes.put(name, value);
+    }
+    
+    
+    /**
+     * Allows the user to retrieve specific attributes on the underlying 
+     * implementation.
+     */
+    public Object getAttribute(String name) throws IllegalArgumentException {
+        // See if it's in the attributes Hashtable
+        if (attributes != null) {
+            Object val = attributes.get(name);
+            if (val != null) {
+              return val;
+            }
+            else {
+              throw new IllegalArgumentException("the attribute "+name+" is not set. can't find it's value");
+            }
+        }
+        
+        // unreach
+        return null;
+    }
+
+}

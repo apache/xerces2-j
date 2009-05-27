@@ -17,7 +17,7 @@
 
 package org.apache.xerces.impl.xs.assertion;
 
-import org.apache.xerces.impl.xpath.XPath20;
+import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.xs.XSAssert;
 
 /**
@@ -32,10 +32,10 @@ public class Test {
     protected final XSAssert fAssert;
 
     /** XPath 2.0 expression */
-    protected final XPath20 fXPath;
+    protected final XPath20Assert fXPath;
 
     /** Constructs a test for assertion component */
-    public Test(XPath20 xpath, XSAssert assertion) {
+    public Test(XPath20Assert xpath, XSAssert assertion) {
         fXPath = xpath;
         fAssert = assertion;
     }
@@ -45,7 +45,7 @@ public class Test {
     }
 
     /** Returns the test XPath */
-    public XPath20 getXPath() {
+    public XPath20Assert getXPath() {
         return fXPath;
     }
 

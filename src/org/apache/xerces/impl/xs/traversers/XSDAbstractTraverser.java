@@ -25,7 +25,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.impl.xpath.XPath20;
+import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -44,7 +44,9 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
 
@@ -58,7 +60,6 @@ import org.w3c.dom.Element;
  * @author Elena Litani, IBM
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Neeraj Bajaj, Sun Microsystems Inc.
- * @author Mukul Gandhi, IBM, modified to support XML Schema 1.1 'assertions'
  *
  * @version $Id$
  */
@@ -85,6 +86,9 @@ abstract class XSDAbstractTraverser {
     protected SymbolTable           fSymbolTable = null;
     protected XSAttributeChecker    fAttrChecker = null;
     protected boolean               fValidateAnnotations = false;
+    
+    // a vector holding all the asserts up in the type hierarchy
+    private Vector baseAsserts = new Vector();
     
     // used to validate default/fixed attribute values
     ValidationState fValidationState = new ValidationState();
@@ -278,7 +282,53 @@ abstract class XSDAbstractTraverser {
         }
     }
     
+    /*
+     * Helper method to find all assertions up in the type hierarchy
+     */
+    private void getAssertsFromBaseTypes(XSSimpleType baseValidator) {
+        XSObjectList multiValFacetsOfBaseType = baseValidator.getMultiValueFacets();
+        
+        for (int i = 0; i < multiValFacetsOfBaseType.getLength(); i++) {
+            XSMultiValueFacet mvFacet = (XSMultiValueFacet) multiValFacetsOfBaseType.item(i);
+            if (mvFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                // add asserts of this type to the global Vector object
+                Vector assertsToAdd = mvFacet.getAsserts();
+                for (int j = 0; j < assertsToAdd.size(); j++) {
+                   // add assertion to the list, only if it's already not present
+                   if (!assertExists((XSAssertImpl)assertsToAdd.get(j))) {
+                       baseAsserts.add(assertsToAdd.get(j)); 
+                   }
+                }
+                break;
+            }
+        }
+        
+        // invoke the method recursively. go up the type hierarchy.
+        if (baseValidator.getBaseType() != null) {
+            getAssertsFromBaseTypes((XSSimpleType)baseValidator.getBaseType());  
+        }
+    }
+    
+    /*
+     * Check if an assertion already exists in the buffer
+     */
+    private boolean assertExists(XSAssertImpl assertVal) {
+      boolean assertExists = false;      
+      
+      for (int i = 0; i < baseAsserts.size(); i++) {
+          if (((XSAssertImpl)baseAsserts.get(i)).equals(assertVal)) {
+              assertExists = true;
+              break;
+          }
+      } 
+      
+      return assertExists;
+    } // end of method, assertExists
+    
+    
+    
     FacetInfo traverseFacets(Element content,
+            XSTypeDefinition typeDef,
             XSSimpleType baseValidator,
             XSDocumentInfo schemaDoc) {
         
@@ -400,9 +450,8 @@ abstract class XSDAbstractTraverser {
                         
                         if (childNode != null) {
                          // it's an error to have something after the annotation, in 'assert'
-                         reportSchemaError("xxx-define this",
-                               new Object[] { DOMUtil.getLocalName(childNode) },
-                                              childNode);    
+                          reportSchemaError("s4s-elt-invalid-content.1", new Object[]{DOMUtil.getLocalName(content), 
+                                    DOMUtil.getLocalName(childNode)}, childNode);
                         }
                     } else {
                         String text = DOMUtil.getSyntheticAnnotation(childNode);
@@ -422,11 +471,11 @@ abstract class XSDAbstractTraverser {
                         annotations = XSObjectListImpl.EMPTY_LIST;
                     }
                     
-                    XSAssertImpl assertImpl = new XSAssertImpl(baseValidator, annotations);
+                    XSAssertImpl assertImpl = new XSAssertImpl(typeDef, annotations);
                     Test testExpr = null;
                     //set the test attribute value
                     try {
-                        testExpr = new Test(new XPath20(test, fSymbolTable, 
+                        testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
                                        schemaDoc.fNamespaceSupport), assertImpl);
                     }
                     catch (XPathException e) {
@@ -580,6 +629,22 @@ abstract class XSDAbstractTraverser {
             fAttrChecker.returnAttrArray (attrs, schemaDoc);
             content = DOMUtil.getNextSiblingElement(content);
         }
+        
+        // retrieve all assert definitions from all base types all the way up in the
+        // type hierarchy. sets a global variable, 'baseAsserts' with all the base 
+        // asserts.
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            getAssertsFromBaseTypes(baseValidator);
+
+            // add all base assertions to the list of assertions to be processed
+            if (baseAsserts.size() > 0) {
+                if (assertData == null) {
+                    assertData = new Vector();  
+                }
+                assertData.addAll(baseAsserts);
+            }
+        }
+        
         if (enumData !=null) {
             facetsPresent |= XSSimpleType.FACET_ENUMERATION;
             xsFacets.enumeration = enumData;

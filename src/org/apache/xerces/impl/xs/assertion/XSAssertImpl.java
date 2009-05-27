@@ -31,7 +31,6 @@ import org.apache.xerces.xs.XSTypeDefinition;
 public class XSAssertImpl implements XSAssert {
 
     /** The type definition associated with the assertion component */
-    // This could be a simple type, or a complex type
     protected XSTypeDefinition fTypeDefinition;
 
     /** The restricted XPath 2.0 expression that represents the test attribute */
@@ -82,9 +81,23 @@ public class XSAssertImpl implements XSAssert {
         return s;
     }
 
+    /*
+     * Tests if two asserts are equal
+     */
     public boolean equals(XSAssertImpl assertComponent) {
-        // ToDo
-        return false;
+        boolean returnVal = false;
+        
+        String typeNameP = assertComponent.getTypeDefinition().getName();
+        String xpathStrP = assertComponent.getTest().getXPath().toString();
+        String typeNameThis = this.fTypeDefinition.getName();
+        String xpathStrThis = this.getTest().getXPath().toString();
+        
+        // if type and the xpath string are same, the asserts are equal
+        if (typeNameThis.equals(typeNameP) && xpathStrThis.equals(xpathStrP)) {
+            returnVal = true;  
+        }
+        
+        return returnVal;
     }
 
     /** Get the optional annotations */

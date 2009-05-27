@@ -29,7 +29,6 @@ import org.apache.xerces.xs.XSObjectList;
  * @xerces.internal 
  *
  * @author Sandy Gao, IBM
- * @author Mukul Gandhi, IBM, modified to support XML Schema 1.1 'assertions'
  *
  * @version $Id$
  */

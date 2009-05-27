@@ -15,33 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.xs;
+package org.apache.xerces.impl.xpath;
 
-import org.apache.xerces.impl.xs.assertion.Test;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.NamespaceContext;
 
 /**
- * This interface represents the XML Schema assertion component. Assertion
- * components were first introduced in the XML Schema structures 1.1
- * specification, as a means of constraining the existence and values of 
- * related elements and attributes.
- * 
+ * A class representing a XPath 2.0 expression for, assertions evaluation.
+ *
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public interface XSAssert extends XSObject {
+public class XPath20Assert {
+    
+    protected final String fExpression;
+    protected final NamespaceContext fContext;
+    
+    public XPath20Assert(String xpath, SymbolTable symbolTable,
+            NamespaceContext context) throws XPathException {
+        fExpression = xpath;
+        fContext = context;
+    }
 
-    /**
-     * A sequence of [annotations] or an empty <code>XSObjectList</code>.
-     */
-    public XSObjectList getAnnotations();
-
-    /**
-     * [test]: a restricted XPath 2.0 expression.
-     */
-    public Test getTest();
-
-    /**
-     * The type associated with the assertion
-     */
-    public XSTypeDefinition getTypeDefinition();
+    public String toString() {
+        return fExpression;
+    }
 }

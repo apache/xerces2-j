@@ -22,7 +22,7 @@ import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
-import org.apache.xerces.impl.xpath.XPath20;
+import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -41,6 +41,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -392,7 +393,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else {
                 //
                 // We must have ....
-                // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
+                // GROUP, ALL, SEQUENCE or CHOICE, followed by optional
+                // attributes and assertions
                 // Note that it's possible that only attributes are specified.
                 //
                 
@@ -663,7 +665,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             short fixedFacets = 0 ;
             
             if (simpleContent!=null) {
-                FacetInfo fi = traverseFacets(simpleContent, baseValidator, schemaDoc);
+                FacetInfo fi = traverseFacets(simpleContent, fComplexTypeDecl, baseValidator, schemaDoc);
                 attrOrAssertNode = fi.nodeAfterFacets;
                 facetData = fi.facetdata;
                 presentFacets = fi.fPresentFacets;
@@ -950,6 +952,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 addAnnotation(traverseSyntheticAnnotation(complexContent, text, derivationTypeAttrValues, false, schemaDoc));
             }
         }
+                
+        // add any assertions from the base types, for assertions to be processed
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            getAssertsFromBaseTypes(fBaseType);
+        }
+        
         // -----------------------------------------------------------------------
         // Process the content.  Note:  should I try to catch any complexType errors
         // here in order to return the attr array?
@@ -1274,10 +1282,50 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     throw new ComplexTypeRecoverableError("src-ct.5", new Object[]{typeName}, elem);
                 }
             }
-            
         }
     }
+
+    /*
+     * Helper method to find all assertions up in the type hierarchy
+     */
+    private void getAssertsFromBaseTypes(XSTypeDefinition baseValidator) {        
+        if (baseValidator != null && baseValidator instanceof XSComplexTypeDefinition) {
+            XSObjectList assertList = ((XSComplexTypeDefinition) baseValidator)
+                    .getAssertions();
+            for (int i = 0; i < assertList.size(); i++) {
+                // add assertion to the list, only if it's already not present
+                if (!assertExists((XSAssertImpl) assertList.get(i))) {
+                  addAssertion((XSAssertImpl) assertList.get(i));
+                }
+            }
+            
+            // invoke the method recursively. go up the type hierarchy.
+            if (!baseValidator.getBaseType().getName().equals("anyType")) {              
+              getAssertsFromBaseTypes(baseValidator.getBaseType());
+            }
+        } 
+    } // end of method, getAssertsFromBaseTypes
     
+    
+    /*
+     * Check if an assertion already exists in the buffer
+     */
+    private boolean assertExists(XSAssertImpl assertVal) {
+      boolean assertExists = false;      
+      
+      if (fAssertions != null) {
+        for (int i = 0; i < fAssertions.length; i++) {
+          if (fAssertions[i].equals(assertVal)) {
+              assertExists = true;
+              break;
+          }
+        } 
+      }
+      
+      return assertExists;
+    } // end of method, assertExists
+    
+
     private void processComplexContent(Element complexContentChild,
             boolean isMixed, boolean isDerivation,
             XSDocumentInfo schemaDoc, SchemaGrammar grammar)
@@ -1529,8 +1577,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (childNode != null) {
                     // it's an error to have something after the
                     // annotation, in 'assert'
-                    reportSchemaError("xxx-define this", new Object[] { DOMUtil
-                            .getLocalName(childNode) }, childNode);
+                    reportSchemaError("s4s-elt-invalid-content.1", new Object[] {
+                            DOMUtil.getLocalName(assertElement),
+                            DOMUtil.getLocalName(childNode) }, childNode);
                 }
             } else {
                 String text = DOMUtil.getSyntheticAnnotation(childNode);
@@ -1554,7 +1603,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             Test testExpr = null;
             // set the test attribute value
             try {
-                testExpr = new Test(new XPath20(test, fSymbolTable,
+                testExpr = new Test(new XPath20Assert(test, fSymbolTable,
                         schemaDoc.fNamespaceSupport), assertImpl);
             } catch (XPathException e) {
                 // if the xpath is invalid create a Test without an

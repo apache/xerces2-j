@@ -98,6 +98,9 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      */
     public static final short FACET_ENUMERATION         = 2048;
     
+    /**
+     * 'assertion' facet introduced in XML Schema 1.1
+     */
     public static final short FACET_ASSERT              = 4096;
 
     /**
