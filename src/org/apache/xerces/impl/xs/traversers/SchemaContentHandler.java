@@ -338,7 +338,8 @@ final class SchemaContentHandler implements ContentHandler {
                 rawname = XMLSymbols.PREFIX_XMLNS;
             }
             fAttributeQName.setValues(prefix, localpart, rawname, NamespaceContext.XMLNS_URI);
-            fAttributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, nsURI);
+            fAttributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, 
+                    (nsURI != null) ? nsURI : XMLSymbols.EMPTY_STRING);
         }
     }
     
