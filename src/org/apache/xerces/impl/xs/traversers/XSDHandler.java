@@ -777,18 +777,18 @@ public class XSDHandler {
         // we have a namespace collision
         if (nsCollision) {
             SchemaGrammar sg2 = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
-            if (sg2.isImmutable()) {
-                sg = new SchemaGrammar(sg2);
-                fGrammarBucket.putGrammar(sg);
+            //if (sg2.isImmutable()) {
+            //    sg = new SchemaGrammar(sg2);
+            //    fGrammarBucket.putGrammar(sg);
                 // update all the grammars in the bucket to point to the new grammar.
-                updateImportListWith(sg);
-            }
-            else {
+            //    updateImportListWith(sg);
+            //}
+            //else {
                 sg = sg2;
-            }
+            //}
             
             // update import list of the new grammar
-            updateImportListFor(sg);
+            //updateImportListFor(sg);
         }
         else if (referType == XSDDescription.CONTEXT_INCLUDE ||
                 referType == XSDDescription.CONTEXT_REDEFINE) {
@@ -1095,13 +1095,15 @@ public class XSDHandler {
             SchemaGrammar sg = schemaGrammars[i];
             if (sg != newGrammar) {
                 Vector importedGrammars = sg.getImportedGrammars();
-                for (int j=0; j<importedGrammars.size(); j++) {
-                    SchemaGrammar isg = (SchemaGrammar) importedGrammars.elementAt(j);
-                    if (isg.getTargetNamespace().equals(newGrammar.getTargetNamespace())) {
-                        if (isg != newGrammar) {
-                            importedGrammars.set(j, newGrammar);
+                if (importedGrammars != null) {
+                    for (int j=0; j<importedGrammars.size(); j++) {
+                        SchemaGrammar isg = (SchemaGrammar) importedGrammars.elementAt(j);
+                        if (isg.getTargetNamespace().equals(newGrammar.getTargetNamespace())) {
+                            if (isg != newGrammar) {
+                                importedGrammars.set(j, newGrammar);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -1476,19 +1478,19 @@ public class XSDHandler {
         Object retObj = getGlobalDeclFromGrammar(sGrammar, declType, declToTraverse.localpart);
         
         // if the component is parsed, return it
-        if (!fNamespaceGrowth) {
+        //if (!fNamespaceGrowth) {
             if (retObj != null) {
                 return retObj;
             }
-        }
+        /*}
         // namespace growth is allowed, use schema location to get global component
-        else if (declToTraverse.uri.equals(currSchema.fTargetNamespace)) {
+        else if (null2EmptyString(declToTraverse.uri).equals(currSchema.fTargetNamespace)) {
             String schemaLoc = (String) fDoc2SystemId.get(currSchema.fSchemaElement);
             Object retObj2 = getGlobalDeclFromGrammar(sGrammar, declType, declToTraverse.localpart, schemaLoc);
             if (retObj2 != null) {
                 return retObj2;
             }
-        }
+        }*/
 
         XSDocumentInfo schemaWithDecl = null;
         Element decl = null;

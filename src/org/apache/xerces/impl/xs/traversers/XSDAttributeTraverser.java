@@ -439,9 +439,20 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         
         // Step 2: register attribute decl to the grammar
         if (isGlobal) {
-            final String loc = (fSchemaHandler.fNamespaceGrowth)
-                    ? fSchemaHandler.schemaDocument2SystemId(schemaDoc) : null;
-            grammar.addGlobalAttributeDecl(attribute, loc);
+            if (!fSchemaHandler.fNamespaceGrowth) {
+                grammar.addGlobalAttributeDecl(attribute);
+            }
+            else {
+                if (grammar.getGlobalAttributeDecl(nameAtt) == null) {
+                    grammar.addGlobalAttributeDecl(attribute);
+                }
+                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+                if (loc != null) {
+                    if (grammar.getGlobalAttributeDecl(nameAtt, loc) == null) {
+                        grammar.addGlobalAttributeDecl(attribute, loc);
+                    }
+                }
+            }
         }
         
         return attribute;

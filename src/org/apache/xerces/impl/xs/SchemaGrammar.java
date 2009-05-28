@@ -784,9 +784,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalAttributeDecl(XSAttributeDecl decl, String location) {
-        addGlobalAttributeDecl(decl);
+        //addGlobalAttributeDecl(decl);
         if (location != null) {
             fGlobalAttrDeclsExt.put(location+","+ decl.fName, decl);
+            decl.setNamespaceItem(this);
         }
     }
 
@@ -799,9 +800,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl, String location) {
-        addGlobalAttributeGroupDecl(decl);
+        //addGlobalAttributeGroupDecl(decl);
         if (location != null) {
             fGlobalAttrGrpDeclsExt.put(location+","+decl.fName, decl);
+            decl.setNamespaceItem(this);
         }
     }
 
@@ -822,9 +824,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalElementDecl(XSElementDecl decl, String location) {
-        addGlobalElementDecl(decl);
+        //addGlobalElementDecl(decl);
         if (location != null) {
             fGlobalElemDeclsExt.put(location+","+decl.fName, decl);
+            decl.setNamespaceItem(this);
         }
     }
 
@@ -837,9 +840,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalGroupDecl(XSGroupDecl decl, String location) {
-        addGlobalGroupDecl(decl);
+        //addGlobalGroupDecl(decl);
         if (location != null) {
             fGlobalGroupDeclsExt.put(location+","+decl.fName, decl);
+            decl.setNamespaceItem(this);
         }
     }
 
@@ -852,9 +856,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalNotationDecl(XSNotationDecl decl, String location) {
-        addGlobalNotationDecl(decl);
+        //addGlobalNotationDecl(decl);
         if (location != null) {
             fGlobalNotationDeclsExt.put(location+","+decl.fName, decl);
+            decl.setNamespaceItem(this);
         }
     }
 
@@ -872,9 +877,15 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalTypeDecl(XSTypeDefinition decl, String location) {
-        addGlobalTypeDecl(decl);
+        //addGlobalTypeDecl(decl);
         if (location != null) {
             fGlobalTypeDeclsExt.put(location+","+decl.getName(), decl);
+            if (decl instanceof XSComplexTypeDecl) {
+                ((XSComplexTypeDecl) decl).setNamespaceItem(this);
+            }
+            else if (decl instanceof XSSimpleTypeDecl) {
+                ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
+            }
         }
     }
 
@@ -887,9 +898,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl, String location) {
-        addGlobalComplexTypeDecl(decl);
+        //addGlobalComplexTypeDecl(decl);
         if (location != null) {
             fGlobalTypeDeclsExt.put(location+","+decl.getName(), decl);
+            decl.setNamespaceItem(this);
         }
     }
     
@@ -904,9 +916,12 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalSimpleTypeDecl(XSSimpleType decl, String location) {
-        addGlobalSimpleTypeDecl(decl);
+        //addGlobalSimpleTypeDecl(decl);
         if (location != null) {
             fGlobalTypeDeclsExt.put(location+","+decl.getName(), decl);
+            if (decl instanceof XSSimpleTypeDecl) {
+                ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
+            }
         }
     }
 
@@ -919,7 +934,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public final void addIDConstraintDecl(XSElementDecl elmDecl, IdentityConstraint decl, String location) {
-        addIDConstraintDecl(elmDecl, decl);
+        //addIDConstraintDecl(elmDecl, decl);
         if (location != null) {
             fGlobalIDConstraintDeclsExt.put(location+","+decl.getIdentityConstraintName(), decl);
         }
@@ -934,7 +949,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final XSAttributeDecl getGlobalAttributeDecl(String declName, String location) {
         if (location == null) {
-            return getGlobalAttributeDecl(declName);
+            return null;//getGlobalAttributeDecl(declName);
         }
         return(XSAttributeDecl)fGlobalAttrDeclsExt.get(location+","+declName);
     }
@@ -948,7 +963,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final XSAttributeGroupDecl getGlobalAttributeGroupDecl(String declName, String location) {
         if (location == null) {
-            return getGlobalAttributeGroupDecl(declName);
+            return null;//getGlobalAttributeGroupDecl(declName);
         }
         return(XSAttributeGroupDecl)fGlobalAttrGrpDeclsExt.get(location+","+declName);
     }
@@ -962,7 +977,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final XSElementDecl getGlobalElementDecl(String declName, String location) {
         if (location == null) {
-            return getGlobalElementDecl(declName);
+            return null;//getGlobalElementDecl(declName);
         }
         return(XSElementDecl)fGlobalElemDeclsExt.get(location+","+declName);
     }
@@ -976,7 +991,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final XSGroupDecl getGlobalGroupDecl(String declName, String location) {
         if (location == null) {
-            return getGlobalGroupDecl(declName);
+            return null;//getGlobalGroupDecl(declName);
         }
         return(XSGroupDecl)fGlobalGroupDeclsExt.get(location+","+declName);
     }
@@ -990,7 +1005,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final XSNotationDecl getGlobalNotationDecl(String declName, String location) {
         if (location == null) {
-            return getGlobalNotationDecl(declName);
+            return null;//getGlobalNotationDecl(declName);
         }
         return(XSNotationDecl)fGlobalNotationDeclsExt.get(location+","+declName);
     }
@@ -1004,7 +1019,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final XSTypeDefinition getGlobalTypeDecl(String declName, String location) {
         if (location == null) {
-            return getGlobalTypeDecl(declName);
+            return null;//getGlobalTypeDecl(declName);
         }
         return(XSTypeDefinition)fGlobalTypeDeclsExt.get(location+","+declName);
     }
@@ -1018,7 +1033,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     public final IdentityConstraint getIDConstraintDecl(String declName, String location) {
         if (location == null) {
-            return getIDConstraintDecl(declName);
+            return null;//getIDConstraintDecl(declName);
         }
         return(IdentityConstraint)fGlobalIDConstraintDeclsExt.get(location+","+declName);
     }
