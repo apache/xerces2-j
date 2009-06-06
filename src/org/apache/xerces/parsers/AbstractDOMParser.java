@@ -1708,7 +1708,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 baseURI = ((EntityReferenceImpl)fCurrentNode).getBaseURI ();
                 if (baseURI !=null && !baseURI.equals (fDocumentImpl.getDocumentURI ())) {
                     if (fNamespaceAware) {
-                        ((Element)node).setAttributeNS ("http://www.w3.org/XML/1998/namespace","base", baseURI);
+                        ((Element)node).setAttributeNS ("http://www.w3.org/XML/1998/namespace", "xml:base", baseURI);
                     } else {
                         ((Element)node).setAttribute ("xml:base", baseURI);
                     }
