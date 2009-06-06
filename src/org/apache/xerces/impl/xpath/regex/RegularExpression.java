@@ -732,7 +732,7 @@ public class RegularExpression implements java.io.Serializable {
                     con.match.setBeginning(0, con.start);
                     con.match.setEnd(0, matchEnd);
                 }
-                con.inuse = false;
+                con.setInUse(false);
                 return true;
             }
             return false;
@@ -750,10 +750,10 @@ public class RegularExpression implements java.io.Serializable {
                     con.match.setBeginning(0, o);
                     con.match.setEnd(0, o+this.fixedString.length());
                 }
-                con.inuse = false;
+                con.setInUse(false);
                 return true;
             }
-            con.inuse = false;
+            con.setInUse(false);
             return false;
         }
 
@@ -766,7 +766,7 @@ public class RegularExpression implements java.io.Serializable {
             int o = this.fixedStringTable.matches(target, con.start, con.limit);
             if (o < 0) {
                 //System.err.println("Non-match in fixed-string search.");
-                con.inuse = false;
+                con.setInUse(false);
                 return false;
             }
         }
@@ -854,17 +854,17 @@ public class RegularExpression implements java.io.Serializable {
                 con.match.setBeginning(0, matchStart);
                 con.match.setEnd(0, matchEnd);
             }
-            con.inuse = false;
+            con.setInUse(false);
             return true;
         } else {
-            con.inuse = false;
+            con.setInUse(false);
             return false;
         }
     }
 
-/**
- * @return -1 when not match; offset of the end of matched string when match.
- */
+    /**
+     * @return -1 when not match; offset of the end of matched string when match.
+     */
     private int matchCharArray (Context con, Op op, int offset, int dx, int opts) {
 
         char[] target = con.charTarget;
@@ -1447,7 +1447,7 @@ public class RegularExpression implements java.io.Serializable {
                     con.match.setBeginning(0, con.start);
                     con.match.setEnd(0, matchEnd);
                 }
-                con.inuse = false;
+                con.setInUse(false);
                 return true;
             }
             return false;
@@ -1465,10 +1465,10 @@ public class RegularExpression implements java.io.Serializable {
                     con.match.setBeginning(0, o);
                     con.match.setEnd(0, o+this.fixedString.length());
                 }
-                con.inuse = false;
+                con.setInUse(false);
                 return true;
             }
-            con.inuse = false;
+            con.setInUse(false);
             return false;
         }
 
@@ -1481,7 +1481,7 @@ public class RegularExpression implements java.io.Serializable {
             int o = this.fixedStringTable.matches(target, con.start, con.limit);
             if (o < 0) {
                 //System.err.println("Non-match in fixed-string search.");
-                con.inuse = false;
+                con.setInUse(false);
                 return false;
             }
         }
@@ -1569,10 +1569,10 @@ public class RegularExpression implements java.io.Serializable {
                 con.match.setBeginning(0, matchStart);
                 con.match.setEnd(0, matchEnd);
             }
-            con.inuse = false;
+            con.setInUse(false);
             return true;
         } else {
-            con.inuse = false;
+            con.setInUse(false);
             return false;
         }
     }
@@ -2094,7 +2094,7 @@ public class RegularExpression implements java.io.Serializable {
                     con.match.setBeginning(0, con.start);
                     con.match.setEnd(0, matchEnd);
                 }
-                con.inuse = false;
+                con.setInUse(false);
                 return true;
             }
             return false;
@@ -2112,10 +2112,10 @@ public class RegularExpression implements java.io.Serializable {
                     con.match.setBeginning(0, o);
                     con.match.setEnd(0, o+this.fixedString.length());
                 }
-                con.inuse = false;
+                con.setInUse(false);
                 return true;
             }
-            con.inuse = false;
+            con.setInUse(false);
             return false;
         }
 
@@ -2128,7 +2128,7 @@ public class RegularExpression implements java.io.Serializable {
             int o = this.fixedStringTable.matches(target, con.start, con.limit);
             if (o < 0) {
                 //System.err.println("Non-match in fixed-string search.");
-                con.inuse = false;
+                con.setInUse(false);
                 return false;
             }
         }
@@ -2216,10 +2216,10 @@ public class RegularExpression implements java.io.Serializable {
                 con.match.setBeginning(0, matchStart);
                 con.match.setEnd(0, matchEnd);
             }
-            con.inuse = false;
+            con.setInUse(false);
             return true;
         } else {
-            con.inuse = false;
+            con.setInUse(false);
             return false;
         }
     }
@@ -2789,7 +2789,7 @@ public class RegularExpression implements java.io.Serializable {
 
         private void resetCommon(int nofclosures) {
             this.length = this.limit-this.start;
-            this.inuse = true;
+            setInUse(true);
             this.match = null;
             if (this.offsets == null || this.offsets.length != nofclosures)
                 this.offsets = new int[nofclosures];
@@ -2812,6 +2812,9 @@ public class RegularExpression implements java.io.Serializable {
             this.start = start;
             this.limit = limit;
             this.resetCommon(nofclosures);
+        }
+        synchronized void setInUse(boolean inUse) {
+            this.inuse = inUse;
         }
     }
 
