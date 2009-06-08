@@ -1145,6 +1145,15 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         fLocations.addElement(location);
     }
     
+    public synchronized void removeDocument(int index) {
+        if (fDocuments != null && 
+            index >= 0 && 
+            index < fDocuments.size()) {
+            fDocuments.removeElementAt(index);
+            fLocations.removeElementAt(index);
+        }
+    }
+    
     /**
      * [schema namespace]
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace">[schema namespace]</a>
