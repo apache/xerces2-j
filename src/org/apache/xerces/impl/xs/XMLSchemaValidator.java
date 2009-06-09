@@ -820,7 +820,7 @@ public class XMLSchemaValidator
                 throw new XNIException(ex.getMessage(), ex);
             }
         }
-        assertionProcessor.setAttribute("http://apache.org/xml/properties/assert/validator", this);
+        assertionProcessor.setProperty("http://apache.org/xml/properties/assert/validator", this);
     }
     
 
@@ -2366,7 +2366,10 @@ public class XMLSchemaValidator
 
             // invoke the assertions processor method
             if (assertionProcessor != null) {
-                assertionProcessor.startElement(element, attributes, assertObject);
+                // construct the augmentations object, for assertions
+                AugmentationsImpl assertAugs = new AugmentationsImpl();
+                assertAugs.putItem("ASSERT", assertObject);
+                assertionProcessor.startElement(element, attributes, assertAugs);
             }
         }
 
@@ -2493,6 +2496,26 @@ public class XMLSchemaValidator
             }
             fValueStoreCache.endElement();
         }
+        
+        // invoke the assertions processor method
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && assertionProcessor != null) {
+           try {
+             // create the ElementPSVImpl object, for assertions
+             ElementPSVImpl assertPSVI = new ElementPSVImpl();
+             assertPSVI.fDeclaration = fCurrentElemDecl;
+             assertPSVI.fTypeDecl = fCurrentType;
+             assertPSVI.fNotation = fNotation;
+             assertPSVI.fGrammars = fGrammarBucket.getGrammars();
+                
+             // construct the augmentations object for assertions.
+             // store assertPSVI into the augmentations
+             AugmentationsImpl assertAugs = new AugmentationsImpl();
+             assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);                
+             assertionProcessor.endElement(element, assertAugs);
+           } catch (Exception ex) {
+             throw new XNIException(ex.getMessage(), ex);
+           }
+        }
 
         // Check if we should modify the xsi:type ignore depth
         // This check is independent of whether this is the validation root,
@@ -2554,21 +2577,6 @@ public class XMLSchemaValidator
             fAppendBuffer = false;
             // same here.
             fUnionType = false;
-        }
-        
-        // invoke the assertions processor method
-        // TODO: This code should be after Identity constraint checking and
-        //       should create its own PSVIElement and set the grammars info
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && assertionProcessor != null) {
-            try {
-                // construct the augmentations object, for assertions
-                AugmentationsImpl assertAugs = new AugmentationsImpl();
-                assertAugs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
-                
-                assertionProcessor.endElement(element, assertAugs);
-            } catch (Exception ex) {
-                throw new XNIException(ex.getMessage(), ex);
-            }
         }
 
         return augs;
