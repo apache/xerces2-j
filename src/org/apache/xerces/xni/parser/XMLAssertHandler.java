@@ -23,12 +23,11 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 
 /**
- * The implementation of this interface will invoke an external XPath engine, which
- * would evaluate the XPath 2.0 expressions, in XML Schema 1.1 assertions.
+ * The implementation of this interface will invoke an external XPath engine, that
+ * would evaluate the XPath 2.0 expressions, for XML Schema 1.1 assertions.
  * This interface communicates with the XMLSchemaValidator, and accepts information
  * required by the external XPath engine. If assertions evaluation returns 'true',
- * validation would proceed further. And while upon assertion failure, validation process 
- * terminates in the implementing classes if this interface.
+ * validation would proceed further.
  * 
  * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM
@@ -45,10 +44,10 @@ public interface XMLAssertHandler {
      *             XML element
      * @param attributes
      *             attributes of the element
-     * @param assertObject
-     *             An object holding the assertions for this element (for the element's type)                                    
+     * @param augs
+     *             Augmentations object                                    
      */
-    public void startElement(QName element, XMLAttributes attributes, Object assertObject);
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs);
     
     /*
      * A callback method triggered during endElement method call in, XMLSchemaValidator
@@ -56,7 +55,7 @@ public interface XMLAssertHandler {
      * @param element
      *           XML element  
      * @param augs
-     *           Augmentations object, to support Schema types          
+     *           Augmentations object        
      */
     public void endElement(QName element, Augmentations augs) throws Exception;
         
@@ -70,26 +69,26 @@ public interface XMLAssertHandler {
 
   
     /**
-     * Allows the user to set specific attributes on the underlying
+     * Allows the user to set specific properties on the underlying
      * implementation.
-     * @param name The name of the attribute.
-     * @param value The value of the attribute.
+     * @param name The name of the property.
+     * @param value The value of the property.
      * @exception IllegalArgumentException thrown if the underlying
-     * implementation doesn't recognize the attribute.
+     * implementation doesn't recognize the property.
      */
-    public void setAttribute(String name, Object value)
+    public void setProperty(String name, Object value)
                 throws IllegalArgumentException;
     
     
     /**
-     * Allows the user to retrieve specific attributes on the underlying
+     * Allows the user to retrieve specific properties on the underlying
      * implementation.
-     * @param name The name of the attribute.
-     * @return value The value of the attribute.
+     * @param name The name of the property.
+     * @return value The value of the property.
      * @exception IllegalArgumentException thrown if the underlying
-     * implementation doesn't recognize the attribute.
+     * implementation doesn't recognize the property.
      */
-    public abstract Object getAttribute(String name)
+    public abstract Object getProperty(String name)
                 throws IllegalArgumentException;
 
 }
