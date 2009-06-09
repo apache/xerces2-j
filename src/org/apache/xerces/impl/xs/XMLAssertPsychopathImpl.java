@@ -29,7 +29,6 @@ import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLAssertAdapter;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSModel;
@@ -60,6 +59,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * The implementation of the XPath interface. This class interfaces with the
+ * PsychoPath XPath 2.0 engine.
+ * 
  * @version $Id$
  * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM
@@ -69,7 +71,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     // class variable declarations
     DynamicContext fDynamicContext;
-    XSModel fSchema;
+    XSModel fSchema = null;
 
     // a factory Document object to construct DOM tree nodes
     Document assertDocument = null;
@@ -101,7 +103,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     
     private void initXPathProcessor() throws Exception {
-        validator = (XMLSchemaValidator) getAttribute("http://apache.org/xml/properties/assert/validator");
+        validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");
         fDynamicContext = new DefaultDynamicContext(fSchema, assertDocument);
         // add variable "value" to the XPath context
         fDynamicContext.add_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
@@ -112,10 +114,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     /*
      * (non-Javadoc)
-     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#startElement(org.apache.xerces.xni.QName, org.apache.xerces.xni.XMLAttributes, java.lang.Object)
+     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#startElement(org.apache.xerces.xni.QName, org.apache.xerces.xni.XMLAttributes, org.apache.xerces.xni.Augmentations)
      */
     public void startElement(QName element, XMLAttributes attributes,
-                                                   Object assertObject) {
+                                               Augmentations augs) {
         if (currentAssertDomNode == null) {
            currentAssertDomNode = assertDocument.createElementNS(
                                               element.uri, element.rawname);
@@ -143,11 +145,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             currentAssertDomNode.setAttributeNode(attrNode);
         }
 
+        Object assertion = augs.getItem("ASSERT");
         // if we have assertion on this element, store the element reference
-        // and the assertions on it, on the stacks
-        if (assertObject != null) {
+        // and the assertions on it, on the stack objects
+        if (assertion != null) {
             assertRootStack.push(currentAssertDomNode);
-            assertListStack.push(assertObject);
+            assertListStack.push(assertion);
         }
     }
 
@@ -163,10 +166,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             
             if (!assertRootStack.empty() && (currentAssertDomNode == assertRootStack.peek())) {               
                  // get XSModel                
-                 fSchema = elemPSVI.getSchemaInformation();
-
-                 /*
+                 fSchema =  ((PSVIElementNSImpl)currentAssertDomNode).getSchemaInformation();  
+                 
+                 /*              
                  // debugging code. can be present till the code is final.
+                 // print the tree on which assertions are evaluated
                  try {
                    DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
                    DOMImplementationLS impl = (DOMImplementationLS) registry
@@ -181,23 +185,24 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                    ex.printStackTrace();
                  }
                  */
-
+                 
                  assertRootStack.pop(); // pop the stack, to go one level up
                  Object assertions = assertListStack.pop(); // get assertions, and go one level up
                 
+                 // initialize the XPath engine
+                 initXPathProcessor();
+                 
                  // evaluate assertions
                  if (assertions instanceof XSObjectList) {
                     // assertions from a complex type definition
                     XSObjectList assertList = (XSObjectList) assertions;
-                    initXPathProcessor();
                     for (int i = 0; i < assertList.size(); i++) {
                         XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
                         evaluateAssertion(element, assertImpl);
                     }
                 } else if (assertions instanceof Vector) {
                     // assertions from a simple type definition
-                    Vector assertList = (Vector) assertions;
-                    initXPathProcessor();
+                    Vector assertList = (Vector) assertions;                    
                     for (int i = 0; i < assertList.size(); i++) {
                         XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
                         evaluateAssertion(element, assertImpl);
@@ -237,9 +242,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             xp = xpp.parse("boolean("
                     + assertImpl.getTest().getXPath().toString() + ")");
         } catch (XPathParserException ex) {
-            // error compiling the XPath expression
+            // error compiling XPath expression
             reportError("cvc-xpath.3.13.4.2", element, assertImpl);
-            throw new XNIException(ex.getMessage(), ex);
         }
         
         StaticChecker sc = new StaticNameResolver(fDynamicContext);
@@ -249,7 +253,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
              
             // assign value to variable, "value"
             String value = "";
-            //Element rootElem = (Element) fDOM.getFirstChild();
             NodeList childList = currentAssertDomNode.getChildNodes();
             if (childList.getLength() == 1) {
                 Node node = childList.item(0);
@@ -297,7 +300,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
         } catch (Exception ex) {
             reportError("cvc-assertion.3.13.4.1", element, assertImpl);
-            throw new XNIException(ex.getMessage(), ex);
         }
 
     }
@@ -315,5 +317,4 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                assertImpl.getTest().getXPath().toString(),
                                typeString });
     }
-
 }
