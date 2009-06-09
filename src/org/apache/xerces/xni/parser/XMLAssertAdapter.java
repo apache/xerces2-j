@@ -34,11 +34,11 @@ import org.apache.xerces.xni.XMLString;
 public class XMLAssertAdapter implements XMLAssertHandler {
     
     // this hashtable contains any implementation specific
-    // attributes/properties
-    private Hashtable attributes = null;
+    // properties
+    private Hashtable properties = null;
 
     public void startElement(QName element, XMLAttributes attributes,
-                                              Object assertObject) {
+                                            Augmentations augs) {
         // TODO Auto-generated method stub
 
     }
@@ -54,44 +54,44 @@ public class XMLAssertAdapter implements XMLAssertHandler {
     }
     
     /**
-     * Allows the user to set specific attributes on the underlying 
+     * Allows the user to set specific properties on the underlying 
      * implementation.
-     * @param name    name of attribute
-     * @param value   null means to remove attribute
+     * @param name    name of property
+     * @param value   null means to remove property
      */
-    public void setAttribute(String name, Object value)
+    public void setProperty(String name, Object value)
                      throws IllegalArgumentException {
-        // This handles removal of attributes
+        // this handles removal of properties
         if (value == null) {
-          if (attributes != null) {
-            attributes.remove(name);
+          if (properties != null) {
+             properties.remove(name);
           }
-          // Unrecognized attributes do not cause an exception
+          // Unrecognized properties do not cause an exception
           return;
         }
         
-        // Create Hashtable if none existed before
-        if (attributes == null) {
-            attributes = new Hashtable();
+        // create Hashtable if none existed before
+        if (properties == null) {
+            properties = new Hashtable();
         }
         
-        attributes.put(name, value);
+        properties.put(name, value);
     }
     
     
     /**
-     * Allows the user to retrieve specific attributes on the underlying 
+     * Allows the user to retrieve specific properties on the underlying 
      * implementation.
      */
-    public Object getAttribute(String name) throws IllegalArgumentException {
-        // See if it's in the attributes Hashtable
-        if (attributes != null) {
-            Object val = attributes.get(name);
+    public Object getProperty(String name) throws IllegalArgumentException {
+        // See if it's in the properties Hashtable
+        if (properties != null) {
+            Object val = properties.get(name);
             if (val != null) {
               return val;
             }
             else {
-              throw new IllegalArgumentException("the attribute "+name+" is not set. can't find it's value");
+              throw new IllegalArgumentException("the property "+name+" is not set. can't find it's value");
             }
         }
         
