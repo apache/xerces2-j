@@ -118,6 +118,10 @@ public class DOMParserImpl
     protected static final String NAMESPACE_GROWTH = 
         Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
 
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
+
     // internal properties
     protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -458,6 +462,9 @@ public class DOMParserImpl
                     else if (name.equals(NAMESPACE_GROWTH)) {
                         normalizedName = NAMESPACE_GROWTH;
                     }
+                    else if (name.equals(TOLERATE_DUPLICATES)) {
+                        normalizedName = TOLERATE_DUPLICATES;
+                    }
                     else {
                         normalizedName = name.toLowerCase(Locale.ENGLISH);
                     }
@@ -596,6 +603,9 @@ public class DOMParserImpl
                     else if (name.equals(NAMESPACE_GROWTH)) {
                         normalizedName = NAMESPACE_GROWTH;
                     }
+                    else if (name.equals(TOLERATE_DUPLICATES)) {
+                        normalizedName = TOLERATE_DUPLICATES;
+                    }
                     fConfiguration.getFeature(normalizedName);
                     throw newTypeMismatchError(name);
                     
@@ -729,6 +739,9 @@ public class DOMParserImpl
             else if (name.equals(NAMESPACE_GROWTH)) {
                 normalizedName = NAMESPACE_GROWTH;
             }
+            else if (name.equals(TOLERATE_DUPLICATES)) {
+                normalizedName = TOLERATE_DUPLICATES;
+            }
             else {
                 normalizedName = name.toLowerCase(Locale.ENGLISH);
             }
@@ -793,7 +806,10 @@ public class DOMParserImpl
                 }
                 else if (name.equalsIgnoreCase(NAMESPACE_GROWTH)) {
                     normalizedName = NAMESPACE_GROWTH;
-                } 
+                }
+                else if (name.equalsIgnoreCase(TOLERATE_DUPLICATES)) {
+                    normalizedName = TOLERATE_DUPLICATES;
+                }
                 else {
                     normalizedName = name.toLowerCase(Locale.ENGLISH);
                 }

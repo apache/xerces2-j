@@ -179,17 +179,19 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         attrGrp.fAnnotations = annotations;
         
         // make an entry in global declarations.
-        if (!fSchemaHandler.fNamespaceGrowth) {
+        if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName) == null) {
             grammar.addGlobalAttributeGroupDecl(attrGrp);
         }
-        else {
-            if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName) == null) {
-                grammar.addGlobalAttributeGroupDecl(attrGrp);
-            }
+        if (fSchemaHandler.fTolerateDuplicates) {
             final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-            if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName, loc) == null) {
+            final XSAttributeGroupDecl attrGrp2 = grammar.getGlobalAttributeGroupDecl(attrGrp.fName, loc);
+            if (attrGrp2 == null) {
                 grammar.addGlobalAttributeGroupDecl(attrGrp, loc);
             }
+            else {
+                attrGrp = attrGrp2;
+            }
+            fSchemaHandler.addGlobalAttributeGroupDecl(attrGrp);
         }
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);

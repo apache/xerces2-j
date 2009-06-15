@@ -220,34 +220,35 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             } else {
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
-            group.fAnnotations = annotations;                
+            group.fAnnotations = annotations;
             // Add group declaration to grammar
-            if (!fSchemaHandler.fNamespaceGrowth) {
+            if (grammar.getGlobalGroupDecl(group.fName) == null) {
                 grammar.addGlobalGroupDecl(group);
             }
-            else {
-                if (grammar.getGlobalGroupDecl(group.fName) == null) {
-                    grammar.addGlobalGroupDecl(group);
-                }
+            if (fSchemaHandler.fTolerateDuplicates) {
                 final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                if (grammar.getGlobalGroupDecl(group.fName, loc) == null) {
+                final XSGroupDecl group2 = grammar.getGlobalGroupDecl(group.fName, loc);
+                if (group2 == null) {
                     grammar.addGlobalGroupDecl(group, loc);
                 }
+                else {
+                    group = group2;
+                }
+                fSchemaHandler.addGlobalGroupDecl(group); 
             }
-
         }
         else {
             // name attribute is not there, don't return this group.
             group = null;
         }
 
-        if(group != null) { 
+        if (group != null) { 
             // store groups redefined by restriction in the grammar so
             // that we can get at them at full-schema-checking time.
             Object redefinedGrp = fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(XSDHandler.GROUP_TYPE,
                     new QName(XMLSymbols.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
                     schemaDoc, elmNode);
-            if(redefinedGrp != null) {
+            if (redefinedGrp != null) {
                 // store in grammar
                 grammar.addRedefinedGroupDecl(group, (XSGroupDecl)redefinedGrp,
                         fSchemaHandler.element2Locator(elmNode));

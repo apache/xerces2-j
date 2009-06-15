@@ -106,17 +106,19 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-elt-must-match.1", args, content);
             
         }
-        if (!fSchemaHandler.fNamespaceGrowth) {
+        if (grammar.getGlobalNotationDecl(notation.fName) == null) {
             grammar.addGlobalNotationDecl(notation);
         }
-        else {
+        if (fSchemaHandler.fTolerateDuplicates) {
             final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-            if (grammar.getGlobalNotationDecl(notation.fName) == null) {
-                grammar.addGlobalNotationDecl(notation);
-            }
-            if (grammar.getGlobalNotationDecl(notation.fName, loc) == null) {
+            final XSNotationDecl notation2 = grammar.getGlobalNotationDecl(notation.fName, loc);  
+            if (notation2 == null) {
                 grammar.addGlobalNotationDecl(notation, loc);
             }
+            else {
+                notation = notation2;
+            }
+            fSchemaHandler.addGlobalNotationDecl(notation);
         }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         

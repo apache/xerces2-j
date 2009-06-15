@@ -132,11 +132,15 @@ XSLoader, DOMConfiguration {
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
     
     protected static final String PARSER_SETTINGS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;   
+        Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
     
     /** Feature identifier: namespace growth */
     protected static final String NAMESPACE_GROWTH = 
         Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+    
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
     
     // recognized features:
     private static final String[] RECOGNIZED_FEATURES = {
@@ -149,7 +153,8 @@ XSLoader, DOMConfiguration {
         GENERATE_SYNTHETIC_ANNOTATIONS,
         VALIDATE_ANNOTATIONS,
         HONOUR_ALL_SCHEMALOCATIONS,
-        NAMESPACE_GROWTH
+        NAMESPACE_GROWTH,
+        TOLERATE_DUPLICATES
     };
     
     // property identifiers
@@ -1147,7 +1152,8 @@ XSLoader, DOMConfiguration {
                 name.equals(STANDARD_URI_CONFORMANT_FEATURE) ||
                 name.equals(GENERATE_SYNTHETIC_ANNOTATIONS) ||
                 name.equals(HONOUR_ALL_SCHEMALOCATIONS) ||
-                name.equals(NAMESPACE_GROWTH)) {
+                name.equals(NAMESPACE_GROWTH) ||
+                name.equals(TOLERATE_DUPLICATES)) {
                 return true;
                 
             }
@@ -1224,6 +1230,7 @@ XSLoader, DOMConfiguration {
             v.add(GENERATE_SYNTHETIC_ANNOTATIONS);
             v.add(HONOUR_ALL_SCHEMALOCATIONS);
             v.add(NAMESPACE_GROWTH);
+            v.add(TOLERATE_DUPLICATES);
             fRecognizedParameters = new DOMStringListImpl(v);      	
         }
         return fRecognizedParameters;

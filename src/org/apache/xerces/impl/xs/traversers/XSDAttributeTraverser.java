@@ -341,7 +341,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
         attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
                 attDefault, enclCT, annotations);
-        
+
         // Step 3: check against schema for schemas
         
         // required attributes
@@ -436,28 +436,28 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // Attribute without a name. Return null.
         if (nameAtt.equals(NO_NAME))
             return null;
-        
+
         // Step 2: register attribute decl to the grammar
         if (isGlobal) {
-            if (!fSchemaHandler.fNamespaceGrowth) {
+            if (grammar.getGlobalAttributeDecl(nameAtt) == null) {
                 grammar.addGlobalAttributeDecl(attribute);
             }
-            else {
-                if (grammar.getGlobalAttributeDecl(nameAtt) == null) {
-                    grammar.addGlobalAttributeDecl(attribute);
-                }
+            if (fSchemaHandler.fTolerateDuplicates) {
                 final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                if (loc != null) {
-                    if (grammar.getGlobalAttributeDecl(nameAtt, loc) == null) {
-                        grammar.addGlobalAttributeDecl(attribute, loc);
-                    }
+                final XSAttributeDecl attribute2 = grammar.getGlobalAttributeDecl(nameAtt, loc);
+                if (attribute2  == null) {
+                    grammar.addGlobalAttributeDecl(attribute, loc);
                 }
+                else {
+                    attribute = attribute2;
+                }
+                fSchemaHandler.addGlobalAttributeDecl(attribute);
             }
         }
-        
+
         return attribute;
     }
-    
+
     // throws an error if the constraint value is invalid for the given type
     void checkDefaultValid(XSAttributeDecl attribute) throws InvalidDatatypeValueException {
         // validate the original lexical rep, and set the actual value

@@ -149,11 +149,15 @@ public class XML11Configuration extends ParserConfigurationSettings
     /** Feature identifier: namespace growth */
     protected static final String NAMESPACE_GROWTH = 
         Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
     
     /** Feature identifier: use grammar pool only */
     protected static final String USE_GRAMMAR_POOL_ONLY =
         Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
-        
+
 	// feature identifiers
 
 	/** Feature identifier: validation. */
@@ -483,7 +487,8 @@ public class XML11Configuration extends ParserConfigurationSettings
 		        NAMESPACES,
 		        NORMALIZE_DATA, SCHEMA_ELEMENT_DEFAULT, SCHEMA_AUGMENT_PSVI,
 		        GENERATE_SYNTHETIC_ANNOTATIONS, VALIDATE_ANNOTATIONS,
-		        HONOUR_ALL_SCHEMALOCATIONS, NAMESPACE_GROWTH, IGNORE_XSI_TYPE,
+		        HONOUR_ALL_SCHEMALOCATIONS, NAMESPACE_GROWTH,
+		        TOLERATE_DUPLICATES, IGNORE_XSI_TYPE,
 		        ID_IDREF_CHECKING, IDENTITY_CONSTRAINT_CHECKING,
 		        UNPARSED_ENTITY_CHECKING, USE_GRAMMAR_POOL_ONLY,
 		        // NOTE: These shouldn't really be here but since the XML Schema
@@ -511,6 +516,7 @@ public class XML11Configuration extends ParserConfigurationSettings
         fFeatures.put(VALIDATE_ANNOTATIONS, Boolean.FALSE);
         fFeatures.put(HONOUR_ALL_SCHEMALOCATIONS, Boolean.FALSE);
         fFeatures.put(NAMESPACE_GROWTH, Boolean.FALSE);
+        fFeatures.put(TOLERATE_DUPLICATES, Boolean.FALSE);
         fFeatures.put(IGNORE_XSI_TYPE, Boolean.FALSE);
         fFeatures.put(ID_IDREF_CHECKING, Boolean.TRUE);
         fFeatures.put(IDENTITY_CONSTRAINT_CHECKING, Boolean.TRUE);

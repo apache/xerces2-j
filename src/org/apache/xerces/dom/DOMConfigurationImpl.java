@@ -133,6 +133,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String NAMESPACE_GROWTH = 
         Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
     
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;    
     // property identifiers
 
     /** Property identifier: entity manager. */
@@ -305,7 +307,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             BALANCE_SYNTAX_TREES,
             WARN_ON_DUPLICATE_ATTDEF,
             PARSER_SETTINGS,
-            NAMESPACE_GROWTH
+            NAMESPACE_GROWTH,
+            TOLERATE_DUPLICATES
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -327,6 +330,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
         setFeature(PARSER_SETTINGS, true);
         setFeature(NAMESPACE_GROWTH, false);
+        setFeature(TOLERATE_DUPLICATES, false);
 
         // add default recognized properties
         final String[] recognizedProperties = {

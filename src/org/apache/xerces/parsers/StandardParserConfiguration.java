@@ -108,6 +108,10 @@ public class StandardParserConfiguration
     protected static final String NAMESPACE_GROWTH = 
         Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
 
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
+
     /** Feature identifier: whether to ignore xsi:type attributes until a global element declaration is encountered */
     protected static final String IGNORE_XSI_TYPE =
         Constants.XERCES_FEATURE_PREFIX + Constants.IGNORE_XSI_TYPE_FEATURE;
@@ -215,6 +219,7 @@ public class StandardParserConfiguration
             VALIDATE_ANNOTATIONS,
             HONOUR_ALL_SCHEMALOCATIONS,
             NAMESPACE_GROWTH,
+            TOLERATE_DUPLICATES,
             // NOTE: These shouldn't really be here but since the XML Schema
             //       validator is constructed dynamically, its recognized
             //       features might not have been set and it would cause a
@@ -236,7 +241,8 @@ public class StandardParserConfiguration
         setFeature(VALIDATE_ANNOTATIONS, false);
         setFeature(HONOUR_ALL_SCHEMALOCATIONS, false);
         setFeature(NAMESPACE_GROWTH, false);
-        
+        setFeature(TOLERATE_DUPLICATES, false);
+
         setFeature(IGNORE_XSI_TYPE, false);
         setFeature(ID_IDREF_CHECKING, true);
         setFeature(IDENTITY_CONSTRAINT_CHECKING, true);

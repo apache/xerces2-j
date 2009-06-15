@@ -279,6 +279,9 @@ public final class Constants {
     
     /** Namespace growth feature ("namespace-growth"). */
     public static final String NAMESPACE_GROWTH_FEATURE = "namespace-growth";
+
+    /** Tolerate duplicates feature ("internal/tolerate-duplicates"). */
+    public static final String TOLERATE_DUPLICATES_FEATURE = "internal/tolerate-duplicates";
     
     /** XInclude processing feature ("xinclude"). */
     public static final String XINCLUDE_FEATURE = "xinclude";
@@ -287,7 +290,7 @@ public final class Constants {
     public static final String XINCLUDE_FIXUP_BASE_URIS_FEATURE = "xinclude/fixup-base-uris";
     
     /** XInclude fixup language feature ("xinclude/fixup-language"). */
-    public static final String XINCLUDE_FIXUP_LANGUAGE_FEATURE = "xinclude/fixup-language";
+    public static final String XINCLUDE_FIXUP_LANGUAGE_FEATURE = "xinclude/fixup-language";    
     
     /**
      * Feature to ignore xsi:type attributes on elements during validation,
@@ -518,6 +521,7 @@ public final class Constants {
             IDC_CHECKING_FEATURE,
             UNPARSED_ENTITY_CHECKING_FEATURE,
             NAMESPACE_GROWTH_FEATURE,
+            TOLERATE_DUPLICATES_FEATURE,
     };
     
     /** Xerces properties. */

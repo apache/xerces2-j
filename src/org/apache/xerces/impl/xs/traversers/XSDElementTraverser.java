@@ -412,7 +412,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                         fSchemaHandler.checkForDuplicateNames(
                                 (schemaDoc.fTargetNamespace == null) ? ","+DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME)
                                         : schemaDoc.fTargetNamespace+","+ DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME),
-                                        fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
+                                        fSchemaHandler.ATTRIBUTE_TYPE, fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
                                         child, schemaDoc);
                     }
                 } else if (childName.equals(SchemaSymbols.ELT_KEYREF)) {
@@ -504,17 +504,19 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // Step 5: register the element decl to the grammar
         if (isGlobal) {
-            if (!fSchemaHandler.fNamespaceGrowth) {
+            if (grammar.getGlobalElementDecl(element.fName) == null) {
                 grammar.addGlobalElementDecl(element);
             }
-            else {
-                if (grammar.getGlobalElementDecl(element.fName) == null) {
-                    grammar.addGlobalElementDecl(element);
-                }
+            if (fSchemaHandler.fTolerateDuplicates) {
                 final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                if (grammar.getGlobalElementDecl(element.fName, loc) == null) {
+                final XSElementDecl element2 = grammar.getGlobalElementDecl(element.fName, loc);
+                if (element2 == null) {
                     grammar.addGlobalElementDecl(element, loc);
                 }
+                else {
+                    element = element2;
+                }
+                fSchemaHandler.addGlobalElementDecl(element);
             }
         }
         

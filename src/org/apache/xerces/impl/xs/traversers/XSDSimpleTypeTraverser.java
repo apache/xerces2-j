@@ -115,20 +115,24 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         
         // don't add global components without name to the grammar
         if (type != null) {
-            if (!fSchemaHandler.fNamespaceGrowth) {
+            if (grammar.getGlobalTypeDecl(type.getName()) == null) {
                 grammar.addGlobalSimpleTypeDecl(type);
             }
-            else {
+            if (fSchemaHandler.fTolerateDuplicates) {
                 final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                if (grammar.getGlobalTypeDecl(type.getName()) == null) {
-                    grammar.addGlobalSimpleTypeDecl(type);
-                }
-                if (grammar.getGlobalTypeDecl(type.getName(), loc) == null) {
+                XSTypeDefinition type2 = grammar.getGlobalTypeDecl(type.getName(), loc);  
+                if (type2 == null) {
                     grammar.addGlobalSimpleTypeDecl(type, loc);
                 }
+                else {
+                    if (type2 instanceof XSSimpleType) {
+                        type = (XSSimpleType) type2;
+                    }
+                }
+                fSchemaHandler.addGlobalTypeDecl(type);
             }
         }
-        
+
         return type;
     }
     
