@@ -3014,6 +3014,10 @@ public class XMLSchemaValidator
                     reportSchemaError(
                         "cvc-complex-type.3.2.2",
                         new Object[] { element.rawname, fTempQName.rawname });
+                    
+                    // We have seen an attribute that was not declared
+                    fNFullValidationDepth = fElementDepth;
+                    
                     continue;
                 }
             }
@@ -3197,7 +3201,10 @@ public class XMLSchemaValidator
 
             // PSVI: validation attempted:
             attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;
-
+   
+            // We have seen an attribute that was declared.
+            fNNoneValidationDepth = fElementDepth;
+            
             String[] errors = fXSIErrorReporter.mergeContext();
             // PSVI: error codes
             attrPSVI.fErrors = errors;
