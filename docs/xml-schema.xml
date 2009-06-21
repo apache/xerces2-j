@@ -60,6 +60,7 @@
             in date/time datatypes are limited to the value 2147483647.
             Items larger than this limit will not be validated correctly.
             i.e. 11.2147483648 is not supported as a second value. </li>
+            <li> Leap seconds are not supported in the values of date/time datatypes.</li>
         </ul>
     </s2>
     <s2 title='Problem Areas/Known Bugs'>
