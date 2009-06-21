@@ -67,7 +67,12 @@
         <ul>
             <li> For larger values of maxOccurs, an OutOfMemoryError may occur.
             The workaround for this problem, if your application permits it, 
-            is to change the maxOccurs value to unbounded.</li>
+            is to change the maxOccurs value to unbounded. If you are unable to
+            change the schema you can configure Xerces-J so that it fails more
+            gracefully by enabling the JAXP secure processing feature. See the
+            Javadoc for javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING for
+            more details.
+            </li>
         </ul>
     </s2>
     <s2 title="Other Notes">
