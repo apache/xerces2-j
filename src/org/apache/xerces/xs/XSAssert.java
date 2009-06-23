@@ -36,7 +36,7 @@ public interface XSAssert extends XSObject {
     public XSObjectList getAnnotations();
 
     /**
-     * [test]: a restricted XPath 2.0 expression.
+     * [test]: an XPath 2.0 expression.
      */
     public Test getTest();
 
