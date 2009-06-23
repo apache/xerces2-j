@@ -33,7 +33,7 @@ public class XSAssertImpl implements XSAssert {
     /** The type definition associated with the assertion component */
     protected XSTypeDefinition fTypeDefinition;
 
-    /** The restricted XPath 2.0 expression that represents the test attribute */
+    /** An XPath 2.0 expression that represents the test attribute */
     protected Test fTestExpr = null;
     
     /** Optional annotations */
