@@ -133,7 +133,22 @@ public class SymbolHash {
         }
         return fNum;
     }
-    
+
+    /**
+     * Return key/value pairs of all entries in the map
+     */
+    public Object[] getEntries() {
+        Object[] entries = new String[fNum << 1];
+        for (int i=0, j=0; i<fTableSize && j<fNum << 1; i++) {
+            for (Entry entry = fBuckets[i]; entry != null; entry = entry.next) {
+                entries[j] = entry.key;
+                entries[++j] = entry.value; 
+                j++;
+            }
+        }
+        return entries;
+    }
+
     /**
      * Make a clone of this object.
      */

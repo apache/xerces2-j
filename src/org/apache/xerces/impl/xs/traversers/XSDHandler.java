@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs.traversers;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Stack;
@@ -32,6 +33,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -54,6 +56,7 @@ import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaDOMParser;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.util.XSInputSource;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.DOMInputSource;
@@ -68,7 +71,6 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -80,9 +82,23 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeGroupDefinition;
+import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSModelGroupDefinition;
+import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.datatypes.ObjectList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -520,6 +536,9 @@ public class XSDHandler {
                     referType == XSDDescription.CONTEXT_PREPARSE,
                     referType, null);
         } // StAXInputSource
+        else if (is instanceof XSInputSource) {
+            schemaRoot = getSchemaDocument((XSInputSource) is, desc);
+        } // XSInputSource
         else {
         	schemaRoot = getSchemaDocument(schemaNamespace, is,
                   referType == XSDDescription.CONTEXT_PREPARSE,
@@ -529,6 +548,9 @@ public class XSDHandler {
 
         if (schemaRoot == null) {
             // something went wrong right off the hop
+            if (is instanceof XSInputSource) {
+                return fGrammarBucket.getGrammar(desc.getTargetNamespace());
+            }
             return null;
         }
 
@@ -558,7 +580,7 @@ public class XSDHandler {
             	fDoc2SystemId.put(schemaRoot, schemaId);
             }
         }
-        
+
         // before constructing trees and traversing a schema, need to reset
         // all traversers and clear all registries
         prepareForTraverse();
@@ -828,7 +850,7 @@ public class XSDHandler {
             sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
             fGrammarBucket.putGrammar(sg);
         }
-        
+
         // store the document and its location
         // REVISIT: don't expose the DOM tree
         sg.addDocument(null, (String)fDoc2SystemId.get(currSchemaInfo.fSchemaElement));
@@ -915,7 +937,7 @@ public class XSDHandler {
                 else if (!ins.contains(schemaNamespace)){
                     ins.addElement(schemaNamespace);
                 }
-                
+
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(XSDDescription.CONTEXT_IMPORT);
                 fSchemaGrammarDescription.setBaseSystemId(doc2SystemId(schemaRoot));
@@ -2015,6 +2037,9 @@ public class XSDHandler {
         else if (schemaSource instanceof StAXInputSource) {
             return getSchemaDocument(desc.getTargetNamespace(), (StAXInputSource) schemaSource, mustResolve, desc.getContextType(), referElement); 
         } // StAXInputSource
+        else if (schemaSource instanceof XSInputSource) {
+            return getSchemaDocument((XSInputSource) schemaSource, desc);
+        } // XSInputSource
         return getSchemaDocument(desc.getTargetNamespace(), schemaSource, mustResolve, desc.getContextType(), referElement);
     } // getSchema(String, String, String, boolean, short):  Document
 
@@ -2030,6 +2055,9 @@ public class XSDHandler {
         else if (schemaSource instanceof StAXInputSource) {
             return getSchemaDocument(desc.getTargetNamespace(), (StAXInputSource) schemaSource, mustResolve, desc.getContextType(), referElement); 
         } // StAXInputSource
+        else if (schemaSource instanceof XSInputSource) {
+            return getSchemaDocument((XSInputSource) schemaSource, desc);
+        } // XSInputSource
         return getSchemaDocument(desc.getTargetNamespace(), schemaSource, mustResolve, desc.getContextType(), referElement);
     }
 
@@ -2410,6 +2438,859 @@ public class XSDHandler {
         return null;
     } // getSchemaDocument1(boolean, boolean, XMLInputSource, Element): Element
     
+    /**
+     * getSchemaDocument method uses XMLInputSource to parse a schema document.
+     * @param schemaNamespace
+     * @param schemaSource
+     * @param mustResolve
+     * @param referType
+     * @param referElement
+     * @return A schema Element.
+     */
+    private Element getSchemaDocument(XSInputSource schemaSource, XSDDescription desc) {
+
+        SchemaGrammar[] grammars = schemaSource.getGrammars();
+        short referType = desc.getContextType();
+        
+        if (grammars != null && grammars.length > 0) {
+            Vector expandedGrammars = expandGrammars(grammars);
+            // check for existing grammars in our bucket
+            // and if there exist any, and namespace growth is
+            // not enabled - we do nothing
+            if (fNamespaceGrowth || !existingGrammars(expandedGrammars)) {
+                addGrammars(expandedGrammars);
+                if (referType == XSDDescription.CONTEXT_PREPARSE) {
+                    desc.setTargetNamespace(grammars[0].getTargetNamespace());
+                }
+            }
+        }
+        else {
+            XSObject[] components = schemaSource.getComponents();
+            if (components != null && components.length > 0) {
+                Hashtable importDependencies = new Hashtable();
+                Vector expandedComponents = expandComponents(components, importDependencies);
+                if (fNamespaceGrowth || canAddComponents(expandedComponents)) {
+                    addGlobalComponents(expandedComponents, importDependencies);
+                    if (referType == XSDDescription.CONTEXT_PREPARSE) {
+                        desc.setTargetNamespace(components[0].getNamespace());
+                    }
+                }
+            }
+        }
+        return null;
+    } // getSchemaDocument(String, XSInputSource, boolean, short, Element): Element
+
+    private Vector expandGrammars(SchemaGrammar[] grammars) {
+        Vector currGrammars = new Vector();
+
+        for (int i=0; i<grammars.length; i++) {
+            if (!currGrammars.contains(grammars[i])) {
+                currGrammars.add(grammars[i]);
+            }
+        }
+
+        // for all (recursively) imported grammars
+        SchemaGrammar sg1, sg2;
+        Vector gs;
+        for (int i = 0; i < currGrammars.size(); i++) {
+            // get the grammar
+            sg1 = (SchemaGrammar)currGrammars.elementAt(i);
+            // we need to add grammars imported by sg1 too
+            gs = sg1.getImportedGrammars();
+            // for all grammars imported by sg2, but not in the vector
+            // we add them to the vector
+            if (gs == null) {
+                continue;
+            }
+
+            for (int j = gs.size() - 1; j >= 0; j--) {
+                sg2 = (SchemaGrammar)gs.elementAt(j);
+                if (!currGrammars.contains(sg2)) {
+                    currGrammars.addElement(sg2);
+                }
+            }
+        }
+
+        return currGrammars;
+    }
+
+    private boolean existingGrammars(Vector grammars) {
+        int length = grammars.size();
+        final XSDDescription desc = new XSDDescription();
+        
+        for (int i=0; i < length; i++) {
+            final SchemaGrammar sg1 = (SchemaGrammar)grammars.elementAt(i);
+            desc.setNamespace(sg1.getTargetNamespace());
+            
+            final SchemaGrammar sg2 = findGrammar(desc, false);
+            if (sg2 != null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean canAddComponents(Vector components) {
+        final int size = components.size();
+        final XSDDescription desc = new XSDDescription(); 
+        for (int i=0; i<size; i++) {
+            XSObject component = (XSObject) components.elementAt(i);
+            if (!canAddComponent(component, desc)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean canAddComponent(XSObject component, XSDDescription desc) {
+        desc.setNamespace(component.getNamespace());
+
+        final SchemaGrammar sg = findGrammar(desc, false);
+        if (sg == null) {
+            return true;
+        }
+        else if (sg.isImmutable()) {
+            return false;
+        }
+
+        short componentType = component.getType();
+        final String name = component.getName();
+
+        switch (componentType) {
+        case XSConstants.TYPE_DEFINITION :
+            if (sg.getGlobalTypeDecl(name) == component) {
+                return true;
+            }
+            break;
+        case XSConstants.ATTRIBUTE_DECLARATION :
+            if (sg.getGlobalAttributeDecl(name) == component) {
+                return true;
+            }
+            break;
+        case XSConstants.ATTRIBUTE_GROUP :
+            if (sg.getGlobalAttributeDecl(name) == component) {
+                return true;
+            }
+            break;
+        case XSConstants.ELEMENT_DECLARATION :
+            if (sg.getGlobalElementDecl(name) == component) {
+                return true;
+            }
+            break;
+        case XSConstants.MODEL_GROUP_DEFINITION :
+            if (sg.getGlobalGroupDecl(name) == component) {
+                return true;
+            }
+            break;
+        case XSConstants.NOTATION_DECLARATION :
+            if (sg.getGlobalNotationDecl(name) == component) {
+                return true;
+            }
+            break;
+        case XSConstants.IDENTITY_CONSTRAINT :
+        case XSConstants.ATTRIBUTE_USE :
+        default :
+            return true;
+        }
+        return false;
+    }
+
+    private void addGrammars(Vector grammars) {
+        int length = grammars.size();
+        XSDDescription desc = new XSDDescription();
+        
+        for (int i=0; i < length; i++) {
+            final SchemaGrammar sg1 = (SchemaGrammar)grammars.elementAt(i);
+            desc.setNamespace(sg1.getTargetNamespace());
+
+            final SchemaGrammar sg2 = findGrammar(desc, fNamespaceGrowth);
+            if (sg1 != sg2) {
+                addGrammarComponents(sg1, sg2);
+            }
+        }
+    }
+
+    private void addGrammarComponents(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        if (dstGrammar == null) {
+            createGrammarFrom(srcGrammar);
+            return;
+        }
+
+        SchemaGrammar tmpGrammar = dstGrammar;
+        if (tmpGrammar.isImmutable()) {
+            tmpGrammar = createGrammarFrom(dstGrammar);
+        }
+
+        // add any new locations
+        addNewGrammarLocations(srcGrammar, tmpGrammar);
+        
+        // add any new imported grammars
+        addNewImportedGrammars(srcGrammar, tmpGrammar);
+
+        // add any new global components
+        addNewGrammarComponents(srcGrammar, tmpGrammar);
+    }
+
+    private SchemaGrammar createGrammarFrom(SchemaGrammar grammar) {
+        SchemaGrammar newGrammar = new SchemaGrammar(grammar);
+        fGrammarBucket.putGrammar(newGrammar);
+        // update all the grammars in the bucket to point to the new grammar.
+        updateImportListWith(newGrammar);
+        // update import list of the new grammar
+        updateImportListFor(newGrammar);
+        return newGrammar;
+    }
+
+    private void addNewGrammarLocations(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        final StringList locations = srcGrammar.getDocumentLocations();
+        final int locSize = locations.size();
+        final StringList locations2 = dstGrammar.getDocumentLocations();
+        
+        for (int i=0; i<locSize; i++) {
+            String loc = locations.item(i);
+            if (!locations2.contains(loc)) {
+                dstGrammar.addDocument(null, loc);
+            }
+        }
+    }
+
+    private void addNewImportedGrammars(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        final Vector igs1 = srcGrammar.getImportedGrammars();
+        if (igs1 != null) {
+            Vector igs2 = dstGrammar.getImportedGrammars();
+            
+            if (igs2 == null) {
+                igs2 = ((Vector) igs1.clone());
+                dstGrammar.setImportedGrammars(igs2);
+            }
+            else {
+                updateImportList(igs1, igs2);
+            }
+        }
+    }
+
+    private void updateImportList(Vector importedSrc, Vector importedDst)
+    {
+        final int size = importedSrc.size();
+
+        for (int i=0; i<size; i++) {
+            final SchemaGrammar sg = (SchemaGrammar) importedSrc.elementAt(i);
+            if (!containedImportedGrammar(importedDst, sg)) {
+                importedDst.add(sg);
+            }
+        }
+    }
+
+    private void addNewGrammarComponents(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        dstGrammar.resetComponents();
+        addGlobalElementDecls(srcGrammar, dstGrammar);
+        addGlobalAttributeDecls(srcGrammar, dstGrammar);
+        addGlobalAttributeGroupDecls(srcGrammar, dstGrammar);
+        addGlobalGroupDecls(srcGrammar, dstGrammar);
+        addGlobalTypeDecls(srcGrammar, dstGrammar);
+        addGlobalNotationDecls(srcGrammar, dstGrammar);
+    }
+
+    private void addGlobalElementDecls(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        XSNamedMap components = srcGrammar.getComponents(XSConstants.ELEMENT_DECLARATION);
+        int len = components.getLength();
+        XSElementDecl srcDecl, dstDecl;
+
+        // add global components
+        for (int i=0; i<len; i++) {
+            srcDecl = (XSElementDecl) components.item(i);
+            dstDecl = dstGrammar.getGlobalElementDecl(srcDecl.getName()); 
+            if (dstDecl == null) {
+                dstGrammar.addGlobalElementDecl(srcDecl);
+            }
+            else if (dstDecl != srcDecl){
+                // TODO: if not tolerating duplicate, generate an error message
+            }
+        }
+
+        // add any extended (duplicate) global components
+        ObjectList componentsExt = srcGrammar.getComponentsExt(XSConstants.ELEMENT_DECLARATION);
+        len = componentsExt.getLength();
+
+        for (int i=0; i<len; i+= 2) {
+            final String key = (String) componentsExt.item(i);
+            final int index = key.indexOf(',');
+            final String location = key.substring(0, index);
+            final String name = key.substring(index + 1, key.length());
+
+            srcDecl = (XSElementDecl)componentsExt.item(i+1);
+            dstDecl = dstGrammar.getGlobalElementDecl(name, location); 
+            if ( dstDecl == null) {
+                dstGrammar.addGlobalElementDecl(srcDecl, location);
+            }
+            else if (dstDecl != srcDecl){
+                // TODO: if not tolerating duplicate, generate an error message
+            }
+        }
+    }
+    
+    private void addGlobalAttributeDecls(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        XSNamedMap components = srcGrammar.getComponents(XSConstants.ATTRIBUTE_DECLARATION);
+        int len = components.getLength();
+        XSAttributeDecl srcDecl, dstDecl;
+
+        // add global components
+        for (int i=0; i<len; i++) {
+            srcDecl = (XSAttributeDecl) components.item(i);
+            dstDecl = dstGrammar.getGlobalAttributeDecl(srcDecl.getName()); 
+            if (dstDecl == null) {
+                dstGrammar.addGlobalAttributeDecl(srcDecl);
+            }
+            else if (dstDecl != srcDecl && !fTolerateDuplicates) {
+                reportSharingError(srcDecl.getNamespace(), srcDecl.getName());
+            }
+        }
+
+        // add any extended (duplicate) global components
+        ObjectList componentsExt = srcGrammar.getComponentsExt(XSConstants.ATTRIBUTE_DECLARATION);
+        len = componentsExt.getLength();
+
+        for (int i=0; i<len; i+= 2) {
+            final String key = (String) componentsExt.item(i);
+            final int index = key.indexOf(',');
+            final String location = key.substring(0, index);
+            final String name = key.substring(index + 1, key.length());
+            
+            srcDecl = (XSAttributeDecl)componentsExt.item(i+1);
+            dstDecl = dstGrammar.getGlobalAttributeDecl(name, location); 
+            if (dstDecl == null) {
+                dstGrammar.addGlobalAttributeDecl(srcDecl, location);
+            }
+            // REVISIT - do we report an error?
+            else if (dstDecl != srcDecl) {
+            }
+        }
+    }
+
+    private void addGlobalAttributeGroupDecls(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        XSNamedMap components = srcGrammar.getComponents(XSConstants.ATTRIBUTE_GROUP);
+        int len = components.getLength();
+        XSAttributeGroupDecl srcDecl, dstDecl;
+
+        // add global components
+        for (int i=0; i<len; i++) {
+            srcDecl = (XSAttributeGroupDecl) components.item(i);
+            dstDecl = dstGrammar.getGlobalAttributeGroupDecl(srcDecl.getName());
+            if (dstDecl == null) {
+                dstGrammar.addGlobalAttributeGroupDecl(srcDecl);
+            }
+            else if (dstDecl != srcDecl && !fTolerateDuplicates) {
+                reportSharingError(srcDecl.getNamespace(), srcDecl.getName());
+            }
+        }
+
+        // add any extended (duplicate) global components
+        ObjectList componentsExt = srcGrammar.getComponentsExt(XSConstants.ATTRIBUTE_GROUP);
+        len = componentsExt.getLength();
+
+        for (int i=0; i<len; i+= 2) {
+            final String key = (String) componentsExt.item(i);
+            final int index = key.indexOf(',');
+            final String location = key.substring(0, index);
+            final String name = key.substring(index + 1, key.length());
+            
+            srcDecl = (XSAttributeGroupDecl)componentsExt.item(i+1);
+            dstDecl = dstGrammar.getGlobalAttributeGroupDecl(name, location);
+            if (dstDecl == null) {
+                dstGrammar.addGlobalAttributeGroupDecl(srcDecl, location);
+            }
+            // REVISIT - do we report an error?
+            else if (dstDecl != srcDecl) {
+            }
+        }
+    }
+    
+    private void addGlobalNotationDecls(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        XSNamedMap components = srcGrammar.getComponents(XSConstants.NOTATION_DECLARATION);
+        int len = components.getLength();
+        XSNotationDecl srcDecl, dstDecl;
+
+        // add global components
+        for (int i=0; i<len; i++) {
+            srcDecl = (XSNotationDecl) components.item(i);
+            dstDecl = dstGrammar.getGlobalNotationDecl(srcDecl.getName());
+            if (dstDecl == null) {
+                dstGrammar.addGlobalNotationDecl(srcDecl);
+            }
+            else if (dstDecl != srcDecl && !fTolerateDuplicates) {
+                reportSharingError(srcDecl.getNamespace(), srcDecl.getName());
+            }
+        }
+
+        // add any extended (duplicate) global components
+        ObjectList componentsExt = srcGrammar.getComponentsExt(XSConstants.NOTATION_DECLARATION);
+        len = componentsExt.getLength();
+
+        for (int i=0; i<len; i+= 2) {
+            final String key = (String) componentsExt.item(i);
+            final int index = key.indexOf(',');
+            final String location = key.substring(0, index);
+            final String name = key.substring(index + 1, key.length());
+
+            srcDecl = (XSNotationDecl)componentsExt.item(i+1);
+            dstDecl = dstGrammar.getGlobalNotationDecl(name, location);
+            if (dstDecl == null) {
+                dstGrammar.addGlobalNotationDecl(srcDecl, location);
+            }
+            // REVISIT - do we report an error?
+            else if (dstDecl != srcDecl) {
+            }
+        }
+    }
+    
+    private void addGlobalGroupDecls(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        XSNamedMap components = srcGrammar.getComponents(XSConstants.MODEL_GROUP_DEFINITION);
+        int len = components.getLength();
+        XSGroupDecl srcDecl, dstDecl;
+
+        // add global components
+        for (int i=0; i<len; i++) {
+            srcDecl = (XSGroupDecl) components.item(i);
+            dstDecl = dstGrammar.getGlobalGroupDecl(srcDecl.getName());
+            if (dstDecl == null) {
+                dstGrammar.addGlobalGroupDecl(srcDecl);
+            }
+            else if (srcDecl != dstDecl && !fTolerateDuplicates) {
+                reportSharingError(srcDecl.getNamespace(), srcDecl.getName());
+            }
+        }
+
+        // add any extended (duplicate) global components
+        ObjectList componentsExt = srcGrammar.getComponentsExt(XSConstants.MODEL_GROUP_DEFINITION);
+        len = componentsExt.getLength();
+
+        for (int i=0; i<len; i+= 2) {
+            final String key = (String) componentsExt.item(i);
+            final int index = key.indexOf(',');
+            final String location = key.substring(0, index);
+            final String name = key.substring(index + 1, key.length());
+
+            srcDecl = (XSGroupDecl)componentsExt.item(i+1);
+            dstDecl = dstGrammar.getGlobalGroupDecl(name, location);
+            if (dstDecl == null) {
+                dstGrammar.addGlobalGroupDecl(srcDecl, location);
+            }
+            // REVIST - do we report an error?
+            else if (dstDecl != srcDecl) {
+            }
+        }
+    }
+
+    private void addGlobalTypeDecls(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+        XSNamedMap components = srcGrammar.getComponents(XSConstants.TYPE_DEFINITION);
+        int len = components.getLength();
+        XSTypeDefinition srcDecl, dstDecl;
+
+        // add global components
+        for (int i=0; i<len; i++) {
+            srcDecl = (XSTypeDefinition) components.item(i);
+            dstDecl = dstGrammar.getGlobalTypeDecl(srcDecl.getName());
+            if (dstDecl == null) {
+                dstGrammar.addGlobalTypeDecl(srcDecl);
+            }
+            else if (dstDecl != srcDecl && !fTolerateDuplicates) {
+                reportSharingError(srcDecl.getNamespace(), srcDecl.getName());
+            }
+        }
+
+        // add any extended (duplicate) global components
+        ObjectList componentsExt = srcGrammar.getComponentsExt(XSConstants.TYPE_DEFINITION);
+        len = componentsExt.getLength();
+
+        for (int i=0; i<len; i+= 2) {
+            final String key = (String) componentsExt.item(i);
+            final int index = key.indexOf(',');
+            final String location = key.substring(0, index);
+            final String name = key.substring(index + 1, key.length());
+
+            srcDecl = (XSTypeDefinition)componentsExt.item(i+1);
+            dstDecl = dstGrammar.getGlobalTypeDecl(name, location);
+            if (dstDecl == null) {
+                dstGrammar.addGlobalTypeDecl(srcDecl, location);
+            }
+            // REVISIT - do we report an error?
+            else if (dstDecl != srcDecl) {
+            }
+        }
+    }
+
+    private Vector expandComponents(XSObject[] components, Hashtable dependencies) {
+        Vector newComponents = new Vector();
+        
+        for (int i=0; i<components.length; i++) {
+            if (!newComponents.contains(components[i])) {
+                newComponents.add(components[i]);
+            }
+        }
+        
+        for (int i=0; i<newComponents.size(); i++) {
+            final XSObject component = (XSObject) newComponents.elementAt(i);
+            expandRelatedComponents(component, newComponents, dependencies);
+        }
+        
+        return newComponents;
+    }
+    
+    private void expandRelatedComponents(XSObject component, Vector componentList, Hashtable dependencies) {
+        short componentType = component.getType();
+        switch (componentType) {
+        case XSConstants.TYPE_DEFINITION :
+            expandRelatedTypeComponents((XSTypeDefinition) component, componentList, component.getNamespace(), dependencies);
+            break;
+        case XSConstants.ATTRIBUTE_DECLARATION :
+            expandRelatedAttributeComponents((XSAttributeDeclaration) component, componentList, component.getNamespace(), dependencies);
+            break;
+        case XSConstants.ATTRIBUTE_GROUP :
+            expandRelatedAttributeGroupComponents((XSAttributeGroupDefinition) component, componentList, component.getNamespace(), dependencies);
+        case XSConstants.ELEMENT_DECLARATION :
+            expandRelatedElementComponents((XSElementDeclaration) component, componentList, component.getNamespace(), dependencies);
+            break;
+        case XSConstants.MODEL_GROUP_DEFINITION :
+            expandRelatedModelGroupDefinitionComponents((XSModelGroupDefinition) component, componentList, component.getNamespace(), dependencies);
+        case XSConstants.ATTRIBUTE_USE :
+            //expandRelatedAttributeUseComponents((XSAttributeUse)component, componentList, dependencies);
+        case XSConstants.NOTATION_DECLARATION :
+        case XSConstants.IDENTITY_CONSTRAINT :
+        default :
+            break;
+        }
+    }
+
+    private void expandRelatedAttributeComponents(XSAttributeDeclaration decl, Vector componentList, String namespace, Hashtable dependencies) {
+        addRelatedType(decl.getTypeDefinition(), componentList, namespace, dependencies);
+
+        /*final XSComplexTypeDefinition enclosingType = decl.getEnclosingCTDefinition();
+        if (enclosingType != null) {
+            addRelatedType(enclosingType, componentList, namespace, dependencies);
+        }*/
+    }
+
+    private void expandRelatedElementComponents(XSElementDeclaration decl, Vector componentList, String namespace, Hashtable dependencies) {
+        addRelatedType(decl.getTypeDefinition(), componentList, namespace, dependencies);
+        
+        /*final XSTypeDefinition enclosingType = decl.getEnclosingCTDefinition();
+        if (enclosingType != null) {
+            addRelatedType(enclosingType, componentList, namespace, dependencies);
+        }*/
+
+        final XSElementDeclaration subElemDecl = decl.getSubstitutionGroupAffiliation();
+        if (subElemDecl != null) {
+            addRelatedElement(subElemDecl, componentList, namespace, dependencies);
+        }
+    }
+    
+    private void expandRelatedTypeComponents(XSTypeDefinition type, Vector componentList, String namespace, Hashtable dependencies) {
+        if (type instanceof XSComplexTypeDecl) {
+            expandRelatedComplexTypeComponents((XSComplexTypeDecl) type, componentList, namespace, dependencies);
+        }
+        else if (type instanceof XSSimpleTypeDecl) {
+            expandRelatedSimpleTypeComponents((XSSimpleTypeDefinition) type, componentList, namespace, dependencies);
+        }
+    }
+
+    private void expandRelatedModelGroupDefinitionComponents(XSModelGroupDefinition modelGroupDef, Vector componentList,
+            String namespace, Hashtable dependencies) {
+        expandRelatedModelGroupComponents(modelGroupDef.getModelGroup(), componentList, namespace, dependencies);
+    }
+
+    private void expandRelatedAttributeGroupComponents(XSAttributeGroupDefinition attrGroup, Vector componentList
+            , String namespace, Hashtable dependencies) {
+        expandRelatedAttributeUsesComponents(attrGroup.getAttributeUses(), componentList, namespace, dependencies);
+    }
+
+    private void expandRelatedComplexTypeComponents(XSComplexTypeDecl type, Vector componentList, String namespace, Hashtable dependencies) {
+        addRelatedType(type.getBaseType(), componentList, namespace, dependencies);
+        expandRelatedAttributeUsesComponents(type.getAttributeUses(), componentList, namespace, dependencies);
+        final XSParticle particle = type.getParticle();
+        if (particle != null) {
+            expandRelatedParticleComponents(particle, componentList, namespace, dependencies);
+        }
+    }
+
+    private void expandRelatedSimpleTypeComponents(XSSimpleTypeDefinition type, Vector componentList, String namespace, Hashtable dependencies) {
+        final XSTypeDefinition baseType = type.getBaseType();
+        if (baseType != null) {
+            addRelatedType(baseType, componentList, namespace, dependencies);
+        }
+
+        final XSTypeDefinition itemType = type.getItemType();
+        if (itemType != null) {
+            addRelatedType(itemType, componentList, namespace, dependencies);
+        }
+        
+        final XSTypeDefinition primitiveType = type.getPrimitiveType();
+        if (primitiveType != null) {
+            addRelatedType(primitiveType, componentList, namespace, dependencies);
+        }
+
+        final XSObjectList memberTypes = type.getMemberTypes();
+        if (memberTypes.size() > 0) {
+            for (int i=0; i<memberTypes.size(); i++) {
+                addRelatedType((XSTypeDefinition)memberTypes.item(i), componentList, namespace, dependencies);
+            }
+        }
+    }
+    
+    private void expandRelatedAttributeUsesComponents(XSObjectList attrUses, Vector componentList,
+            String namespace, Hashtable dependencies) {
+        final int attrUseSize = (attrUses == null) ? 0 : attrUses.size();
+        for (int i=0; i<attrUseSize; i++) {
+            expandRelatedAttributeUseComponents((XSAttributeUse)attrUses.item(i), componentList, namespace, dependencies);
+        }
+    }
+
+    private void expandRelatedAttributeUseComponents(XSAttributeUse component, Vector componentList,
+            String namespace, Hashtable dependencies) {
+        addRelatedAttribute(component.getAttrDeclaration(), componentList, namespace, dependencies);
+    }
+
+    private void expandRelatedParticleComponents(XSParticle component, Vector componentList,
+            String namespace, Hashtable dependencies) {
+        XSTerm term = component.getTerm();
+        switch (term.getType()) {
+        case XSConstants.ELEMENT_DECLARATION :
+            addRelatedElement((XSElementDeclaration) term, componentList, namespace, dependencies);
+            break;
+        case XSConstants.MODEL_GROUP :
+            expandRelatedModelGroupComponents((XSModelGroup) term, componentList, namespace, dependencies);
+            break;
+        default:
+            break;
+        }
+    }
+
+    private void expandRelatedModelGroupComponents(XSModelGroup modelGroup, Vector componentList,
+            String namespace, Hashtable dependencies) {
+        XSObjectList particles = modelGroup.getParticles();
+        final int length = (particles == null) ? 0 : particles.getLength();
+        for (int i=0; i<length; i++) {
+            expandRelatedParticleComponents((XSParticle)particles.item(i), componentList, namespace, dependencies);
+        }
+    }
+    
+    private void addRelatedType(XSTypeDefinition type, Vector componentList, String namespace, Hashtable dependencies) {
+        if (!type.getAnonymous()) {
+            if (!type.getNamespace().equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) { //REVISIT - do we use == instead
+                if (!componentList.contains(type)) {
+                    final Vector importedNamespaces = findDependentNamespaces(namespace, dependencies);
+                    addNamespaceDependency(namespace, type.getNamespace(), importedNamespaces);
+                    componentList.add(type);
+                }
+            }
+        }
+        else {
+            expandRelatedTypeComponents(type, componentList, namespace, dependencies);
+        }
+    }
+    
+    private void addRelatedElement(XSElementDeclaration decl, Vector componentList, String namespace, Hashtable dependencies) {
+        if (decl.getScope() == XSConstants.SCOPE_GLOBAL) {
+            if (!componentList.contains(decl)) {
+                Vector importedNamespaces = findDependentNamespaces(namespace, dependencies);
+                addNamespaceDependency(namespace, decl.getNamespace(), importedNamespaces);
+                componentList.add(decl);
+            }
+        }
+        else {
+            expandRelatedElementComponents(decl, componentList, namespace, dependencies);
+        }
+    }
+
+    private void addRelatedAttribute(XSAttributeDeclaration decl, Vector componentList, String namespace, Hashtable dependencies) {
+        if (decl.getScope() == XSConstants.SCOPE_GLOBAL) {
+            if (!componentList.contains(decl)) {
+                Vector importedNamespaces = findDependentNamespaces(namespace, dependencies);
+                addNamespaceDependency(namespace, decl.getNamespace(), importedNamespaces);
+                componentList.add(decl);
+            }
+        }
+        else {
+            expandRelatedAttributeComponents(decl, componentList, namespace, dependencies);
+        }
+    }
+
+    private void addGlobalComponents(Vector components, Hashtable importDependencies) {
+        final XSDDescription desc = new XSDDescription();
+        final int size = components.size();
+        
+        for (int i=0; i<size; i++) {
+            addGlobalComponent((XSObject) components.elementAt(i), desc);
+        }
+        updateImportDependencies(importDependencies);
+    }
+
+    private void addGlobalComponent(XSObject component, XSDDescription desc) {
+        final String namespace = component.getNamespace();
+        
+        desc.setNamespace(namespace);
+        final SchemaGrammar sg = getSchemaGrammar(desc);
+
+        short componentType = component.getType();
+        final String name = component.getName();
+
+        switch (componentType) {
+        case XSConstants.TYPE_DEFINITION :
+            if (sg.getGlobalTypeDecl(name) == null) {
+                sg.addGlobalTypeDecl((XSTypeDefinition) component);
+            }
+            break;
+        case XSConstants.ATTRIBUTE_DECLARATION :
+            if (sg.getGlobalAttributeDecl(name) == null) {
+                sg.addGlobalAttributeDecl((XSAttributeDecl) component);
+            }
+            break;
+        case XSConstants.ATTRIBUTE_GROUP :
+            if (sg.getGlobalAttributeDecl(name) == null) {
+                sg.addGlobalAttributeGroupDecl((XSAttributeGroupDecl) component);
+            }
+            break;
+        case XSConstants.ELEMENT_DECLARATION :
+            if (sg.getGlobalElementDecl(name) == null) {
+                sg.addGlobalElementDecl((XSElementDecl) component);
+            }
+            break;
+        case XSConstants.MODEL_GROUP_DEFINITION :
+            if (sg.getGlobalGroupDecl(name) == null) {
+                sg.addGlobalGroupDecl((XSGroupDecl) component);
+            }
+            break;
+        case XSConstants.NOTATION_DECLARATION :
+            if (sg.getGlobalNotationDecl(name) == null) {
+                sg.addGlobalNotationDecl((XSNotationDecl) component);
+            }
+            break;
+        case XSConstants.IDENTITY_CONSTRAINT :
+        case XSConstants.ATTRIBUTE_USE :
+        default :
+            break;
+        }
+    }
+    
+    private void updateImportDependencies(Hashtable table) {
+        Enumeration keys = table.keys();
+        String namespace;
+        Vector importList;
+        while (keys.hasMoreElements()) {
+            namespace = (String) keys.nextElement();
+            importList = (Vector) table.get(null2EmptyString(namespace));
+            if (importList.size() > 0) {
+                expandImportList(namespace, importList);
+            }
+        }
+    }
+    
+    private void expandImportList(String namespace, Vector namespaceList) {
+        SchemaGrammar sg = fGrammarBucket.getGrammar(namespace);
+        // shouldn't be null
+        if (sg != null) {
+            Vector isgs = sg.getImportedGrammars();
+            if (isgs == null) {
+                isgs = new Vector();
+                addImportList(sg, isgs, namespaceList);
+                sg.setImportedGrammars(isgs);
+            }
+            else {
+                updateImportList(sg, isgs, namespaceList);
+            }
+        }
+    }
+
+    private void addImportList(SchemaGrammar sg, Vector importedGrammars, Vector namespaceList) {
+        final int size = namespaceList.size();
+        SchemaGrammar isg;
+
+        for (int i=0; i<size; i++) {
+            isg = fGrammarBucket.getGrammar((String)namespaceList.elementAt(i));
+            if (isg != null) {
+                importedGrammars.add(isg);
+            }
+            else {
+                //REVIST: report an error message
+            }
+        }
+    }
+
+    private void updateImportList(SchemaGrammar sg, Vector importedGrammars, Vector namespaceList) {
+        final int size = namespaceList.size();
+        SchemaGrammar isg;
+
+        for (int i=0; i<size; i++) {
+            isg = fGrammarBucket.getGrammar((String)namespaceList.elementAt(i));
+            if (isg != null) {
+                if (!containedImportedGrammar(importedGrammars, isg)) {
+                    importedGrammars.add(isg);
+                }
+            }
+            else {
+                //REVIST: report an error message
+            }
+        }
+    }
+
+    private boolean containedImportedGrammar(Vector importedGrammar, SchemaGrammar grammar) {
+        final int size = importedGrammar.size();
+        SchemaGrammar sg;
+
+        for (int i=0; i<size; i++) {
+            sg = (SchemaGrammar) importedGrammar.elementAt(i);
+            if (null2EmptyString(sg.getTargetNamespace()).equals(null2EmptyString(grammar.getTargetNamespace()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // NOTE: always assuming that fNamespaceGrowth is enabled
+    //       otherwise the grammar should have existed
+    private SchemaGrammar getSchemaGrammar(XSDDescription desc) {
+        SchemaGrammar sg = findGrammar(desc, fNamespaceGrowth);
+
+        if (sg == null) {
+            sg = new SchemaGrammar(desc.getNamespace(), desc.makeClone(), fSymbolTable);
+            fGrammarBucket.putGrammar(sg);
+        }
+        else if (sg.isImmutable()){
+            sg = createGrammarFrom(sg);
+        }
+
+        return sg;
+    }
+
+    private Vector findDependentNamespaces(String namespace, Hashtable table) {
+        final String ns = null2EmptyString(namespace);
+        Vector namespaceList = (Vector) table.get(ns);
+        
+        if (namespaceList == null) {
+            namespaceList = new Vector();
+            table.put(ns, namespaceList);
+        }
+        
+        return namespaceList;
+    }
+
+    private void addNamespaceDependency(String namespace1, String namespace2, Vector list) {
+        final String ns1 = null2EmptyString(namespace1);
+        final String ns2 = null2EmptyString(namespace2);
+        if (!ns1.equals(ns2)) {
+            if (!list.contains(ns2)) {
+                list.add(ns2);
+            }
+        }
+    }
+
+    private void reportSharingError(String namespace, String name) {
+        final String qName = (namespace == null)
+            ? "," + name : namespace + "," + name;
+
+        reportSchemaError("sch-props-correct.2", new Object [] {qName}, null);
+    }
+
     // initialize all the traversers.
     // this should only need to be called once during the construction
     // of this object; it creates the traversers that will be used to

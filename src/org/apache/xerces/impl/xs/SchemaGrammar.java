@@ -26,6 +26,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
@@ -54,6 +55,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.apache.xerces.xs.datatypes.ObjectList;
 import org.xml.sax.SAXException;
 
 /**
@@ -784,10 +786,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalAttributeDecl(XSAttributeDecl decl, String location) {
-        //addGlobalAttributeDecl(decl);
         if (location != null) {
             fGlobalAttrDeclsExt.put(location+","+ decl.fName, decl);
-            decl.setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                decl.setNamespaceItem(this);
+            }
         }
     }
 
@@ -800,10 +803,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl, String location) {
-        //addGlobalAttributeGroupDecl(decl);
         if (location != null) {
             fGlobalAttrGrpDeclsExt.put(location+","+decl.fName, decl);
-            decl.setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                decl.setNamespaceItem(this);
+            }
         }
     }
 
@@ -824,10 +828,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalElementDecl(XSElementDecl decl, String location) {
-        //addGlobalElementDecl(decl);
         if (location != null) {
             fGlobalElemDeclsExt.put(location+","+decl.fName, decl);
-            decl.setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                decl.setNamespaceItem(this);
+            }
         }
     }
 
@@ -840,10 +845,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalGroupDecl(XSGroupDecl decl, String location) {
-        //addGlobalGroupDecl(decl);
         if (location != null) {
             fGlobalGroupDeclsExt.put(location+","+decl.fName, decl);
-            decl.setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                decl.setNamespaceItem(this);
+            }
         }
     }
 
@@ -856,10 +862,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalNotationDecl(XSNotationDecl decl, String location) {
-        //addGlobalNotationDecl(decl);
         if (location != null) {
             fGlobalNotationDeclsExt.put(location+","+decl.fName, decl);
-            decl.setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                decl.setNamespaceItem(this);
+            }
         }
     }
 
@@ -877,14 +884,15 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalTypeDecl(XSTypeDefinition decl, String location) {
-        //addGlobalTypeDecl(decl);
         if (location != null) {
             fGlobalTypeDeclsExt.put(location+","+decl.getName(), decl);
-            if (decl instanceof XSComplexTypeDecl) {
-                ((XSComplexTypeDecl) decl).setNamespaceItem(this);
-            }
-            else if (decl instanceof XSSimpleTypeDecl) {
-                ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                if (decl instanceof XSComplexTypeDecl) {
+                    ((XSComplexTypeDecl) decl).setNamespaceItem(this);
+                }
+                else if (decl instanceof XSSimpleTypeDecl) {
+                    ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
+                }
             }
         }
     }
@@ -898,10 +906,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl, String location) {
-        //addGlobalComplexTypeDecl(decl);
         if (location != null) {
             fGlobalTypeDeclsExt.put(location+","+decl.getName(), decl);
-            decl.setNamespaceItem(this);
+            if (decl.getNamespaceItem() == null) {
+                decl.setNamespaceItem(this);
+            }
         }
     }
     
@@ -916,10 +925,9 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public void addGlobalSimpleTypeDecl(XSSimpleType decl, String location) {
-        //addGlobalSimpleTypeDecl(decl);
         if (location != null) {
             fGlobalTypeDeclsExt.put(location+","+decl.getName(), decl);
-            if (decl instanceof XSSimpleTypeDecl) {
+            if (decl.getNamespaceItem() == null && decl instanceof XSSimpleTypeDecl) {
                 ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
             }
         }
@@ -934,7 +942,6 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     public final void addIDConstraintDecl(XSElementDecl elmDecl, IdentityConstraint decl, String location) {
-        //addIDConstraintDecl(elmDecl, decl);
         if (location != null) {
             fGlobalIDConstraintDeclsExt.put(location+","+decl.getIdentityConstraintName(), decl);
         }
@@ -1349,6 +1356,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                                                  
     // store a certain kind of components from all namespaces
     private XSNamedMap[] fComponents = null;
+    private ObjectList[] fComponentsExt = null;
 
     // store the documents and their locations contributing to this namespace
     // REVISIT: use StringList and XSObjectList for there fields.
@@ -1475,7 +1483,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 table = fGlobalNotationDecls;
                 break;
             }
-            
+
             // for complex/simple types, create a special implementation,
             // which take specific types out of the hash table
             if (objectType == XSTypeDefinition.COMPLEX_TYPE ||
@@ -1488,6 +1496,53 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
         
         return fComponents[objectType];
+    }
+
+    public synchronized ObjectList getComponentsExt(short objectType) {
+        if (objectType <= 0 || objectType > MAX_COMP_IDX ||
+            !GLOBAL_COMP[objectType]) {
+            return ObjectListImpl.EMPTY_LIST;
+        }
+        
+        if (fComponentsExt == null)
+            fComponentsExt = new ObjectList[MAX_COMP_IDX+1];
+
+        // get the hashtable for this type of components
+        if (fComponentsExt[objectType] == null) {
+            SymbolHash table = null;
+            switch (objectType) {
+            case XSConstants.TYPE_DEFINITION:
+            case XSTypeDefinition.COMPLEX_TYPE:
+            case XSTypeDefinition.SIMPLE_TYPE:
+                table = fGlobalTypeDeclsExt;
+                break;
+            case XSConstants.ATTRIBUTE_DECLARATION:
+                table = fGlobalAttrDeclsExt;
+                break;
+            case XSConstants.ELEMENT_DECLARATION:
+                table = fGlobalElemDeclsExt;
+                break;
+            case XSConstants.ATTRIBUTE_GROUP:
+                table = fGlobalAttrGrpDeclsExt;
+                break;
+            case XSConstants.MODEL_GROUP_DEFINITION:
+                table = fGlobalGroupDeclsExt;
+                break;
+            case XSConstants.NOTATION_DECLARATION:
+                table = fGlobalNotationDeclsExt;
+                break;
+            }
+
+            Object[] entries = table.getEntries();
+            fComponentsExt[objectType] = new ObjectListImpl(entries, entries.length);
+        }
+
+        return fComponentsExt[objectType];
+    }
+
+    public synchronized void resetComponents() {
+        fComponents = null;
+        fComponentsExt = null;
     }
 
     /**
