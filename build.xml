@@ -223,6 +223,28 @@ Authors:
                        javax.xml.parsers.ConvertToURI.java">
         </fileset>
     </copy>
+  	
+    <!-- create English message bundles from the default ones -->
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/DatatypeMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/DatatypeMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/DOMMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/DOMMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/JAXPValidationMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/JAXPValidationMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/SAXMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/SAXMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/XIncludeMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/XIncludeMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/XMLMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/XMLMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/XMLSchemaMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/XMLSchemaMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/XMLSerializerMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/XMLSerializerMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/msg/XPointerMessages.properties"
+      tofile="${build.src}/org/apache/xerces/impl/msg/XPointerMessages_en.properties"/>
+    <copy file="${src.dir}/org/apache/xerces/impl/xpath/regex/message.properties"
+      tofile="${build.src}/org/apache/xerces/impl/xpath/regex/message_en.properties"/>
 
     <!-- now deal with API's:  -->
     <unzip src="${src.apis.zip}" dest="${build.src}">
