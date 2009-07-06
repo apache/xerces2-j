@@ -91,6 +91,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     static final short DV_YEARMONTHDURATION = DV_NOTATION + 7;
     static final short DV_DAYTIMEDURATION	= DV_NOTATION + 8;
     static final short DV_ANYATOMICTYPE = DV_NOTATION + 9;
+    static final short DV_ERROR = DV_NOTATION + 10;
 
     static final TypeValidator[] fDVs = {
         new AnySimpleDV(),
@@ -122,7 +123,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         new UnionDV(),
         new YearMonthDurationDV(), // XML Schema 1.1 type
         new DayTimeDurationDV(), // XML Schema 1.1 type
-        new AnyAtomicDV() // XML Schema 1.1 type
+        new AnyAtomicDV(), // XML Schema 1.1 type
+        new ErrorDV() // XML Schema 1.1 type
     };
 
     static final short NORMALIZE_NONE = 0;
@@ -159,6 +161,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         NORMALIZE_TRIM, //YearMonthDurationDV() (Schema 1.1)
         NORMALIZE_TRIM, //DayTimeDurationDV() (Schema 1.1)
         NORMALIZE_NONE, //AnyAtomicDV() (Schema 1.1)
+        NORMALIZE_NONE, //ErrorDV() (Schema 1.1)
     };
 
     static final short SPECIAL_PATTERN_NONE     = 0;
@@ -182,6 +185,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     public static final short DAYTIMEDURATION_DT        = 47;   
     public static final short PRECISIONDECIMAL_DT       = 48;
     public static final short ANYATOMICTYPE_DT          = 49;
+    public static final short ERROR_DT                  = 50;
 
     // DOM Level 3 TypeInfo Derivation Method constants
     static final int DERIVATION_ANY = 0;
@@ -2830,6 +2834,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYSIMPLETYPE_DT);
 
     static final XSSimpleTypeDecl fAnyAtomicType = new XSSimpleTypeDecl(fAnySimpleType, "anyAtomicType", DV_ANYATOMICTYPE, ORDERED_FALSE, false, true, false, true, XSSimpleTypeDecl.ANYATOMICTYPE_DT);
+    
+    static final XSSimpleTypeDecl fError = new XSSimpleTypeDecl(fAnySimpleType, "error", DV_ERROR, ORDERED_FALSE, false, true, false, true, XSSimpleTypeDecl.ERROR_DT);
 
     /**
      * Validation context used to validate facet values.
