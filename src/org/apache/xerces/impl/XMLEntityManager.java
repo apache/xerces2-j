@@ -1891,7 +1891,7 @@ public class XMLEntityManager
                 if (e instanceof IOException) {
                     throw (IOException) e;
                 }
-                throw new IOException(pae.getMessage());
+                throw new IOException(e != null ? e.getMessage() : pae.getMessage());
             }
         }
         // Try to write to some other kind of URI. Some protocols
