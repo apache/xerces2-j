@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -1862,15 +1865,34 @@ public class XMLEntityManager
     
     public static OutputStream createOutputStream(String uri) throws IOException {
         // URI was specified. Handle relative URIs.
-        String expanded = XMLEntityManager.expandSystemId(uri, null, true);
-        URL url = new URL(expanded != null ? expanded : uri);
+        final String expanded = XMLEntityManager.expandSystemId(uri, null, true);
+        final URL url = new URL(expanded != null ? expanded : uri);
         OutputStream out = null;
         String protocol = url.getProtocol();
         String host = url.getHost();
         // Use FileOutputStream if this URI is for a local file.
         if (protocol.equals("file") 
                 && (host == null || host.length() == 0 || host.equals("localhost"))) {
-            out = new FileOutputStream(getPathWithoutEscapes(url.getPath()));
+            try {
+                out = (OutputStream) AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                    public Object run() throws Exception {
+                        File file = new File(getPathWithoutEscapes(url.getPath()));
+                        if (!file.exists()) {
+                            File parent = file.getParentFile();
+                            if (parent != null && !parent.exists()) {
+                                parent.mkdirs();
+                            }
+                        }
+                        return new FileOutputStream(file);
+                    }});
+            }
+            catch (PrivilegedActionException pae) {
+                Exception e = pae.getException();
+                if (e instanceof IOException) {
+                    throw (IOException) e;
+                }
+                throw new IOException(pae.getMessage());
+            }
         }
         // Try to write to some other kind of URI. Some protocols
         // won't support this, though HTTP should work.
