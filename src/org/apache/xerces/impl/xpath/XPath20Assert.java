@@ -21,7 +21,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 
 /**
- * A class representing a XPath 2.0 expression for, assertions evaluation.
+ * A class representing an XPath 2.0 expression for, assertions evaluation.
  *
  * @author Mukul Gandhi, IBM
  * @version $Id$
@@ -32,7 +32,7 @@ public class XPath20Assert {
     protected final NamespaceContext fContext;
     
     public XPath20Assert(String xpath, SymbolTable symbolTable,
-            NamespaceContext context) throws XPathException {
+                         NamespaceContext context) {
         fExpression = xpath;
         fContext = context;
     }

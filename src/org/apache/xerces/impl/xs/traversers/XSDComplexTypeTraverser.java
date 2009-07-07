@@ -23,7 +23,6 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xpath.XPath20Assert;
-import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -52,15 +51,15 @@ import org.w3c.dom.Element;
  *
  * <complexType
  *   abstract = boolean : false
- *   block = (#all | List of (extension | restriction))
- *   final = (#all | List of (extension | restriction))
+ *   block = (#all | List of (extension | restriction)) 
+ *   final = (#all | List of (extension | restriction)) 
  *   id = ID
- *   mixed = boolean : false
+ *   mixed = boolean
  *   name = NCName
+ *   defaultAttributesApply = boolean : true
  *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?, (simpleContent | complexContent |
- *            ((group | all | choice | sequence)?,
- *            ((attribute | attributeGroup)*, anyAttribute?))))
+ *   Content: (annotation?, (simpleContent | complexContent | (openContent?, (group | all |
+ *   choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?), assert*)))
  * </complexType>
  * 
  * @xerces.internal  
@@ -1244,7 +1243,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     throws ComplexTypeRecoverableError {
         
         XSObjectList attrUseS = fromAttrGrp.getAttributeUses();
-        XSAttributeUseImpl  duplicateAttrUse =  null, oneAttrUse = null;
+        XSAttributeUseImpl  oneAttrUse = null;
         int attrCount = attrUseS.getLength();
         for (int i=0; i<attrCount; i++) {
             oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
@@ -1541,15 +1540,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         return elementName.equals(SchemaSymbols.ELT_ASSERT);
     }
 
-    private void traverseSimpleContentDecl(Element simpleContentDecl) {
-    }
-    
-    private void traverseComplexContentDecl(Element complexContentDecl,
-            boolean mixedOnComplexTypeDecl) {
-    }
-
     /*
-     * traversal support, for XML Schema 1.1 'assertions'.
+     * traversal support for XML Schema 1.1, 'assertions'
      */
     private void traverseAsserts(Element assertElement,
             XSDocumentInfo schemaDoc, SchemaGrammar grammar,
@@ -1575,8 +1567,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 childNode = DOMUtil.getNextSiblingElement(childNode);
 
                 if (childNode != null) {
-                    // it's an error to have something after the
-                    // annotation, in 'assert'
+                    // it's an error to have something after the annotation, in 'assert'
                     reportSchemaError("s4s-elt-invalid-content.1", new Object[] {
                             DOMUtil.getLocalName(assertElement),
                             DOMUtil.getLocalName(childNode) }, childNode);
@@ -1594,25 +1585,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 annotations = new XSObjectListImpl();
                 ((XSObjectListImpl) annotations).addXSObject(annotation);
             } else {
-                // if no annotations are present add an empty list to
-                // the assertion
+                // if no annotations are present add an empty list to the assertion
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
 
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations);
-            Test testExpr = null;
-            // set the test attribute value
-            try {
-                testExpr = new Test(new XPath20Assert(test, fSymbolTable,
-                        schemaDoc.fNamespaceSupport), assertImpl);
-            } catch (XPathException e) {
-                // if the xpath is invalid create a Test without an
-                // expression
-                reportSchemaError(e.getKey(), new Object[] { test },
-                        assertElement);
-                testExpr = new Test(null, assertImpl);
-            }
-
+            Test testExpr = new Test(new XPath20Assert(test, fSymbolTable,
+                                      schemaDoc.fNamespaceSupport), assertImpl);
             assertImpl.setTest(testExpr);
             assertImpl.setXPathDefauleNamespace(defaultNamespace);
 

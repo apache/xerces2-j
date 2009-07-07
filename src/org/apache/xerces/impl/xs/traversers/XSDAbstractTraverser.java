@@ -26,7 +26,6 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xpath.XPath20Assert;
-import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -429,7 +428,7 @@ abstract class XSDAbstractTraverser {
                     reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                 }
             }
-            // process 'assertion' facet. introduced in XML Schema 1.1
+            // process 'assertion' facet. introduced in XML Schema 1.1.
             else if (facet.equals(SchemaSymbols.ELT_ASSERTION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
                 String test = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
@@ -472,18 +471,8 @@ abstract class XSDAbstractTraverser {
                     }
                     
                     XSAssertImpl assertImpl = new XSAssertImpl(typeDef, annotations);
-                    Test testExpr = null;
-                    //set the test attribute value
-                    try {
-                        testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
-                                       schemaDoc.fNamespaceSupport), assertImpl);
-                    }
-                    catch (XPathException e) {
-                        //if the xpath is invalid create a Test without an expression
-                        reportSchemaError(e.getKey(), new Object[] { test }, content);
-                        testExpr = new Test(null, assertImpl);
-                    }
-                    
+                    Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
+                                           schemaDoc.fNamespaceSupport), assertImpl);                 
                     assertImpl.setTest(testExpr);
                     assertImpl.setXPathDefauleNamespace(defaultNamespace);
                     if (assertData == null) {
