@@ -676,21 +676,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (fXSSimpleType instanceof XSSimpleTypeDecl) {
                 ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
             }
-            try{
+            try {
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
-            }catch(InvalidDatatypeFacetException ex){
+            }
+            catch(InvalidDatatypeFacetException ex){
                 reportSchemaError(ex.getKey(), ex.getArgs(), simpleContent);
             }
             
             // -----------------------------------------------------------------------
-            // Traverse any attributes
+            // Traverse any attributes/asserts
             // -----------------------------------------------------------------------
             if (attrOrAssertNode != null) {
                 if (isAttrOrAttrGroup(attrOrAssertNode)) {
                     Element node=traverseAttrsAndAttrGrps(attrOrAssertNode,fAttrGrp,
                             schemaDoc,grammar,fComplexTypeDecl);
-
                     if (node != null) {
                         if (isAssert(node)) {
                             traverseAsserts(node, schemaDoc, grammar,
@@ -705,12 +705,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                             DOMUtil.getLocalName(node) }, node);
                         }
                     }
-                }
-                else if (isAssert(attrOrAssertNode)) {
+                } else if (isAssert(attrOrAssertNode)) {
                     traverseAsserts(attrOrAssertNode, schemaDoc, grammar,
                             fComplexTypeDecl);
-                }
-                else  {
+                } else  {
                     fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                     throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1",
@@ -745,7 +743,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fXSSimpleType = baseValidator;
             if (simpleContent != null) {
                 // -----------------------------------------------------------------------
-                // Traverse any attributes
+                // Traverse any attributes/asserts
                 // -----------------------------------------------------------------------
                 Element attrOrAssertNode = simpleContent;
                 if (isAttrOrAttrGroup(attrOrAssertNode)) {

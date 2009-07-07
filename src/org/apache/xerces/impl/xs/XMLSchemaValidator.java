@@ -50,6 +50,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -78,6 +79,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.XSAssert;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSMultiValueFacet;
@@ -2336,19 +2338,48 @@ public class XMLSchemaValidator
         // process assertions
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             XSTypeDefinition typeDef = fCurrentPSVI.getTypeDefinition();
-
             Object assertObject = null;
+            
             if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+                // if elements's governing type is a "complex type"
+                XSObjectListImpl assertions = new XSObjectListImpl();                
                 XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
-                XSObjectList assertions = complexTypeDef.getAssertions();
-                if (assertions.getLength() > 0) {
-                    assertObject = assertions;
-                    // instantiate the assertions processor
-                    if (assertionProcessor == null) {
-                        initializeAssertProcessor();
-                    }
+                
+                // there could be assertion facets from complexType -> simpleContent
+                // (xs:assertion). add them to the list of assertions to be evaluated.
+                XSSimpleTypeDefinition simpleContentModel = complexTypeDef.getSimpleType();                
+                if (simpleContentModel != null) {
+                   XSObjectList facets = simpleContentModel.getMultiValueFacets();
+                   for (int i = 0; i < facets.getLength(); i++) {
+                      XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+                      if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                        Vector simpleTypeAsserts = facet.getAsserts();
+                        for (int j = 0; j < simpleTypeAsserts.size(); j++) {
+                          assertions.addXSObject((XSAssert)simpleTypeAsserts.elementAt(j));    
+                        }                        
+                        break;
+                     }
+                  }  
+              }
+              
+              // there could be assertions, from the complex type definition
+              // (xs:assert). add them to the list of assertions to be evaluated.
+              XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
+              if (complexTypeAsserts.getLength() > 0) {
+                for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
+                  assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
                 }
+              }
+              
+              if (assertions.size() > 0) {
+                assertObject = assertions;
+                // instantiate the assertions processor
+                if (assertionProcessor == null) {
+                   initializeAssertProcessor();
+                }
+              }
             } else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+                // if elements's governing type is a "simple type"
                 XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
                 XSObjectList facets = simpleTypeDef.getMultiValueFacets();
                 for (int i = 0; i < facets.getLength(); i++) {
