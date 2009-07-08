@@ -2336,6 +2336,14 @@ public class XMLSchemaValidator
         }
         
         // process assertions
+        addAssertsForEvaluation(element, attributes);
+
+        return augs;
+
+    } // handleStartElement(QName,XMLAttributes,boolean)
+
+    /** Add assertions for processing */
+    private void addAssertsForEvaluation(QName element, XMLAttributes attributes) {
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             XSTypeDefinition typeDef = fCurrentPSVI.getTypeDefinition();
             Object assertObject = null;
@@ -2403,10 +2411,7 @@ public class XMLSchemaValidator
                 assertionProcessor.startElement(element, attributes, assertAugs);
             }
         }
-
-        return augs;
-
-    } // handleStartElement(QName,XMLAttributes,boolean)
+    }
 
     /**
      *  Handle end element. If there is not text content, and there is a
@@ -2544,7 +2549,7 @@ public class XMLSchemaValidator
              assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);                
              assertionProcessor.endElement(element, assertAugs);
            } catch (Exception ex) {
-             throw new XNIException(ex.getMessage(), ex);
+               throw new XNIException(ex.getMessage(), ex);
            }
         }
 
