@@ -33,7 +33,6 @@ import org.apache.xerces.xni.XMLString;
  * @author Ken Cai, IBM
  * 
  * @version $Id$
- * 
  */
 public interface XMLAssertHandler {  
 

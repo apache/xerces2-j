@@ -20,7 +20,7 @@ package org.apache.xerces.xs;
 import org.apache.xerces.impl.xs.assertion.Test;
 
 /**
- * This interface represents the XML Schema assertion component. Assertion
+ * This interface represents the XML Schema 1.1 assertion component. Assertion
  * components were first introduced in the XML Schema structures 1.1
  * specification, as a means of constraining the existence and values of 
  * related elements and attributes.
@@ -31,12 +31,12 @@ import org.apache.xerces.impl.xs.assertion.Test;
 public interface XSAssert extends XSObject {
 
     /**
-     * A sequence of [annotations] or an empty <code>XSObjectList</code>.
+     * A sequence of [annotations] or an empty <code>XSObjectList</code>
      */
     public XSObjectList getAnnotations();
 
     /**
-     * [test]: an XPath 2.0 expression.
+     * [test]: an XPath 2.0 expression
      */
     public Test getTest();
 

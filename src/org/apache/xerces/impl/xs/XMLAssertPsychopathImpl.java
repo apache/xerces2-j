@@ -62,9 +62,10 @@ import org.w3c.dom.NodeList;
  * The implementation of the XPath interface. This class interfaces with the
  * PsychoPath XPath 2.0 engine.
  * 
- * @version $Id$
  * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM
+ * 
+ * @version $Id$
  */
 
 public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
@@ -96,12 +97,16 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     public XMLAssertPsychopathImpl() {
         // initializing the class variables
+        // we use the PSVI enabled DOM implementation, so as to have typed
+        // XDM nodes.
         this.assertDocument = new PSVIDocumentImpl();
         this.assertRootStack = new Stack();
         this.assertListStack = new Stack();
     }
 
-    
+    /*
+     * Initialize the PsychoPath XPath processor
+     */
     private void initXPathProcessor() throws Exception {
         validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");
         fDynamicContext = new DefaultDynamicContext(fSchema, assertDocument);
@@ -304,6 +309,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     }
 
+    /*
+     * Method to report assertions error messages
+     */
     private void reportError(String key, QName element, XSAssertImpl assertImpl) {
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
         String typeString = "";

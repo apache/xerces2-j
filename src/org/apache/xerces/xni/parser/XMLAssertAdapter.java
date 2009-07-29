@@ -28,8 +28,8 @@ import org.apache.xerces.xni.XMLString;
  * A convenience implementation of the assertions interface. All compliant assertions
  * processors (using a specific XPath 2.0 engine), should extend this class.
  * 
- * @version $Id$
  * @author: Mukul Gandhi, IBM
+ * @version $Id$
  */
 public class XMLAssertAdapter implements XMLAssertHandler {
     

@@ -24,9 +24,10 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * XML Schema assertion component
+ * XML Schema 1.1 assertion component
  * 
  * @author Mukul Gandhi, IBM
+ * @version $Id$
  */
 public class XSAssertImpl implements XSAssert {
 
@@ -55,52 +56,16 @@ public class XSAssertImpl implements XSAssert {
         fTestExpr = expr;
     }
 
+    /** Sets the assertion annotations */
     public void setAnnotations(XSObjectList annotations) {
         fAnnotations = annotations;
     }
 
+    /** Sets the xpath default namespace */
     public void setXPathDefauleNamespace(String namespace) {
         fXPathDefaultNamespace = namespace;
     }
-
-    public String getXPathDefaultNamespace() {
-        return fXPathDefaultNamespace;
-    }
-
-    /** Returns a String representation of this object */
-    public String toString() {
-        String s = super.toString();
-        int index1 = s.lastIndexOf('$');
-        if (index1 != -1) {
-            return s.substring(index1 + 1);
-        }
-        int index2 = s.lastIndexOf('.');
-        if (index2 != -1) {
-            return s.substring(index2 + 1);
-        }
-        return s;
-    }
-
-    /*
-     * Tests if two asserts are equal
-     */
-    public boolean equals(XSAssertImpl assertComponent) {
-        boolean returnVal = false;
-        
-        String typeNameP = assertComponent.getTypeDefinition().getName();
-        String xpathStrP = assertComponent.getTest().getXPath().toString();
-        String typeNameThis = this.fTypeDefinition.getName();
-        String xpathStrThis = this.getTest().getXPath().toString();
-        
-        // if type and the xpath string are same, the asserts are equal
-        if (typeNameThis.equals(typeNameP) && xpathStrThis.equals(xpathStrP)) {
-            returnVal = true;  
-        }
-        
-        return returnVal;
-    }
-
-    /** Get the optional annotations */
+   
     public XSObjectList getAnnotations() {
         return fAnnotations;
     }
@@ -112,9 +77,13 @@ public class XSAssertImpl implements XSAssert {
     public Test getTest() {
         return fTestExpr;
     }
-
+    
     public XSTypeDefinition getTypeDefinition() {
         return fTypeDefinition;
+    }
+    
+    public String getXPathDefaultNamespace() {
+        return fXPathDefaultNamespace;
     }
 
     /**
@@ -143,5 +112,24 @@ public class XSAssertImpl implements XSAssert {
      */
     public short getType() {
         return XSConstants.ASSERTION;
+    }
+    
+    /*
+     * Tests if two asserts are equal
+     */
+    public boolean equals(XSAssertImpl assertComponent) {
+      boolean returnVal = false;
+        
+      String typeNameP = assertComponent.getTypeDefinition().getName();
+      String xpathStrP = assertComponent.getTest().getXPath().toString();
+      String typeNameThis = this.fTypeDefinition.getName();
+      String xpathStrThis = this.getTest().getXPath().toString();
+        
+      // if type and the xpath string are same, the asserts are equal
+      if (typeNameThis.equals(typeNameP) && xpathStrThis.equals(xpathStrP)) {
+        returnVal = true;  
+      }
+        
+      return returnVal;
     }
 }
