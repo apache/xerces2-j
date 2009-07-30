@@ -1161,7 +1161,7 @@ public class XSDHandler {
                 if (importedGrammars != null) {
                     for (int j=0; j<importedGrammars.size(); j++) {
                         SchemaGrammar isg = (SchemaGrammar) importedGrammars.elementAt(j);
-                        if (isg.getTargetNamespace().equals(newGrammar.getTargetNamespace())) {
+                        if (null2EmptyString(isg.getTargetNamespace()).equals(null2EmptyString(newGrammar.getTargetNamespace()))) {
                             if (isg != newGrammar) {
                                 importedGrammars.set(j, newGrammar);
                             }
