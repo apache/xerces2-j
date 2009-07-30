@@ -76,6 +76,7 @@ class RegexParser {
     static protected final int S_INBRACKETS = 1;
     static protected final int S_INXBRACKETS = 2;
     int context = S_NORMAL;
+    int parenOpened = 1;
     int parennumber = 1;
     boolean hasBackReferences;
     Vector references = null;
@@ -115,6 +116,7 @@ class RegexParser {
         this.offset = 0;
         this.setContext(S_NORMAL);
         this.parennumber = 1;
+        this.parenOpened = 1;
         this.hasBackReferences = false;
         this.regex = regex;
         if (this.isSet(RegularExpression.EXTENDED_COMMENT))
@@ -438,9 +440,10 @@ class RegexParser {
     }
     Token processParen() throws ParseException {
         this.next();
-        int p = this.parennumber++;
+        int p = this.parenOpened++;
         Token tok = Token.createParen(this.parseRegex(), p);
         if (this.read() != T_RPAREN)  throw ex("parser.factor.1", this.offset-1);
+        this.parennumber++;
         this.next();                            // Skips ')'
         return tok;
     }
@@ -460,9 +463,31 @@ class RegexParser {
         int ch = this.regex.charAt(this.offset);
         if ('1' <= ch && ch <= '9') {
             refno = ch-'0';
+            int finalRefno = refno;
+            
+            if (this.parennumber <= refno)
+                throw ex("parser.parse.2", this.offset);
+
+            while (this.offset + 1 < this.regexlen) {
+                ch = this.regex.charAt(this.offset + 1);
+                if ('1' <= ch && ch <= '9') {
+                    refno = (refno * 10) + (ch - '0');
+                    if (refno < this.parennumber) {
+                        finalRefno= refno;
+                        ++this.offset;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+
             this.hasBackReferences = true;
             if (this.references == null)  this.references = new Vector();
-            this.references.addElement(new ReferencePosition(refno, this.offset));
+            this.references.addElement(new ReferencePosition(finalRefno, this.offset));
             this.offset ++;
             if (this.regex.charAt(this.offset) != ')')  throw ex("parser.factor.1", this.offset);
             this.offset ++;
@@ -571,10 +596,33 @@ class RegexParser {
     }
     Token processBackreference() throws ParseException {
         int refnum = this.chardata-'0';
-        Token tok = Token.createBackReference(refnum);
+        int finalRefnum = refnum;
+
+        if (this.parennumber <= refnum)
+            throw ex("parser.parse.2", this.offset-2);
+
+        while  (this.offset < this.regexlen) {
+            final int ch = this.regex.charAt(this.offset);
+            if ('1' <= ch && ch <= '9') {
+                refnum = (refnum * 10) + (ch - '0');
+                if (refnum < this.parennumber) {
+                    ++this.offset;
+                    finalRefnum = refnum;
+                    this.chardata = ch;
+                }
+                else {
+                    break;
+                }
+            }
+            else {
+                break;
+            }
+        }
+
+        Token tok = Token.createBackReference(finalRefnum);
         this.hasBackReferences = true;
         if (this.references == null)  this.references = new Vector();
-        this.references.addElement(new ReferencePosition(refnum, this.offset-2));
+        this.references.addElement(new ReferencePosition(finalRefnum, this.offset-2));
         this.next();
         return tok;
     }
