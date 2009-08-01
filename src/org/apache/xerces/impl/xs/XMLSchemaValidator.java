@@ -2336,7 +2336,9 @@ public class XMLSchemaValidator
         }
         
         // process assertions
-        addAssertsForEvaluation(element, attributes);
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+           addAssertsForEvaluation(element, attributes);
+        }
 
         return augs;
 
@@ -2344,73 +2346,71 @@ public class XMLSchemaValidator
 
     /** Add assertions for processing */
     private void addAssertsForEvaluation(QName element, XMLAttributes attributes) {
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            XSTypeDefinition typeDef = fCurrentPSVI.getTypeDefinition();
-            Object assertObject = null;
+       XSTypeDefinition typeDef = fCurrentPSVI.getTypeDefinition();
+       Object assertObject = null;
             
-            if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-                // if elements's governing type is a "complex type"
-                XSObjectListImpl assertions = new XSObjectListImpl();                
-                XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
+       if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+          // if elements's governing type is a "complex type"
+          XSObjectListImpl assertions = new XSObjectListImpl();                
+          XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
                 
-                // there could be assertion facets from complexType -> simpleContent
-                // (xs:assertion). add them to the list of assertions to be evaluated.
-                XSSimpleTypeDefinition simpleContentModel = complexTypeDef.getSimpleType();                
-                if (simpleContentModel != null) {
-                   XSObjectList facets = simpleContentModel.getMultiValueFacets();
-                   for (int i = 0; i < facets.getLength(); i++) {
-                      XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-                      if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                        Vector simpleTypeAsserts = facet.getAsserts();
-                        for (int j = 0; j < simpleTypeAsserts.size(); j++) {
-                          assertions.addXSObject((XSAssert)simpleTypeAsserts.elementAt(j));    
-                        }                        
-                        break;
-                     }
-                  }  
-              }
+          // there could be assertion facets from complexType -> simpleContent
+          // (xs:assertion). add them to the list of assertions to be evaluated.
+          XSSimpleTypeDefinition simpleContentModel = complexTypeDef.getSimpleType();                
+          if (simpleContentModel != null) {
+             XSObjectList facets = simpleContentModel.getMultiValueFacets();
+             for (int i = 0; i < facets.getLength(); i++) {
+               XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+               if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                 Vector simpleTypeAsserts = facet.getAsserts();
+                 for (int j = 0; j < simpleTypeAsserts.size(); j++) {
+                   assertions.addXSObject((XSAssert)simpleTypeAsserts.elementAt(j));    
+                 }                        
+                 break;
+               }
+             }  
+          }
               
-              // there could be assertions, from the complex type definition
-              // (xs:assert). add them to the list of assertions to be evaluated.
-              XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
-              if (complexTypeAsserts.getLength() > 0) {
-                for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
-                  assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
-                }
-              }
+          // there could be assertions, from the complex type definition
+          // (xs:assert). add them to the list of assertions to be evaluated.
+          XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
+          if (complexTypeAsserts.getLength() > 0) {
+            for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
+               assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
+            }
+          }
               
-              if (assertions.size() > 0) {
-                assertObject = assertions;
+          if (assertions.size() > 0) {
+            assertObject = assertions;
+            // instantiate the assertions processor
+            if (assertionProcessor == null) {
+              initializeAssertProcessor();
+            }
+          }
+        } else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+            // if elements's governing type is a "simple type"
+            XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
+            XSObjectList facets = simpleTypeDef.getMultiValueFacets();
+            for (int i = 0; i < facets.getLength(); i++) {
+              XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+              if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                assertObject = facet.getAsserts();
                 // instantiate the assertions processor
                 if (assertionProcessor == null) {
                    initializeAssertProcessor();
                 }
+                break;
               }
-            } else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                // if elements's governing type is a "simple type"
-                XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
-                XSObjectList facets = simpleTypeDef.getMultiValueFacets();
-                for (int i = 0; i < facets.getLength(); i++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                        assertObject = facet.getAsserts();
-                        // instantiate the assertions processor
-                        if (assertionProcessor == null) {
-                            initializeAssertProcessor();
-                        }
-                        break;
-                    }
-                }
             }
+         }
 
-            // invoke the assertions processor method
-            if (assertionProcessor != null) {
-                // construct the augmentations object, for assertions
-                AugmentationsImpl assertAugs = new AugmentationsImpl();
-                assertAugs.putItem("ASSERT", assertObject);
-                assertionProcessor.startElement(element, attributes, assertAugs);
-            }
-        }
+         // invoke the assertions processor method
+         if (assertionProcessor != null) {
+            // construct the augmentations object, for assertions
+            AugmentationsImpl assertAugs = new AugmentationsImpl();
+            assertAugs.putItem("ASSERT", assertObject);
+            assertionProcessor.startElement(element, attributes, assertAugs);
+         }
     }
 
     /**
@@ -2419,7 +2419,7 @@ public class XMLSchemaValidator
      * set the fDefaultValue XMLString representing the default value.
      */
     Augmentations handleEndElement(QName element, Augmentations augs) {
-
+        
         if (DEBUG) {
             System.out.println("==>handleEndElement:" + element);
         }
