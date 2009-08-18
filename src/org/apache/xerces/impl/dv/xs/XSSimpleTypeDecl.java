@@ -60,39 +60,39 @@ import org.w3c.dom.TypeInfo;
  */
 public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
-    static final short DV_STRING        = PRIMITIVE_STRING;
-    static final short DV_BOOLEAN       = PRIMITIVE_BOOLEAN;
-    static final short DV_DECIMAL       = PRIMITIVE_DECIMAL;
-    static final short DV_FLOAT         = PRIMITIVE_FLOAT;
-    static final short DV_DOUBLE        = PRIMITIVE_DOUBLE;
-    static final short DV_DURATION      = PRIMITIVE_DURATION;
-    static final short DV_DATETIME      = PRIMITIVE_DATETIME;
-    static final short DV_TIME          = PRIMITIVE_TIME;
-    static final short DV_DATE          = PRIMITIVE_DATE;
-    static final short DV_GYEARMONTH    = PRIMITIVE_GYEARMONTH;
-    static final short DV_GYEAR         = PRIMITIVE_GYEAR;
-    static final short DV_GMONTHDAY     = PRIMITIVE_GMONTHDAY;
-    static final short DV_GDAY          = PRIMITIVE_GDAY;
-    static final short DV_GMONTH        = PRIMITIVE_GMONTH;
-    static final short DV_HEXBINARY     = PRIMITIVE_HEXBINARY;
-    static final short DV_BASE64BINARY  = PRIMITIVE_BASE64BINARY;
-    static final short DV_ANYURI        = PRIMITIVE_ANYURI;
-    static final short DV_QNAME         = PRIMITIVE_QNAME;
-    static final short DV_PRECISIONDECIMAL = PRIMITIVE_PRECISIONDECIMAL;
-    static final short DV_NOTATION      = PRIMITIVE_NOTATION;
+    protected static final short DV_STRING        = PRIMITIVE_STRING;
+    protected static final short DV_BOOLEAN       = PRIMITIVE_BOOLEAN;
+    protected static final short DV_DECIMAL       = PRIMITIVE_DECIMAL;
+    protected static final short DV_FLOAT         = PRIMITIVE_FLOAT;
+    protected static final short DV_DOUBLE        = PRIMITIVE_DOUBLE;
+    protected static final short DV_DURATION      = PRIMITIVE_DURATION;
+    protected static final short DV_DATETIME      = PRIMITIVE_DATETIME;
+    protected static final short DV_TIME          = PRIMITIVE_TIME;
+    protected static final short DV_DATE          = PRIMITIVE_DATE;
+    protected static final short DV_GYEARMONTH    = PRIMITIVE_GYEARMONTH;
+    protected static final short DV_GYEAR         = PRIMITIVE_GYEAR;
+    protected static final short DV_GMONTHDAY     = PRIMITIVE_GMONTHDAY;
+    protected static final short DV_GDAY          = PRIMITIVE_GDAY;
+    protected static final short DV_GMONTH        = PRIMITIVE_GMONTH;
+    protected static final short DV_HEXBINARY     = PRIMITIVE_HEXBINARY;
+    protected static final short DV_BASE64BINARY  = PRIMITIVE_BASE64BINARY;
+    protected static final short DV_ANYURI        = PRIMITIVE_ANYURI;
+    protected static final short DV_QNAME         = PRIMITIVE_QNAME;
+    protected static final short DV_PRECISIONDECIMAL = PRIMITIVE_PRECISIONDECIMAL;
+    protected static final short DV_NOTATION      = PRIMITIVE_NOTATION;
 
-    static final short DV_ANYSIMPLETYPE = 0;
-    static final short DV_ID            = DV_NOTATION + 1;
-    static final short DV_IDREF         = DV_NOTATION + 2;
-    static final short DV_ENTITY        = DV_NOTATION + 3;
-    static final short DV_INTEGER       = DV_NOTATION + 4;
-    static final short DV_LIST          = DV_NOTATION + 5;
-    static final short DV_UNION         = DV_NOTATION + 6;
-    static final short DV_YEARMONTHDURATION = DV_NOTATION + 7;
-    static final short DV_DAYTIMEDURATION	= DV_NOTATION + 8;
-    static final short DV_ANYATOMICTYPE = DV_NOTATION + 9;
+    protected static final short DV_ANYSIMPLETYPE = 0;
+    protected static final short DV_ID            = DV_NOTATION + 1;
+    protected static final short DV_IDREF         = DV_NOTATION + 2;
+    protected static final short DV_ENTITY        = DV_NOTATION + 3;
+    protected static final short DV_INTEGER       = DV_NOTATION + 4;
+    protected static final short DV_LIST          = DV_NOTATION + 5;
+    protected static final short DV_UNION         = DV_NOTATION + 6;
+    protected static final short DV_YEARMONTHDURATION = DV_NOTATION + 7;
+    protected static final short DV_DAYTIMEDURATION	= DV_NOTATION + 8;
+    protected static final short DV_ANYATOMICTYPE = DV_NOTATION + 9;
 
-    static final TypeValidator[] fDVs = {
+    private static final TypeValidator[] gDVs = {
         new AnySimpleDV(),
         new StringDV(),
         new BooleanDV(),
@@ -227,6 +227,14 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         }
     };
 
+    protected static TypeValidator[] getGDVs() {
+        return (TypeValidator[])gDVs.clone();
+    }
+    private TypeValidator[] fDVs = gDVs;
+    protected void setDVs(TypeValidator[] dvs) {
+        fDVs = dvs;
+    }
+    
     // this will be true if this is a static XSSimpleTypeDecl
     // and hence must remain immutable (i.e., applyFacets
     // may not be permitted to have any effect).
@@ -839,6 +847,18 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             }
         }
 
+        // whiteSpace
+        if ((presentFacet & FACET_WHITESPACE) != 0) {
+            if ((allowedFacet & FACET_WHITESPACE) == 0) {
+                reportError("cos-applicable-facets", new Object[]{"whiteSpace", fTypeName});
+            } else {
+                fWhiteSpace = facets.whiteSpace;
+                whiteSpaceAnnotation = facets.whiteSpaceAnnotation;
+                fFacetsDefined |= FACET_WHITESPACE;
+                if ((fixedFacet & FACET_WHITESPACE) != 0)
+                    fFixedFacet |= FACET_WHITESPACE;
+            }
+        }
         // enumeration
         if ((presentFacet & FACET_ENUMERATION) != 0) {
             if ((allowedFacet & FACET_ENUMERATION) == 0) {
@@ -855,7 +875,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     if (enumNSDecls != null)
                         ctx.setNSContext((NamespaceContext)enumNSDecls.elementAt(i));
                     try {
-                        ValidatedInfo info = this.fBase.validateWithInfo((String)enumVals.elementAt(i), ctx, tempInfo);
+                        ValidatedInfo info = getActualEnumValue((String)enumVals.elementAt(i), ctx, tempInfo);
                         // check 4.3.5.c0 must: enumeration values from the value space of base
                         fEnumeration.addElement(info.actualValue);
                         fEnumerationType[i] = info.actualValueType;
@@ -867,18 +887,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 fFacetsDefined |= FACET_ENUMERATION;
                 if ((fixedFacet & FACET_ENUMERATION) != 0)
                     fFixedFacet |= FACET_ENUMERATION;
-            }
-        }
-        // whiteSpace
-        if ((presentFacet & FACET_WHITESPACE) != 0) {
-            if ((allowedFacet & FACET_WHITESPACE) == 0) {
-                reportError("cos-applicable-facets", new Object[]{"whiteSpace", fTypeName});
-            } else {
-                fWhiteSpace = facets.whiteSpace;
-                whiteSpaceAnnotation = facets.whiteSpaceAnnotation;
-                fFacetsDefined |= FACET_WHITESPACE;
-                if ((fixedFacet & FACET_WHITESPACE) != 0)
-                    fFixedFacet |= FACET_WHITESPACE;
             }
         }
 
@@ -1539,6 +1547,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         return ob;
 
+    }
+
+    protected ValidatedInfo getActualEnumValue(String lexical, ValidationContext ctx, ValidatedInfo info)
+    throws InvalidDatatypeValueException {
+        return fBase.validateWithInfo(lexical, ctx, info);
     }
 
     /**

@@ -37,7 +37,10 @@ import org.apache.xerces.dom.DOMStringListImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.DVFactoryException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.SchemaDVFactory;
+import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
@@ -142,6 +145,10 @@ XSLoader, DOMConfiguration {
     protected static final String TOLERATE_DUPLICATES = 
         Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
     
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     // recognized features:
     private static final String[] RECOGNIZED_FEATURES = {
         SCHEMA_FULL_CHECKING,
@@ -213,7 +220,8 @@ XSLoader, DOMConfiguration {
         SCHEMA_NONS_LOCATION,
         JAXP_SCHEMA_SOURCE,
         SECURITY_MANAGER,
-        LOCALE
+        LOCALE,
+        SCHEMA_DV_FACTORY
     };
     
     // Data
@@ -975,10 +983,25 @@ XSLoader, DOMConfiguration {
             psvi = false;
         }
         
+        // Determine schema dv factory to use
+        SchemaDVFactory dvFactory = null;
+        try {
+            dvFactory = (SchemaDVFactory)componentManager.getProperty(SCHEMA_DV_FACTORY);
+        } catch (XMLConfigurationException e) {
+        }
+        if (dvFactory == null) {
+            dvFactory = SchemaDVFactory.getInstance();
+        }
+        fSchemaHandler.setDVFactory(dvFactory);
+
         if (!psvi) {
             fDeclPool.reset();
             fCMBuilder.setDeclPool(fDeclPool);
             fSchemaHandler.setDeclPool(fDeclPool);
+            if (dvFactory instanceof SchemaDVFactoryImpl) {
+                fDeclPool.setDVFactory((SchemaDVFactoryImpl)dvFactory);
+                ((SchemaDVFactoryImpl)dvFactory).setDeclPool(fDeclPool);
+            }
         } else {
             fCMBuilder.setDeclPool(null);
             fSchemaHandler.setDeclPool(null);
@@ -1168,7 +1191,8 @@ XSLoader, DOMConfiguration {
             name.equals(XMLGRAMMAR_POOL) ||
             name.equals(SCHEMA_LOCATION) ||
             name.equals(SCHEMA_NONS_LOCATION) ||
-            name.equals(JAXP_SCHEMA_SOURCE)) {
+            name.equals(JAXP_SCHEMA_SOURCE) ||
+            name.equals(SCHEMA_DV_FACTORY)) {
             return true;
         }
         return false;

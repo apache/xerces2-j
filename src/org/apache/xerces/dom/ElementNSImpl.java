@@ -349,9 +349,9 @@ public class ElementNSImpl
      */
     public String getTypeName() {
         if (type !=null){
-            if (type instanceof XSSimpleTypeDefinition) {
+            if (type instanceof XSSimpleTypeDecl) {
                 return ((XSSimpleTypeDecl) type).getTypeName();
-            } else {
+            } else if (type instanceof XSComplexTypeDecl) {
                 return ((XSComplexTypeDecl) type).getTypeName();
             }
         }
@@ -389,10 +389,10 @@ public class ElementNSImpl
             synchronizeData();
         }
         if (type != null) {
-            if (type instanceof XSSimpleTypeDefinition) {
+            if (type instanceof XSSimpleTypeDecl) {
                 return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(
                         typeNamespaceArg, typeNameArg, derivationMethod);
-            } else {
+            } else if (type instanceof XSComplexTypeDecl) {
                 return ((XSComplexTypeDecl) type).isDOMDerivedFrom(
                         typeNamespaceArg, typeNameArg, derivationMethod);
             }

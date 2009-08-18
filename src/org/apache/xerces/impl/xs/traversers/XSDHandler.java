@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
@@ -86,7 +87,6 @@ import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeGroupDefinition;
 import org.apache.xerces.xs.XSAttributeUse;
-import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModelGroup;
@@ -392,6 +392,7 @@ public class XSDHandler {
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
     
+    SchemaDVFactory fDVFactory;
     SchemaDOMParser fSchemaParser;
     SchemaContentHandler fXSContentHandler;
     StAXSchemaParser fStAXSchemaParser;
@@ -1633,7 +1634,8 @@ public class XSDHandler {
                 String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
                 reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaElement), declToTraverse.uri, declToTraverse.rawname}, elmNode);
             }
-            return null;
+            // Recover and continue to look for the component.
+            // return null;
         }
 
         // check whether there is grammar for the requested namespace
@@ -3397,6 +3399,9 @@ public class XSDHandler {
     }
     public void setDeclPool (XSDeclarationPool declPool){
         fDeclPool = declPool;
+    }
+    public void setDVFactory(SchemaDVFactory dvFactory){
+        fDVFactory = dvFactory;
     }
     
     public void reset(XMLComponentManager componentManager) {

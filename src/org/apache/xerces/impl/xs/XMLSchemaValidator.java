@@ -248,6 +248,10 @@ public class XMLSchemaValidator
     protected static final String ROOT_ELEMENT_DECL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     // recognized features and properties
 
     /** Recognized features. */
@@ -316,11 +320,12 @@ public class XMLSchemaValidator
             JAXP_SCHEMA_LANGUAGE,
             ROOT_TYPE_DEF,
             ROOT_ELEMENT_DECL,
+            SCHEMA_DV_FACTORY,
         };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS =
-        { null, null, null, null, null, null, null, null, null, null, };
+        { null, null, null, null, null, null, null, null, null, null, null};
 
     // this is the number of valuestores of each kind
     // we expect an element to have.  It's almost

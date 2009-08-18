@@ -196,6 +196,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String SCHEMA_NONS_LOCATION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
     
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     //
     // Data
     //
@@ -348,7 +352,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             SCHEMA_LOCATION,
             SCHEMA_NONS_LOCATION,
             DTD_VALIDATOR_PROPERTY,
-            DTD_VALIDATOR_FACTORY_PROPERTY
+            DTD_VALIDATOR_FACTORY_PROPERTY,
+            SCHEMA_DV_FACTORY
         };
         addRecognizedProperties(recognizedProperties);
 

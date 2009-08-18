@@ -124,8 +124,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
     private static final boolean DEBUG=false;
     
-    private SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
-    
     private static final class ComplexTypeRecoverableError extends Exception {
         
         private static final long serialVersionUID = 6802729912091130335L;
@@ -577,14 +575,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             
             String name = genAnonTypeName(simpleContentElement);
-            fXSSimpleType = schemaFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
+            fXSSimpleType = fSchemaHandler.fDVFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
             try{
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
             }catch(InvalidDatatypeFacetException ex){
                 reportSchemaError(ex.getKey(), ex.getArgs(), simpleContent);
                 // Recreate the type, ignoring the facets
-                fXSSimpleType = schemaFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
+                fXSSimpleType = fSchemaHandler.fDVFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
             }
             if (fXSSimpleType instanceof XSSimpleTypeDecl) {
                 ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);

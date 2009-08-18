@@ -425,6 +425,9 @@ public final class Constants {
     /** Schema element declaration for the root element in a document ("validation/schema/root-element-declaration"). */
     public static final String ROOT_ELEMENT_DECLARATION_PROPERTY = "validation/schema/root-element-declaration";
     
+    /** Schema element declaration for the root element in a document ("internal/validation/schema/dv-factory"). */
+    public static final String SCHEMA_DV_FACTORY_PROPERTY = "internal/validation/schema/dv-factory";
+    
     // general constants
     
     /** Element PSVI is stored in augmentations using string "ELEMENT_PSVI" */
@@ -546,6 +549,7 @@ public final class Constants {
             LOCALE_PROPERTY,
             ROOT_TYPE_DEFINITION_PROPERTY,
             ROOT_ELEMENT_DECLARATION_PROPERTY,
+            SCHEMA_DV_FACTORY_PROPERTY,
     };
     
     /** Empty enumeration. */

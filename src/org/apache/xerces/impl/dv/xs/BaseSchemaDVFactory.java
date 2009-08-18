@@ -318,4 +318,8 @@ public abstract class BaseSchemaDVFactory extends SchemaDVFactory {
         fDeclPool = declPool;
     }
 
+    /** Implementation internal **/
+    public XSSimpleTypeDecl newXSSimpleTypeDecl() {
+        return new XSSimpleTypeDecl();
+    }
 } //BaseSchemaDVFactory

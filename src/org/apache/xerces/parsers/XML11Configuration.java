@@ -287,6 +287,10 @@ public class XML11Configuration extends ParserConfigurationSettings
     protected static final String ROOT_ELEMENT_DECL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     // debugging
 
     /** Set to true and recompile to print exception stack trace. */
@@ -552,6 +556,7 @@ public class XML11Configuration extends ParserConfigurationSettings
                 LOCALE,
                 ROOT_TYPE_DEF,
                 ROOT_ELEMENT_DECL,
+                SCHEMA_DV_FACTORY,
         };
         addRecognizedProperties(recognizedProperties);
 		

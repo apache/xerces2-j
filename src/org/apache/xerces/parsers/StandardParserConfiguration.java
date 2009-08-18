@@ -150,6 +150,10 @@ public class StandardParserConfiguration
     protected static final String ROOT_ELEMENT_DECL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     //
     // Data
     //
@@ -259,6 +263,7 @@ public class StandardParserConfiguration
             SCHEMA_NONS_LOCATION,
             ROOT_TYPE_DEF,
             ROOT_ELEMENT_DECL,
+            SCHEMA_DV_FACTORY,
         };
         
         addRecognizedProperties(recognizedProperties);
