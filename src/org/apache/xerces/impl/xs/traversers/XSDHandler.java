@@ -551,7 +551,7 @@ public class XSDHandler {
             if (is instanceof XSInputSource) {
                 return fGrammarBucket.getGrammar(desc.getTargetNamespace());
             }
-            return null;
+            return grammar;
         }
 
         if (referType == XSDDescription.CONTEXT_PREPARSE) {
