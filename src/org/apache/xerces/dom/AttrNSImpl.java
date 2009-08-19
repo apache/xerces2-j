@@ -325,7 +325,7 @@ public class AttrNSImpl
                                  String typeNameArg, 
                                  int derivationMethod) {
         if (type != null) {
-            if (type instanceof XSSimpleTypeDefinition) {
+            if (type instanceof XSSimpleTypeDecl) {
                 return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(
                         typeNamespaceArg, typeNameArg, derivationMethod);
             }    
