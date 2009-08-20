@@ -1943,11 +1943,52 @@ public class XMLSchemaValidator
                 if (ctype.fParticle != null
                     && (next = fCurrentCM.whatCanGoHere(fCurrCMState)).size() > 0) {
                     String expected = expectedStr(next);
-                    reportSchemaError(
-                        "cvc-complex-type.2.4.a",
-                        new Object[] { element.rawname, expected });
-                } else {
-                    reportSchemaError("cvc-complex-type.2.4.d", new Object[] { element.rawname });
+                    final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);
+                    if (occurenceInfo != null) {
+                        final int minOccurs = occurenceInfo[0];
+                        final int maxOccurs = occurenceInfo[1];
+                        final int count = occurenceInfo[2];
+                        // Check if this is a violation of minOccurs
+                        if (count < minOccurs) {
+                            final int required = minOccurs - count;
+                            if (required > 1) {
+                                reportSchemaError("cvc-complex-type.2.4.h", new Object[] { element.rawname, 
+                                        fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(minOccurs), Integer.toString(required) });
+                            }
+                            else {
+                                reportSchemaError("cvc-complex-type.2.4.g", new Object[] { element.rawname, 
+                                        fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(minOccurs) });
+                            }
+                        }
+                        // Check if this is a violation of maxOccurs
+                        else if (count >= maxOccurs && maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                            reportSchemaError("cvc-complex-type.2.4.e", new Object[] { element.rawname, 
+                                    expected, Integer.toString(maxOccurs) });
+                        }
+                        else {
+                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
+                        }
+                    }
+                    else {
+                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
+                    }
+                }
+                else {
+                    final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);
+                    if (occurenceInfo != null) {
+                        final int maxOccurs = occurenceInfo[1];
+                        final int count = occurenceInfo[2];
+                        // Check if this is a violation of maxOccurs
+                        if (count >= maxOccurs && maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                            reportSchemaError("cvc-complex-type.2.4.f", new Object[] { element.rawname, Integer.toString(maxOccurs) });
+                        }
+                        else {
+                            reportSchemaError("cvc-complex-type.2.4.d", new Object[] { element.rawname });
+                        }
+                    }
+                    else {
+                        reportSchemaError("cvc-complex-type.2.4.d", new Object[] { element.rawname });
+                    }
                 }
             }
         }
@@ -3435,9 +3476,29 @@ public class XMLSchemaValidator
                 }
                 if (fCurrCMState[0] >= 0 && !fCurrentCM.endContentModel(fCurrCMState)) {
                     String expected = expectedStr(fCurrentCM.whatCanGoHere(fCurrCMState));
-                    reportSchemaError(
-                        "cvc-complex-type.2.4.b",
-                        new Object[] { element.rawname, expected });
+                    final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);
+                    if (occurenceInfo != null) {
+                        final int minOccurs = occurenceInfo[0];
+                        final int count = occurenceInfo[2];
+                        // Check if this is a violation of minOccurs
+                        if (count < minOccurs) {
+                            final int required = minOccurs - count;
+                            if (required > 1) {
+                                reportSchemaError("cvc-complex-type.2.4.j", new Object[] { element.rawname, 
+                                        fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(minOccurs), Integer.toString(required) });
+                            }
+                            else {
+                                reportSchemaError("cvc-complex-type.2.4.i", new Object[] { element.rawname, 
+                                        fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(minOccurs) });
+                            }
+                        }
+                        else {
+                            reportSchemaError("cvc-complex-type.2.4.b", new Object[] { element.rawname, expected });
+                        }
+                    }
+                    else {
+                        reportSchemaError("cvc-complex-type.2.4.b", new Object[] { element.rawname, expected });
+                    }
                 }
             }
         }

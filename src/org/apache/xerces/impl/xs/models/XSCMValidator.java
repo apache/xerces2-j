@@ -90,6 +90,33 @@ public interface XSCMValidator {
     public Vector whatCanGoHere(int[] state);
     
     /**
+     * <p>Returns an array containing information about the current repeating term
+     * or <code>null</code> if no occurrence counting was being performed at the
+     * current state.</p>
+     * 
+     * <p>If an array is returned it will have a length == 4 and will contain:
+     *  <ul>
+     *   <li>a[0] :: min occurs</li>
+     *   <li>a[1] :: max occurs</li>
+     *   <li>a[2] :: current value of the counter</li>
+     *   <li>a[3] :: identifier for the repeating term</li>
+     *  </ul>
+     * </p>
+     * 
+     * @param state the current state
+     * @return an array containing information about the current repeating term
+     */
+    public int [] occurenceInfo(int[] state);
+    
+    /**
+     * Returns the name of the term (element or wildcard) for the given identifier.
+     * 
+     * @param termId identifier for the element declaration or wildcard
+     * @return the name of the element declaration or wildcard
+     */
+    public String getTermName(int termId);
+    
+    /**
      * Checks if this content model has had its min/maxOccurs values reduced for
      * purposes of speeding up UPA.  If so, this content model should not be used
      * for any purpose other than checking unique particle attribution

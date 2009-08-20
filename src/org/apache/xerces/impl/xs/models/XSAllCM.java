@@ -212,6 +212,14 @@ public class XSAllCM implements XSCMValidator {
         }
         return ret;
     }
+    
+    public int [] occurenceInfo(int[] state) {
+        return null;
+    }
+    
+    public String getTermName(int termId) {
+        return null;
+    }
 
     public boolean isCompactedForUPA() {
         return false;

@@ -35,7 +35,7 @@ import org.apache.xerces.xni.QName;
  * @author Lisa Martin, IBM
  * @version $Id$
  */
-public class XSEmptyCM  implements XSCMValidator {
+public class XSEmptyCM implements XSCMValidator {
 
     //
     // Constants
@@ -128,6 +128,14 @@ public class XSEmptyCM  implements XSCMValidator {
      */
     public Vector whatCanGoHere(int[] state) {
         return EMPTY;
+    }
+    
+    public int [] occurenceInfo(int[] state) {
+        return null;
+    }
+    
+    public String getTermName(int termId) {
+        return null;
     }
     
     public boolean isCompactedForUPA() {
