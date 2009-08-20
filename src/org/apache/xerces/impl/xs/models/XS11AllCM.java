@@ -337,6 +337,16 @@ public class XS11AllCM implements XSCMValidator {
         }
         return ret;
     }
+    
+    public int [] occurenceInfo(int[] state) {
+        // REVISIT: maxOccurs > 1 allowed <xs:all> in XML Schema 1.1
+        return null;
+    }
+    
+    public String getTermName(int termId) {
+        // REVISIT: maxOccurs > 1 allowed <xs:all> in XML Schema 1.1
+        return null;
+    }
 
     public boolean isCompactedForUPA() {
         return false;
