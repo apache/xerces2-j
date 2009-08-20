@@ -19,7 +19,6 @@ package org.apache.xerces.dom;
 
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.w3c.dom.DOMException;
 
 /**
