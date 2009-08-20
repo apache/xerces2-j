@@ -1042,6 +1042,7 @@ Authors:
                         org/apache/xerces/impl/xs/util/XSNamedMap4Types.java
                         org/apache/xerces/impl/xs/util/XSNamedMapImpl.java
                         org/apache/xerces/impl/xs/util/XSGrammarPool.java
+                        org/apache/xerces/impl/xs/util/XSInputSource.java
                         org/apache/xerces/impl/xs/dom/**
                         org/apache/xerces/impl/xpath/**
                         org/apache/xerces/impl/xpath/regex/**
@@ -1113,17 +1114,11 @@ Authors:
              token="typeNamespaceArg, typeNameArg, derivationMethod);" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="XSSimpleTypeDecl" value="String"/>
-    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java"
-             token="import org.apache.xerces.xs.XSSimpleTypeDefinition;" value=""/>
-    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java"
-             token="XSSimpleTypeDefinition" value="String"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getName();" value="return (String)type;"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getNamespace();" value="return null;"/>
 
-    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
-             token="import org.apache.xerces.xs.XSSimpleTypeDefinition;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
              token="import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
@@ -1131,7 +1126,9 @@ Authors:
     <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
              token="transient XSTypeDefinition type;" value="transient Object type;"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
-             token="XSSimpleTypeDefinition" value="String"/>
+             token="type instanceof XSSimpleTypeDecl" value="type instanceof String"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="type instanceof XSComplexTypeDecl" value="type instanceof String"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
              token="return ((XSSimpleTypeDecl) type).getTypeName();" value="return null;"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
