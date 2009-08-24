@@ -68,11 +68,12 @@ Authors:
     <property name='jar.dv' value='xercesDV.jar'/>
     <property name='jar.resolver' value='resolver.jar'/>
     <property name='jar.serializer' value='serializer.jar'/>
+    <property name='jar.charnormalizer' value='icu4j.jar'/>
     <property name='jar.junit' value='junit.jar'/>
     <property name='jar.ant' value='ant.jar'/>
     <property name='jar.ant.nodeps' value='ant-nodeps.jar'/>
     <property name='jar.xjavac' value='xjavac.jar'/>
-    
+
     <property name='default.parser.config.name' value='XIncludeAwareParserConfiguration'/>
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XIncludeAwareParserConfiguration'/>
 
@@ -289,7 +290,7 @@ Authors:
            destdir="${build.dest}"
            source="${javac.source}"
            target="${javac.target}"
-           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${tools.dir}/${jar.charnormalizer}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
@@ -695,6 +696,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${distbin.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${distbin.dir}/${jar.charnormalizer}"/>
 
     <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
@@ -721,6 +724,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${distbin.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${distbin.dir}/${jar.charnormalizer}"/>
 
     <zip zipfile="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
@@ -926,6 +931,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${build.dir}/${jar.charnormalizer}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -938,6 +945,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${build.dir}/${jar.charnormalizer}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -1267,6 +1276,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${build.dir}/${jar.charnormalizer}"/>
   </target>
 
   <!-- =================================================================== -->
