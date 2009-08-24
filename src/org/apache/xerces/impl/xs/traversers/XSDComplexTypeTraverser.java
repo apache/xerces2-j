@@ -205,7 +205,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     grammar.addGlobalComplexTypeDecl(type, loc);
                 }
                 else {
-                    if (type instanceof XSComplexTypeDecl) {
+                    if (type2 instanceof XSComplexTypeDecl) {
                         type = (XSComplexTypeDecl) type2;
                     }
                 }
