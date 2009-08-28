@@ -575,6 +575,7 @@ Authors:
     <copy file="LICENSE-SAX.html" tofile="${distsrc.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
+    <copy file="LICENSE.icu4j.html" tofile="${distsrc.dir}/LICENSE.icu4j.html"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
@@ -671,6 +672,7 @@ Authors:
     <copy file="LICENSE-SAX.html" tofile="${distbin.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distbin.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
+    <copy file="LICENSE.icu4j.html" tofile="${distsrc.dir}/LICENSE.icu4j.html"/>
     <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
 
     <copy file="${build.dir}/${jar.samples}" tofile="${distbin.dir}/${jar.samples}"/>
