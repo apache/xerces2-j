@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.util;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -52,11 +52,11 @@ public class SAXMessageFormatter {
         ResourceBundle resourceBundle = null;
         if (locale != null) {
             resourceBundle = 
-                PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages", locale);
+                ResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages", locale);
         }
         else {
             resourceBundle = 
-                PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages");
+                ResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages");
         }
 
         // format message

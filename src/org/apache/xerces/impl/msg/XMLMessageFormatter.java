@@ -19,7 +19,6 @@ package org.apache.xerces.impl.msg;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.xerces.util.MessageFormatter;
@@ -69,12 +68,13 @@ public class XMLMessageFormatter implements MessageFormatter {
         
         if (fResourceBundle == null || locale != fLocale) {
             if (locale != null) {
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
-                // memorize the most-recent locale
-                fLocale = locale;
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
             }
-            if (fResourceBundle == null)
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
+            else {
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
+            }
+            // memorize the most-recent locale
+            fLocale = locale;
         }
         
         // format message

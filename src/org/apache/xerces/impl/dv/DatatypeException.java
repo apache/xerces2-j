@@ -18,7 +18,6 @@
 package org.apache.xerces.impl.dv;
 
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -82,7 +81,7 @@ public class DatatypeException extends Exception {
      */
     public String getMessage() {
         ResourceBundle resourceBundle = null;
-        resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
+        resourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
         if (resourceBundle == null)
             throw new MissingResourceException("Property file not found!", "org.apache.xerces.impl.msg.XMLSchemaMessages", key);
 

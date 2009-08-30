@@ -19,7 +19,6 @@ package org.apache.xerces.jaxp.validation;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -52,11 +51,11 @@ final class JAXPValidationMessageFormatter {
         ResourceBundle resourceBundle = null;
         if (locale != null) {
             resourceBundle = 
-                PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages", locale);
+                ResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages", locale);
         }
         else {
             resourceBundle = 
-                PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages");
+                ResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages");
         }
 
         // format message

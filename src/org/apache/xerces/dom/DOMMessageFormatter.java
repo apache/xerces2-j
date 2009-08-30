@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-
 package org.apache.xerces.dom;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -31,6 +30,7 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class DOMMessageFormatter {
+    
     public static final String DOM_DOMAIN = "http://www.w3.org/dom/DOMTR";
     public static final String XML_DOMAIN = "http://www.w3.org/TR/1998/REC-xml-19980210";
     public static final String SERIALIZER_DOMAIN = "http://apache.org/xml/serializer";
@@ -40,10 +40,10 @@ public class DOMMessageFormatter {
     private static ResourceBundle serResourceBundle = null;
     private static Locale locale = null;
     
-    
-    DOMMessageFormatter(){
+    DOMMessageFormatter() {
         locale = Locale.getDefault();
     }
+    
     /**
      * Formats a message with the specified arguments using the given
      * locale information.
@@ -106,27 +106,32 @@ public class DOMMessageFormatter {
         return msg;
     }
     
-    static ResourceBundle getResourceBundle(String domain){
-        if(domain == DOM_DOMAIN || domain.equals(DOM_DOMAIN))
+    static ResourceBundle getResourceBundle(String domain) {
+        if (domain == DOM_DOMAIN || domain.equals(DOM_DOMAIN)) {
             return domResourceBundle;
-        else if( domain == XML_DOMAIN || domain.equals(XML_DOMAIN))
+        }
+        else if (domain == XML_DOMAIN || domain.equals(XML_DOMAIN)) {
             return xmlResourceBundle;
-        else if(domain == SERIALIZER_DOMAIN || domain.equals(SERIALIZER_DOMAIN))
+        }
+        else if (domain == SERIALIZER_DOMAIN || domain.equals(SERIALIZER_DOMAIN)) {
             return serResourceBundle;
+        }
         return null;
     }
+    
     /**
      * Initialize Message Formatter.
      */
     public static void init(){
         if (locale != null) {
-            domResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages", locale);
-            serResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages", locale);
-            xmlResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
-        }else{
-            domResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
-            serResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
-            xmlResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
+            domResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages", locale);
+            serResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages", locale);
+            xmlResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
+        }
+        else {
+            domResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
+            serResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
+            xmlResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
         }
     }
     
@@ -134,7 +139,7 @@ public class DOMMessageFormatter {
      * Set Locale to be used by the formatter.
      * @param dlocale
      */
-    public static void setLocale(Locale dlocale){
+    public static void setLocale(Locale dlocale) {
         locale = dlocale;
     }
 }

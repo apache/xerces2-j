@@ -19,7 +19,6 @@ package org.apache.xerces.util;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -54,11 +53,11 @@ public class DatatypeMessageFormatter {
         ResourceBundle resourceBundle = null;
         if (locale != null) {
             resourceBundle = 
-                PropertyResourceBundle.getBundle(BASE_NAME, locale);
+                ResourceBundle.getBundle(BASE_NAME, locale);
         }
         else {
             resourceBundle = 
-                PropertyResourceBundle.getBundle(BASE_NAME);
+                ResourceBundle.getBundle(BASE_NAME);
         }
 
         // format message

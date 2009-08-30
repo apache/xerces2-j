@@ -19,7 +19,6 @@ package org.apache.xerces.xinclude;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.xerces.util.MessageFormatter;
@@ -60,12 +59,13 @@ public class XIncludeMessageFormatter implements MessageFormatter {
         
         if (fResourceBundle == null || locale != fLocale) {
             if (locale != null) {
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XIncludeMessages", locale);
-                // memorize the most-recent locale
-                fLocale = locale;
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XIncludeMessages", locale);
             }
-            if (fResourceBundle == null)
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XIncludeMessages");
+            else {
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XIncludeMessages");
+            }
+            // memorize the most-recent locale
+            fLocale = locale;
         }
         
         String msg = fResourceBundle.getString(key);
