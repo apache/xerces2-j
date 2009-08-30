@@ -19,11 +19,9 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.xerces.util.MessageFormatter;
-
 
 /**
  * SchemaMessageProvider implements an XMLMessageProvider that
@@ -65,12 +63,13 @@ public class XSMessageFormatter implements MessageFormatter {
         
         if (fResourceBundle == null || locale != fLocale) {
             if (locale != null) {
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages", locale);
-                // memorize the most-recent locale
-                fLocale = locale;
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages", locale);
             }
-            if (fResourceBundle == null)
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
+            else {
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
+            }
+            // memorize the most-recent locale
+            fLocale = locale;
         }
         
         String msg = fResourceBundle.getString(key);

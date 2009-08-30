@@ -19,7 +19,6 @@ package org.apache.xerces.xpointer;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.xerces.util.MessageFormatter;
@@ -64,14 +63,13 @@ final class XPointerMessageFormatter implements MessageFormatter {
 
         if (fResourceBundle == null || locale != fLocale) {
             if (locale != null) {
-                fResourceBundle = PropertyResourceBundle.getBundle(
-                        "org.apache.xerces.impl.msg.XPointerMessages", locale);
-                // memorize the most-recent locale
-                fLocale = locale;
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XPointerMessages", locale);
             }
-            if (fResourceBundle == null)
-                fResourceBundle = PropertyResourceBundle
-                        .getBundle("org.apache.xerces.impl.msg.XPointerMessages");
+            else {
+                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XPointerMessages");
+            }
+            // memorize the most-recent locale
+            fLocale = locale;
         }
 
         String msg = fResourceBundle.getString(key);

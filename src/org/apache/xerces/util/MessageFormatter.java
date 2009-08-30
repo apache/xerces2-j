@@ -22,7 +22,7 @@ import java.util.MissingResourceException;
 
 /**
  * This interface provides a generic message formatting mechanism and
- * is useful for producing messages that must be localed and/or formatted
+ * is useful for producing messages that must be localized and/or formatted
  * with replacement text.
  *
  * @see org.apache.xerces.impl.XMLErrorReporter
