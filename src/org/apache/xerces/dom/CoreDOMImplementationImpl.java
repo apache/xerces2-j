@@ -289,13 +289,17 @@ public class CoreDOMImplementationImpl
 					null);
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
 		}
-		CoreDocumentImpl doc = new CoreDocumentImpl(doctype);
+		CoreDocumentImpl doc = createDocument(doctype);
 		// If namespaceURI and qualifiedName are null return a Document with no document element.
 		if (qualifiedName != null || namespaceURI != null) {
 		    Element e = doc.createElementNS(namespaceURI, qualifiedName);
 		    doc.appendChild(e);
 		}
 		return doc;
+	}
+	
+	protected CoreDocumentImpl createDocument(DocumentType doctype) {
+	    return new CoreDocumentImpl(doctype);
 	}
 
 	/**

@@ -17,11 +17,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
 
 /**
  * The DOMImplementation class is description of a particular
@@ -81,45 +78,12 @@ public class PSVIDOMImplementationImpl extends DOMImplementationImpl {
                feature.equalsIgnoreCase("psvi");
     } // hasFeature(String,String):boolean
     
-    /**
-     * Introduced in DOM Level 2. <p>
-     * 
-     * Creates an XML Document object of the specified type with its document
-     * element.
-     *
-     * @param namespaceURI     The namespace URI of the document
-     *                         element to create, or null. 
-     * @param qualifiedName    The qualified name of the document
-     *                         element to create. 
-     * @param doctype          The type of document to be created or null.<p>
-     *
-     *                         When doctype is not null, its
-     *                         Node.ownerDocument attribute is set to
-     *                         the document being created.
-     * @return Document        A new Document object.
-     * @throws DOMException    WRONG_DOCUMENT_ERR: Raised if doctype has
-     *                         already been used with a different document.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public Document           createDocument(String namespaceURI, 
-                                             String qualifiedName, 
-                                             DocumentType doctype)
-                                             throws DOMException
-    {
-    	if (doctype != null && doctype.getOwnerDocument() != null) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   DOMMessageFormatter.formatMessage(
-                                   DOMMessageFormatter.XML_DOMAIN, 
-					               "WRONG_DOCUMENT_ERR", null));
-        }
-        DocumentImpl doc = new PSVIDocumentImpl(doctype);
-        // If namespaceURI and qualifiedName are null return a Document with no document element.
-        if (qualifiedName != null || namespaceURI != null) {
-            Element e = doc.createElementNS(namespaceURI, qualifiedName);
-            doc.appendChild(e);
-        }
-        return doc;
-    }
+    //
+    // Protected methods
+    //
     
+    protected CoreDocumentImpl createDocument(DocumentType doctype) {
+        return new PSVIDocumentImpl(doctype);
+    }
 
-} // class DOMImplementationImpl
+} // class PSVIDOMImplementationImpl
