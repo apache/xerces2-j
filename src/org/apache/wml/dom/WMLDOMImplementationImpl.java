@@ -18,14 +18,10 @@
 package org.apache.wml.dom;
 
 import org.apache.wml.WMLDOMImplementation;
+import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;
-import org.apache.xerces.dom.DOMMessageFormatter;
-import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
 
 /**
  * @xerces.internal
@@ -39,27 +35,14 @@ public class WMLDOMImplementationImpl extends DOMImplementationImpl implements W
     /** NON-DOM: Obtain and return the single shared object */
     public static DOMImplementation getDOMImplementation() {
         return singleton;
-    }  
+    }
     
-    /**
-     * @see org.w3c.dom.DOMImplementation
-     */
-    public Document createDocument(String namespaceURI, 
-            String qualifiedName, 
-            DocumentType doctype) throws DOMException {
-        if (doctype != null && doctype.getOwnerDocument() != null) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   DOMMessageFormatter.formatMessage(
-                                   DOMMessageFormatter.XML_DOMAIN, 
-                                   "WRONG_DOCUMENT_ERR", null));
-        }
-        DocumentImpl doc = new WMLDocumentImpl(doctype);
-        // If namespaceURI and qualifiedName are null return a Document with no document element.
-        if (qualifiedName != null || namespaceURI != null) {
-            Element e = doc.createElementNS(namespaceURI, qualifiedName);
-            doc.appendChild(e);
-        }
-        return doc;
+    //
+    // Protected methods
+    //
+    
+    protected CoreDocumentImpl createDocument(DocumentType doctype) {
+        return new WMLDocumentImpl(doctype);
     }
 }
 
