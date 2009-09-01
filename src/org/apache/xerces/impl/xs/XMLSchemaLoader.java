@@ -338,7 +338,6 @@ XSLoader, DOMConfiguration {
         }
         fCMBuilder = builder;
         fSchemaHandler = new XSDHandler(fGrammarBucket);
-        fDeclPool = new XSDeclarationPool();
         fJAXPCache = new WeakHashMap();
         
         fSettingsChanged = true;
@@ -965,6 +964,9 @@ XSLoader, DOMConfiguration {
             fJAXPProcessed = false;
             // reinitialize grammar bucket
             initGrammarBucket();
+            if (fDeclPool != null) {
+                fDeclPool.reset();
+            }
             return;           
         } 
         
@@ -975,13 +977,6 @@ XSLoader, DOMConfiguration {
         
         // get the error reporter
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-        
-        boolean psvi = true;
-        try {
-            psvi = componentManager.getFeature(AUGMENT_PSVI);
-        } catch (XMLConfigurationException e) {
-            psvi = false;
-        }
         
         // Determine schema dv factory to use
         SchemaDVFactory dvFactory = null;
@@ -994,19 +989,6 @@ XSLoader, DOMConfiguration {
         }
         fSchemaHandler.setDVFactory(dvFactory);
 
-        if (!psvi) {
-            fDeclPool.reset();
-            fCMBuilder.setDeclPool(fDeclPool);
-            fSchemaHandler.setDeclPool(fDeclPool);
-            if (dvFactory instanceof SchemaDVFactoryImpl) {
-                fDeclPool.setDVFactory((SchemaDVFactoryImpl)dvFactory);
-                ((SchemaDVFactoryImpl)dvFactory).setDeclPool(fDeclPool);
-            }
-        } else {
-            fCMBuilder.setDeclPool(null);
-            fSchemaHandler.setDeclPool(null);
-        }
-        
         // get schema location properties
         try {
             fExternalSchemas = (String) componentManager.getProperty(SCHEMA_LOCATION);
@@ -1033,6 +1015,37 @@ XSLoader, DOMConfiguration {
             fGrammarPool = null;
         }
         initGrammarBucket();
+
+        boolean psvi = true;
+        try {
+            psvi = componentManager.getFeature(AUGMENT_PSVI);
+        } catch (XMLConfigurationException e) {
+            psvi = false;
+        }
+        
+        // Only use the decl pool when there is no chance that the schema
+        // components will be exposed or cached.
+        if (!psvi && fGrammarPool == null) {
+            if (fDeclPool != null) {
+                fDeclPool.reset();
+            }
+            else {
+                fDeclPool = new XSDeclarationPool();
+            }
+            fCMBuilder.setDeclPool(fDeclPool);
+            fSchemaHandler.setDeclPool(fDeclPool);
+            if (dvFactory instanceof SchemaDVFactoryImpl) {
+                fDeclPool.setDVFactory((SchemaDVFactoryImpl)dvFactory);
+                ((SchemaDVFactoryImpl)dvFactory).setDeclPool(fDeclPool);
+            }
+        } else {
+            fCMBuilder.setDeclPool(null);
+            fSchemaHandler.setDeclPool(null);
+            if (dvFactory instanceof SchemaDVFactoryImpl) {
+                ((SchemaDVFactoryImpl)dvFactory).setDeclPool(null);
+            }
+        }
+        
         // get continue-after-fatal-error feature
         try {
             boolean fatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);

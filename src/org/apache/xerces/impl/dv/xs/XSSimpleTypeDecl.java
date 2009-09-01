@@ -475,6 +475,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = base;
+        fAnonymous = false;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
@@ -529,6 +530,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = fAnySimpleType;
+        fAnonymous = false;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
@@ -556,6 +558,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = fAnySimpleType;
+        fAnonymous = false;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
