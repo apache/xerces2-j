@@ -1025,7 +1025,11 @@ XSLoader, DOMConfiguration {
         
         // Only use the decl pool when there is no chance that the schema
         // components will be exposed or cached.
-        if (!psvi && fGrammarPool == null) {
+        // TODO: when someone calls loadGrammar(XMLInputSource), the schema is
+        // always exposed even without the use of a grammar pool.
+        // Disabling the "decl pool" feature for now until we understand when
+        // it can be safely used.
+        if (!psvi && fGrammarPool == null && false) {
             if (fDeclPool != null) {
                 fDeclPool.reset();
             }
