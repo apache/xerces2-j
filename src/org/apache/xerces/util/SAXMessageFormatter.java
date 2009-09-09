@@ -49,15 +49,11 @@ public class SAXMessageFormatter {
         String key, Object[] arguments)
         throws MissingResourceException {
 
-        ResourceBundle resourceBundle = null;
-        if (locale != null) {
-            resourceBundle = 
-                ResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages", locale);
+        if (locale == null) {
+            locale = Locale.getDefault();
         }
-        else {
-            resourceBundle = 
-                ResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages");
-        }
+        final ResourceBundle resourceBundle = 
+            ResourceBundle.getBundle("org.apache.xerces.impl.msg.SAXMessages", locale);
 
         // format message
         String msg;

@@ -66,13 +66,11 @@ public class XMLMessageFormatter implements MessageFormatter {
     public String formatMessage(Locale locale, String key, Object[] arguments) 
         throws MissingResourceException {
         
-        if (fResourceBundle == null || locale != fLocale) {
-            if (locale != null) {
-                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
-            }
-            else {
-                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
-            }
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        if (locale != fLocale) {
+            fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
             // memorize the most-recent locale
             fLocale = locale;
         }

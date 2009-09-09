@@ -58,20 +58,18 @@ public class XSMessageFormatter implements MessageFormatter {
      * @throws MissingResourceException Thrown if the message with the
      *                                  specified key cannot be found.
      */
-     public String formatMessage(Locale locale, String key, Object[] arguments)
+    public String formatMessage(Locale locale, String key, Object[] arguments)
         throws MissingResourceException {
-        
-        if (fResourceBundle == null || locale != fLocale) {
-            if (locale != null) {
-                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages", locale);
-            }
-            else {
-                fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
-            }
+
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        if (locale != fLocale) {
+            fResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages", locale);
             // memorize the most-recent locale
             fLocale = locale;
         }
-        
+
         String msg = fResourceBundle.getString(key);
         if (arguments != null) {
             try {
