@@ -50,15 +50,11 @@ public class DatatypeMessageFormatter {
         String key, Object[] arguments)
         throws MissingResourceException {
 
-        ResourceBundle resourceBundle = null;
-        if (locale != null) {
-            resourceBundle = 
-                ResourceBundle.getBundle(BASE_NAME, locale);
+        if (locale == null) {
+            locale = Locale.getDefault();
         }
-        else {
-            resourceBundle = 
-                ResourceBundle.getBundle(BASE_NAME);
-        }
+        final ResourceBundle resourceBundle = 
+            ResourceBundle.getBundle(BASE_NAME, locale);
 
         // format message
         String msg;

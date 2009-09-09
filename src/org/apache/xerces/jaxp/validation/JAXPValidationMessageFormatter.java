@@ -48,15 +48,11 @@ final class JAXPValidationMessageFormatter {
         String key, Object[] arguments)
         throws MissingResourceException {
 
-        ResourceBundle resourceBundle = null;
-        if (locale != null) {
-            resourceBundle = 
-                ResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages", locale);
+        if (locale == null) {
+            locale = Locale.getDefault();
         }
-        else {
-            resourceBundle = 
-                ResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages");
-        }
+        final ResourceBundle resourceBundle = 
+            ResourceBundle.getBundle("org.apache.xerces.impl.msg.JAXPValidationMessages", locale);
 
         // format message
         String msg;

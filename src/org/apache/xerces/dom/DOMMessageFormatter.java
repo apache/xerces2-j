@@ -122,17 +122,14 @@ public class DOMMessageFormatter {
     /**
      * Initialize Message Formatter.
      */
-    public static void init(){
-        if (locale != null) {
-            domResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages", locale);
-            serResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages", locale);
-            xmlResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
+    public static void init() {
+        Locale _locale = locale;
+        if (_locale == null) {
+            _locale = Locale.getDefault();
         }
-        else {
-            domResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
-            serResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
-            xmlResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
-        }
+        domResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages", _locale);
+        serResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages", _locale);
+        xmlResourceBundle = ResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", _locale);
     }
     
     /**
