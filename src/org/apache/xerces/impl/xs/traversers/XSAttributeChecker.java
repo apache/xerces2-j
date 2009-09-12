@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
  * - reports an error for invalid element (invalid namespace, invalid name)
  * - reports an error for invalid attribute (invalid namespace, invalid name)
  * - reports an error for invalid attribute value
- * - return compiled values for attriute values
+ * - return compiled values for attribute values
  * - provide default value for missing optional attributes
  * - provide default value for incorrect attribute values
  *
@@ -133,7 +133,8 @@ public class XSAttributeChecker {
     public static final int ATTIDX_MODE              = ATTIDX_COUNT++;
     public static final int ATTIDX_NOTNAMESPACE      = ATTIDX_COUNT++;
     public static final int ATTIDX_NOTQNAME          = ATTIDX_COUNT++;
-    public static final int ATTIDX_XPATHDEFAULTNS    = ATTIDX_COUNT++;    
+    public static final int ATTIDX_XPATHDEFAULTNS    = ATTIDX_COUNT++;
+    public static final int ATTIDX_INHERITABLE       = ATTIDX_COUNT++;
 
     private static final XIntPool fXIntPool = new XIntPool();
     // constants to return
@@ -168,7 +169,7 @@ public class XSAttributeChecker {
     // used to store the map from element name to attribute list
     // for 15 global elements
     private static final Hashtable fEleAttrs11MapG = new Hashtable(31);
-    // for 47 local elememnts
+    // for 47 local elements
     private static final Hashtable fEleAttrs11MapL = new Hashtable(97);
 
     // used to initialize fEleAttrsMap
@@ -300,6 +301,7 @@ public class XSAttributeChecker {
         int ATT_NOTNAMESPACE_N       = attCount++;        
         int ATT_NOTQNAME_N           = attCount++;
         int ATT_TEST_XPATH_R         = attCount++;
+        int ATT_INHERITABLE_N        = attCount++;
 
         // step 3: store all these attributes in an array
         OneAttr[] allAttrs = new OneAttr[attCount];
@@ -537,7 +539,10 @@ public class XSAttributeChecker {
                                                         DT_XPATH1,
                                                         ATTIDX_XPATH,
                                                         null);
-
+        allAttrs[ATT_INHERITABLE_N]        = new OneAttr(SchemaSymbols.ATT_INHERITABLE,
+                                                        DT_BOOLEAN,
+                                                        ATTIDX_INHERITABLE,
+                                                        Boolean.FALSE);
 
         // step 4: for each element, make a list of possible attributes
         Container attrList;
@@ -554,8 +559,21 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_ATTRIBUTE, attrList);
-        // XML Schema 1.1 - same list
+        fEleAttrsMapG.put(SchemaSymbols.ELT_ATTRIBUTE, attrList);        
+        // XML Schema 1.1
+        attrList = Container.getContainer(6);
+        // default = string
+        attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
+        // fixed = string
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_N]);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // name = NCName
+        attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
+        // type = QName
+        attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
+        // inheritable = boolean
+        attrList.put(SchemaSymbols.ATT_INHERITABLE, allAttrs[ATT_INHERITABLE_N]);
         fEleAttrs11MapG.put(SchemaSymbols.ELT_ATTRIBUTE, attrList);
 
         // for element "attribute" - local name
@@ -575,7 +593,7 @@ public class XSAttributeChecker {
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
         fEleAttrsMapL.put(ATTRIBUTE_N, attrList);
-
+        
         // for element "attribute" - local ref
         attrList = Container.getContainer(5);
         // default = string
@@ -588,8 +606,21 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
-        fEleAttrsMapL.put(ATTRIBUTE_R, attrList);
-        // XML Schema 1.1 - same list
+        fEleAttrsMapL.put(ATTRIBUTE_R, attrList);         
+        // XML Schema 1.1
+        attrList = Container.getContainer(6);
+        // default = string
+        attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
+        // fixed = string
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_N]);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // ref = QName
+        attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
+        // use = (optional | prohibited | required) : optional
+        attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
+        // inheritable = boolean
+        attrList.put(SchemaSymbols.ATT_INHERITABLE, allAttrs[ATT_INHERITABLE_N]);
         fEleAttrs11MapL.put(ATTRIBUTE_R, attrList);
 
         // for element "element" - global
@@ -1122,7 +1153,7 @@ public class XSAttributeChecker {
         fEleAttrs11MapG.put(SchemaSymbols.ELT_SCHEMA, attrList);
         
         // for element "attribute" - local name
-        attrList = Container.getContainer(8);
+        attrList = Container.getContainer(9);
         // default = string
         attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
         // fixed = string
@@ -1139,6 +1170,8 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
+        // inheritable = boolean
+        attrList.put(SchemaSymbols.ATT_INHERITABLE, allAttrs[ATT_INHERITABLE_N]);
         fEleAttrs11MapL.put(ATTRIBUTE_N, attrList);
         
         // for element "element" - local name
@@ -1261,7 +1294,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
         fEleAttrs11MapL.put(SchemaSymbols.ELT_ALTERNATIVE, attrList);
         
-        // for element "assert" - local // mukul
+        // for element "assert" - local
         attrList = Container.getContainer(3);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -1270,7 +1303,7 @@ public class XSAttributeChecker {
         // xpathDefaultNamespace = (anyURI | (##defaultNamespace | ##targetNamespace | ##local))
         attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
         fEleAttrs11MapL.put(SchemaSymbols.ELT_ASSERT, attrList);
-        // for element "assertion" - local // mukul
+        // for element "assertion" - local
         fEleAttrs11MapL.put(SchemaSymbols.ELT_ASSERTION, attrList);
 
         // for element "defaultOpenContent" - global
@@ -1319,7 +1352,7 @@ public class XSAttributeChecker {
     }
 
     /**
-     * Check whether the specified element conforms to the attributes restriction
+     * Check whether the specified element conforms to the attributes restriction.
      * an array of attribute values is returned. the caller must call
      * <code>returnAttrArray</code> to return that array.
      *
@@ -1334,7 +1367,7 @@ public class XSAttributeChecker {
     }
 
     /**
-     * Check whether the specified element conforms to the attributes restriction
+     * Check whether the specified element conforms to the attributes restriction.
      * an array of attribute values is returned. the caller must call
      * <code>returnAttrArray</code> to return that array. This method also takes
      * an extra parameter: if the element is "enumeration", whether to make a
@@ -1507,7 +1540,7 @@ public class XSAttributeChecker {
                             if (attrValues[ATTIDX_SUBSGROUP] == null) {
                                 attrValues[ATTIDX_SUBSGROUP] = new Vector();
                             }
-                            if (fSchemaHandler.fSchemaVersion==Constants.SCHEMA_VERSION_1_1) {
+                            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
                                 StringTokenizer st = new StringTokenizer(attrVal, " ");
                                 while (st.hasMoreTokens()) {
                                     Object avalue = dv.validate(st.nextToken(), schemaDoc.fValidationContext, null);

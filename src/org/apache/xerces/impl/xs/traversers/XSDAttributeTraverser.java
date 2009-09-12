@@ -49,6 +49,7 @@ import org.w3c.dom.Element;
  *   ref = QName
  *   type = QName
  *   use = (optional | prohibited | required) : optional
+ *   inheritable = boolean
  *   {any attributes with non-schema namespace . . .}&gt;
  *   Content: (annotation?, (simpleType?))
  * &lt;/attribute&gt;
@@ -79,6 +80,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         String nameAtt    = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
         QName  refAtt     = (QName)  attrValues[XSAttributeChecker.ATTIDX_REF];
         XInt   useAtt     = (XInt)   attrValues[XSAttributeChecker.ATTIDX_USE];
+        Boolean inheritableAtt = (Boolean) attrValues[XSAttributeChecker.ATTIDX_INHERITABLE];        
         
         // get 'attribute declaration'
         XSAttributeDecl attribute = null;
@@ -101,7 +103,8 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 
                 if (child != null) {
                     reportSchemaError("src-attribute.3.2", new Object[]{refAtt.rawname}, child);
-                }
+                }               
+                
                 // for error reporting
                 nameAtt = refAtt.localpart;
             } else {
@@ -135,7 +138,15 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attrUse.fDefault = new ValidatedInfo();
                 attrUse.fDefault.normalizedValue = defaultAtt;
             }
-            // Get the annotation associated witht the local attr decl
+            
+            if (attrDecl.getAttributeNode(SchemaSymbols.ATT_INHERITABLE) != null) {
+               attrUse.fInheritable = inheritableAtt.booleanValue();
+            }
+            else {
+               attrUse.fInheritable = attribute.getInheritable();  
+            }
+            
+            // Get the annotation associated with the local attr decl
             if (attrDecl.getAttributeNode(SchemaSymbols.ATT_REF) == null) {
                 attrUse.fAnnotations = attribute.getAnnotations();
             } else {
@@ -228,16 +239,17 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             boolean isGlobal,
             XSComplexTypeDecl enclosingCT) {
         
-        String  defaultAtt  = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
-        String  fixedAtt    = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
-        XInt    formAtt     = (XInt)   attrValues[XSAttributeChecker.ATTIDX_FORM];
-        String  nameAtt     = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
-        String  targetNsAtt = (String) attrValues[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-        QName   typeAtt     = (QName)  attrValues[XSAttributeChecker.ATTIDX_TYPE];
+        String  defaultAtt     = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
+        String  fixedAtt       = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
+        XInt    formAtt        = (XInt)   attrValues[XSAttributeChecker.ATTIDX_FORM];
+        String  nameAtt        = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
+        String  targetNsAtt    = (String) attrValues[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
+        QName   typeAtt        = (QName)  attrValues[XSAttributeChecker.ATTIDX_TYPE];
+        Boolean  inheritableAtt   = (Boolean) attrValues[XSAttributeChecker.ATTIDX_INHERITABLE];
         
         // Step 1: get declaration information
         XSAttributeDecl attribute = null;
-        if (fSchemaHandler.fDeclPool !=null) {
+        if (fSchemaHandler.fDeclPool != null) {
             attribute = fSchemaHandler.fDeclPool.getAttributeDecl();
         } else {
             attribute = new XSAttributeDecl();
@@ -335,8 +347,14 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         } else {
             annotations = XSObjectListImpl.EMPTY_LIST;
         }
+        
+        boolean inheritable = false;
+        if (inheritableAtt != null) {
+          inheritable = inheritableAtt.booleanValue();   
+        }
+        
         attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
-                attDefault, enclCT, annotations);
+                attDefault, enclCT, annotations, inheritable);
         
         // Step 2: register attribute decl to the grammar
         if (isGlobal && nameAtt != null)

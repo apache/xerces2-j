@@ -65,11 +65,13 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     // The namespace schema information item corresponding to the target namespace 
     // of the attribute declaration, if it is globally declared; or null otherwise.
     private XSNamespaceItem fNamespaceItem = null;
+    
+    boolean fInheritable = false;
 
     public void setValues(String name, String targetNamespace,
             XSSimpleType simpleType, short constraintType, short scope,
             ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT,
-            XSObjectList annotations) {
+            XSObjectList annotations, boolean inheritable) {
         fName = name;
         fTargetNamespace = targetNamespace;
         fType = simpleType;
@@ -78,6 +80,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fDefault = valInfo;
         fEnclosingCT = enclosingCT;
         fAnnotations = annotations;
+        fInheritable = inheritable;
     }
 
     public void reset(){
@@ -88,6 +91,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fScope = XSConstants.SCOPE_ABSENT;
         fDefault = null;
         fAnnotations = null;
+        fInheritable = false;
     }
 
     /**
@@ -204,6 +208,10 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
                fDefault.itemValueTypes;
+    }
+    
+    public boolean getInheritable() {
+        return fInheritable;
     }
 
 } // class XSAttributeDecl

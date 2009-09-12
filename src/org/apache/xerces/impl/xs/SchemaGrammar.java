@@ -420,28 +420,28 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 XSAttributeUseImpl annotationIDAttr = new XSAttributeUseImpl();
                 annotationIDAttr.fAttrDecl = new XSAttributeDecl();
                 annotationIDAttr.fAttrDecl.setValues(SchemaSymbols.ATT_ID, null, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_ID),
-                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, annotationType, null);
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, annotationType, null, false);
                 annotationIDAttr.fUse = SchemaSymbols.USE_OPTIONAL;
                 annotationIDAttr.fConstraintType = XSConstants.VC_NONE;
                 
                 XSAttributeUseImpl documentationSourceAttr = new XSAttributeUseImpl();
                 documentationSourceAttr.fAttrDecl = new XSAttributeDecl();
                 documentationSourceAttr.fAttrDecl.setValues(SchemaSymbols.ATT_SOURCE, null, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_ANYURI),
-                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, documentationType, null);
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, documentationType, null, false);
                 documentationSourceAttr.fUse = SchemaSymbols.USE_OPTIONAL;
                 documentationSourceAttr.fConstraintType = XSConstants.VC_NONE;
                 
                 XSAttributeUseImpl documentationLangAttr = new XSAttributeUseImpl();
                 documentationLangAttr.fAttrDecl = new XSAttributeDecl();
                 documentationLangAttr.fAttrDecl.setValues("lang".intern(), NamespaceContext.XML_URI, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_LANGUAGE),
-                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, documentationType, null);
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, documentationType, null, false);
                 documentationLangAttr.fUse = SchemaSymbols.USE_OPTIONAL;
                 documentationLangAttr.fConstraintType = XSConstants.VC_NONE;
                 
                 XSAttributeUseImpl appinfoSourceAttr = new XSAttributeUseImpl();
                 appinfoSourceAttr.fAttrDecl = new XSAttributeDecl();
                 appinfoSourceAttr.fAttrDecl.setValues(SchemaSymbols.ATT_SOURCE, null, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_ANYURI),
-                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, appinfoType, null);
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, appinfoType, null, false);
                 appinfoSourceAttr.fUse = SchemaSymbols.USE_OPTIONAL;
                 appinfoSourceAttr.fConstraintType = XSConstants.VC_NONE;
                 

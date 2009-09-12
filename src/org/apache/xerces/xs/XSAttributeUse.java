@@ -92,5 +92,7 @@ public interface XSAttributeUse extends XSObject {
     /**
      * A sequence of [annotations] or an empty <code>XSObjectList</code>.
      */
-    public XSObjectList getAnnotations();    
+    public XSObjectList getAnnotations();
+    
+    public boolean getInheritable(); 
 }

@@ -143,6 +143,7 @@ public final class SchemaSymbols {
     public static final String ATT_XPATH_DEFAULT_NS       = "xpathDefaultNamespace".intern();    
     public static final String ATT_MINVERSION             = "minVersion".intern();
     public static final String ATT_MAXVERSION             = "maxVersion".intern();
+    public static final String ATT_INHERITABLE            = "inheritable".intern();
 
     // all possible schema attribute values
     public static final String ATTVAL_TWOPOUNDANY            = "##any";

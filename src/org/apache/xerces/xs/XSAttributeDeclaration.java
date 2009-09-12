@@ -59,8 +59,7 @@ public interface XSAttributeDeclaration extends XSObject {
      *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
      *   method.
      */
-    public Object getActualVC()
-                                                        throws XSException;
+    public Object getActualVC() throws XSException;
 
     /**
      * The actual constraint value built-in datatype, e.g. 
@@ -76,8 +75,7 @@ public interface XSAttributeDeclaration extends XSObject {
      *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
      *   method.
      */
-    public short getActualVCType()
-                                                        throws XSException;
+    public short getActualVCType() throws XSException;
 
     /**
      * In the case the actual constraint value represents a list, i.e. the 
@@ -92,8 +90,7 @@ public interface XSAttributeDeclaration extends XSObject {
      *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
      *   method.
      */
-    public ShortList getItemValueTypes()
-                                                        throws XSException;
+    public ShortList getItemValueTypes() throws XSException;
 
     /**
      * An annotation if it exists, otherwise <code>null</code>. 
@@ -104,5 +101,10 @@ public interface XSAttributeDeclaration extends XSObject {
     /**
      * A sequence of [annotations] or an empty  <code>XSObjectList</code>. 
      */
-    public XSObjectList getAnnotations();    
+    public XSObjectList getAnnotations();
+    
+    /**
+     * Inheritable flag for the attribute. 
+     */
+    public boolean getInheritable(); 
 }

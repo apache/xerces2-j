@@ -48,12 +48,15 @@ public class XSAttributeUseImpl implements XSAttributeUse {
     // optional annotation
     public XSObjectList fAnnotations = null;
     
+    public boolean fInheritable = false;
+    
     public void reset(){
         fDefault = null;
         fAttrDecl = null;
         fUse = SchemaSymbols.USE_OPTIONAL;
         fConstraintType = XSConstants.VC_NONE;
         fAnnotations = null;
+        fInheritable = false;
     }
 
     /**
@@ -145,6 +148,10 @@ public class XSAttributeUseImpl implements XSAttributeUse {
      */
     public XSObjectList getAnnotations() {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
+    }
+    
+    public boolean getInheritable() {
+        return fInheritable;
     }
     
 } // class XSAttributeUseImpl
