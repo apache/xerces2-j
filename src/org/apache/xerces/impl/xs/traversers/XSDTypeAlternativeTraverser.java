@@ -30,10 +30,14 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.eclipse.wst.xml.xpath2.processor.JFlexCupParser;
+import org.eclipse.wst.xml.xpath2.processor.XPathParser;
+import org.eclipse.wst.xml.xpath2.processor.XPathParserException;
+import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.w3c.dom.Element;
 
 /**
- * The traverser implementation for XML schema type alternatives.
+ * The traverser implementation for XML Schema 1.1 'type alternative' component.
  * 
  * <alternative
  *    id = ID
@@ -101,7 +105,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         if (typeAtt != null) {
             alternativeType = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, altElement);
         }
-
+        
         // check whether the childNode still points to something...
         // if it does it must be an anonymous type declaration
         if (childNode != null) {
@@ -155,13 +159,20 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             Test testExpr = null;
             //set the test attribute value
             try {
-                testExpr = new Test(new XPath20(test, fSymbolTable, schemaDoc.fNamespaceSupport), typeAlternative);
-            }
+               testExpr = new Test(new XPath20(test, fSymbolTable, schemaDoc.fNamespaceSupport), typeAlternative);
+            } 
             catch (XPathException e) {
-                //if the xpath is invalid create a Test without an expression
-                reportSchemaError(e.getKey(), new Object[] { test }, altElement);
-                testExpr = new Test(null, typeAlternative);
-            }
+               // fall back to full XPath 2.0 support, with PsychoPath engine
+               try {
+                  XPathParser xpp = new JFlexCupParser();
+                  XPath xp = xpp.parse("boolean(" + test + ")");
+                  testExpr = new Test(xp, typeAlternative);
+               } catch(XPathParserException ex) {
+                  reportSchemaError("c-cta-xpath", new Object[] { test }, altElement);
+                  //if the XPath is invalid, create a Test without an expression
+                  testExpr = new Test((XPath20) null, typeAlternative);
+               }                
+            }            
             typeAlternative.setTest(testExpr);
         }
 

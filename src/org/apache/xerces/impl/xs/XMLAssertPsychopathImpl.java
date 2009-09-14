@@ -34,24 +34,11 @@ import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
-import org.eclipse.wst.xml.xpath2.processor.DefaultEvaluator;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
-import org.eclipse.wst.xml.xpath2.processor.Evaluator;
 import org.eclipse.wst.xml.xpath2.processor.JFlexCupParser;
-import org.eclipse.wst.xml.xpath2.processor.ResultSequence;
-import org.eclipse.wst.xml.xpath2.processor.ResultSequenceFactory;
-import org.eclipse.wst.xml.xpath2.processor.StaticChecker;
-import org.eclipse.wst.xml.xpath2.processor.StaticNameResolver;
 import org.eclipse.wst.xml.xpath2.processor.XPathParser;
 import org.eclipse.wst.xml.xpath2.processor.XPathParserException;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
-import org.eclipse.wst.xml.xpath2.processor.function.FnFunctionLibrary;
-import org.eclipse.wst.xml.xpath2.processor.function.XSCtrLibrary;
-import org.eclipse.wst.xml.xpath2.processor.internal.Focus;
-import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
-import org.eclipse.wst.xml.xpath2.processor.internal.types.ElementType;
-import org.eclipse.wst.xml.xpath2.processor.internal.types.XSBoolean;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSString;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,8 +46,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * The implementation of the XPath interface. This class interfaces with the
- * PsychoPath XPath 2.0 engine.
+ * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
+ * evaluation. This class interfaces with the PsychoPath XPath 2.0 engine.
  * 
  * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM
@@ -73,6 +60,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // class variable declarations
     DynamicContext fDynamicContext;
     XSModel fSchema = null;
+    AbstractPsychoPathImpl abstrPsychopathImpl = null;
 
     // a factory Document object to construct DOM tree nodes
     Document assertDocument = null;
@@ -108,13 +96,24 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * Initialize the PsychoPath XPath processor
      */
     private void initXPathProcessor() throws Exception {
-        validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");
-        fDynamicContext = new DefaultDynamicContext(fSchema, assertDocument);
-        // add variable "value" to the XPath context
+        validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
+        abstrPsychopathImpl = new AbstractPsychoPathImpl();
+        fDynamicContext = abstrPsychopathImpl.initDynamicContext(fSchema, assertDocument);
+        
+        // assign value to variable, "value" in XPath context
         fDynamicContext.add_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
-                                                                   "value"));        
-        fDynamicContext.add_namespace("xs", "http://www.w3.org/2001/XMLSchema");
-        fDynamicContext.add_namespace("fn", "http://www.w3.org/2005/xpath-functions");
+                                         "value"));
+        String value = "";
+        NodeList childList = currentAssertDomNode.getChildNodes();
+        if (childList.getLength() == 1) {
+            Node node = childList.item(0);
+            if (node.getNodeType() == Node.TEXT_NODE) {
+                value = node.getNodeValue();
+            }
+        }
+        fDynamicContext.set_variable(
+                new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
+                        "value"), new XSString(value));
     }
 
     /*
@@ -171,26 +170,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             
             if (!assertRootStack.empty() && (currentAssertDomNode == assertRootStack.peek())) {               
                  // get XSModel                
-                 fSchema =  ((PSVIElementNSImpl)currentAssertDomNode).getSchemaInformation();  
-                 
-                 /*              
-                 // debugging code. can be present till the code is final.
-                 // print the tree on which assertions are evaluated
-                 try {
-                   DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-                   DOMImplementationLS impl = (DOMImplementationLS) registry
-                                       .getDOMImplementation("LS");
-                   LSSerializer writer = impl.createLSSerializer();
-                   LSOutput output = impl.createLSOutput();
-                   output.setByteStream(System.out);
-                   writer.write(currentAssertDomNode, output);
-                   System.out.println("\n");
-                 }
-                 catch (Exception ex) {
-                   ex.printStackTrace();
-                 }
-                 */
-                 
+                 fSchema =  ((PSVIElementNSImpl)currentAssertDomNode).getSchemaInformation();
                  assertRootStack.pop(); // pop the stack, to go one level up
                  Object assertions = assertListStack.pop(); // get assertions, and go one level up
                 
@@ -235,12 +215,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     }
 
     /*
-     * Helper method to evaluate assertions
+     * Method to evaluate an assertion, XPath expression
      */
     private void evaluateAssertion(QName element, XSAssertImpl assertImpl) {
-        fDynamicContext.add_function_library(new FnFunctionLibrary());
-        fDynamicContext.add_function_library(new XSCtrLibrary());
-
+        
         XPathParser xpp = new JFlexCupParser();
         XPath xp = null;
         try {
@@ -250,59 +228,14 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // error compiling XPath expression
             reportError("cvc-xpath.3.13.4.2", element, assertImpl);
         }
-        
-        StaticChecker sc = new StaticNameResolver(fDynamicContext);
-        
-        try {
-            sc.check(xp);        
-             
-            // assign value to variable, "value"
-            String value = "";
-            NodeList childList = currentAssertDomNode.getChildNodes();
-            if (childList.getLength() == 1) {
-                Node node = childList.item(0);
-                if (node.getNodeType() == Node.TEXT_NODE) {
-                    value = node.getNodeValue();
-                }
-            }
 
-            fDynamicContext.set_variable(
-                    new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
-                            "value"), new XSString(value));
+        try {            
+            boolean result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp, currentAssertDomNode);
             
-            Evaluator eval = new DefaultEvaluator(fDynamicContext, assertDocument);
-            
-            // change focus to the top most element
-            ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
-            nodeEvalRS.add(new ElementType(currentAssertDomNode, 
-                               fDynamicContext.node_position(currentAssertDomNode)));
-            fDynamicContext.set_focus(new Focus(nodeEvalRS));
-
-            ResultSequence rs = eval.evaluate(xp);
-
-            boolean result = false;
-
-            if (rs == null) {
-                result = false;
-            } else {
-                if (rs.size() == 1) {
-                    AnyType rsReturn = rs.get(0);
-                    if (rsReturn instanceof XSBoolean) {
-                        XSBoolean returnResultBool = (XSBoolean) rsReturn;
-                        result = returnResultBool.value();
-                    } else {
-                        result = false;
-                    }
-                } else {
-                    result = false;
-                }
-            }
-
             if (!result) {
                 // assertion evaluation is false
                 reportError("cvc-assertion.3.13.4.1", element, assertImpl);
             }
-
         } catch (Exception ex) {
             reportError("cvc-assertion.3.13.4.1", element, assertImpl);
         }
