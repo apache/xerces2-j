@@ -1540,12 +1540,12 @@ public abstract class NodeImpl
                             if (specifiedPrefix == null &&
                                 attr.getNodeName().equals("xmlns")) {
                                 // default namespace
-                                return value;
+                                return value.length() > 0 ? value : null;
                             } else if (attrPrefix !=null && 
                                        attrPrefix.equals("xmlns") &&
                                        attr.getLocalName().equals(specifiedPrefix)) {
                                 // non default namespace
-                                return value;
+                                return value.length() > 0 ? value : null;
                             }
                         }
                     }
