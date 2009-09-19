@@ -122,7 +122,9 @@ public class Test extends AbstractPsychoPathImpl {
          document.appendChild(elem);
          
          initDynamicContext(null, document);       
-         result = evaluatePsychoPathExpr(fXPathPsychoPath, elem);
+         result = evaluatePsychoPathExpr(fXPathPsychoPath,
+                                fTypeAlternative.fXPathDefaultNamespace,
+                                elem);
        } catch(ParserConfigurationException ex) {
            result = false;  
        } catch (StaticError ex) {

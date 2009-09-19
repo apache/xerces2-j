@@ -282,7 +282,7 @@ abstract class XSDAbstractTraverser {
     }
     
     /*
-     * Helper method to find all assertions up in the type hierarchy
+     * Method to find all assertions up in the type hierarchy
      */
     private void getAssertsFromBaseTypes(XSSimpleType baseValidator) {
         XSObjectList multiValFacetsOfBaseType = baseValidator.getMultiValueFacets();
@@ -290,7 +290,7 @@ abstract class XSDAbstractTraverser {
         for (int i = 0; i < multiValFacetsOfBaseType.getLength(); i++) {
             XSMultiValueFacet mvFacet = (XSMultiValueFacet) multiValFacetsOfBaseType.item(i);
             if (mvFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                // add asserts of this type to the global Vector object
+                // add asserts to the global Vector object
                 Vector assertsToAdd = mvFacet.getAsserts();
                 for (int j = 0; j < assertsToAdd.size(); j++) {
                    // add assertion to the list, only if it's already not present
@@ -305,8 +305,8 @@ abstract class XSDAbstractTraverser {
         // invoke the method recursively. go up the type hierarchy.
         if (baseValidator.getBaseType() != null) {
             getAssertsFromBaseTypes((XSSimpleType)baseValidator.getBaseType());  
-        }
-    }
+        }        
+    } // getAssertsFromBaseTypes
     
     /*
      * Check if an assertion already exists in the buffer
@@ -321,8 +321,8 @@ abstract class XSDAbstractTraverser {
           }
       } 
       
-      return assertExists;
-    } // end of method, assertExists
+      return assertExists;      
+    } // assertExists
     
     
     
@@ -428,12 +428,15 @@ abstract class XSDAbstractTraverser {
                     reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                 }
             }
-            // process 'assertion' facet. introduced in XML Schema 1.1.
+            // process 'assertion' facet. introduced in XML Schema 1.1
             else if (facet.equals(SchemaSymbols.ELT_ASSERTION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
                 String test = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
-                String defaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
-
+                String xpathDefaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+                if (xpathDefaultNamespace == null) {
+                   xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;    
+                }
+                
                 if (test != null) {                    
                     // get 'annotation'
                     Element childNode = DOMUtil.getFirstChildElement(content);
@@ -474,7 +477,7 @@ abstract class XSDAbstractTraverser {
                     Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
                                            schemaDoc.fNamespaceSupport), assertImpl);                 
                     assertImpl.setTest(testExpr);
-                    assertImpl.setXPathDefauleNamespace(defaultNamespace);
+                    assertImpl.setXPathDefauleNamespace(xpathDefaultNamespace);
                     if (assertData == null) {
                         assertData = new Vector();
                     }

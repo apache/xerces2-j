@@ -42,7 +42,6 @@ import org.w3c.dom.Element;
  * A base class, providing common services for XPath 2.0 evaluation, with PsychoPath.
  * 
  * @author Mukul Gandhi, IBM
- * 
  * @version $Id: AbstractPsychoPathImpl.java 814163 2009-09-12 13:43:19Z mukulg $
  */
 public class AbstractPsychoPathImpl {
@@ -50,7 +49,8 @@ public class AbstractPsychoPathImpl {
     private DynamicContext fDynamicContext = null;
     private Document domDoc = null;
     
-    protected DynamicContext initDynamicContext(XSModel schema, Document document) {
+    protected DynamicContext initDynamicContext(XSModel schema,
+                                                Document document) {
         fDynamicContext = new DefaultDynamicContext(schema, document);                
         fDynamicContext.add_namespace("xs", "http://www.w3.org/2001/XMLSchema");
         fDynamicContext.add_namespace("fn", "http://www.w3.org/2005/xpath-functions");
@@ -61,17 +61,23 @@ public class AbstractPsychoPathImpl {
         return fDynamicContext; 
     } //initDynamicContext
     
-    protected boolean evaluatePsychoPathExpr(XPath xp, Element contextNode)
-                                    throws StaticError, DynamicError {
+    protected boolean evaluatePsychoPathExpr(XPath xp,
+                                 String xPathDefaultNamespace,
+                                 Element contextNode)
+                                 throws StaticError, DynamicError {
+        if (xPathDefaultNamespace != null) {
+           fDynamicContext.add_namespace(null, xPathDefaultNamespace);  
+        }
         StaticChecker sc = new StaticNameResolver(fDynamicContext);
         sc.check(xp);
-        
+       
         Evaluator eval = new DefaultEvaluator(fDynamicContext, domDoc);
         
         // change focus to the top most element
         ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
         nodeEvalRS.add(new ElementType(contextNode, 
                            fDynamicContext.node_position(contextNode)));
+
         fDynamicContext.set_focus(new Focus(nodeEvalRS));
 
         ResultSequence rs = eval.evaluate(xp);

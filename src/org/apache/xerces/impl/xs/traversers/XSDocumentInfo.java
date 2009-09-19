@@ -33,7 +33,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Objects of this class hold all information pecular to a
+ * Objects of this class hold all information peculiar to a
  * particular XML Schema document.  This is needed because
  * namespace bindings and other settings on the <schema/> element
  * affect the contents of that schema document alone.
@@ -62,6 +62,9 @@ class XSDocumentInfo {
 
     // targetNamespace
     String fTargetNamespace;
+    
+    // xpathDefaultNamespace
+    String fXpathDefaultNamespace;
 
     // represents whether this is a chameleon schema (i.e., whether its TNS is natural or comes from without)
     protected boolean fIsChameleonSchema;
@@ -134,6 +137,9 @@ class XSDocumentInfo {
                 (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
             if (fTargetNamespace != null)
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
+            
+            fXpathDefaultNamespace = 
+                (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS]; 
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 

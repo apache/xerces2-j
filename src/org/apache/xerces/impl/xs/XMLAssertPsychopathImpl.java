@@ -230,11 +230,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
 
         try {            
-            boolean result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp, currentAssertDomNode);
+            boolean result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
+                                     assertImpl.getXPathDefaultNamespace(),
+                                     currentAssertDomNode);
             
             if (!result) {
-                // assertion evaluation is false
-                reportError("cvc-assertion.3.13.4.1", element, assertImpl);
+               // assertion evaluation is false
+               reportError("cvc-assertion.3.13.4.1", element, assertImpl);
             }
         } catch (Exception ex) {
             reportError("cvc-assertion.3.13.4.1", element, assertImpl);

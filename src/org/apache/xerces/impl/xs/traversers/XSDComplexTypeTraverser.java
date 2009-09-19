@@ -1288,7 +1288,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private void getAssertsFromBaseTypes(XSTypeDefinition baseValidator) {        
         if (baseValidator != null && baseValidator instanceof XSComplexTypeDefinition) {
             XSObjectList assertList = ((XSComplexTypeDefinition) baseValidator)
-                    .getAssertions();
+                                                 .getAssertions();
             for (int i = 0; i < assertList.size(); i++) {
                 // add assertion to the list, only if it's already not present
                 if (!assertExists((XSAssertImpl) assertList.get(i))) {
@@ -1548,8 +1548,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(assertElement,
                 false, schemaDoc);
         String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
-        String defaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
-
+        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+        if (xpathDefaultNamespace == null) {
+           xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;    
+        }
+        
         if (test != null) {
             // get 'annotation'
             Element childNode = DOMUtil.getFirstChildElement(assertElement);
@@ -1574,7 +1577,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 String text = DOMUtil.getSyntheticAnnotation(childNode);
                 if (text != null) {
                     annotation = traverseSyntheticAnnotation(childNode, text,
-                            attrValues, false, schemaDoc);
+                                        attrValues, false, schemaDoc);
                 }
             }
 
@@ -1591,8 +1594,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             Test testExpr = new Test(new XPath20Assert(test, fSymbolTable,
                                       schemaDoc.fNamespaceSupport), assertImpl);
             assertImpl.setTest(testExpr);
-            assertImpl.setXPathDefauleNamespace(defaultNamespace);
+            assertImpl.setXPathDefauleNamespace(xpathDefaultNamespace);
 
+            // add assertion object to an array buffer
             addAssertion(assertImpl);
 
             Element sibling = DOMUtil.getNextSiblingElement(assertElement);

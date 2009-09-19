@@ -24,7 +24,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * XML Schema 1.1 assertion component
+ * XML Schema 1.1 'assertion' component
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
@@ -34,7 +34,7 @@ public class XSAssertImpl implements XSAssert {
     /** The type definition associated with the assertion component */
     protected XSTypeDefinition fTypeDefinition;
 
-    /** An XPath 2.0 expression that represents the test attribute */
+    /** An XPath 2.0 expression that represents the 'test' attribute */
     protected Test fTestExpr = null;
     
     /** Optional annotations */
@@ -115,7 +115,7 @@ public class XSAssertImpl implements XSAssert {
     }
     
     /*
-     * Tests if two asserts are equal
+     * Tests if two assert components are equal
      */
     public boolean equals(XSAssertImpl assertComponent) {
       boolean returnVal = false;

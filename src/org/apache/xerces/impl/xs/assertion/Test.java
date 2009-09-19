@@ -21,7 +21,7 @@ import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.xs.XSAssert;
 
 /**
- * XML schema assertion 'test' attribute
+ * Representation of XML Schema 1.1 assertion "test" attribute.
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
