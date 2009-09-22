@@ -37,7 +37,6 @@ import org.apache.xerces.dom.DOMStringListImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.dv.DVFactoryException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
@@ -250,6 +249,7 @@ XSLoader, DOMConfiguration {
     private SubstitutionGroupHandler fSubGroupHandler;
     private CMBuilder fCMBuilder;
     private XSDDescription fXSDDescription = new XSDDescription();
+    private SchemaDVFactory fDefaultSchemaDVFactory;
     
     private WeakHashMap fJAXPCache;
     private Locale fLocale = Locale.getDefault();
@@ -985,7 +985,10 @@ XSLoader, DOMConfiguration {
         } catch (XMLConfigurationException e) {
         }
         if (dvFactory == null) {
-            dvFactory = SchemaDVFactory.getInstance();
+            if (fDefaultSchemaDVFactory == null) {
+                fDefaultSchemaDVFactory = SchemaDVFactory.getInstance();
+            }
+            dvFactory = fDefaultSchemaDVFactory;
         }
         fSchemaHandler.setDVFactory(dvFactory);
 
