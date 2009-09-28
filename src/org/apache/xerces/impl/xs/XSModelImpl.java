@@ -42,6 +42,7 @@ import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSNamespaceItemList;
 import org.apache.xerces.xs.XSNotationDeclaration;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -193,7 +194,7 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
         fSubGroupMap = buildSubGroups();
     }
     
-    private SymbolHash buildSubGroups() {
+    private SymbolHash buildSubGroups_Org() {
         SubstitutionGroupHandler sgHandler = new SubstitutionGroupHandler(null);
         for (int i = 0 ; i < fGrammarCount; i++) {
             sgHandler.addSubstitutionGroup(fGrammarList[i].getSubstitutionGroups());
@@ -211,6 +212,50 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
                     new XSObjectListImpl(subGroup, subGroup.length) : XSObjectListImpl.EMPTY_LIST);
         }
         return subGroupMap;
+    }
+    
+    private SymbolHash buildSubGroups() {
+        SubstitutionGroupHandler sgHandler = new SubstitutionGroupHandler(null);
+        for (int i = 0 ; i < fGrammarCount; i++) {
+            sgHandler.addSubstitutionGroup(fGrammarList[i].getSubstitutionGroups());
+        }
+
+        final XSObjectListImpl elements = getGlobalElements();
+        final int len = elements.getLength();
+        final SymbolHash subGroupMap = new SymbolHash(len*2);
+        XSElementDecl head;
+        XSElementDeclaration[] subGroup;
+        for (int i = 0; i < len; i++) {
+            head = (XSElementDecl)elements.item(i);
+            subGroup = sgHandler.getSubstitutionGroup(head);
+            subGroupMap.put(head, subGroup.length > 0 ? 
+                    new XSObjectListImpl(subGroup, subGroup.length) : XSObjectListImpl.EMPTY_LIST);
+        }
+        return subGroupMap;
+    }
+    
+    private XSObjectListImpl getGlobalElements() {
+        final SymbolHash[] tables = new SymbolHash[fGrammarCount];
+        int length = 0;
+
+        for (int i = 0; i < fGrammarCount; i++) {
+            tables[i] = fGrammarList[i].fAllGlobalElemDecls;
+            length += tables[i].getLength();
+        }
+        
+        if (length == 0) {
+            return XSObjectListImpl.EMPTY_LIST;
+        }
+
+        final XSObject[] components = new XSObject[length];
+        
+        int start = 0;
+        for (int i = 0; i < fGrammarCount; i++) {
+            tables[i].getValues(components, start);
+            start += tables[i].getLength();
+        }
+
+        return new XSObjectListImpl(components, length);
     }
     
     /**

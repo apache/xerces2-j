@@ -504,16 +504,23 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // Step 5: register the element decl to the grammar
         if (isGlobal) {
+            grammar.addGlobalElementDeclAll(element);
+            
             if (grammar.getGlobalElementDecl(element.fName) == null) {
                 grammar.addGlobalElementDecl(element);
             }
+            
+            // we also add the element to the tolerate duplicates list as well
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSElementDecl element2 = grammar.getGlobalElementDecl(element.fName, loc);
+            if (element2 == null) {
+                grammar.addGlobalElementDecl(element, loc);
+            }
+
+            // if we are tolerating duplicates, and we found a duplicate declaration
+            // use the duplicate one instead
             if (fSchemaHandler.fTolerateDuplicates) {
-                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                final XSElementDecl element2 = grammar.getGlobalElementDecl(element.fName, loc);
-                if (element2 == null) {
-                    grammar.addGlobalElementDecl(element, loc);
-                }
-                else {
+                if (element2 != null) {
                     element = element2;
                 }
                 fSchemaHandler.addGlobalElementDecl(element);

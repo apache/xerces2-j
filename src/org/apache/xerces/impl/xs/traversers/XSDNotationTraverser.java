@@ -109,13 +109,17 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
         if (grammar.getGlobalNotationDecl(notation.fName) == null) {
             grammar.addGlobalNotationDecl(notation);
         }
+
+        // also add it to extended map
+        final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+        final XSNotationDecl notation2 = grammar.getGlobalNotationDecl(notation.fName, loc);  
+        if (notation2 == null) {
+            grammar.addGlobalNotationDecl(notation, loc);
+        }
+
+        // handle duplicates
         if (fSchemaHandler.fTolerateDuplicates) {
-            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-            final XSNotationDecl notation2 = grammar.getGlobalNotationDecl(notation.fName, loc);  
-            if (notation2 == null) {
-                grammar.addGlobalNotationDecl(notation, loc);
-            }
-            else {
+            if (notation2 != null) {
                 notation = notation2;
             }
             fSchemaHandler.addGlobalNotationDecl(notation);

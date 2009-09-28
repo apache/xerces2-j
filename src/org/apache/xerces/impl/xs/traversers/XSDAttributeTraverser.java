@@ -442,13 +442,16 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (grammar.getGlobalAttributeDecl(nameAtt) == null) {
                 grammar.addGlobalAttributeDecl(attribute);
             }
+
+            // also add it to extended map
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSAttributeDecl attribute2 = grammar.getGlobalAttributeDecl(nameAtt, loc);
+            if (attribute2  == null) {
+                grammar.addGlobalAttributeDecl(attribute, loc);
+            }
+
             if (fSchemaHandler.fTolerateDuplicates) {
-                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                final XSAttributeDecl attribute2 = grammar.getGlobalAttributeDecl(nameAtt, loc);
-                if (attribute2  == null) {
-                    grammar.addGlobalAttributeDecl(attribute, loc);
-                }
-                else {
+                if (attribute2  != null) {
                     attribute = attribute2;
                 }
                 fSchemaHandler.addGlobalAttributeDecl(attribute);

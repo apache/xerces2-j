@@ -225,13 +225,17 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             if (grammar.getGlobalGroupDecl(group.fName) == null) {
                 grammar.addGlobalGroupDecl(group);
             }
+
+            // also add it to extended map
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSGroupDecl group2 = grammar.getGlobalGroupDecl(group.fName, loc);
+            if (group2 == null) {
+                grammar.addGlobalGroupDecl(group, loc);
+            }
+
+            // handle duplicates
             if (fSchemaHandler.fTolerateDuplicates) {
-                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                final XSGroupDecl group2 = grammar.getGlobalGroupDecl(group.fName, loc);
-                if (group2 == null) {
-                    grammar.addGlobalGroupDecl(group, loc);
-                }
-                else {
+                if (group2 != null) {
                     group = group2;
                 }
                 fSchemaHandler.addGlobalGroupDecl(group); 

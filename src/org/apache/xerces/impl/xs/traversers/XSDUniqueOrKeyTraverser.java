@@ -75,13 +75,16 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
             if (grammar.getIDConstraintDecl(uniqueOrKey.getIdentityConstraintName()) == null) {
                 grammar.addIDConstraintDecl(element, uniqueOrKey);
             }
+
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final IdentityConstraint idc = grammar.getIDConstraintDecl(uniqueOrKey.getIdentityConstraintName(), loc);  
+            if (idc == null) {
+                grammar.addIDConstraintDecl(element, uniqueOrKey, loc);
+            }
+
+            // handle duplicates
             if (fSchemaHandler.fTolerateDuplicates) {
-                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                final IdentityConstraint idc = grammar.getIDConstraintDecl(uniqueOrKey.getIdentityConstraintName(), loc);  
-                if (idc == null) {
-                    grammar.addIDConstraintDecl(element, uniqueOrKey, loc);
-                }
-                else {
+                if (idc != null) {
                     if (idc instanceof UniqueOrKey) {
                         uniqueOrKey = (UniqueOrKey) uniqueOrKey;
                     }

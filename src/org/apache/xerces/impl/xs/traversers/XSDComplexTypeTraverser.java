@@ -198,13 +198,17 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (grammar.getGlobalTypeDecl(type.getName()) == null) {
                 grammar.addGlobalComplexTypeDecl(type);
             }
+            
+            // also add it to extended map
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSTypeDefinition type2 = grammar.getGlobalTypeDecl(type.getName(), loc); 
+            if (type2 == null) {
+                grammar.addGlobalComplexTypeDecl(type, loc);
+            }
+
+            // handle duplicates
             if (fSchemaHandler.fTolerateDuplicates) {
-                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                final XSTypeDefinition type2 = grammar.getGlobalTypeDecl(type.getName(), loc); 
-                if (type2  == null) {
-                    grammar.addGlobalComplexTypeDecl(type, loc);
-                }
-                else {
+                if (type2 != null) {
                     if (type2 instanceof XSComplexTypeDecl) {
                         type = (XSComplexTypeDecl) type2;
                     }

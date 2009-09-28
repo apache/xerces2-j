@@ -3138,33 +3138,65 @@ public class XSDHandler {
 
         switch (componentType) {
         case XSConstants.TYPE_DEFINITION :
-            if (sg.getGlobalTypeDecl(name) == null) {
-                sg.addGlobalTypeDecl((XSTypeDefinition) component);
+            if (!((XSTypeDefinition) component).getAnonymous()) {
+                if (sg.getGlobalTypeDecl(name) == null) {
+                    sg.addGlobalTypeDecl((XSTypeDefinition) component);
+                }
+                // store the declaration in the extended map, using an empty location
+                if (sg.getGlobalTypeDecl(name, "") == null) {
+                    sg.addGlobalTypeDecl((XSTypeDefinition) component, "");
+                }
             }
             break;
         case XSConstants.ATTRIBUTE_DECLARATION :
-            if (sg.getGlobalAttributeDecl(name) == null) {
-                sg.addGlobalAttributeDecl((XSAttributeDecl) component);
+            if (((XSAttributeDecl) component).getScope() == XSAttributeDecl.SCOPE_GLOBAL) {
+                if (sg.getGlobalAttributeDecl(name) == null) {
+                    sg.addGlobalAttributeDecl((XSAttributeDecl) component);
+                }
+                // store the declaration in the extended map, using an empty location
+                if (sg.getGlobalAttributeDecl(name, "") == null) {
+                    sg.addGlobalAttributeDecl((XSAttributeDecl) component, "");
+                }
             }
             break;
         case XSConstants.ATTRIBUTE_GROUP :
             if (sg.getGlobalAttributeDecl(name) == null) {
                 sg.addGlobalAttributeGroupDecl((XSAttributeGroupDecl) component);
             }
+            // store the declaration in the extended map, using an empty location
+            if (sg.getGlobalAttributeDecl(name, "") == null) {
+                sg.addGlobalAttributeGroupDecl((XSAttributeGroupDecl) component, "");
+            }
             break;
         case XSConstants.ELEMENT_DECLARATION :
-            if (sg.getGlobalElementDecl(name) == null) {
-                sg.addGlobalElementDecl((XSElementDecl) component);
+            if (((XSElementDecl) component).getScope() == XSElementDecl.SCOPE_GLOBAL) {
+                sg.addGlobalElementDeclAll((XSElementDecl) component);
+
+                if (sg.getGlobalElementDecl(name) == null) {
+                    sg.addGlobalElementDecl((XSElementDecl) component);
+                }
+                // store the declaration in the extended map, using an empty location
+                if (sg.getGlobalElementDecl(name, "") == null) {
+                    sg.addGlobalElementDecl((XSElementDecl) component, "");
+                }
             }
             break;
         case XSConstants.MODEL_GROUP_DEFINITION :
             if (sg.getGlobalGroupDecl(name) == null) {
                 sg.addGlobalGroupDecl((XSGroupDecl) component);
             }
+            // store the declaration in the extended map, using an empty location
+            if (sg.getGlobalGroupDecl(name, "") == null) {
+                sg.addGlobalGroupDecl((XSGroupDecl) component, "");
+            }
             break;
         case XSConstants.NOTATION_DECLARATION :
             if (sg.getGlobalNotationDecl(name) == null) {
                 sg.addGlobalNotationDecl((XSNotationDecl) component);
+            }
+            // store the declaration in the extended map, using an empty location
+            if (sg.getGlobalNotationDecl(name, "") == null) {
+                sg.addGlobalNotationDecl((XSNotationDecl) component, "");
             }
             break;
         case XSConstants.IDENTITY_CONSTRAINT :
@@ -3173,7 +3205,7 @@ public class XSDHandler {
             break;
         }
     }
-    
+
     private void updateImportDependencies(Hashtable table) {
         Enumeration keys = table.keys();
         String namespace;

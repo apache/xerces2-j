@@ -182,13 +182,17 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName) == null) {
             grammar.addGlobalAttributeGroupDecl(attrGrp);
         }
+
+        // also add it to extended map
+        final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+        final XSAttributeGroupDecl attrGrp2 = grammar.getGlobalAttributeGroupDecl(attrGrp.fName, loc);
+        if (attrGrp2 == null) {
+            grammar.addGlobalAttributeGroupDecl(attrGrp, loc);
+        }
+
+        // handle duplicates
         if (fSchemaHandler.fTolerateDuplicates) {
-            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-            final XSAttributeGroupDecl attrGrp2 = grammar.getGlobalAttributeGroupDecl(attrGrp.fName, loc);
-            if (attrGrp2 == null) {
-                grammar.addGlobalAttributeGroupDecl(attrGrp, loc);
-            }
-            else {
+            if (attrGrp2 != null) {
                 attrGrp = attrGrp2;
             }
             fSchemaHandler.addGlobalAttributeGroupDecl(attrGrp);

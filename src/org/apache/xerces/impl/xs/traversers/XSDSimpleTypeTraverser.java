@@ -112,13 +112,17 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (grammar.getGlobalTypeDecl(type.getName()) == null) {
                 grammar.addGlobalSimpleTypeDecl(type);
             }
+
+            // also add it to extended map
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSTypeDefinition type2 = grammar.getGlobalTypeDecl(type.getName(), loc);  
+            if (type2 == null) {
+                grammar.addGlobalSimpleTypeDecl(type, loc);
+            }
+
+            // handle duplicates
             if (fSchemaHandler.fTolerateDuplicates) {
-                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                XSTypeDefinition type2 = grammar.getGlobalTypeDecl(type.getName(), loc);  
-                if (type2 == null) {
-                    grammar.addGlobalSimpleTypeDecl(type, loc);
-                }
-                else {
+                if (type2 != null) {
                     if (type2 instanceof XSSimpleType) {
                         type = (XSSimpleType) type2;
                     }

@@ -96,13 +96,17 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
                 if (grammar.getIDConstraintDecl(keyRef.getIdentityConstraintName()) == null) {
                     grammar.addIDConstraintDecl(element, keyRef);
                 }
+
+                // also add it to extended map
+                final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+                final IdentityConstraint idc = grammar.getIDConstraintDecl(keyRef.getIdentityConstraintName(), loc); 
+                if (idc  == null) {
+                    grammar.addIDConstraintDecl(element, keyRef, loc);
+                }
+
+                // handle duplicates
                 if (fSchemaHandler.fTolerateDuplicates) {
-                    final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
-                    final IdentityConstraint idc = grammar.getIDConstraintDecl(keyRef.getIdentityConstraintName(), loc); 
-                    if (idc  == null) {
-                        grammar.addIDConstraintDecl(element, keyRef, loc);
-                    }
-                    else {
+                    if (idc  != null) {
                         if (idc instanceof KeyRef) {
                             keyRef = (KeyRef) idc;
                         }
