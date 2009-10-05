@@ -263,6 +263,19 @@ public class XSDHandler {
     private Hashtable fUnparsedIdentityConstraintRegistrySub = new Hashtable();
     private Hashtable fUnparsedNotationRegistrySub = new Hashtable();
     private Hashtable fUnparsedTypeRegistrySub = new Hashtable();
+
+    // Stores XSDocumentInfo (keyed by component name), to check for duplicate
+    // components declared withing the same xsd document
+    private Hashtable fUnparsedRegistriesExt[] = new Hashtable[] {
+        null,
+        new Hashtable(), // ATTRIBUTE_TYPE
+        new Hashtable(), // ATTRIBUTEGROUP_TYPE
+        new Hashtable(), // ELEMENT_TYPE
+        new Hashtable(), // GROUP_TYPE
+        new Hashtable(), // IDENTITYCONSTRAINT_TYPE
+        new Hashtable(), // NOTATION_TYPE
+        new Hashtable(), // TYPEDECL_TYPE
+    };
     
     // this is keyed with a documentNode (or the schemaRoot nodes
     // contained in the XSDocumentInfo objects) and its value is the
@@ -3371,7 +3384,11 @@ public class XSDHandler {
         fUnparsedIdentityConstraintRegistrySub.clear();
         fUnparsedNotationRegistrySub.clear();
         fUnparsedTypeRegistrySub.clear();
-        
+
+        for (int i=1; i<= TYPEDECL_TYPE; i++) {
+            fUnparsedRegistriesExt[i].clear();
+        }
+
         fXSDocumentInfoRegistry.clear();
         fDependencyMap.clear();
         fDoc2XSDocumentMap.clear();
@@ -3625,7 +3642,7 @@ public class XSDHandler {
         fParent[fLocalElemStackPos] = parent;
         fLocalElemNamespaceContext[fLocalElemStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // end fillInLocalElemInfo(...)
-    
+
     /** This method makes sure that
      * if this component is being redefined that it lives in the
      * right schema.  It then renames the component correctly.  If it
@@ -3646,6 +3663,9 @@ public class XSDHandler {
             if (fNamespaceGrowth && !fTolerateDuplicates) {
                 checkForDuplicateNames(qName, declType, currComp);
             }
+            // just add it in!
+            registry.put(qName, currComp);
+            registry_sub.put(qName, currSchema);
         }
         else {
             Element collidingElem = (Element)objElem;
@@ -3707,15 +3727,16 @@ public class XSDHandler {
                 // we've just got a flat-out collision (we tolerate duplicate
                 // declarations, only if they are defined in different schema
                 // documents)
-                if (!fTolerateDuplicates || registry_sub.get(qName) == currSchema) {
+                if (!fTolerateDuplicates || fUnparsedRegistriesExt[declType].get(qName) == currSchema) {
                     reportSchemaError("sch-props-correct.2", new Object []{qName}, currComp);
                 }
             }
         }
 
-        // we always add it in (override previous info, if any)!
-        registry.put(qName, currComp);
-        registry_sub.put(qName, currSchema);
+        // store the lastest current document info
+        if (fTolerateDuplicates) {
+            fUnparsedRegistriesExt[declType].put(qName, currSchema);
+        }
 
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
 
