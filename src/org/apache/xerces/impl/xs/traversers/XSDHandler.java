@@ -265,7 +265,7 @@ public class XSDHandler {
     private Hashtable fUnparsedTypeRegistrySub = new Hashtable();
 
     // Stores XSDocumentInfo (keyed by component name), to check for duplicate
-    // components declared withing the same xsd document
+    // components declared within the same xsd document
     private Hashtable fUnparsedRegistriesExt[] = new Hashtable[] {
         null,
         new Hashtable(), // ATTRIBUTE_TYPE
