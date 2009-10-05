@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSAttributeDeclaration;
@@ -52,6 +53,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     String fTargetNamespace = null;
     // the simple type of the attribute
     XSSimpleType fType = null;
+    public QName fUnresolvedTypeName = null;
     // value constraint type: default, fixed or !specified
     short fConstraintType = XSConstants.VC_NONE;
     // scope
@@ -84,6 +86,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fName = null;
         fTargetNamespace = null;
         fType = null;
+        fUnresolvedTypeName = null;
         fConstraintType = XSConstants.VC_NONE;
         fScope = XSConstants.SCOPE_ABSENT;
         fDefault = null;

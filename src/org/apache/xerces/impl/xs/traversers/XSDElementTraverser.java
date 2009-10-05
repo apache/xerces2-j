@@ -379,6 +379,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // Handler type attribute
         if (elementType == null && typeAtt != null) {
             elementType = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, elmDecl);
+            if (elementType == null) {
+                element.fUnresolvedTypeName = typeAtt;
+            }
         }
         
         // Get it from the substitutionGroup declaration

@@ -21,6 +21,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -54,6 +55,7 @@ public class XSElementDecl implements XSElementDeclaration {
     public String fTargetNamespace = null;
     // type of the element
     public XSTypeDefinition fType = null;
+    public QName fUnresolvedTypeName = null;
     // misc flag of the element: nillable/abstract/fixed
     short fMiscFlags = 0;
     public short fScope = XSConstants.SCOPE_ABSENT;
@@ -174,6 +176,7 @@ public class XSElementDecl implements XSElementDeclaration {
         fName = null;
         fTargetNamespace = null;
         fType = null;
+        fUnresolvedTypeName = null;
         fMiscFlags = 0;
         fBlock = XSConstants.DERIVATION_NONE;
         fFinal = XSConstants.DERIVATION_NONE;
