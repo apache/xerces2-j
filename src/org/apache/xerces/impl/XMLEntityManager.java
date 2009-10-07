@@ -30,8 +30,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -1873,26 +1871,14 @@ public class XMLEntityManager
         // Use FileOutputStream if this URI is for a local file.
         if (protocol.equals("file") 
                 && (host == null || host.length() == 0 || host.equals("localhost"))) {
-            try {
-                out = (OutputStream) AccessController.doPrivileged(new PrivilegedExceptionAction() {
-                    public Object run() throws Exception {
-                        File file = new File(getPathWithoutEscapes(url.getPath()));
-                        if (!file.exists()) {
-                            File parent = file.getParentFile();
-                            if (parent != null && !parent.exists()) {
-                                parent.mkdirs();
-                            }
-                        }
-                        return new FileOutputStream(file);
-                    }});
-            }
-            catch (PrivilegedActionException pae) {
-                Exception e = pae.getException();
-                if (e instanceof IOException) {
-                    throw (IOException) e;
+            File file = new File(getPathWithoutEscapes(url.getPath()));
+            if (!file.exists()) {
+                File parent = file.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
                 }
-                throw new IOException(e != null ? e.getMessage() : pae.getMessage());
             }
+            out = new FileOutputStream(file);
         }
         // Try to write to some other kind of URI. Some protocols
         // won't support this, though HTTP should work.
