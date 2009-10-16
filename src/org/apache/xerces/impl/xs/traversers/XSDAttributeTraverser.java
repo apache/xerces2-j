@@ -330,10 +330,15 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // Handler type attribute
         if (attrType == null && typeAtt != null) {
             XSTypeDefinition type = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, attrDecl);
-            if (type != null && type.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE)
+            if (type != null && type.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
                 attrType = (XSSimpleType)type;
-            else
+            }
+            else {
                 reportSchemaError("src-resolve", new Object[]{typeAtt.rawname, "simpleType definition"}, attrDecl);
+                if (type == null) {
+                	attribute.fUnresolvedTypeName = typeAtt;
+                }
+            }
         }
         
         if (attrType == null) {
