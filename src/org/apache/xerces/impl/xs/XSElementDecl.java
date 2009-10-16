@@ -238,7 +238,7 @@ public class XSElementDecl implements XSElementDeclaration {
       * Reset current element declaration
       */
     public void reset(){
-
+        fScope = XSConstants.SCOPE_ABSENT;
         fName = null;
         fTargetNamespace = null;
         fType = null;
