@@ -349,6 +349,15 @@ abstract class XSDAbstractTraverser {
             if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc, hasQName);
                 String enumVal = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                // The facet can't be used if the value is missing. Ignore
+                // this facet element.
+                if (enumVal == null) {
+                    reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_ENUMERATION, SchemaSymbols.ATT_VALUE}, content);
+                    fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                    continue;
+                }
+                
                 NamespaceSupport nsDecls = (NamespaceSupport)attrs[XSAttributeChecker.ATTIDX_ENUMNSDECLS];
                 
                 // for NOTATION types, need to check whether there is a notation
@@ -396,14 +405,24 @@ abstract class XSDAbstractTraverser {
             }
             else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
+                String patternVal = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                // The facet can't be used if the value is missing. Ignore
+                // this facet element.
+                if (patternVal == null) {
+                    reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_PATTERN, SchemaSymbols.ATT_VALUE}, content);
+                    fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                    continue;
+                }
+                
                 if (fPattern.length() == 0) {
-                    fPattern.append((String)attrs[XSAttributeChecker.ATTIDX_VALUE]);
+                    fPattern.append(patternVal);
                 } else {
                     // ---------------------------------------------
                     //datatypes: 5.2.4 pattern: src-multiple-pattern
                     // ---------------------------------------------
                     fPattern.append("|");
-                    fPattern.append((String)attrs[XSAttributeChecker.ATTIDX_VALUE]);
+                    fPattern.append(patternVal);
                 }
                 Element child = DOMUtil.getFirstChildElement( content );
                 if (child != null &&
@@ -527,45 +546,64 @@ abstract class XSDAbstractTraverser {
                 
                 // check for duplicate facets
                 if ((facetsPresent & currentFacet) != 0) {
+                    // Ignore this facet, to avoid corrupting the previous facet
                     reportSchemaError("src-single-facet-value", new Object[]{facet}, content);
-                } else if (attrs[XSAttributeChecker.ATTIDX_VALUE] != null) {
-                    facetsPresent |= currentFacet;
-                    // check for fixed facet
-                    if (((Boolean)attrs[XSAttributeChecker.ATTIDX_FIXED]).booleanValue()) {
-                        facetsFixed |= currentFacet;
+                    fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                    continue;
+                }
+                
+                // The facet can't be used if the value is missing. Ignore
+                // this facet element.
+                if (attrs[XSAttributeChecker.ATTIDX_VALUE] == null) {
+                    // Report an error if the "value" attribute is missing.
+                    // If it's not missing, then its value is invalid, and an
+                    // error should have already been reported by the
+                    // attribute checker.
+                    if (content.getAttributeNodeNS(null, "value") == null) {
+                        reportSchemaError("s4s-att-must-appear", new Object[]{content.getLocalName(), SchemaSymbols.ATT_VALUE}, content);
                     }
-                    switch (currentFacet) {
-                    case XSSimpleType.FACET_MINLENGTH:
-                        xsFacets.minLength = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
+                    fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                    continue;
+                }
+                
+                facetsPresent |= currentFacet;
+                // check for fixed facet
+                if (((Boolean)attrs[XSAttributeChecker.ATTIDX_FIXED]).booleanValue()) {
+                    facetsFixed |= currentFacet;
+                }
+                switch (currentFacet) {
+                case XSSimpleType.FACET_MINLENGTH:
+                    xsFacets.minLength = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
-                    case XSSimpleType.FACET_MAXLENGTH:
-                        xsFacets.maxLength = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
+                case XSSimpleType.FACET_MAXLENGTH:
+                    xsFacets.maxLength = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
-                    case XSSimpleType.FACET_MAXEXCLUSIVE:
-                        xsFacets.maxExclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                case XSSimpleType.FACET_MAXEXCLUSIVE:
+                    xsFacets.maxExclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
                     break;
-                    case XSSimpleType.FACET_MAXINCLUSIVE:
-                        xsFacets.maxInclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                case XSSimpleType.FACET_MAXINCLUSIVE:
+                    xsFacets.maxInclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
                     break;
-                    case XSSimpleType.FACET_MINEXCLUSIVE:
-                        xsFacets.minExclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                case XSSimpleType.FACET_MINEXCLUSIVE:
+                    xsFacets.minExclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
                     break;
-                    case XSSimpleType.FACET_MININCLUSIVE:
-                        xsFacets.minInclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                case XSSimpleType.FACET_MININCLUSIVE:
+                    xsFacets.minInclusive = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
                     break;
-                    case XSSimpleType.FACET_TOTALDIGITS:
-                        xsFacets.totalDigits = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
+                case XSSimpleType.FACET_TOTALDIGITS:
+                    xsFacets.totalDigits = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
-                    case XSSimpleType.FACET_FRACTIONDIGITS:
-                        xsFacets.fractionDigits = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
+                case XSSimpleType.FACET_FRACTIONDIGITS:
+                    xsFacets.fractionDigits = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
-                    case XSSimpleType.FACET_WHITESPACE:
-                        xsFacets.whiteSpace = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).shortValue();
+                case XSSimpleType.FACET_WHITESPACE:
+                    xsFacets.whiteSpace = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).shortValue();
                     break;
-                    case XSSimpleType.FACET_LENGTH:
-                        xsFacets.length = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
+                case XSSimpleType.FACET_LENGTH:
+                    xsFacets.length = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
-                    }
                 }
                 
                 Element child = DOMUtil.getFirstChildElement( content );
