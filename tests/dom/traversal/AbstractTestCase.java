@@ -24,6 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ElementTraversal;
@@ -60,6 +61,8 @@ public abstract class AbstractTestCase extends TestCase {
     protected final ElementTraversal parse(String input) {
         try {
             Document doc = fDocumentBuilder.parse(new InputSource(new StringReader(input)));
+            DOMImplementation domImpl = doc.getImplementation();
+            assertTrue(domImpl.hasFeature("ElementTraversal", "1.0"));
             return toElementTraversal(doc.getDocumentElement());
         } 
         catch (SAXException se) {
