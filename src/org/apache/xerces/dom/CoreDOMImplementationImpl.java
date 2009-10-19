@@ -168,7 +168,11 @@ public class CoreDOMImplementationImpl
 	                || version.equals("1.0")
 	                || version.equals("1.1")))
 	                || (feature.equalsIgnoreCase("LS")
-	            && (anyVersion || version.equals("3.0")));
+	            && (anyVersion 
+	                || version.equals("3.0")))
+	                || (feature.equalsIgnoreCase("ElementTraversal")
+	            && (anyVersion
+	                || version.equals("1.0")));
 	} // hasFeature(String,String):boolean
 
 
