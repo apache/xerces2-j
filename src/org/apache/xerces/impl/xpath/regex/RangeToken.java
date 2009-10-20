@@ -462,7 +462,7 @@ final class RangeToken extends Token implements java.io.Serializable {
                 if (ch > 0xffff)
                     lowers.addRange(ch, ch);
                 else {
-                    char uch = Character.toUpperCase((char)ch);
+                    char uch = Character.toLowerCase((char)ch);
                     lowers.addRange(uch, uch);
                 }
             }
