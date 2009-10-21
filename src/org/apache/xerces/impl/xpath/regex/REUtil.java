@@ -138,11 +138,17 @@ public final class REUtil {
         int len = regex.length();
         StringBuffer buffer = new StringBuffer(len);
         int offset = 0;
+        int charClass = 0;
         while (offset < len) {
             int ch = regex.charAt(offset++);
                                                 // Skips a white space.
-            if (ch == '\t' || ch == '\n' || ch == '\f' || ch == '\r' || ch == ' ')
+            if (ch == '\t' || ch == '\n' || ch == '\f' || ch == '\r' || ch == ' ') {
+                // if we are inside a character class, we keep the white space
+                if (charClass > 0) {
+                    buffer.append((char)ch);
+                }
                 continue;
+            }
 
             if (ch == '#') {                    // Skips chracters between '#' and a line end.
                 while (offset < len) {
@@ -165,8 +171,32 @@ public final class REUtil {
                     buffer.append((char)next);
                     offset ++;
                 }
-            } else                              // As is.
+            }
+            else if (ch == '[') {
+                charClass++;
                 buffer.append((char)ch);
+                if (offset < len) {
+                    next = regex.charAt(offset);
+                    if (next == '[' || next ==']') {
+                        buffer.append((char)next);
+                        offset ++;
+                    }
+                    else if (next == '^' && offset + 1 < len) {
+                        next = regex.charAt(offset + 1);
+                        if (next == '[' || next ==']') {
+                            buffer.append((char)'^');
+                            buffer.append((char)next);
+                            offset += 2;
+                        }
+                    }
+                }
+            }
+            else {
+                if (charClass > 0 && ch == ']') {
+                    --charClass;
+                }
+                buffer.append((char)ch);
+            }
         }
         return buffer.toString();
     }
