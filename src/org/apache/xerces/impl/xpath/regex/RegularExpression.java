@@ -700,7 +700,7 @@ public class RegularExpression implements java.io.Serializable {
      * @param match A Match instance for storing matching result.
      * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
      */
-    public boolean matches(char[]  target, int start, int end, Match match) {
+    public boolean matches(char[] target, int start, int end, Match match) {
 
         synchronized (this) {
             if (this.operations == null)
@@ -807,33 +807,16 @@ public class RegularExpression implements java.io.Serializable {
         else if (this.firstChar != null) {
             //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
             RangeToken range = this.firstChar;
-            if (RegularExpression.isSet(this.options, IGNORE_CASE)) {
-                range = this.firstChar.getCaseInsensitiveToken();
-                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                    int ch =  target [  matchStart ] ;
-                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
-                        ch = REUtil.composeFromSurrogates(ch,  target [  matchStart+1 ] );
-                        if (!range.match(ch))  continue;
-                    } else {
-                        if (!range.match(ch)) {
-                            char ch1 = Character.toUpperCase((char)ch);
-                            if (!range.match(ch1))
-                                if (!range.match(Character.toLowerCase(ch1)))
-                                    continue;
-                        }
-                    }
-                    if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
-                                                               matchStart, 1, this.options)))
-                        break;
+            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                int ch =  target [matchStart] ;
+                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
+                    ch = REUtil.composeFromSurrogates(ch, target[matchStart+1]);
                 }
-            } else {
-                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                    int ch =  target [  matchStart ] ;
-                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
-                        ch = REUtil.composeFromSurrogates(ch,  target [  matchStart+1 ] );
-                    if (!range.match(ch))  continue;
-                    if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
-                                                               matchStart, 1, this.options)))
+                if (!range.match(ch))  {
+                    continue;
+                }
+                if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
+                                                           matchStart, 1, this.options))) {
                         break;
                 }
             }
@@ -945,20 +928,12 @@ public class RegularExpression implements java.io.Serializable {
                     if (offset >= con.limit)
                         return -1;
                     int ch =  target [  offset ] ;
-                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                        ch = REUtil.composeFromSurrogates(ch,  target [  ++offset ] );
-                    RangeToken tok = op.getToken();
-                    if (isSet(opts, IGNORE_CASE)) {
-                        tok = tok.getCaseInsensitiveToken();
-                        if (!tok.match(ch)) {
-                            if (ch >= 0x10000)  return -1;
-                            char uch;
-                            if (!tok.match(uch = Character.toUpperCase((char)ch))
-                                && !tok.match(Character.toLowerCase(uch)))
-                                return -1;
-                        }
-                    } else {
-                        if (!tok.match(ch))  return -1;
+                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit) {
+                        ch = REUtil.composeFromSurrogates(ch,  target[++offset]);
+                    }
+                    final RangeToken tok = op.getToken();
+                    if (!tok.match(ch)) {
+                        return -1;
                     }
                     offset ++;
                 } else {
@@ -966,20 +941,12 @@ public class RegularExpression implements java.io.Serializable {
                     if (o1 >= con.limit || o1 < 0)
                         return -1;
                     int ch =  target [  o1 ] ;
-                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0) {
                         ch = REUtil.composeFromSurrogates( target [  --o1 ] , ch);
-                    RangeToken tok = op.getToken();
-                    if (isSet(opts, IGNORE_CASE)) {
-                        tok = tok.getCaseInsensitiveToken();
-                        if (!tok.match(ch)) {
-                            if (ch >= 0x10000)  return -1;
-                            char uch;
-                            if (!tok.match(uch = Character.toUpperCase((char)ch))
-                                && !tok.match(Character.toLowerCase(uch)))
-                                return -1;
-                        }
-                    } else {
-                        if (!tok.match(ch))  return -1;
+                    }
+                    final RangeToken tok = op.getToken();
+                    if (!tok.match(ch)) {
+                        return -1;
                     }
                     offset = o1;
                 }
@@ -1522,33 +1489,16 @@ public class RegularExpression implements java.io.Serializable {
         else if (this.firstChar != null) {
             //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
             RangeToken range = this.firstChar;
-            if (RegularExpression.isSet(this.options, IGNORE_CASE)) {
-                range = this.firstChar.getCaseInsensitiveToken();
-                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                    int ch =  target .charAt(  matchStart ) ;
-                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
-                        ch = REUtil.composeFromSurrogates(ch,  target .charAt(  matchStart+1 ) );
-                        if (!range.match(ch))  continue;
-                    } else {
-                        if (!range.match(ch)) {
-                            char ch1 = Character.toUpperCase((char)ch);
-                            if (!range.match(ch1))
-                                if (!range.match(Character.toLowerCase(ch1)))
-                                    continue;
-                        }
-                    }
-                    if (0 <= (matchEnd = this. matchString (con, this.operations,
-                                                            matchStart, 1, this.options)))
-                        break;
+            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                int ch =  target .charAt(  matchStart ) ;
+                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
+                    ch = REUtil.composeFromSurrogates(ch, target.charAt(matchStart+1));
                 }
-            } else {
-                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                    int ch =  target .charAt(  matchStart ) ;
-                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
-                        ch = REUtil.composeFromSurrogates(ch,  target .charAt(  matchStart+1 ) );
-                    if (!range.match(ch))  continue;
-                    if (0 <= (matchEnd = this. matchString (con, this.operations,
-                                                            matchStart, 1, this.options)))
+                if (!range.match(ch)) {
+                    continue;
+                }
+                if (0 <= (matchEnd = this. matchString (con, this.operations,
+                                                        matchStart, 1, this.options))) {
                         break;
                 }
             }
@@ -1665,20 +1615,12 @@ public class RegularExpression implements java.io.Serializable {
                     if (offset >= con.limit)
                         return -1;
                     int ch =  target .charAt(  offset ) ;
-                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                        ch = REUtil.composeFromSurrogates(ch,  target .charAt(  ++offset ) );
-                    RangeToken tok = op.getToken();
-                    if (isSet(opts, IGNORE_CASE)) {
-                        tok = tok.getCaseInsensitiveToken();
-                        if (!tok.match(ch)) {
-                            if (ch >= 0x10000)  return -1;
-                            char uch;
-                            if (!tok.match(uch = Character.toUpperCase((char)ch))
-                                && !tok.match(Character.toLowerCase(uch)))
-                                return -1;
-                        }
-                    } else {
-                        if (!tok.match(ch))  return -1;
+                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit) {
+                        ch = REUtil.composeFromSurrogates(ch, target.charAt(++offset));
+                    }
+                    final RangeToken tok = op.getToken();
+                    if (!tok.match(ch)) {
+                        return -1;
                     }
                     offset ++;
                 } else {
@@ -1686,20 +1628,12 @@ public class RegularExpression implements java.io.Serializable {
                     if (o1 >= con.limit || o1 < 0)
                         return -1;
                     int ch =  target .charAt(  o1 ) ;
-                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0) {
                         ch = REUtil.composeFromSurrogates( target .charAt(  --o1 ) , ch);
-                    RangeToken tok = op.getToken();
-                    if (isSet(opts, IGNORE_CASE)) {
-                        tok = tok.getCaseInsensitiveToken();
-                        if (!tok.match(ch)) {
-                            if (ch >= 0x10000)  return -1;
-                            char uch;
-                            if (!tok.match(uch = Character.toUpperCase((char)ch))
-                                && !tok.match(Character.toLowerCase(uch)))
-                                return -1;
-                        }
-                    } else {
-                        if (!tok.match(ch))  return -1;
+                    }
+                    final RangeToken tok = op.getToken();
+                    if (!tok.match(ch)) {
+                        return -1;
                     }
                     offset = o1;
                 }
@@ -2169,34 +2103,17 @@ public class RegularExpression implements java.io.Serializable {
         else if (this.firstChar != null) {
             //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
             RangeToken range = this.firstChar;
-            if (RegularExpression.isSet(this.options, IGNORE_CASE)) {
-                range = this.firstChar.getCaseInsensitiveToken();
-                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                    int ch =  target .setIndex(  matchStart ) ;
-                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
-                        ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  matchStart+1 ) );
-                        if (!range.match(ch))  continue;
-                    } else {
-                        if (!range.match(ch)) {
-                            char ch1 = Character.toUpperCase((char)ch);
-                            if (!range.match(ch1))
-                                if (!range.match(Character.toLowerCase(ch1)))
-                                    continue;
-                        }
-                    }
-                    if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
-                                                                       matchStart, 1, this.options)))
-                        break;
+            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                int ch =  target .setIndex(  matchStart ) ;
+                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
+                    ch = REUtil.composeFromSurrogates(ch, target.setIndex(matchStart+1));
                 }
-            } else {
-                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                    int ch =  target .setIndex(  matchStart ) ;
-                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
-                        ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  matchStart+1 ) );
-                    if (!range.match(ch))  continue;
-                    if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
-                                                                       matchStart, 1, this.options)))
-                        break;
+                if (!range.match(ch)) {
+                    continue;
+                }
+                if (0 <= (matchEnd = this.matchCharacterIterator(con, this.operations,
+                                                                 matchStart, 1, this.options))) {
+                    break;
                 }
             }
         }
@@ -2314,18 +2231,9 @@ public class RegularExpression implements java.io.Serializable {
                     int ch =  target .setIndex(  offset ) ;
                     if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
                         ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  ++offset ) );
-                    RangeToken tok = op.getToken();
-                    if (isSet(opts, IGNORE_CASE)) {
-                        tok = tok.getCaseInsensitiveToken();
-                        if (!tok.match(ch)) {
-                            if (ch >= 0x10000)  return -1;
-                            char uch;
-                            if (!tok.match(uch = Character.toUpperCase((char)ch))
-                                && !tok.match(Character.toLowerCase(uch)))
-                                return -1;
-                        }
-                    } else {
-                        if (!tok.match(ch))  return -1;
+                    final RangeToken tok = op.getToken();
+                    if (!tok.match(ch)) {
+                        return -1;
                     }
                     offset ++;
                 } else {
@@ -2335,18 +2243,9 @@ public class RegularExpression implements java.io.Serializable {
                     int ch =  target .setIndex(  o1 ) ;
                     if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
                         ch = REUtil.composeFromSurrogates( target .setIndex(  --o1 ) , ch);
-                    RangeToken tok = op.getToken();
-                    if (isSet(opts, IGNORE_CASE)) {
-                        tok = tok.getCaseInsensitiveToken();
-                        if (!tok.match(ch)) {
-                            if (ch >= 0x10000)  return -1;
-                            char uch;
-                            if (!tok.match(uch = Character.toUpperCase((char)ch))
-                                && !tok.match(Character.toLowerCase(uch)))
-                                return -1;
-                        }
-                    } else {
-                        if (!tok.match(ch))  return -1;
+                    final RangeToken tok = op.getToken();
+                    if (!tok.match(ch)) {
+                        return -1;
                     }
                     offset = o1;
                 }
