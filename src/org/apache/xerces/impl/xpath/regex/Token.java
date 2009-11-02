@@ -442,19 +442,11 @@ class Token implements java.io.Serializable {
               return FC_ANY;
 
           case RANGE:
-            if (isSet(options, RegularExpression.IGNORE_CASE)) {
-                result.mergeRanges(((RangeToken)this).getCaseInsensitiveToken());
-            } else {
-                result.mergeRanges(this);
-            }
+            result.mergeRanges(this);
             return FC_TERMINAL;
 
           case NRANGE:                          // ****
-            if (isSet(options, RegularExpression.IGNORE_CASE)) {
-                result.mergeRanges(Token.complementRanges(((RangeToken)this).getCaseInsensitiveToken()));
-            } else {
-                result.mergeRanges(Token.complementRanges(this));
-            }
+            result.mergeRanges(Token.complementRanges(this));
             return FC_TERMINAL;
 
           case INDEPENDENT:

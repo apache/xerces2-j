@@ -250,14 +250,24 @@ class ParserForXMLSchema extends RegexParser {
                     if (c == '-' && this.chardata != ']' && !firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
                 }
                 if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && firstloop) { // Here is no '-'.
-                    tok.addRange(c, c);
+                    if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
+                        tok.addRange(c, c);
+                    }
+                    else {
+                        addCaseInsensitiveChar(tok, c);
+                    }
                 } else {                        // Found '-'
                                                 // Is this '-' is a from-to token??
                     this.next(); // Skips '-'
                     if ((type = this.read()) == T_EOF)  throw this.ex("parser.cc.2", this.offset);
                                                 // c '-' ']' -> '-' is a single-range.
                     if(type == T_CHAR && this.chardata == ']') {				// if - is at the last position of the group
-                    	tok.addRange(c, c);
+                        if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
+                    	    tok.addRange(c, c);
+                        }
+                        else {
+                            addCaseInsensitiveChar(tok, c);
+                        }
                     	tok.addRange('-', '-');
                     }
                     else if (type == T_XMLSCHEMA_CC_SUBTRACTION) {
@@ -275,7 +285,13 @@ class ParserForXMLSchema extends RegexParser {
                         this.next();
 
                         if (c > rangeend)  throw this.ex("parser.ope.3", this.offset-1);
-                        tok.addRange(c, rangeend);
+                        if (!this.isSet(RegularExpression.IGNORE_CASE) ||
+                                (c > 0xffff && rangeend > 0xffff)) {
+                            tok.addRange(c, rangeend);
+                        }
+                        else {
+                            addCaseInsensitiveCharRange(tok, c, rangeend);
+                        }
                     }
                 }
             }

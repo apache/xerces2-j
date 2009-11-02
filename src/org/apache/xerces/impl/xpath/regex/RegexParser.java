@@ -107,7 +107,7 @@ class RegexParser {
         return new ParseException(this.resources.getString(key), loc);
     }
 
-    private final boolean isSet(int flag) {
+    protected final boolean isSet(int flag) {
         return (this.options & flag) == flag;
     }
 
@@ -940,19 +940,35 @@ class RegexParser {
             this.next();
             if (!end) {                         // if not shorthands...
                 if (this.read() != T_CHAR || this.chardata != '-') { // Here is no '-'.
-                    tok.addRange(c, c);
+                    if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
+                        tok.addRange(c, c);
+                    }
+                    else {
+                        addCaseInsensitiveChar(tok, c);
+                    }
                 } else {
                     this.next(); // Skips '-'
                     if ((type = this.read()) == T_EOF)  throw this.ex("parser.cc.2", this.offset);
                     if (type == T_CHAR && this.chardata == ']') {
-                        tok.addRange(c, c);
+                        if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
+                            tok.addRange(c, c);
+                        }
+                        else {
+                            addCaseInsensitiveChar(tok, c);
+                        }
                         tok.addRange('-', '-');
                     } else {
                         int rangeend = this.chardata;
                         if (type == T_BACKSOLIDUS)
                             rangeend = this.decodeEscaped();
                         this.next();
-                        tok.addRange(c, rangeend);
+                        if (!this.isSet(RegularExpression.IGNORE_CASE) ||
+                                (c > 0xffff && rangeend > 0xffff)) {
+                            tok.addRange(c, rangeend);
+                        }
+                        else {
+                            addCaseInsensitiveCharRange(tok, c, rangeend);
+                        }
                     }
                 }
             }
@@ -1150,5 +1166,47 @@ class RegexParser {
         if (ch <= 'F')  return ch-'A'+10;
         if (ch < 'a')  return -1;
         return ch-'a'+10;
+    }
+    
+    static protected final void addCaseInsensitiveChar(RangeToken tok, int c) {
+        tok.addRange(c, c);
+        char cic = Character.toUpperCase((char)c);
+        if (cic != c) {
+            tok.addRange(cic, cic);
+        }
+        cic = Character.toLowerCase((char)c);
+        if (cic != c) {
+            tok.addRange(cic, cic);
+        }
+    }
+    
+    static protected final void addCaseInsensitiveCharRange(RangeToken tok, int start, int end) {
+        int r1, r2;
+        if (start <= end) {
+            r1 = start;
+            r2 = end;
+        } else {
+            r1 = end;
+            r2 = start;
+        }
+
+        tok.addRange(r1, r2);
+        for (int ch = r1;  ch <= r2;  ch++) {
+            if (ch <= 0xffff) {
+                char uch = Character.toUpperCase((char)ch);
+                if (uch != ch) {
+                    tok.addRange(uch, uch);
+                }
+            }
+        }
+
+        for (int ch = r1;  ch <= r2;  ch++) {
+            if (ch <= 0xffff) {
+                char lch = Character.toLowerCase((char)ch);
+                if (lch != ch) {
+                    tok.addRange(lch, lch);
+                }
+            }
+        }
     }
 }
