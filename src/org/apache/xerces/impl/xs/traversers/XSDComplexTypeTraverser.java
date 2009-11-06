@@ -985,7 +985,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (existingAttrUse != oneAttrUse) {
                 if (extension) {
-                    throw new ComplexTypeRecoverableError("ct-props-correct.4",
+                    reportSchemaError("ct-props-correct.4",
                             new Object[]{typeName, oneAttrUse.fAttrDecl.getName()},
                             elem);
                 }
