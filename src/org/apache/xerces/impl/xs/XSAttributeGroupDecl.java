@@ -91,6 +91,14 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         return null;
     }
 
+    public void replaceAttributeUse(XSAttributeUse oldUse, XSAttributeUseImpl newUse) {
+        for (int i=0; i<fAttrUseNum; i++) {
+            if (fAttributeUses[i] == oldUse) {
+                fAttributeUses[i] = newUse;
+            }
+        }
+    }
+
     public XSAttributeUse getAttributeUse(String namespace, String name) {
         for (int i=0; i<fAttrUseNum; i++) {
             if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == namespace) &&

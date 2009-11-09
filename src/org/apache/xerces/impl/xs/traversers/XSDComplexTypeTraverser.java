@@ -958,7 +958,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
     
     // This method merges attribute uses from the base, into the derived set.
-    // The first duplicate attribute, if any, is returned.
     // LM: may want to merge with attributeGroup processing.
     private void mergeAttributes(XSAttributeGroupDecl fromAttrGrp,
             XSAttributeGroupDecl toAttrGrp,
@@ -968,7 +967,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     throws ComplexTypeRecoverableError {
         
         XSObjectList attrUseS = fromAttrGrp.getAttributeUses();
-        XSAttributeUseImpl  duplicateAttrUse =  null, oneAttrUse = null;
+        XSAttributeUseImpl oneAttrUse = null;
         int attrCount = attrUseS.getLength();
         for (int i=0; i<attrCount; i++) {
             oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
@@ -988,6 +987,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     reportSchemaError("ct-props-correct.4",
                             new Object[]{typeName, oneAttrUse.fAttrDecl.getName()},
                             elem);
+                    // Recover by using the attribute use from the base type,
+                    // to make the resulting schema "more valid".
+                    toAttrGrp.replaceAttributeUse(existingAttrUse, oneAttrUse);
                 }
             }
         }
