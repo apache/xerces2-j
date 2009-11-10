@@ -64,8 +64,8 @@ public class CaseInsensitiveMap {
         
         int lc, uc;
         for (int i=0; i<0x10000; i++) {
-            lc = Character.toLowerCase(i);
-            uc = Character.toUpperCase(i);
+            lc = Character.toLowerCase((char) i);
+            uc = Character.toUpperCase((char) i);
 
             // lower/upper case value is not the same as code point
             if (lc != uc || lc != i) {
