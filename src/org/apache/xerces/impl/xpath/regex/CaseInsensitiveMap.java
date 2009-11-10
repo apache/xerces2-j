@@ -28,24 +28,19 @@ public class CaseInsensitiveMap {
     private static int INITIAL_CHUNK_COUNT = 64;   /* up to 0xFFFF */
 
     private static int[][][] caseInsensitiveMap;
-    private static Boolean mapBuilt = Boolean.FALSE;
     
     private static int LOWER_CASE_MATCH = 1;
-    private static int UPPER_CASE_MATCH = 2; 
+    private static int UPPER_CASE_MATCH = 2;
+    
+    static {
+        buildCaseInsensitiveMap();
+    }
 
     /**
      *  Return a list of code point characters (not including the input value)
      *  that can be substituted in a case insensitive match
      */
     static public int[] get(int codePoint) {
-        if (mapBuilt == Boolean.FALSE) {
-            synchronized (mapBuilt) {
-                if (mapBuilt == Boolean.FALSE) {
-                    buildCaseInsensitiveMap();
-                }
-            } // synchronized
-        } // if mapBuilt
-
         return (codePoint < 0x10000) ? getMapping(codePoint) : null;
     }
 
@@ -57,11 +52,7 @@ public class CaseInsensitiveMap {
     }
     
     private static void buildCaseInsensitiveMap() {
-        caseInsensitiveMap = new int[INITIAL_CHUNK_COUNT][][];
-        for (int i=0; i<INITIAL_CHUNK_COUNT; i++) {
-            caseInsensitiveMap[i] = new int[CHUNK_SIZE][];
-        }
-        
+        caseInsensitiveMap = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE][];
         int lc, uc;
         for (int i=0; i<0x10000; i++) {
             lc = Character.toLowerCase((char) i);
@@ -96,8 +87,6 @@ public class CaseInsensitiveMap {
                 set(i, map);
             }
         }
-
-        mapBuilt = Boolean.TRUE;
     }
     
     private static int[] expandMap(int[] srcMap, int expandBy) {
