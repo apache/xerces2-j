@@ -18,9 +18,11 @@
 package org.apache.xerces.impl.xpath.regex;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
-public class CaseInsensitiveMap {
+final class CaseInsensitiveMap {
 
     private static int CHUNK_SHIFT = 10;           /* 2^10 = 1k */
     private static int CHUNK_SIZE = (1<<CHUNK_SHIFT);
