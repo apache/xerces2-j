@@ -1169,18 +1169,19 @@ class RegexParser {
     }
     
     static protected final void addCaseInsensitiveChar(RangeToken tok, int c) {
+        final int[] caseMap = CaseInsensitiveMap.get(c);
         tok.addRange(c, c);
-        char cic = Character.toUpperCase((char)c);
-        if (cic != c) {
-            tok.addRange(cic, cic);
+        
+        if (caseMap != null) {
+            for (int i=0; i<caseMap.length; i+=2) {
+                tok.addRange(caseMap[i], caseMap[i]);
+            }
         }
-        cic = Character.toLowerCase((char)c);
-        if (cic != c) {
-            tok.addRange(cic, cic);
-        }
+
     }
     
     static protected final void addCaseInsensitiveCharRange(RangeToken tok, int start, int end) {
+        int[] caseMap;
         int r1, r2;
         if (start <= end) {
             r1 = start;
@@ -1192,19 +1193,10 @@ class RegexParser {
 
         tok.addRange(r1, r2);
         for (int ch = r1;  ch <= r2;  ch++) {
-            if (ch <= 0xffff) {
-                char uch = Character.toUpperCase((char)ch);
-                if (uch != ch) {
-                    tok.addRange(uch, uch);
-                }
-            }
-        }
-
-        for (int ch = r1;  ch <= r2;  ch++) {
-            if (ch <= 0xffff) {
-                char lch = Character.toLowerCase((char)ch);
-                if (lch != ch) {
-                    tok.addRange(lch, lch);
+            caseMap = CaseInsensitiveMap.get(ch);
+            if (caseMap != null) {
+                for (int i=0; i<caseMap.length; i+=2) {
+                    tok.addRange(caseMap[i], caseMap[i]);
                 }
             }
         }
