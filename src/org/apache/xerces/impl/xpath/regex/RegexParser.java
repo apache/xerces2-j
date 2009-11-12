@@ -177,8 +177,9 @@ class RegexParser {
                 break;
 
               case '-':
-                if (this.isSet(RegularExpression.XMLSCHEMA_MODE)
-                    && this.offset < this.regexlen && this.regex.charAt(this.offset) == '[') {
+                // Allow character class subtraction (regardless of whether we are in
+                // XML Schema mode or not)
+                if (this.offset < this.regexlen && this.regex.charAt(this.offset) == '[') {
                     this.offset++;
                     ret = T_XMLSCHEMA_CC_SUBTRACTION;
                 } else
@@ -887,7 +888,6 @@ class RegexParser {
         while ((type = this.read()) != T_EOF) {
             if (type == T_CHAR && this.chardata == ']' && !firstloop)
                 break;
-            firstloop = false;
             int c = this.chardata;
             boolean end = false;
             if (type == T_BACKSOLIDUS) {
@@ -937,6 +937,24 @@ class RegexParser {
                     throw this.ex("parser.cc.1", nameend);
                 this.offset = nameend+2;
             }
+            else if (type == T_XMLSCHEMA_CC_SUBTRACTION && !firstloop) {
+                if (nrange) {
+                    nrange = false;
+                    if (useNrange) {
+                        tok = (RangeToken) Token.complementRanges(tok);
+                    }
+                    else {
+                        base.subtractRanges(tok);
+                        tok = base;
+                    }
+                }
+                RangeToken range2 = this.parseCharacterClass(false);
+                tok.subtractRanges(range2);
+                if (this.read() != T_CHAR || this.chardata != ']') {
+                    throw this.ex("parser.cc.5", this.offset);
+                }
+                break;                          // Exit this loop
+            }
             this.next();
             if (!end) {                         // if not shorthands...
                 if (this.read() != T_CHAR || this.chardata != '-') { // Here is no '-'.
@@ -946,7 +964,11 @@ class RegexParser {
                     else {
                         addCaseInsensitiveChar(tok, c);
                     }
-                } else {
+                }
+                else if (type == T_XMLSCHEMA_CC_SUBTRACTION) {
+                    throw this.ex("parser.cc.8", this.offset-1);
+                }
+                else {
                     this.next(); // Skips '-'
                     if ((type = this.read()) == T_EOF)  throw this.ex("parser.cc.2", this.offset);
                     if (type == T_CHAR && this.chardata == ']') {
@@ -959,9 +981,13 @@ class RegexParser {
                         tok.addRange('-', '-');
                     } else {
                         int rangeend = this.chardata;
-                        if (type == T_BACKSOLIDUS)
+                        if (type == T_BACKSOLIDUS) {
                             rangeend = this.decodeEscaped();
+                        }
                         this.next();
+                        if (c > rangeend) {
+                            throw this.ex("parser.ope.3", this.offset-1);
+                        }
                         if (!this.isSet(RegularExpression.IGNORE_CASE) ||
                                 (c > 0xffff && rangeend > 0xffff)) {
                             tok.addRange(c, rangeend);
@@ -973,22 +999,21 @@ class RegexParser {
                 }
             }
             if (this.isSet(RegularExpression.SPECIAL_COMMA)
-                && this.read() == T_CHAR && this.chardata == ',')
+                && this.read() == T_CHAR && this.chardata == ',') {
                 this.next();
+            }
+            firstloop = false;
         }
-        if (this.read() == T_EOF)
+        if (this.read() == T_EOF) {
             throw this.ex("parser.cc.2", this.offset);
+        }
+        
         if (!useNrange && nrange) {
             base.subtractRanges(tok);
             tok = base;
         }
         tok.sortRanges();
         tok.compactRanges();
-        //tok.dumpRanges();
-        /*
-        if (this.isSet(RegularExpression.IGNORE_CASE))
-            tok = RangeToken.createCaseInsensitiveToken(tok);
-        */
         this.setContext(S_NORMAL);
         this.next();                    // Skips ']'
 
