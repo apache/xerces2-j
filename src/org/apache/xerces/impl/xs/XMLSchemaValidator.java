@@ -2460,8 +2460,14 @@ public class XMLSchemaValidator
             if (fAssertionProcessor == null) {
               // construct parameter values for the assertion processor
               String xsdPrefix = ((XSAssertImpl)assertions.get(0)).getXsdNamespacePrefix();
+              String xpath2FnPrefix = ((XSAssertImpl)assertions.get(0)).getXpath2FnPrefix();
               Map assertProcessorParams = new HashMap();
               assertProcessorParams.put("XSD_PREFIX", xsdPrefix);
+              // set the XPath 2.0 functions namespace prefix, if present on
+              // <schema> element.
+              if (xpath2FnPrefix != null) {
+                assertProcessorParams.put("XPATH2_FN_PREFIX", xpath2FnPrefix);    
+              }
               // initialize the assert processor
               initializeAssertProcessor(assertProcessorParams);
             }
@@ -2476,10 +2482,16 @@ public class XMLSchemaValidator
                 assertObject = facet.getAsserts();
                 // instantiate the assertions processor
                 if (fAssertionProcessor == null) {
-                   // construct parameter values for the assertion processor                   
+                   // construct parameter values for the assertion processor
                    String xsdPrefix = ((XSAssertImpl)facet.getAsserts().get(0)).getXsdNamespacePrefix();
+                   String xpath2FnPrefix = ((XSAssertImpl)facet.getAsserts().get(0)).getXpath2FnPrefix();
                    Map assertProcessorParams = new HashMap();
                    assertProcessorParams.put("XSD_PREFIX", xsdPrefix);
+                   // set the XPath 2.0 functions namespace prefix, if present on
+                   // <schema> element.
+                   if (xpath2FnPrefix != null) {
+                     assertProcessorParams.put("XPATH2_FN_PREFIX", xpath2FnPrefix);    
+                   }
                    // initialize the assert processor
                    initializeAssertProcessor(assertProcessorParams);
                 }

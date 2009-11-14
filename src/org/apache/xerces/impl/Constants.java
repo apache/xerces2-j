@@ -471,7 +471,10 @@ public final class Constants {
     public final static boolean SCHEMA_1_1_SUPPORT = false;
     public final static short SCHEMA_VERSION_1_0 = 1;
     public final static short SCHEMA_VERSION_1_0_EXTENDED = 2;
-    public final static short SCHEMA_VERSION_1_1 = 4;    
+    public final static short SCHEMA_VERSION_1_1 = 4;
+    
+    // XPath 2.0 constants
+    public final static String XPATH20_FN_NAMESPACE = "http://www.w3.org/2005/xpath-functions";
     
     // private
     

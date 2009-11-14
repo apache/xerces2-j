@@ -44,7 +44,10 @@ public class XSAssertImpl implements XSAssert {
     protected String fXPathDefaultNamespace = null;
     
     /** XSD namespace prefix, present on <schema> element */
-    protected String xsdNamespacePrefix = null;
+    protected String fXsdNamespacePrefix = null;
+    
+    /** XPath 2.0 functions namespace prefix, present on <schema> element */
+    protected String fXpath2FnPrefix = null;
 
     /** Constructor */
     public XSAssertImpl(XSTypeDefinition type,
@@ -71,7 +74,12 @@ public class XSAssertImpl implements XSAssert {
     
     /** Sets the XSD namespace, prefix */
     public void setXsdNamespacePrefix(String nsPrefix) {
-        xsdNamespacePrefix = nsPrefix;
+        fXsdNamespacePrefix = nsPrefix;
+    }
+    
+    /** Sets the XPath 2.0 functions namespace, prefix */
+    public void setXpath2FnPrefix(String nsPrefix) {
+        fXpath2FnPrefix = nsPrefix;
     }
    
     public XSObjectList getAnnotations() {
@@ -127,7 +135,15 @@ public class XSAssertImpl implements XSAssert {
      * Get the XSD namespace prefix
      */
     public String getXsdNamespacePrefix() {
-        return xsdNamespacePrefix;
+        return fXsdNamespacePrefix;
+    }
+    
+    /**
+     * 
+     * Get the XPath 2.0 functions prefix
+     */
+    public String getXpath2FnPrefix() {
+        return fXpath2FnPrefix;
     }
     
     /*

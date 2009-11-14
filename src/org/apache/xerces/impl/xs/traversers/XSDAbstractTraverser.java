@@ -498,8 +498,13 @@ abstract class XSDAbstractTraverser {
                     assertImpl.setTest(testExpr);
                     assertImpl.setXPathDefauleNamespace(xpathDefaultNamespace);
                     assertImpl.setXsdNamespacePrefix(schemaDoc.fSchemaElement.getPrefix());
+                    String xpath2FnPrefix = schemaDoc.fNamespaceSupport.getPrefix(Constants.XPATH20_FN_NAMESPACE);
+                    if (xpath2FnPrefix != null) {
+                       assertImpl.setXpath2FnPrefix(xpath2FnPrefix);
+                    }
+                    
                     if (assertData == null) {
-                        assertData = new Vector();
+                       assertData = new Vector();
                     }
                     assertData.addElement(assertImpl);
                 } else {

@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Map;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xs.XSModel;
 import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DefaultEvaluator;
@@ -55,8 +56,14 @@ public class AbstractPsychoPathImpl {
                                                 Document document,
                                                 Map psychoPathParams) {
         fDynamicContext = new DefaultDynamicContext(schema, document);
-        String xsdPrefix = (String) psychoPathParams.get("XSD_PREFIX"); 
+        String xsdPrefix = (String) psychoPathParams.get("XSD_PREFIX");
+        String xpath2FnPrefix = (String) psychoPathParams.get("XPATH2_FN_PREFIX");
         fDynamicContext.add_namespace(xsdPrefix, "http://www.w3.org/2001/XMLSchema");
+        // set the XPath 2.0 functions namespace binding to the XPath 2.0 static
+        // context, if present on <schema> element.
+        if (xpath2FnPrefix != null) {
+           fDynamicContext.add_namespace(xpath2FnPrefix, Constants.XPATH20_FN_NAMESPACE);    
+        }
         fDynamicContext.add_function_library(new FnFunctionLibrary());
         fDynamicContext.add_function_library(new XSCtrLibrary());        
         domDoc = document;
