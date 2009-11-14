@@ -34,7 +34,7 @@ public class XSAssertImpl implements XSAssert {
     /** The type definition associated with the assertion component */
     protected XSTypeDefinition fTypeDefinition;
 
-    /** An XPath 2.0 expression that represents the 'test' attribute */
+    /** An XPath 2.0 expression that represents the assert 'test' attribute */
     protected Test fTestExpr = null;
     
     /** Optional annotations */
@@ -42,6 +42,9 @@ public class XSAssertImpl implements XSAssert {
 
     /** Default XPath namespace */
     protected String fXPathDefaultNamespace = null;
+    
+    /** XSD namespace prefix, present on <schema> element */
+    protected String xsdNamespacePrefix = null;
 
     /** Constructor */
     public XSAssertImpl(XSTypeDefinition type,
@@ -64,6 +67,11 @@ public class XSAssertImpl implements XSAssert {
     /** Sets the xpath default namespace */
     public void setXPathDefauleNamespace(String namespace) {
         fXPathDefaultNamespace = namespace;
+    }
+    
+    /** Sets the XSD namespace, prefix */
+    public void setXsdNamespacePrefix(String nsPrefix) {
+        xsdNamespacePrefix = nsPrefix;
     }
    
     public XSObjectList getAnnotations() {
@@ -112,6 +120,14 @@ public class XSAssertImpl implements XSAssert {
      */
     public short getType() {
         return XSConstants.ASSERTION;
+    }
+    
+    /**
+     * 
+     * Get the XSD namespace prefix
+     */
+    public String getXsdNamespacePrefix() {
+        return xsdNamespacePrefix;
     }
     
     /*

@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.Map;
+
 import org.apache.xerces.xs.XSModel;
 import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DefaultEvaluator;
@@ -50,10 +52,11 @@ public class AbstractPsychoPathImpl {
     private Document domDoc = null;
     
     protected DynamicContext initDynamicContext(XSModel schema,
-                                                Document document) {
-        fDynamicContext = new DefaultDynamicContext(schema, document);                
-        fDynamicContext.add_namespace("xs", "http://www.w3.org/2001/XMLSchema");
-        fDynamicContext.add_namespace("fn", "http://www.w3.org/2005/xpath-functions");
+                                                Document document,
+                                                Map assertParams) {
+        fDynamicContext = new DefaultDynamicContext(schema, document);
+        String xsdPrefix = (String)assertParams.get("XSD_PREFIX"); 
+        fDynamicContext.add_namespace(xsdPrefix, "http://www.w3.org/2001/XMLSchema");
         fDynamicContext.add_function_library(new FnFunctionLibrary());
         fDynamicContext.add_function_library(new XSCtrLibrary());        
         domDoc = document;

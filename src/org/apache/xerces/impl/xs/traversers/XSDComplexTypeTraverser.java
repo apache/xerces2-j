@@ -1595,6 +1595,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                       schemaDoc.fNamespaceSupport), assertImpl);
             assertImpl.setTest(testExpr);
             assertImpl.setXPathDefauleNamespace(xpathDefaultNamespace);
+            assertImpl.setXsdNamespacePrefix(schemaDoc.fSchemaElement.getPrefix());
 
             // add assertion object to an array buffer
             addAssertion(assertImpl);

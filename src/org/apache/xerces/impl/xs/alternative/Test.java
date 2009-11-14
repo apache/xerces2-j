@@ -17,12 +17,16 @@
 
 package org.apache.xerces.impl.xs.alternative;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
+import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
@@ -47,20 +51,25 @@ public class Test extends AbstractPsychoPathImpl {
     
     /** XPath 2.0 expression. PsychoPath XPath 2.0 expression. */
     protected XPath fXPathPsychoPath = null;
+    
+    /** XSD document prefix. Present on <schema> element. */
+    protected String fXsdPrefix = null;
 
     /** Constructs a "test" for type alternatives */
-    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative) {
+    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative, String xsdPrefix) {
         fXPath = xpath;
         fTypeAlternative = typeAlternative;
+        fXsdPrefix = xsdPrefix;
     }
     
     /*
      * Constructs a "test" for type alternatives. An overloaded constructor,
      * for PsychoPath XPath processor.
      */
-    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative) {
+    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative, String xsdPrefix) {
        fXPathPsychoPath = xpath;
-       fTypeAlternative = typeAlternative;    
+       fTypeAlternative = typeAlternative;
+       fXsdPrefix = xsdPrefix; 
     }
 
     public XSTypeAlternativeImpl getTypeAlternative() {
@@ -100,8 +109,9 @@ public class Test extends AbstractPsychoPathImpl {
     }
     
     /*
-     * Evaluate the XPath "test" expression on an XDM instance, containing the specified
-     * element and its attributes. Using PsychoPath XPath 2.0 engine for the evaluation. 
+     * Evaluate the XPath "test" expression on an XDM instance, consisting
+     * of the specified element and its attributes. Using PsychoPath XPath 2.0
+     * engine for the evaluation. 
      */
     private boolean evaluateTestWithPsychoPath(QName element, XMLAttributes attributes) {
        boolean result = false;
@@ -121,7 +131,11 @@ public class Test extends AbstractPsychoPathImpl {
        
          document.appendChild(elem);
          
-         initDynamicContext(null, document);       
+        // construct parameter values for psychopath processor
+         Map psychoPathParams = new HashMap();
+         psychoPathParams.put("XSD_PREFIX", fXsdPrefix);
+         initDynamicContext(null, document, psychoPathParams);
+         
          result = evaluatePsychoPathExpr(fXPathPsychoPath,
                                 fTypeAlternative.fXPathDefaultNamespace,
                                 elem);

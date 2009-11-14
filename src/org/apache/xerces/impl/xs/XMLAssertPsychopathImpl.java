@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -79,17 +80,20 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // XMLSchemaValidator reference. set from the XMLSchemaValidator object
     // itself.
     XMLSchemaValidator validator = null;
+    
+    Map assertParams = null;
 
     /*
      * The class constructor
      */
-    public XMLAssertPsychopathImpl() {
+    public XMLAssertPsychopathImpl(Map assertParams) {
         // initializing the class variables
         // we use the PSVI enabled DOM implementation, so as to have typed
         // XDM nodes.
         this.assertDocument = new PSVIDocumentImpl();
         this.assertRootStack = new Stack();
         this.assertListStack = new Stack();
+        this.assertParams = assertParams;  
     }
 
     /*
@@ -98,7 +102,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     private void initXPathProcessor() throws Exception {
         validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
         abstrPsychopathImpl = new AbstractPsychoPathImpl();
-        fDynamicContext = abstrPsychopathImpl.initDynamicContext(fSchema, assertDocument);
+        fDynamicContext = abstrPsychopathImpl.initDynamicContext(fSchema, assertDocument, assertParams);
         
         // assign value to variable, "value" in XPath context
         fDynamicContext.add_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(

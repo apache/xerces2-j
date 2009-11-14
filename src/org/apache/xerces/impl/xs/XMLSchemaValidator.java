@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xs;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
+import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.FieldActivator;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
@@ -808,14 +810,17 @@ public class XMLSchemaValidator
     
     /*
      * Helper method to initialize the assertion processor
+     * 
+     * @param assertParams Parameters that are passed, to the assertions processor
      */
-    private void initializeAssertProcessor() {
+    private void initializeAssertProcessor(Map assertParams) {
         String assertProcessorProp = System
                 .getProperty("org.apache.xerces.assertProcessor");
+        
         if (assertProcessorProp == null || assertProcessorProp.equals("")) {
             // if assertion processor is not specified via a system
             // property, default to the Psychopath processor
-            fAssertionProcessor = new XMLAssertPsychopathImpl();
+            fAssertionProcessor = new XMLAssertPsychopathImpl(assertParams);
         } else {
             try {
                 Class assertClass = ClassLoader.getSystemClassLoader()
@@ -829,6 +834,7 @@ public class XMLSchemaValidator
                 throw new XNIException(ex.getMessage(), ex);
             }
         }
+        
         fAssertionProcessor.setProperty("http://apache.org/xml/properties/assert/validator", this);
     }
     
@@ -2449,10 +2455,15 @@ public class XMLSchemaValidator
           }
               
           if (assertions.size() > 0) {
-            assertObject = assertions;
+            assertObject = assertions;             
             // instantiate the assertions processor
             if (fAssertionProcessor == null) {
-              initializeAssertProcessor();
+              // construct parameter values for the assertion processor
+              String xsdPrefix = ((XSAssertImpl)assertions.get(0)).getXsdNamespacePrefix();
+              Map assertProcessorParams = new HashMap();
+              assertProcessorParams.put("XSD_PREFIX", xsdPrefix);
+              // initialize the assert processor
+              initializeAssertProcessor(assertProcessorParams);
             }
           }
         } else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
@@ -2465,7 +2476,12 @@ public class XMLSchemaValidator
                 assertObject = facet.getAsserts();
                 // instantiate the assertions processor
                 if (fAssertionProcessor == null) {
-                   initializeAssertProcessor();
+                   // construct parameter values for the assertion processor                   
+                   String xsdPrefix = ((XSAssertImpl)facet.getAsserts().get(0)).getXsdNamespacePrefix();
+                   Map assertProcessorParams = new HashMap();
+                   assertProcessorParams.put("XSD_PREFIX", xsdPrefix);
+                   // initialize the assert processor
+                   initializeAssertProcessor(assertProcessorParams);
                 }
                 break;
               }
@@ -2479,7 +2495,8 @@ public class XMLSchemaValidator
             assertAugs.putItem("ASSERT", assertObject);
             fAssertionProcessor.startElement(element, attributes, assertAugs);
          }
-    }
+         
+    } // addAssertsForEvaluation
     
 
     /**
