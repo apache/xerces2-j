@@ -53,9 +53,9 @@ public class AbstractPsychoPathImpl {
     
     protected DynamicContext initDynamicContext(XSModel schema,
                                                 Document document,
-                                                Map assertParams) {
+                                                Map psychoPathParams) {
         fDynamicContext = new DefaultDynamicContext(schema, document);
-        String xsdPrefix = (String)assertParams.get("XSD_PREFIX"); 
+        String xsdPrefix = (String) psychoPathParams.get("XSD_PREFIX"); 
         fDynamicContext.add_namespace(xsdPrefix, "http://www.w3.org/2001/XMLSchema");
         fDynamicContext.add_function_library(new FnFunctionLibrary());
         fDynamicContext.add_function_library(new XSCtrLibrary());        
