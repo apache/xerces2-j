@@ -492,20 +492,18 @@ abstract class XSDAbstractTraverser {
                         annotations = XSObjectListImpl.EMPTY_LIST;
                     }
                     
+                    // create an assertion object
                     XSAssertImpl assertImpl = new XSAssertImpl(typeDef, annotations);
                     Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
                                            schemaDoc.fNamespaceSupport), assertImpl);                 
                     assertImpl.setTest(testExpr);
-                    assertImpl.setXPathDefauleNamespace(xpathDefaultNamespace);
-                    assertImpl.setXsdNamespacePrefix(schemaDoc.fSchemaElement.getPrefix());
-                    String xpath2FnPrefix = schemaDoc.fNamespaceSupport.getPrefix(Constants.XPATH20_FN_NAMESPACE);
-                    if (xpath2FnPrefix != null) {
-                       assertImpl.setXpath2FnPrefix(xpath2FnPrefix);
-                    }
+                    assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
+                    assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);
                     
                     if (assertData == null) {
                        assertData = new Vector();
-                    }
+                    }                    
+                    // add assertion object, to the list of assertions to be processed
                     assertData.addElement(assertImpl);
                 } else {
                     // 'test' attribute is mandatory in assert element

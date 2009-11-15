@@ -17,9 +17,10 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.Enumeration;
 import java.util.Map;
 
-import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSModel;
 import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DefaultEvaluator;
@@ -42,10 +43,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class, providing common services for XPath 2.0 evaluation, with PsychoPath.
+ * A base class, providing common services for XPath 2 evaluation,
+ * with PsychoPath XPath 2.0 engine.
  * 
  * @author Mukul Gandhi, IBM
- * @version $Id: AbstractPsychoPathImpl.java 814163 2009-09-12 13:43:19Z mukulg $
+ * @version $Id: AbstractPsychoPathImpl.java 836159 2009-11-14 17:47:00Z mukulg $
  */
 public class AbstractPsychoPathImpl {
     
@@ -55,14 +57,16 @@ public class AbstractPsychoPathImpl {
     protected DynamicContext initDynamicContext(XSModel schema,
                                                 Document document,
                                                 Map psychoPathParams) {
-        fDynamicContext = new DefaultDynamicContext(schema, document);
-        String xsdPrefix = (String) psychoPathParams.get("XSD_PREFIX");
-        String xpath2FnPrefix = (String) psychoPathParams.get("XPATH2_FN_PREFIX");
-        fDynamicContext.add_namespace(xsdPrefix, "http://www.w3.org/2001/XMLSchema");
-        // set the XPath 2.0 functions namespace binding to the XPath 2.0 static
-        // context, if present on <schema> element.
-        if (xpath2FnPrefix != null) {
-           fDynamicContext.add_namespace(xpath2FnPrefix, Constants.XPATH20_FN_NAMESPACE);    
+        
+        fDynamicContext = new DefaultDynamicContext(schema, document);        
+        // populate the PsychoPath XPath 2.0 static context, with namespace bindings
+        // derived from the XSD Schema
+        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
+        Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
+        while (currPrefixes.hasMoreElements()) {
+            String prefix = (String)currPrefixes.nextElement();
+            String uri = xpath2NamespaceContext.getURI(prefix);
+            fDynamicContext.add_namespace(prefix, uri);
         }
         fDynamicContext.add_function_library(new FnFunctionLibrary());
         fDynamicContext.add_function_library(new XSCtrLibrary());        

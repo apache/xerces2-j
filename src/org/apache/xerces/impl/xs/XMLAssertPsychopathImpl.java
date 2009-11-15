@@ -102,7 +102,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     private void initXPathProcessor() throws Exception {
         validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
         abstrPsychopathImpl = new AbstractPsychoPathImpl();
-        fDynamicContext = abstrPsychopathImpl.initDynamicContext(fSchema, assertDocument, assertParams);
+        fDynamicContext = abstrPsychopathImpl.initDynamicContext(fSchema,
+                                                      assertDocument,
+                                                      assertParams);
         
         // assign value to variable, "value" in XPath context
         fDynamicContext.add_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(

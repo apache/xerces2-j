@@ -26,7 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
-import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
@@ -51,25 +51,25 @@ public class Test extends AbstractPsychoPathImpl {
     
     /** XPath 2.0 expression. PsychoPath XPath 2.0 expression. */
     protected XPath fXPathPsychoPath = null;
-    
-    /** XSD document prefix. Present on <schema> element. */
-    protected String fXsdPrefix = null;
+        
+    /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
+    protected NamespaceSupport fXPath2NamespaceContext = null;
 
     /** Constructs a "test" for type alternatives */
-    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative, String xsdPrefix) {
+    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
         fXPath = xpath;
         fTypeAlternative = typeAlternative;
-        fXsdPrefix = xsdPrefix;
+        fXPath2NamespaceContext = namespaceContext;
     }
     
     /*
      * Constructs a "test" for type alternatives. An overloaded constructor,
      * for PsychoPath XPath processor.
      */
-    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative, String xsdPrefix) {
+    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
        fXPathPsychoPath = xpath;
        fTypeAlternative = typeAlternative;
-       fXsdPrefix = xsdPrefix; 
+       fXPath2NamespaceContext = namespaceContext;
     }
 
     public XSTypeAlternativeImpl getTypeAlternative() {
@@ -131,9 +131,9 @@ public class Test extends AbstractPsychoPathImpl {
        
          document.appendChild(elem);
          
-        // construct parameter values for psychopath processor
+         // construct parameter values for psychopath processor
          Map psychoPathParams = new HashMap();
-         psychoPathParams.put("XSD_PREFIX", fXsdPrefix);
+         psychoPathParams.put("XPATH2_NS_CONTEXT", fXPath2NamespaceContext);
          initDynamicContext(null, document, psychoPathParams);
          
          result = evaluatePsychoPathExpr(fXPathPsychoPath,

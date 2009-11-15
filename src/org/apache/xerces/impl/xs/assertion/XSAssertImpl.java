@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.assertion;
 
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSAssert;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
@@ -24,7 +25,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * XML Schema 1.1 'assertion' component
+ * XML Schema 1.1 'assertion' component.
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
@@ -42,12 +43,9 @@ public class XSAssertImpl implements XSAssert {
 
     /** Default XPath namespace */
     protected String fXPathDefaultNamespace = null;
-    
-    /** XSD namespace prefix, present on <schema> element */
-    protected String fXsdNamespacePrefix = null;
-    
-    /** XPath 2.0 functions namespace prefix, present on <schema> element */
-    protected String fXpath2FnPrefix = null;
+      
+    /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
+    protected NamespaceSupport fXPath2NamespaceContext = null;
 
     /** Constructor */
     public XSAssertImpl(XSTypeDefinition type,
@@ -68,18 +66,13 @@ public class XSAssertImpl implements XSAssert {
     }
 
     /** Sets the xpath default namespace */
-    public void setXPathDefauleNamespace(String namespace) {
+    public void setXPathDefaultNamespace(String namespace) {
         fXPathDefaultNamespace = namespace;
     }
-    
-    /** Sets the XSD namespace, prefix */
-    public void setXsdNamespacePrefix(String nsPrefix) {
-        fXsdNamespacePrefix = nsPrefix;
-    }
-    
-    /** Sets the XPath 2.0 functions namespace, prefix */
-    public void setXpath2FnPrefix(String nsPrefix) {
-        fXpath2FnPrefix = nsPrefix;
+      
+    /** Sets the XPath 2.0 namespace context */
+    public void setXPath2NamespaceContext(NamespaceSupport namespaceContext) {
+        fXPath2NamespaceContext = namespaceContext;       
     }
    
     public XSObjectList getAnnotations() {
@@ -129,21 +122,12 @@ public class XSAssertImpl implements XSAssert {
     public short getType() {
         return XSConstants.ASSERTION;
     }
-    
+       
     /**
-     * 
-     * Get the XSD namespace prefix
+     * Get the XPath 2.0 namespace context
      */
-    public String getXsdNamespacePrefix() {
-        return fXsdNamespacePrefix;
-    }
-    
-    /**
-     * 
-     * Get the XPath 2.0 functions prefix
-     */
-    public String getXpath2FnPrefix() {
-        return fXpath2FnPrefix;
+    public NamespaceSupport getXPath2NamespaceContext() {
+        return fXPath2NamespaceContext;
     }
     
     /*

@@ -161,19 +161,19 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             try {
                testExpr = new Test(new XPath20(test, fSymbolTable, schemaDoc.fNamespaceSupport),
                                        typeAlternative,
-                                       schemaDoc.fSchemaElement.getPrefix());
+                                       schemaDoc.fNamespaceSupport);
             } 
             catch (XPathException e) {
                // fall back to full XPath 2.0 support, with PsychoPath engine
                try {
                   XPathParser xpp = new JFlexCupParser();
                   XPath xp = xpp.parse("boolean(" + test + ")");
-                  testExpr = new Test(xp, typeAlternative, schemaDoc.fSchemaElement.getPrefix());
+                  testExpr = new Test(xp, typeAlternative, schemaDoc.fNamespaceSupport);
                } catch(XPathParserException ex) {
                   reportSchemaError("c-cta-xpath", new Object[] { test }, altElement);
                   //if the XPath is invalid, create a Test without an expression
                   testExpr = new Test((XPath20) null, typeAlternative,
-                                       schemaDoc.fSchemaElement.getPrefix());
+                                       schemaDoc.fNamespaceSupport);
                }                
             }            
             typeAlternative.setTest(testExpr);
