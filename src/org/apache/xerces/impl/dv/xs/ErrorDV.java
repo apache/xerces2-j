@@ -26,7 +26,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
  * @xerces.internal 
  *
  * @author Mukul Gandhi, IBM
- *
+ * 
+ * @version $Id$
  */
 public class ErrorDV extends TypeValidator {
 
