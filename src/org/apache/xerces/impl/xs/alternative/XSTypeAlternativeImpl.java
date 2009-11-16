@@ -26,8 +26,10 @@ import org.apache.xerces.xs.XSTypeDefinition;
 /**
  * XML schema type alternative component
  * 
+ * @xerces.internal
+ * 
  * @author Hiranya Jayathilaka, University of Moratuwa
- * @version $Id:$
+ * @version $Id$
  */
 public class XSTypeAlternativeImpl implements XSTypeAlternative {
 

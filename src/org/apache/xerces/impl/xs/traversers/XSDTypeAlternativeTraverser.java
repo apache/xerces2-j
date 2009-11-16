@@ -48,6 +48,8 @@ import org.w3c.dom.Element;
  *    Content: (annotation?, (simpleType | complexType)?)
  * </alternative>
  * 
+ * @xerces.internal
+ * 
  * @author Hiranya Jayathilaka, University of Moratuwa
  * @version $Id$
  */

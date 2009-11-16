@@ -27,6 +27,8 @@ import org.apache.xerces.xs.XSTypeDefinition;
 /**
  * XML Schema 1.1 'assertion' component.
  * 
+ * @xerces.internal
+ * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */

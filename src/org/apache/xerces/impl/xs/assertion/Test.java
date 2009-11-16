@@ -23,6 +23,8 @@ import org.apache.xerces.xs.XSAssert;
 /**
  * Representation of XML Schema 1.1 assertion "test" attribute.
  * 
+ * @xerces.internal
+ * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */

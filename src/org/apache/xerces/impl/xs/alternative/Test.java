@@ -38,6 +38,8 @@ import org.w3c.dom.Element;
 /**
  * Representation of XML Schema 1.1 'type alternatives', "test" attribute.
  * 
+ * @xerces.internal
+ * 
  * @author Hiranya Jayathilaka, University of Moratuwa
  * @version $Id$
  */
