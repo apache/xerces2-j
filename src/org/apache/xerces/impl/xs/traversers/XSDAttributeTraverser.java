@@ -415,14 +415,14 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (formAtt != null) {
                 reportSchemaError ("src-attribute.6.2", new Object[] {nameAtt}, attrDecl);                
             }
-            // 6.3 If the ancestor <schema> does not have a targetNamespace [attribute] or its ·actual value· is different from the ·actual value· of targetNamespace of <attribute>:
+            // 6.3 If the ancestor <schema> does not have a targetNamespace [attribute] or its 'actual value' is different from the 'actual value' of targetNamespace of <attribute>:
             String schemaTns = schemaDoc.fTargetNamespace;
             if (schemaTns==null || tnsAtt!=schemaTns) {
                 // 6.3.1 <attribute> must have <complexType> as an ancestor
                 if (enclCT == null) {
                     reportSchemaError ("src-attribute.6.3.1", new Object[] {nameAtt}, attrDecl);
                 }
-                // 6.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the ·actual value· of the base [attribute] of <restriction> does not ·match· the name of ·xs:anyType·.
+                // 6.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the 'actual value' of the base [attribute] of <restriction> does not 'match' the name of 'xs:anyType'.
                 else if ((enclCT.getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || enclCT.getBaseType() == SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion)) {
                     reportSchemaError ("src-attribute.6.3.2", new Object[] {nameAtt}, attrDecl);
                 }

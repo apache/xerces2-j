@@ -518,14 +518,14 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             if (formAtt != null) {
                 reportSchemaError ("src-element.4.2", new Object[] {nameAtt}, elmDecl);
             }
-            // 4.3 If the ancestor <schema> does not have a targetNamespace [attribute] or its ·actual value· is different from the ·actual value· of targetNamespace of <attribute>:
+            // 4.3 If the ancestor <schema> does not have a targetNamespace [attribute] or its 'actual value' is different from the 'actual value' of targetNamespace of <attribute>:
             String schemaTns = schemaDoc.fTargetNamespace;
             if (schemaTns==null || targetNsAtt!=schemaTns) {
                 // 4.3.1 <element> must have <complexType> as an ancestor
                 if (parent==null || !(parent instanceof XSComplexTypeDecl)) {
                     reportSchemaError ("src-element.4.3.1", new Object[] {nameAtt}, elmDecl);
                 }
-                // 4.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the ·actual value· of the base [attribute] of <restriction> does not ·match· the name of ·xs:anyType·.
+                // 4.3.2 There must be a <restriction> ancestor between the <attribute> and the nearest <complexType> ancestor, and the 'actual value' of the base [attribute] of <restriction> does not 'match' the name of 'xs:anyType'.
                 else if ((((XSComplexTypeDecl)parent).getDerivationMethod() != XSConstants.DERIVATION_RESTRICTION) || (((XSComplexTypeDecl)parent).getBaseType() == SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion))) {
                     reportSchemaError ("src-element.4.3.2", new Object[] {nameAtt}, elmDecl);
                 }
