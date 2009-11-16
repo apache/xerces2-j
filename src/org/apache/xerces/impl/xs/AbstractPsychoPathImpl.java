@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
  * with PsychoPath XPath 2.0 engine.
  * 
  * @author Mukul Gandhi, IBM
- * @version $Id: AbstractPsychoPathImpl.java 836159 2009-11-14 17:47:00Z mukulg $
+ * @version $Id$
  */
 public class AbstractPsychoPathImpl {
     
