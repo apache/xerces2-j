@@ -50,12 +50,13 @@ import org.w3c.dom.NodeList;
  * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
  * evaluation. This class interfaces with the PsychoPath XPath 2.0 engine.
  * 
+ * @xerces.internal
+ * 
  * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM
  * 
  * @version $Id$
  */
-
 public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     // class variable declarations

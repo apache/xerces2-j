@@ -46,6 +46,8 @@ import org.w3c.dom.Element;
  * A base class, providing common services for XPath 2 evaluation,
  * with PsychoPath XPath 2.0 engine.
  * 
+ * @xerces.internal
+ * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
