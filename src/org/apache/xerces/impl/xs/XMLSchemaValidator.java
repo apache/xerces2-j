@@ -809,7 +809,7 @@ public class XMLSchemaValidator
 
     
     /*
-     * Helper method to initialize the assertion processor
+     * Method initializing the assertions processor. 
      * 
      * @param assertParams Parameters that are passed, to the assertions processor
      */

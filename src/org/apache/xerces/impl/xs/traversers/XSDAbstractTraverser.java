@@ -493,7 +493,9 @@ abstract class XSDAbstractTraverser {
                     }
                     
                     // create an assertion object
-                    XSAssertImpl assertImpl = new XSAssertImpl(typeDef, annotations);
+                    XSAssertImpl assertImpl = new XSAssertImpl(typeDef,
+                                                           annotations,
+                                                           fSchemaHandler);
                     Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
                                            schemaDoc.fNamespaceSupport), assertImpl);                 
                     assertImpl.setTest(testExpr);

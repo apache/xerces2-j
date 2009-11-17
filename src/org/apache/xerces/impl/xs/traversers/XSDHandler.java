@@ -68,7 +68,6 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -2828,7 +2827,7 @@ public class XSDHandler {
         return false;
     }
     
-    void reportSchemaError(String key, Object[] args, Element ele) {
+    public void reportSchemaError(String key, Object[] args, Element ele) {
         reportSchemaError(key, args, ele, null);
     }
     

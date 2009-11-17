@@ -17,12 +17,15 @@
 
 package org.apache.xerces.impl.xs.assertion;
 
+import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
+import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSAssert;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 
 /**
  * XML Schema 1.1 'assertion' component.
@@ -32,13 +35,16 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public class XSAssertImpl implements XSAssert {
+public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
 
     /** The type definition associated with the assertion component */
     protected XSTypeDefinition fTypeDefinition;
 
-    /** An XPath 2.0 expression that represents the assert 'test' attribute */
+    /** Xerces object representing the assert 'test' attribute */
     protected Test fTestExpr = null;
+    
+    /** Compiled XPath 2.0 expression */
+    protected XPath fCompiledXPath = null;
     
     /** Optional annotations */
     protected XSObjectList fAnnotations = null;
@@ -48,18 +54,27 @@ public class XSAssertImpl implements XSAssert {
       
     /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
     protected NamespaceSupport fXPath2NamespaceContext = null;
+    
+    // XSDHandler object, passed on from the tarversers 
+    protected XSDHandler fSchemaHandler = null;
 
     /** Constructor */
     public XSAssertImpl(XSTypeDefinition type,
-            XSObjectList annotations) {
-        // An assert component must correspond to a type        
+            XSObjectList annotations, XSDHandler schemaHandler) {
+        // An assert component must correspond to a schema type        
         fTypeDefinition = type;
+        
+        fSchemaHandler = schemaHandler; 
         fAnnotations = annotations;
     }
 
     /** Sets the test attribute value */
     public void setTest(Test expr) {
-        fTestExpr = expr;
+        fTestExpr = expr;        
+        // compile the XPath string, into an object
+        fCompiledXPath = compileXPathStr(expr.toString(),
+                                         this,
+                                         fSchemaHandler);
     }
 
     /** Sets the assertion annotations */
@@ -83,6 +98,10 @@ public class XSAssertImpl implements XSAssert {
 
     public String getTestStr() {
         return fTestExpr.toString();
+    }
+    
+    public XPath getCompiledXPath() {
+        return fCompiledXPath;
     }
 
     public Test getTest() {

@@ -20,18 +20,24 @@ package org.apache.xerces.impl.xs;
 import java.util.Enumeration;
 import java.util.Map;
 
+import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
+import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DefaultEvaluator;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
 import org.eclipse.wst.xml.xpath2.processor.Evaluator;
+import org.eclipse.wst.xml.xpath2.processor.JFlexCupParser;
 import org.eclipse.wst.xml.xpath2.processor.ResultSequence;
 import org.eclipse.wst.xml.xpath2.processor.ResultSequenceFactory;
 import org.eclipse.wst.xml.xpath2.processor.StaticChecker;
 import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.StaticNameResolver;
+import org.eclipse.wst.xml.xpath2.processor.XPathParser;
+import org.eclipse.wst.xml.xpath2.processor.XPathParserException;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.eclipse.wst.xml.xpath2.processor.function.FnFunctionLibrary;
 import org.eclipse.wst.xml.xpath2.processor.function.XSCtrLibrary;
@@ -56,13 +62,17 @@ public class AbstractPsychoPathImpl {
     private DynamicContext fDynamicContext = null;
     private Document domDoc = null;
     
+    /*
+     * Initialize the PsychoPath XPath 2 dynamic context
+     */
     protected DynamicContext initDynamicContext(XSModel schema,
                                                 Document document,
                                                 Map psychoPathParams) {
         
         fDynamicContext = new DefaultDynamicContext(schema, document);        
+        
         // populate the PsychoPath XPath 2.0 static context, with namespace bindings
-        // derived from the XSD Schema
+        // derived from the XSD Schema document
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
         while (currPrefixes.hasMoreElements()) {
@@ -70,6 +80,7 @@ public class AbstractPsychoPathImpl {
             String uri = xpath2NamespaceContext.getURI(prefix);
             fDynamicContext.add_namespace(prefix, uri);
         }
+        
         fDynamicContext.add_function_library(new FnFunctionLibrary());
         fDynamicContext.add_function_library(new XSCtrLibrary());        
         domDoc = document;
@@ -77,6 +88,9 @@ public class AbstractPsychoPathImpl {
         return fDynamicContext; 
     } //initDynamicContext
     
+    /*
+     * Evaluate XPath expression with PsychoPath engine
+     */
     protected boolean evaluatePsychoPathExpr(XPath xp,
                                  String xPathDefaultNamespace,
                                  Element contextNode)
@@ -118,5 +132,44 @@ public class AbstractPsychoPathImpl {
         
         return result;
     } //evaluatePsychoPathExpr
+    
+    /*
+     * Compile the XPath string, and return the compiled XPath expression
+     */
+    protected XPath compileXPathStr(String xpathStr,
+                                    XSAssertImpl assertImpl,
+                                    XSDHandler fSchemaHandler) {        
+        XPathParser xpp = new JFlexCupParser();
+        XPath xp = null;
+        
+        try {
+            xp = xpp.parse("boolean(" + xpathStr + ")");
+        } catch (XPathParserException ex) {
+            // error compiling XPath expression
+            reportError("cvc-xpath.3.13.4.2", assertImpl, fSchemaHandler);
+        }  
+        
+        return xp;
+    }
+    
+    /*
+     * Method to report error messages
+     */
+    private void reportError(String key, XSAssertImpl assertImpl,
+                                         XSDHandler fSchemaHandler) {
+        XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
+        String typeString = "";
+        
+        if (typeDef != null) {
+           typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
+        }
+        else {
+           typeString = "#anonymous"; 
+        }
+        
+        fSchemaHandler.reportSchemaError(key, new Object[] {
+                               assertImpl.getTest().getXPath().toString(),
+                               typeString }, null);
+    }
     
 } //AbstractPsychoPathImpl

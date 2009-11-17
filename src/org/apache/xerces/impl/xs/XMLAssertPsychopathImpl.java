@@ -36,9 +36,6 @@ import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
-import org.eclipse.wst.xml.xpath2.processor.JFlexCupParser;
-import org.eclipse.wst.xml.xpath2.processor.XPathParser;
-import org.eclipse.wst.xml.xpath2.processor.XPathParserException;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSString;
 import org.w3c.dom.Document;
@@ -82,16 +79,17 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // itself.
     XMLSchemaValidator validator = null;
     
+    // parameters to pass to PsychoPath engine (like, namespace bindings) 
     Map assertParams = null;
 
     /*
      * The class constructor
      */
     public XMLAssertPsychopathImpl(Map assertParams) {
-        // initializing the class variables
+        // initializing the class variables.        
         // we use the PSVI enabled DOM implementation, so as to have typed
         // XDM nodes.
-        this.assertDocument = new PSVIDocumentImpl();
+        this.assertDocument = new PSVIDocumentImpl();        
         this.assertRootStack = new Stack();
         this.assertListStack = new Stack();
         this.assertParams = assertParams;  
@@ -178,8 +176,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             if (!assertRootStack.empty() && (currentAssertDomNode == assertRootStack.peek())) {               
                  // get XSModel                
                  fSchema =  ((PSVIElementNSImpl)currentAssertDomNode).getSchemaInformation();
-                 assertRootStack.pop(); // pop the stack, to go one level up
-                 Object assertions = assertListStack.pop(); // get assertions, and go one level up
+                 
+                 // pop the stack, to go one level up
+                 assertRootStack.pop();
+                 // get assertions, and go one level up
+                 Object assertions = assertListStack.pop(); 
                 
                  // initialize the XPath engine
                  initXPathProcessor();
@@ -222,21 +223,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     }
 
     /*
-     * Method to evaluate an assertion, XPath expression
+     * Method to evaluate an assertions, XPath expression
      */
     private void evaluateAssertion(QName element, XSAssertImpl assertImpl) {
-        
-        XPathParser xpp = new JFlexCupParser();
-        XPath xp = null;
-        try {
-            xp = xpp.parse("boolean("
-                    + assertImpl.getTest().getXPath().toString() + ")");
-        } catch (XPathParserException ex) {
-            // error compiling XPath expression
-            reportError("cvc-xpath.3.13.4.2", element, assertImpl);
-        }
-
-        try {            
+        try {  
+            XPath xp = assertImpl.getCompiledXPath();            
             boolean result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
                                      assertImpl.getXPathDefaultNamespace(),
                                      currentAssertDomNode);
@@ -248,23 +239,24 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         } catch (Exception ex) {
             reportError("cvc-assertion.3.13.4.1", element, assertImpl);
         }
-
     }
-
+    
     /*
-     * Method to report assertions error messages
+     * Method to report error messages
      */
     private void reportError(String key, QName element, XSAssertImpl assertImpl) {
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
         String typeString = "";
+        
         if (typeDef != null) {
            typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
         }
         else {
            typeString = "#anonymous"; 
         }
+        
         validator.reportSchemaError(key, new Object[] { element.rawname,
                                assertImpl.getTest().getXPath().toString(),
-                               typeString });
+                               typeString } );
     }
 }

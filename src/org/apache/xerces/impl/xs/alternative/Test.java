@@ -20,10 +20,8 @@ package org.apache.xerces.impl.xs.alternative;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.apache.xerces.dom.PSVIAttrNSImpl;
+import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
 import org.apache.xerces.util.NamespaceSupport;
@@ -58,7 +56,8 @@ public class Test extends AbstractPsychoPathImpl {
     protected NamespaceSupport fXPath2NamespaceContext = null;
 
     /** Constructs a "test" for type alternatives */
-    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
+    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative,
+                               NamespaceSupport namespaceContext) {
         fXPath = xpath;
         fTypeAlternative = typeAlternative;
         fXPath2NamespaceContext = namespaceContext;
@@ -68,7 +67,8 @@ public class Test extends AbstractPsychoPathImpl {
      * Constructs a "test" for type alternatives. An overloaded constructor,
      * for PsychoPath XPath processor.
      */
-    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
+    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative,
+                             NamespaceSupport namespaceContext) {
        fXPathPsychoPath = xpath;
        fTypeAlternative = typeAlternative;
        fXPath2NamespaceContext = namespaceContext;
@@ -119,16 +119,20 @@ public class Test extends AbstractPsychoPathImpl {
        boolean result = false;
        
        try {
-         // construct a DOM document (an XPath XDM instance), for XPath evaluation
-         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-         DocumentBuilder docBuilder = dbf.newDocumentBuilder();
-         Document document = docBuilder.newDocument();
-       
+         // construct a DOM document (used by psychopath engine as XPath XDM
+         // instance). A PSVI DOM is constructed, to comply to PsychoPath
+         // architecture. This doesn't seem to affect CTA psychopath evaluations.
+         // CTA spec, doesn't require a typed XDM tree.
+         // relook...
+         Document document = new PSVIDocumentImpl();
+         
          Element elem = document.createElementNS(element.uri, element.rawname);
-         for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
-            elem.setAttributeNS(attributes.getURI(attrIndx),
-                            attributes.getQName(attrIndx),
-                            attributes.getValue(attrIndx));
+         for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
+            PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)document,
+                                                          attributes.getURI(attrIndx),
+                                                          attributes.getQName(attrIndx));
+            attrNode.setNodeValue(attributes.getValue(attrIndx));
+            elem.setAttributeNode(attrNode);
          }
        
          document.appendChild(elem);
@@ -141,8 +145,6 @@ public class Test extends AbstractPsychoPathImpl {
          result = evaluatePsychoPathExpr(fXPathPsychoPath,
                                 fTypeAlternative.fXPathDefaultNamespace,
                                 elem);
-       } catch(ParserConfigurationException ex) {
-           result = false;  
        } catch (StaticError ex) {
            result = false; 
        } catch(DynamicError ex) {
