@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.xpointer;
 
 import java.util.Locale;
@@ -30,7 +31,7 @@ import org.apache.xerces.util.MessageFormatter;
  * 
  * @version $Id$
  */
-class XPointerMessageFormatter implements MessageFormatter {
+final class XPointerMessageFormatter implements MessageFormatter {
 
     public static final String XPOINTER_DOMAIN = "http://www.w3.org/TR/XPTR";
 

@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.xpointer;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
@@ -35,9 +36,8 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
  * @xerces.internal
  * 
  * @version $Id$
- *
  */
-class ElementSchemePointer implements XPointerPart {
+final class ElementSchemePointer implements XPointerPart {
 
     // Fields
 
@@ -524,7 +524,7 @@ class ElementSchemePointer implements XPointerPart {
 
         private SymbolTable fSymbolTable;
 
-        private Hashtable fTokenNames = new Hashtable();
+        private HashMap fTokenNames = new HashMap();
 
         /**
          * Constructor 

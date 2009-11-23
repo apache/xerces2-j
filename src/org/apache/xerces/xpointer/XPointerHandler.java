@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.xpointer;
 
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -63,8 +64,8 @@ public final class XPointerHandler extends XIncludeHandler implements
         XPointerProcessor {
 
     // Fields
-    // A Vector of XPointerParts  
-    protected Vector fXPointerParts = null;
+    // An ArrayList of XPointerParts  
+    protected ArrayList fXPointerParts = null;
 
     // The current XPointerPart  
     protected XPointerPart fXPointerPart = null;
@@ -101,7 +102,7 @@ public final class XPointerHandler extends XIncludeHandler implements
     public XPointerHandler() {
         super();
 
-        fXPointerParts = new Vector();
+        fXPointerParts = new ArrayList();
         fSymbolTable = new SymbolTable();
     }
 
@@ -109,7 +110,7 @@ public final class XPointerHandler extends XIncludeHandler implements
             XMLErrorHandler errorHandler, XMLErrorReporter errorReporter) {
         super();
 
-        fXPointerParts = new Vector();
+        fXPointerParts = new ArrayList();
         fSymbolTable = symbolTable;
         fErrorHandler = errorHandler;
         fXPointerErrorReporter = errorReporter;
@@ -433,11 +434,11 @@ public final class XPointerHandler extends XIncludeHandler implements
     }
 
     /**
-     * Returns a Vector of XPointerPart objects
+     * Returns an ArrayList of XPointerPart objects
      * 
-     * @return A Vector of XPointerPart objects.
+     * @return An ArrayList of XPointerPart objects.
      */
-    public Vector getPointerParts() {
+    public ArrayList getPointerParts() {
         return fXPointerParts;
     }
 
@@ -483,7 +484,7 @@ public final class XPointerHandler extends XIncludeHandler implements
 
         private SymbolTable fSymbolTable;
 
-        private Hashtable fTokenNames = new Hashtable();
+        private HashMap fTokenNames = new HashMap();
 
         /**
          * Constructor 

@@ -17,8 +17,11 @@
 
 package org.apache.xerces.util;
 
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.xerces.xni.Augmentations;
 
@@ -57,7 +60,6 @@ public class AugmentationsImpl implements Augmentations {
         return oldValue;
     }
 
-
     /**
      * Get information identified by a key from the Augmentations structure
      * 
@@ -69,7 +71,6 @@ public class AugmentationsImpl implements Augmentations {
     public Object getItem(String key){
         return fAugmentationsContainer.getItem(key);
     }
-    
     
     /**
      * Remove additional info from the Augmentations structure
@@ -99,7 +100,7 @@ public class AugmentationsImpl implements Augmentations {
         return fAugmentationsContainer.toString();
     }
 
-    abstract class AugmentationsItemsContainer {
+    static abstract class AugmentationsItemsContainer {
         abstract public Object putItem(Object key, Object item);
         abstract public Object getItem(Object key);
         abstract public Object removeItem(Object key);
@@ -109,7 +110,8 @@ public class AugmentationsImpl implements Augmentations {
         abstract public AugmentationsItemsContainer expand();
     }
 
-    class SmallContainer extends AugmentationsItemsContainer {
+    final static class SmallContainer extends AugmentationsItemsContainer {
+        
         final static int SIZE_LIMIT = 10;
         final Object[] fAugmentations = new Object[SIZE_LIMIT*2];
         int fNumEntries = 0;
@@ -209,7 +211,8 @@ public class AugmentationsImpl implements Augmentations {
             return buff.toString();
         }
 
-        class SmallContainerKeyEnumeration implements Enumeration {
+        final class SmallContainerKeyEnumeration implements Enumeration {
+            
             Object [] enumArray = new Object[fNumEntries];
             int next = 0;
 
@@ -237,8 +240,9 @@ public class AugmentationsImpl implements Augmentations {
         }
     }
 
-    class LargeContainer extends AugmentationsItemsContainer {
-        final Hashtable fAugmentations = new Hashtable();
+    final static class LargeContainer extends AugmentationsItemsContainer {
+        
+        private final HashMap fAugmentations = new HashMap();
 
         public Object getItem(Object key) {
             return fAugmentations.get(key);
@@ -253,7 +257,7 @@ public class AugmentationsImpl implements Augmentations {
         }
 
         public Enumeration keys() {
-            return fAugmentations.keys();
+            return Collections.enumeration(fAugmentations.keySet());
         }
 
         public void clear() {
@@ -271,16 +275,14 @@ public class AugmentationsImpl implements Augmentations {
         public String toString() {
             StringBuffer buff = new StringBuffer();
             buff.append("LargeContainer");
-            Enumeration keys = fAugmentations.keys();
-
-            while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
+            Iterator entries = fAugmentations.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
                 buff.append("\nkey == ");
-                buff.append(key);
+                buff.append(entry.getKey());
                 buff.append("; value == ");
-                buff.append(fAugmentations.get(key));
+                buff.append(entry.getValue());
             }
-
             return buff.toString();
         }
     }

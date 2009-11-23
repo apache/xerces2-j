@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.xpointer;
 
 import java.io.PrintWriter;
@@ -29,7 +30,7 @@ import org.apache.xerces.xni.parser.XMLParseException;
  *
  * @version $Id$
  */
-class XPointerErrorHandler implements XMLErrorHandler {
+final class XPointerErrorHandler implements XMLErrorHandler {
 
     //
     // Data
