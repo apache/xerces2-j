@@ -17,7 +17,7 @@
 
 package org.apache.xerces.impl.validation;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * ValidationManager is a coordinator property for validators in the 
@@ -33,7 +33,7 @@ import java.util.Vector;
  */
 public class ValidationManager {
 
-    protected final Vector fVSs = new Vector();
+    protected final ArrayList fVSs = new ArrayList();
     protected boolean fGrammarFound = false;
 
     // used by the DTD validator to tell other components that it has a
@@ -46,7 +46,7 @@ public class ValidationManager {
      * the validation manager.
      */
     public final void addValidationState(ValidationState vs) {
-        fVSs.addElement(vs);
+        fVSs.add(vs);
     }
 
     /**
@@ -54,7 +54,7 @@ public class ValidationManager {
      */
     public final void setEntityState(EntityState state) {
         for (int i = fVSs.size()-1; i >= 0; i--) {
-            ((ValidationState)fVSs.elementAt(i)).setEntityState(state);
+            ((ValidationState)fVSs.get(i)).setEntityState(state);
         }
     }
     
@@ -75,8 +75,8 @@ public class ValidationManager {
     } // isCachedDTD():  boolean
     
         
-    public final void reset (){
-        fVSs.removeAllElements();
+    public final void reset () {
+        fVSs.clear();
         fGrammarFound = false;
         fCachedDTD = false;
     }
