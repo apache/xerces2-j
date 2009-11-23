@@ -17,11 +17,12 @@
 
 package org.apache.xerces.impl.dtd;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -235,28 +236,28 @@ public class XMLDTDProcessor
     private final XMLEntityDecl fEntityDecl = new XMLEntityDecl();
 
     /** Notation declaration hash. */
-    private final Hashtable fNDataDeclNotations = new Hashtable();
+    private final HashMap fNDataDeclNotations = new HashMap();
 
     /** DTD element declaration name. */
     private String fDTDElementDeclName = null;
 
     /** Mixed element type "hash". */
-    private final Vector fMixedElementTypes = new Vector();
+    private final ArrayList fMixedElementTypes = new ArrayList();
 
     /** Element declarations in DTD. */
-    private final Vector fDTDElementDecls = new Vector();
+    private final ArrayList fDTDElementDecls = new ArrayList();
 
     // to check for duplicate ID or ANNOTATION attribute declare in
     // ATTLIST, and misc VCs
 
     /** ID attribute names. */
-    private Hashtable fTableOfIDAttributeNames;
+    private HashMap fTableOfIDAttributeNames;
 
     /** NOTATION attribute names. */
-    private Hashtable fTableOfNOTATIONAttributeNames;
+    private HashMap fTableOfNOTATIONAttributeNames;
 
     /** NOTATION enumeration values. */
-    private Hashtable fNotationEnumVals;
+    private HashMap fNotationEnumVals;
 
     //
     // Constructors
@@ -374,12 +375,12 @@ public class XMLDTDProcessor
         if (fValidation) {
 
             if (fNotationEnumVals == null) {
-                fNotationEnumVals = new Hashtable();
+                fNotationEnumVals = new HashMap();
             }
             fNotationEnumVals.clear();
 
-            fTableOfIDAttributeNames = new Hashtable();
-            fTableOfNOTATIONAttributeNames = new Hashtable();
+            fTableOfIDAttributeNames = new HashMap();
+            fTableOfNOTATIONAttributeNames = new HashMap();
         }
 
     }
@@ -652,7 +653,7 @@ public class XMLDTDProcessor
 
         // initialize state
         fNDataDeclNotations.clear();
-        fDTDElementDecls.removeAllElements();
+        fDTDElementDecls.clear();
 
         // the grammar bucket's DTDGrammar will now be the
         // one we want, whether we're constructing it or not.
@@ -788,7 +789,7 @@ public class XMLDTDProcessor
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
             else {
-                fDTDElementDecls.addElement(name);
+                fDTDElementDecls.add(name);
             }
         }
 
@@ -938,7 +939,7 @@ public class XMLDTDProcessor
                         //we should not report an error, when there is duplicate attribute definition for given element type
                         //according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
                         //element type, the first declaration is binding and later declaration are *ignored*. So processor should 
-                        //ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
+                        //ignore the second declarations, however an application would be warned of the duplicate attribute definition 
                         // if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true, Application behavior may differ on the basis of error or 
                         //warning thrown. - nb.
 
@@ -1298,11 +1299,12 @@ public class XMLDTDProcessor
             DTDGrammar grammar = (fDTDGrammar != null? fDTDGrammar: fGrammarBucket.getActiveGrammar());
 
             // VC : Notation Declared. for external entity declaration [Production 76].
-            Enumeration entities = fNDataDeclNotations.keys();
-            while (entities.hasMoreElements()) {
-                String entity = (String) entities.nextElement();
-                String notation = (String) fNDataDeclNotations.get(entity);
+            Iterator entities = fNDataDeclNotations.entrySet().iterator();
+            while (entities.hasNext()) {
+                Map.Entry entry = (Map.Entry) entities.next();
+                String notation = (String) entry.getValue();
                 if (grammar.getNotationDeclIndex(notation) == -1) {
+                    String entity = (String) entry.getKey();
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_NOTATION_NOT_DECLARED_FOR_UNPARSED_ENTITYDECL",
                                                new Object[]{entity, notation},
@@ -1312,11 +1314,12 @@ public class XMLDTDProcessor
 
             // VC: Notation Attributes:
             //     all notation names in the (attribute) declaration must be declared.
-            Enumeration notationVals = fNotationEnumVals.keys();
-            while (notationVals.hasMoreElements()) {
-                String notation = (String) notationVals.nextElement();
-                String attributeName = (String) fNotationEnumVals.get(notation);
+            Iterator notationVals = fNotationEnumVals.entrySet().iterator();
+            while (notationVals.hasNext()) {
+                Map.Entry entry = (Map.Entry) notationVals.next();
+                String notation = (String) entry.getKey();
                 if (grammar.getNotationDeclIndex(notation) == -1) {
+                    String attributeName = (String) entry.getValue();
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_NOTATION_NOT_DECLARED_FOR_NOTATIONTYPE_ATTRIBUTE",
                                                new Object[]{attributeName, notation},
@@ -1326,12 +1329,13 @@ public class XMLDTDProcessor
             
             // VC: No Notation on Empty Element
             // An attribute of type NOTATION must not be declared on an element declared EMPTY.
-            Enumeration elementsWithNotations = fTableOfNOTATIONAttributeNames.keys();
-            while (elementsWithNotations.hasMoreElements()) {
-                String elementName = (String) elementsWithNotations.nextElement();
+            Iterator elementsWithNotations = fTableOfNOTATIONAttributeNames.entrySet().iterator();
+            while (elementsWithNotations.hasNext()) {
+                Map.Entry entry = (Map.Entry) elementsWithNotations.next();
+                String elementName = (String) entry.getKey();
                 int elementIndex = grammar.getElementDeclIndex(elementName);
                 if (grammar.getContentSpecType(elementIndex) == XMLElementDecl.TYPE_EMPTY) {
-                    String attributeName = (String) fTableOfNOTATIONAttributeNames.get(elementName);
+                    String attributeName = (String) entry.getValue();
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "NoNotationOnEmptyElement",
                                                new Object[]{elementName, attributeName},
@@ -1397,7 +1401,7 @@ public class XMLDTDProcessor
 
         if (fValidation) {
             fDTDElementDeclName = elementName;
-            fMixedElementTypes.removeAllElements();
+            fMixedElementTypes.clear();
         }
 
         // call handlers
@@ -1514,7 +1518,7 @@ public class XMLDTDProcessor
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
             else {
-                fMixedElementTypes.addElement(elementName);
+                fMixedElementTypes.add(elementName);
             }
         }
 

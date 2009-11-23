@@ -17,8 +17,8 @@
 
 package org.apache.xerces.impl.dtd;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import org.apache.xerces.impl.dtd.models.CMAny;
 import org.apache.xerces.impl.dtd.models.CMBinOp;
@@ -790,16 +790,17 @@ public class DTDGrammar
     public void endDTD(Augmentations augs) throws XNIException {
         fIsImmutable = true;
         // make sure our description contains useful stuff...
-        if(fGrammarDescription.getRootName() == null) {
+        if (fGrammarDescription.getRootName() == null) {
             // we don't know what the root is; so use possibleRoots...
             int chunk, index = 0;
             String currName = null;
-            Vector elements = new Vector();
-            for (int i=0; i < fElementDeclCount; i++) {
+            final int size = fElementDeclCount;
+            ArrayList elements = new ArrayList(size);
+            for (int i = 0; i < size; ++i) {
                 chunk = i >> CHUNK_SHIFT;
                 index = i & CHUNK_MASK;
                 currName = fElementDeclName[chunk][index].rawname;
-                elements.addElement(currName);
+                elements.add(currName);
             }
             fGrammarDescription.setPossibleRoots(elements);
         }

@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.dtd;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
@@ -43,7 +44,7 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
 
     // if we don't know the root name, this stores all elements that
     // could serve; fPossibleRoots and fRootName cannot both be non-null
-    protected Vector fPossibleRoots = null;
+    protected ArrayList fPossibleRoots = null;
 
     // Constructors:
     public XMLDTDDescription(XMLResourceIdentifier id, String rootName) {
@@ -85,11 +86,16 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
         fRootName = rootName;
         fPossibleRoots = null;
     }
+    
+    /** Set possible roots **/
+    public void setPossibleRoots(ArrayList possibleRoots) {
+        fPossibleRoots = possibleRoots;
+    }
 
     /** Set possible roots **/
     public void setPossibleRoots(Vector possibleRoots) {
-        fPossibleRoots = possibleRoots;
-    } 
+        fPossibleRoots = (possibleRoots != null) ? new ArrayList(possibleRoots) : null;
+    }
 
     /**
      * Compares this grammar with the given grammar. Currently, we compare 
@@ -105,49 +111,58 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
      * @return     True if they are equal, else false
      */
     public boolean equals(Object desc) {
-        if(!(desc instanceof XMLGrammarDescription)) return false;
+        if (!(desc instanceof XMLGrammarDescription)) return false;
     	if (!getGrammarType().equals(((XMLGrammarDescription)desc).getGrammarType())) {
     	    return false;
     	}
         // assume it's a DTDDescription
         XMLDTDDescription dtdDesc = (XMLDTDDescription)desc;
-        if(fRootName != null) {
-            if((dtdDesc.fRootName) != null && !dtdDesc.fRootName.equals(fRootName)) {
+        if (fRootName != null) {
+            if ((dtdDesc.fRootName) != null && !dtdDesc.fRootName.equals(fRootName)) {
                 return false;
-            } else if(dtdDesc.fPossibleRoots != null && !dtdDesc.fPossibleRoots.contains(fRootName)) {
+            } 
+            else if (dtdDesc.fPossibleRoots != null && !dtdDesc.fPossibleRoots.contains(fRootName)) {
                 return false;
             }
-        } else if(fPossibleRoots != null) {
-            if(dtdDesc.fRootName != null) {
-                if(!fPossibleRoots.contains(dtdDesc.fRootName)) { 
+        } 
+        else if (fPossibleRoots != null) {
+            if (dtdDesc.fRootName != null) {
+                if (!fPossibleRoots.contains(dtdDesc.fRootName)) { 
                     return false;
                 }
-            } else if(dtdDesc.fPossibleRoots == null) {
+            } 
+            else if (dtdDesc.fPossibleRoots == null) {
                 return false;
-            } else {
+            } 
+            else {
                 boolean found = false;
-                for(int i = 0; i<fPossibleRoots.size(); i++) {
-                    String root = (String)fPossibleRoots.elementAt(i);
+                final int size = fPossibleRoots.size();
+                for (int i = 0; i < size; ++i) {
+                    String root = (String) fPossibleRoots.get(i);
                     found = dtdDesc.fPossibleRoots.contains(root);
-                    if(found) break;
+                    if (found) break;
                 }
-                if(!found) return false;
+                if (!found) return false;
             }
         }
         // if we got this far we've got a root match... try other two fields,
         // since so many different DTD's have roots in common:
-        if(fExpandedSystemId != null) {
-            if(!fExpandedSystemId.equals(dtdDesc.fExpandedSystemId)) 
+        if (fExpandedSystemId != null) {
+            if (!fExpandedSystemId.equals(dtdDesc.fExpandedSystemId)) {
                 return false;
+            }
         } 
-        else if(dtdDesc.fExpandedSystemId != null)
+        else if (dtdDesc.fExpandedSystemId != null) {
             return false;
-        if(fPublicId != null) {
-            if(!fPublicId.equals(dtdDesc.fPublicId)) 
+        }
+        if (fPublicId != null) {
+            if (!fPublicId.equals(dtdDesc.fPublicId)) {
                 return false;
+            }
         } 
-        else if(dtdDesc.fPublicId != null)
+        else if (dtdDesc.fPublicId != null) {
             return false;
+        }
     	return true;
     }
     
@@ -158,10 +173,12 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
      * @return The hash code
      */
     public int hashCode() {
-        if(fExpandedSystemId != null)
+        if (fExpandedSystemId != null) {
             return fExpandedSystemId.hashCode();
-        if(fPublicId != null)
+        }
+        if (fPublicId != null) {
             return fPublicId.hashCode();
+        }
         // give up; hope .equals can handle it:
         return 0;
     }
