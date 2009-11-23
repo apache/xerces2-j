@@ -17,7 +17,7 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Element;
@@ -130,7 +130,7 @@ public class DeferredDocumentImpl
     // private data
     //
     private transient final StringBuffer fBufferStr = new StringBuffer();
-    private transient final Vector fStrChunks = new Vector();
+    private transient final ArrayList fStrChunks = new ArrayList();
 
     //
     // Constructors
@@ -1157,14 +1157,14 @@ public class DeferredDocumentImpl
                 // append data that is stored in fNodeValue
                 // REVISIT: for text nodes it works differently than for CDATA
                 //          nodes.
-                fStrChunks.addElement(value);
+                fStrChunks.add(value);
                 do {
                     // go in reverse order: find last child, then
                     // its previous sibling, etc
                     chunk = prevSib >> CHUNK_SHIFT;
                     index = prevSib & CHUNK_MASK;
                     value = getChunkValue(fNodeValue, chunk, index);
-                    fStrChunks.addElement(value);
+                    fStrChunks.add(value);
                     prevSib = getChunkIndex(fNodePrevSib, chunk, index);
                     if (prevSib == -1) {
                         break;
@@ -1175,11 +1175,11 @@ public class DeferredDocumentImpl
 
                 // add to the buffer in the correct order.
                 for (int i = chunkCount - 1; i >= 0; i--) {                                                               
-                    fBufferStr.append((String)fStrChunks.elementAt(i));
+                    fBufferStr.append((String)fStrChunks.get(i));
                 }
                 
                 value = fBufferStr.toString();
-                fStrChunks.removeAllElements();
+                fStrChunks.clear();
                 fBufferStr.setLength(0);
                 return value;
             }
@@ -1196,16 +1196,16 @@ public class DeferredDocumentImpl
                    chunk = child >> CHUNK_SHIFT;
                     index = child & CHUNK_MASK;
                     value = getChunkValue(fNodeValue, chunk, index);
-                    fStrChunks.addElement(value);
+                    fStrChunks.add(value);
                     child = getChunkIndex(fNodePrevSib, chunk, index);
                 }
                 // add to the buffer in the correct order.
                 for (int i=fStrChunks.size()-1; i>=0; i--) {                                                               
-                     fBufferStr.append((String)fStrChunks.elementAt(i));
+                     fBufferStr.append((String)fStrChunks.get(i));
                 }
                                                          
                 value = fBufferStr.toString();
-                fStrChunks.setSize(0);
+                fStrChunks.clear();
                 fBufferStr.setLength(0);
                 return value;
             }

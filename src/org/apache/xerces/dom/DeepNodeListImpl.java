@@ -17,7 +17,7 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -58,7 +58,7 @@ import org.w3c.dom.NodeList;
  * it is being extended. That requires knowing which subtrees have
  * changed, which can become an arbitrarily complex problem.
  * <P>
- * We save some work by filling the vector only as we access the
+ * We save some work by filling the ArrayList only as we access the
  * item()s... but I suspect the same users who demanded index-based
  * access will also start by doing a getLength() to control their loop,
  * blowing this optimization out of the water.
@@ -81,7 +81,7 @@ public class DeepNodeListImpl
     protected NodeImpl rootNode; // Where the search started
     protected String tagName;   // Or "*" to mean all-tags-acceptable
     protected int changes=0;
-    protected Vector nodes;
+    protected ArrayList nodes;
     
     protected String nsName;
     protected boolean enableNS = false;
@@ -94,7 +94,7 @@ public class DeepNodeListImpl
     public DeepNodeListImpl(NodeImpl rootNode, String tagName) {
         this.rootNode = rootNode;
         this.tagName  = tagName;
-        nodes = new Vector();
+        nodes = new ArrayList();
     }  
 
     /** Constructor for Namespace support. */
@@ -121,30 +121,34 @@ public class DeepNodeListImpl
     	Node thisNode;
 
         // Tree changed. Do it all from scratch!
-    	if(rootNode.changes() != changes) {
-            nodes   = new Vector();     
+    	if (rootNode.changes() != changes) {
+            nodes   = new ArrayList();     
             changes = rootNode.changes();
     	}
     
         // In the cache
-    	if (index < nodes.size())      
-    	    return (Node)nodes.elementAt(index);
-    
+    	final int currentSize = nodes.size();
+    	if (index < currentSize) {
+    	    return (Node)nodes.get(index);
+    	}
         // Not yet seen
     	else {
     
             // Pick up where we left off (Which may be the beginning)
-    		if (nodes.size() == 0)     
+    		if (currentSize == 0) { 
     		    thisNode = rootNode;
-    		else
-    		    thisNode=(NodeImpl)(nodes.lastElement());
+    		}
+    		else {
+    		    thisNode = (NodeImpl)(nodes.get(currentSize - 1));
+    		}
     
     		// Add nodes up to the one we're looking for
-    		while(thisNode != null && index >= nodes.size()) {
-    			thisNode=nextMatchingElementAfter(thisNode);
-    			if (thisNode != null)
-    			    nodes.addElement(thisNode);
+    		while (thisNode != null && index >= nodes.size()) {
+    		    thisNode = nextMatchingElementAfter(thisNode);
+    		    if (thisNode != null) {
+    		        nodes.add(thisNode);
     		    }
+    		}
 
             // Either what we want, or null (not avail.)
 		    return thisNode;           
