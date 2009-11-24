@@ -1918,15 +1918,6 @@ public class XMLSchemaValidator
             return augs;
         }
 
-        //try to find schema grammar by different means..
-        SchemaGrammar sGrammar =
-            findSchemaGrammar(
-                XSDDescription.CONTEXT_ELEMENT,
-                element.uri,
-                null,
-                element,
-                attributes);
-
         // if we are not skipping this element, and there is a content model,
         // we try to find the corresponding decl object for this element.
         // the reason we move this part of code here is to make sure the
@@ -2066,6 +2057,14 @@ public class XMLSchemaValidator
             // case 1: find declaration for root element
             // case 2: find declaration for element from another namespace
             if (fCurrentElemDecl == null) {
+                // try to find schema grammar by different means..
+                SchemaGrammar sGrammar =
+                    findSchemaGrammar(
+                        XSDDescription.CONTEXT_ELEMENT,
+                        element.uri,
+                        null,
+                        element,
+                        attributes);
                 if (sGrammar != null) {
                     fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
                 }
@@ -2619,7 +2618,7 @@ public class XMLSchemaValidator
         short contextType,
         String namespace,
         QName enclosingElement,
-        QName triggeringComponet,
+        QName triggeringComponent,
         XMLAttributes attributes) {
         SchemaGrammar grammar = null;
         //get the grammar from local pool...
@@ -2646,12 +2645,13 @@ public class XMLSchemaValidator
             }
         }
 
-        if ((grammar == null && !fUseGrammarPoolOnly) || fNamespaceGrowth) {
+        if ((grammar == null && !fUseGrammarPoolOnly) || 
+            (fNamespaceGrowth && !hasSchemaComponent(grammar, contextType, triggeringComponent))) {
             fXSDDescription.reset();
             fXSDDescription.fContextType = contextType;
             fXSDDescription.setNamespace(namespace);
             fXSDDescription.fEnclosedElementName = enclosingElement;
-            fXSDDescription.fTriggeringComponent = triggeringComponet;
+            fXSDDescription.fTriggeringComponent = triggeringComponent;
             fXSDDescription.fAttributes = attributes;
             if (fLocator != null) {
                 fXSDDescription.setBaseSystemId(fLocator.getExpandedSystemId());
@@ -2709,6 +2709,23 @@ public class XMLSchemaValidator
         return grammar;
 
     } //findSchemaGrammar
+    
+    private boolean hasSchemaComponent(SchemaGrammar grammar, short contextType, QName triggeringComponent) {
+        if (grammar != null && triggeringComponent != null) {
+            String localName = triggeringComponent.localpart;
+            if (localName != null && localName.length() > 0) {
+                switch (contextType) {
+                    case XSDDescription.CONTEXT_ELEMENT:
+                        return grammar.getElementDeclaration(localName) != null;
+                    case XSDDescription.CONTEXT_ATTRIBUTE:
+                        return grammar.getAttributeDeclaration(localName) != null;
+                    case XSDDescription.CONTEXT_XSITYPE:
+                        return grammar.getTypeDefinition(localName) != null;
+                }
+            }
+        }
+        return false;
+    }
 
     private void setLocationHints(XSDDescription desc, String[] locations, SchemaGrammar grammar) {
         int length = locations.length;
