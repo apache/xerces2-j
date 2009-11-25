@@ -2645,8 +2645,8 @@ public class XMLSchemaValidator
             }
         }
 
-        if ((grammar == null && !fUseGrammarPoolOnly) || 
-            (fNamespaceGrowth && !hasSchemaComponent(grammar, contextType, triggeringComponent))) {
+        if (!fUseGrammarPoolOnly && (grammar == null || 
+            (fNamespaceGrowth && !hasSchemaComponent(grammar, contextType, triggeringComponent)))) {
             fXSDDescription.reset();
             fXSDDescription.fContextType = contextType;
             fXSDDescription.setNamespace(namespace);
