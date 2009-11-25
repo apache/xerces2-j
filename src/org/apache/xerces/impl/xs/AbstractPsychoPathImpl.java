@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -45,6 +47,16 @@ import org.eclipse.wst.xml.xpath2.processor.internal.Focus;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.ElementType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSBoolean;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDate;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDateTime;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDecimal;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDouble;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSFloat;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSInt;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSInteger;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSLong;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSString;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -150,6 +162,65 @@ public class AbstractPsychoPathImpl {
         }  
         
         return xp;
+    }
+    
+    /*
+     * Get psychopath xpath2 typed value, corresponding to the XSD language
+     * type.
+     * 
+     * @param xsdTypeName a XSD built in type name, like "string", "date" etc.
+     * @param value a "string value", that need to be converted to, the
+     *        psychopath xpath2 XSD typed value.  
+     */
+    protected Object getPsychoPathTypeForXSDType(String xsdTypeName,
+                                                 String value) {
+        Object psychoPathType = null;
+        
+        if ("string".equals(xsdTypeName)) {
+            psychoPathType = new XSString(value);   
+        }
+        else if ("date".equals(xsdTypeName)) {       
+            psychoPathType = XSDate.parse_date(value);
+        }
+        else if ("int".equals(xsdTypeName)) {      
+            psychoPathType = new XSInt(new BigInteger(value));
+        }
+        else if ("long".equals(xsdTypeName)) {     
+           psychoPathType = new XSLong(new BigInteger(value));
+        }
+        else if ("integer".equals(xsdTypeName)) {      
+           psychoPathType = new XSInteger(new BigInteger(value));
+        }
+        else if ("double".equals(xsdTypeName)) {       
+           psychoPathType = new XSDouble(Double.parseDouble(value));
+        }
+        else if ("float".equals(xsdTypeName)) {        
+           psychoPathType = new XSFloat(Float.parseFloat(value));
+        }
+        else if ("decimal".equals(xsdTypeName)) {      
+           psychoPathType = new XSDecimal(new BigDecimal(value));
+        }
+        else if ("dateTime".equals(xsdTypeName)) {
+           psychoPathType = XSDateTime.parseDateTime(value);
+        }
+        else if ("time".equals(xsdTypeName)) {
+           psychoPathType = XSTime.parse_time(value);
+        }
+        else if ("date".equals(xsdTypeName)) {
+           psychoPathType = XSDate.parse_date(value);
+        }
+        else if ("boolean".equals(xsdTypeName)) {
+           psychoPathType = new XSBoolean(Boolean.valueOf(value).booleanValue());
+        }
+        else if ("NOTATION".equals(xsdTypeName)) {
+           psychoPathType = new XSString(value);
+        }
+        else {
+           // create a XSString value, as fallback option 
+           psychoPathType = new XSString(value);
+        } 
+        
+        return psychoPathType;
     }
     
     /*
