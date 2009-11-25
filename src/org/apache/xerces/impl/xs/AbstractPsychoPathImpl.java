@@ -206,9 +206,6 @@ public class AbstractPsychoPathImpl {
         else if ("time".equals(xsdTypeName)) {
            psychoPathType = XSTime.parse_time(value);
         }
-        else if ("date".equals(xsdTypeName)) {
-           psychoPathType = XSDate.parse_date(value);
-        }
         else if ("boolean".equals(xsdTypeName)) {
            psychoPathType = new XSBoolean(Boolean.valueOf(value).booleanValue());
         }
