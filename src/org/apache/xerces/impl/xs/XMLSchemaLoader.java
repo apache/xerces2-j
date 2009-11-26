@@ -38,6 +38,8 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.SchemaDVFactory;
+import org.apache.xerces.impl.dv.xs.BaseSchemaDVFactory;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
@@ -132,7 +134,19 @@ XSLoader, DOMConfiguration {
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
     
     protected static final String PARSER_SETTINGS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;   
+        Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
+    
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+    
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
+    
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
     
     // recognized features:
     private static final String[] RECOGNIZED_FEATURES = {
@@ -144,7 +158,9 @@ XSLoader, DOMConfiguration {
         DISALLOW_DOCTYPE,
         GENERATE_SYNTHETIC_ANNOTATIONS,
         VALIDATE_ANNOTATIONS,
-        HONOUR_ALL_SCHEMALOCATIONS
+        HONOUR_ALL_SCHEMALOCATIONS,
+        NAMESPACE_GROWTH,
+        TOLERATE_DUPLICATES
     };
     
     // property identifiers
@@ -182,7 +198,11 @@ XSLoader, DOMConfiguration {
         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
     
     protected static final String SECURITY_MANAGER =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;  
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
+    /** Property identifier: locale. */
+    protected static final String LOCALE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
     
     protected static final String ENTITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;   
@@ -202,8 +222,13 @@ XSLoader, DOMConfiguration {
         SCHEMA_NONS_LOCATION,
         JAXP_SCHEMA_SOURCE,
         SECURITY_MANAGER,
+        LOCALE,
+        SCHEMA_DV_FACTORY,
         XML_SCHEMA_VERSION
     };
+    
+    private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
+    private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
     
     // Data
     
@@ -231,6 +256,7 @@ XSLoader, DOMConfiguration {
     private SubstitutionGroupHandler fSubGroupHandler;
     private CMBuilder fCMBuilder;
     private XSDDescription fXSDDescription = new XSDDescription();
+    private SchemaDVFactory fDefaultSchemaDVFactory;
     
     private WeakHashMap fJAXPCache;
     private Locale fLocale = Locale.getDefault();
@@ -325,7 +351,6 @@ XSLoader, DOMConfiguration {
         }
         fCMBuilder = builder;
         fSchemaHandler = new XSDHandler(fGrammarBucket, fSchemaVersion, fXSConstraints);
-        fDeclPool = new XSDeclarationPool();
         fJAXPCache = new WeakHashMap();
         
         fSettingsChanged = true;
@@ -419,6 +444,9 @@ XSLoader, DOMConfiguration {
         }
         else if (propertyId.equals(SCHEMA_NONS_LOCATION)){
             fExternalNoNSSchema = (String) state;
+        }
+        else if (propertyId.equals(LOCALE)) {
+            setLocale((Locale) state);
         }
         else if (propertyId.equals(ENTITY_RESOLVER)){
             fEntityManager.setProperty(ENTITY_RESOLVER, state);
@@ -979,13 +1007,16 @@ XSLoader, DOMConfiguration {
         
         fGrammarBucket.reset();
         
-        fSubGroupHandler.reset();		
+        fSubGroupHandler.reset();
         
         if (!fSettingsChanged || !parserSettingsUpdated(componentManager)) {
             // need to reprocess JAXP schema sources
             fJAXPProcessed = false;
             // reinitialize grammar bucket
             initGrammarBucket();
+            if (fDeclPool != null) {
+                fDeclPool.reset();
+            }
             return;           
         } 
         
@@ -997,22 +1028,20 @@ XSLoader, DOMConfiguration {
         // get the error reporter
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         
-        boolean psvi = true;
+        // Determine schema dv factory to use
+        SchemaDVFactory dvFactory = null;
         try {
-            psvi = componentManager.getFeature(AUGMENT_PSVI);
+            dvFactory = (SchemaDVFactory)componentManager.getProperty(SCHEMA_DV_FACTORY);
         } catch (XMLConfigurationException e) {
-            psvi = false;
         }
-        
-        if (!psvi) {
-            fDeclPool.reset();
-            fCMBuilder.setDeclPool(fDeclPool);
-            fSchemaHandler.setDeclPool(fDeclPool);
-        } else {
-            fCMBuilder.setDeclPool(null);
-            fSchemaHandler.setDeclPool(null);
+        if (dvFactory == null) {
+            if (fDefaultSchemaDVFactory == null) {
+                fDefaultSchemaDVFactory = getSchemaDVFactory(fSchemaVersion);
+            }
+            dvFactory = fDefaultSchemaDVFactory;
         }
-        
+        fSchemaHandler.setDVFactory(dvFactory);
+
         // get schema location properties
         try {
             fExternalSchemas = (String) componentManager.getProperty(SCHEMA_LOCATION);
@@ -1039,6 +1068,41 @@ XSLoader, DOMConfiguration {
             fGrammarPool = null;
         }
         initGrammarBucket();
+
+        boolean psvi = true;
+        try {
+            psvi = componentManager.getFeature(AUGMENT_PSVI);
+        } catch (XMLConfigurationException e) {
+            psvi = false;
+        }
+        
+        // Only use the decl pool when there is no chance that the schema
+        // components will be exposed or cached.
+        // TODO: when someone calls loadGrammar(XMLInputSource), the schema is
+        // always exposed even without the use of a grammar pool.
+        // Disabling the "decl pool" feature for now until we understand when
+        // it can be safely used.
+        if (!psvi && fGrammarPool == null && false) {
+            if (fDeclPool != null) {
+                fDeclPool.reset();
+            }
+            else {
+                fDeclPool = new XSDeclarationPool();
+            }
+            fCMBuilder.setDeclPool(fDeclPool);
+            fSchemaHandler.setDeclPool(fDeclPool);
+            if (dvFactory instanceof BaseSchemaDVFactory) {
+                fDeclPool.setDVFactory((BaseSchemaDVFactory)dvFactory);
+                ((BaseSchemaDVFactory)dvFactory).setDeclPool(fDeclPool);
+            }
+        } else {
+            fCMBuilder.setDeclPool(null);
+            fSchemaHandler.setDeclPool(null);
+            if (dvFactory instanceof BaseSchemaDVFactory) {
+                ((BaseSchemaDVFactory)dvFactory).setDeclPool(null);
+            }
+        }
+        
         // get continue-after-fatal-error feature
         try {
             boolean fatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);
@@ -1061,7 +1125,18 @@ XSLoader, DOMConfiguration {
         }
         fSchemaHandler.reset(componentManager);		 
     }
-    
+    private SchemaDVFactory getSchemaDVFactory(short schemaVersion) {
+        if (schemaVersion != Constants.SCHEMA_VERSION_1_0) {
+            if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                return SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
+            }
+            else {
+                return  SchemaDVFactory.getInstance(EXTENDED_SCHEMA_FACTORY_CLASS);
+            }
+        }
+
+        return SchemaDVFactory.getInstance();
+    }
     private boolean parserSettingsUpdated(XMLComponentManager componentManager) {
         try {
             return componentManager.getFeature(PARSER_SETTINGS);     
@@ -1180,7 +1255,9 @@ XSLoader, DOMConfiguration {
                 name.equals(ALLOW_JAVA_ENCODINGS) ||
                 name.equals(STANDARD_URI_CONFORMANT_FEATURE) ||
                 name.equals(GENERATE_SYNTHETIC_ANNOTATIONS) ||
-                name.equals(HONOUR_ALL_SCHEMALOCATIONS)) {
+                name.equals(HONOUR_ALL_SCHEMALOCATIONS) ||
+                name.equals(NAMESPACE_GROWTH) ||
+                name.equals(TOLERATE_DUPLICATES)) {
                 return true;
                 
             }
@@ -1195,7 +1272,8 @@ XSLoader, DOMConfiguration {
             name.equals(XMLGRAMMAR_POOL) ||
             name.equals(SCHEMA_LOCATION) ||
             name.equals(SCHEMA_NONS_LOCATION) ||
-            name.equals(JAXP_SCHEMA_SOURCE)) {
+            name.equals(JAXP_SCHEMA_SOURCE) ||
+            name.equals(SCHEMA_DV_FACTORY)) {
             return true;
         }
         return false;
@@ -1256,6 +1334,8 @@ XSLoader, DOMConfiguration {
             v.add(VALIDATE_ANNOTATIONS);
             v.add(GENERATE_SYNTHETIC_ANNOTATIONS);
             v.add(HONOUR_ALL_SCHEMALOCATIONS);
+            v.add(NAMESPACE_GROWTH);
+            v.add(TOLERATE_DUPLICATES);
             fRecognizedParameters = new DOMStringListImpl(v);      	
         }
         return fRecognizedParameters;

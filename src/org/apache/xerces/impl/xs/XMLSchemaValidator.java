@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xs;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ import javax.xml.XMLConstants;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
@@ -51,6 +53,7 @@ import org.apache.xerces.impl.xs.identity.ValueStore;
 import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
+import org.apache.xerces.impl.xs.models.XCMValidatorHelper;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
@@ -59,6 +62,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -81,6 +85,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAssert;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -117,7 +122,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLSchemaValidator
-    implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler {
+    implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler, XCMValidatorHelper {
 
     //
     // Constants
@@ -184,6 +189,14 @@ public class XMLSchemaValidator
 
     protected static final String PARSER_SETTINGS =
             Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
+    
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
 
     /** Feature identifier: whether to ignore xsi:type attributes until a global element declaration is encountered */
     protected static final String IGNORE_XSI_TYPE =
@@ -253,6 +266,10 @@ public class XMLSchemaValidator
     protected static final String ROOT_ELEMENT_DECL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+
     /** Property identifier: xml schema version. */
     protected static final String XML_SCHEMA_VERSION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
@@ -277,7 +294,9 @@ public class XMLSchemaValidator
             ID_IDREF_CHECKING,
             IDENTITY_CONSTRAINT_CHECKING,
             UNPARSED_ENTITY_CHECKING,
-            TYPE_ALTERNATIVES_CHECKING,
+            NAMESPACE_GROWTH,
+            TOLERATE_DUPLICATES,
+            TYPE_ALTERNATIVES_CHECKING
         };
 
 
@@ -308,6 +327,8 @@ public class XMLSchemaValidator
         null,
         null,
         null,
+        null,
+        null
     };
 
     /** Recognized properties. */
@@ -323,12 +344,13 @@ public class XMLSchemaValidator
             JAXP_SCHEMA_LANGUAGE,
             ROOT_TYPE_DEF,
             ROOT_ELEMENT_DECL,
+            SCHEMA_DV_FACTORY,
             XML_SCHEMA_VERSION,
         };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS =
-        { null, null, null, null, null, null, null, null, null, null, null, };
+        { null, null, null, null, null, null, null, null, null, null, null, null};
 
     // this is the number of valuestores of each kind
     // we expect an element to have.  It's almost
@@ -339,7 +361,10 @@ public class XMLSchemaValidator
     static final XSAttributeDecl XSI_TYPE = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
     static final XSAttributeDecl XSI_NIL = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NIL);
     static final XSAttributeDecl XSI_SCHEMALOCATION = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
-    static final XSAttributeDecl XSI_NONAMESPACESCHEMALOCATION = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);  
+    static final XSAttributeDecl XSI_NONAMESPACESCHEMALOCATION = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
+
+    //
+    private static final Hashtable EMPTY_TABLE = new Hashtable();
 
     //
     // Data
@@ -369,6 +394,9 @@ public class XMLSchemaValidator
     protected boolean fIdConstraint = false;
     protected boolean fUseGrammarPoolOnly = false;
 
+    // Namespace growth feature
+    protected boolean fNamespaceGrowth = false;
+    
     /** Schema type: None, DTD, Schema */
     private String fSchemaType = null;
 
@@ -526,6 +554,8 @@ public class XMLSchemaValidator
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription();
     protected final Hashtable fLocationPairs = new Hashtable();
+    protected final Hashtable fExpandedLocationPairs = new Hashtable();
+    protected final ArrayList fUnparsedLocations = new ArrayList();
 
     /** XML Schema 1.1 Support */
     short fSchemaVersion;
@@ -1396,6 +1426,7 @@ public class XMLSchemaValidator
         fIdConstraint = false;
         //reset XSDDescription
         fLocationPairs.clear();
+        fExpandedLocationPairs.clear();
 
         // cleanup id table
         fValidationState.resetIDTables();
@@ -1451,6 +1482,12 @@ public class XMLSchemaValidator
         SymbolTable symbolTable = (SymbolTable) componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
             fSymbolTable = symbolTable;
+        }
+        
+        try {
+            fNamespaceGrowth = componentManager.getFeature(NAMESPACE_GROWTH);
+        } catch (XMLConfigurationException e) {
+            fNamespaceGrowth = false;
         }
 
         try {
@@ -1697,6 +1734,21 @@ public class XMLSchemaValidator
         matcher.startDocumentFragment();
     }
 
+    // Implements XCMValidatorHelper interface
+    public XSElementDecl getGlobalElementDecl(QName element) {
+        final SchemaGrammar sGrammar =
+            findSchemaGrammar(
+                XSDDescription.CONTEXT_ELEMENT,
+                element.uri,
+                null,
+                element,
+                null);
+        if (sGrammar != null) {
+            return sGrammar.getGlobalElementDecl(element.localpart);
+        }
+        return null;
+    }
+    
     //
     // Protected methods
     //
@@ -1967,22 +2019,13 @@ public class XMLSchemaValidator
         storeLocations(sLocation, nsLocation);
 
         // if we are in the content of "skip", then just skip this element
-        // REVISIT:  is this the correct behavior for ID constraints?  -NG
+        // REVISIT:  is this the correct behaviour for ID constraints?  -NG
         if (fSkipValidationDepth >= 0) {
             fElementDepth++;
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
             return augs;
         }
-
-        //try to find schema grammar by different means..
-        SchemaGrammar sGrammar =
-            findSchemaGrammar(
-                XSDDescription.CONTEXT_ELEMENT,
-                element.uri,
-                null,
-                element,
-                attributes);
 
         // if we are not skipping this element, and there is a content model,
         // we try to find the corresponding decl object for this element.
@@ -1991,7 +2034,7 @@ public class XMLSchemaValidator
         // context, instead of that of the current element.
         Object decl = null;
         if (fCurrentCM != null) {
-            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler, sGrammar);
+            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler, this);
             // it could be an element decl or a wildcard decl
             if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl) fCurrentType;
@@ -2153,6 +2196,14 @@ public class XMLSchemaValidator
             // case 1: find declaration for root element
             // case 2: find declaration for element from another namespace
             if (fCurrentElemDecl == null) {
+                // try to find schema grammar by different means..
+                SchemaGrammar sGrammar =
+                    findSchemaGrammar(
+                        XSDDescription.CONTEXT_ELEMENT,
+                        element.uri,
+                        null,
+                        element,
+                        attributes);
                 if (sGrammar != null) {
                     fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
                 }
@@ -2163,7 +2214,7 @@ public class XMLSchemaValidator
                 fCurrentType = fCurrentElemDecl.fType;
             }
         }
-               
+
         // check if we should be ignoring xsi:type on this element
         if (fElementDepth == fIgnoreXSITypeDepth && fCurrentElemDecl == null) {
             fIgnoreXSITypeDepth++;
@@ -2676,6 +2727,10 @@ public class XMLSchemaValidator
             grammars = fGrammarBucket.getGrammars();
             // return the final set of grammars validator ended up with
             if (fGrammarPool != null) {
+                // Set grammars as immutable
+                for (int k=0; k < grammars.length; k++) {
+                    grammars[k].setImmutable(true);
+                }
                 fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, grammars);
             }
             augs = endElementPSVI(true, grammars, augs);
@@ -2834,39 +2889,19 @@ public class XMLSchemaValidator
         short contextType,
         String namespace,
         QName enclosingElement,
-        QName triggeringComponet,
+        QName triggeringComponent,
         XMLAttributes attributes) {
         SchemaGrammar grammar = null;
         //get the grammar from local pool...
         grammar = fGrammarBucket.getGrammar(namespace);
         if (grammar == null) {
-            fXSDDescription.reset();
-            fXSDDescription.fContextType = contextType;
             fXSDDescription.setNamespace(namespace);
-            fXSDDescription.fEnclosedElementName = enclosingElement;
-            fXSDDescription.fTriggeringComponent = triggeringComponet;
-            fXSDDescription.fAttributes = attributes;
-            if (fLocator != null) {
-                fXSDDescription.setBaseSystemId(fLocator.getExpandedSystemId());
-            }
-
-            String[] temp = null;
-            Object locationArray =
-                fLocationPairs.get(namespace == null ? XMLSymbols.EMPTY_STRING : namespace);
-            if (locationArray != null)
-                temp = ((XMLSchemaLoader.LocationArray) locationArray).getLocationArray();
-            if (temp != null && temp.length != 0) {
-                fXSDDescription.fLocationHints = new String[temp.length];
-                System.arraycopy(temp, 0, fXSDDescription.fLocationHints, 0, temp.length);
-            }
-
-            // give a chance to application to be able to retreive the grammar.
             if (fGrammarPool != null) {
                 grammar = (SchemaGrammar) fGrammarPool.retrieveGrammar(fXSDDescription);
                 if (grammar != null) {
                     // put this grammar into the bucket, along with grammars
                     // imported by it (directly or indirectly)
-                    if (!fGrammarBucket.putGrammar(grammar, true)) {
+                    if (!fGrammarBucket.putGrammar(grammar, true, fNamespaceGrowth)) {
                         // REVISIT: a conflict between new grammar(s) and grammars
                         // in the bucket. What to do? A warning? An exception?
                         fXSIErrorReporter.fErrorReporter.reportError(
@@ -2878,15 +2913,58 @@ public class XMLSchemaValidator
                     }
                 }
             }
-            if (grammar == null && !fUseGrammarPoolOnly) {
+        }
+
+        if (!fUseGrammarPoolOnly && (grammar == null || 
+            (fNamespaceGrowth && !hasSchemaComponent(grammar, contextType, triggeringComponent)))) {
+            fXSDDescription.reset();
+            fXSDDescription.fContextType = contextType;
+            fXSDDescription.setNamespace(namespace);
+            fXSDDescription.fEnclosedElementName = enclosingElement;
+            fXSDDescription.fTriggeringComponent = triggeringComponent;
+            fXSDDescription.fAttributes = attributes;
+            if (fLocator != null) {
+                fXSDDescription.setBaseSystemId(fLocator.getExpandedSystemId());
+            }
+
+            Hashtable locationPairs = fLocationPairs;
+            Object locationArray =
+                locationPairs.get(namespace == null ? XMLSymbols.EMPTY_STRING : namespace);
+            if (locationArray != null) {
+                String[] temp = ((XMLSchemaLoader.LocationArray) locationArray).getLocationArray();
+                if (temp.length != 0) {
+                    setLocationHints(fXSDDescription, temp, grammar);
+                }
+            }
+
+            if (grammar == null || fXSDDescription.fLocationHints != null) {
+                boolean toParseSchema = true;
+                if (grammar != null) {
+                     // use location hints instead
+                    locationPairs = EMPTY_TABLE;
+                }
+
                 // try to parse the grammar using location hints from that namespace..
                 try {
                     XMLInputSource xis =
                         XMLSchemaLoader.resolveDocument(
                             fXSDDescription,
-                            fLocationPairs,
+                            locationPairs,
                             fEntityResolver);
-                    grammar = fSchemaLoader.loadSchema(fXSDDescription, xis, fLocationPairs);
+                    if (grammar != null && fNamespaceGrowth) {
+                        try {
+                            // if we are dealing with a different schema location, then include the new schema
+                            // into the existing grammar
+                            if (grammar.getDocumentLocations().contains(XMLEntityManager.expandSystemId(xis.getSystemId(), xis.getBaseSystemId(), false))) {
+                                toParseSchema = false; 
+                            }
+                        }
+                        catch (MalformedURIException e) {
+                        }
+                    }
+                    if (toParseSchema) {
+                        grammar = fSchemaLoader.loadSchema(fXSDDescription, xis, fLocationPairs);
+                    }
                 } catch (IOException ex) {
                     final String [] locationHints = fXSDDescription.getLocationHints();
                     fXSIErrorReporter.fErrorReporter.reportError(
@@ -2902,6 +2980,61 @@ public class XMLSchemaValidator
 
     } //findSchemaGrammar
 
+    private boolean hasSchemaComponent(SchemaGrammar grammar, short contextType, QName triggeringComponent) {
+        if (grammar != null && triggeringComponent != null) {
+            String localName = triggeringComponent.localpart;
+            if (localName != null && localName.length() > 0) {
+                switch (contextType) {
+                    case XSDDescription.CONTEXT_ELEMENT:
+                        return grammar.getElementDeclaration(localName) != null;
+                    case XSDDescription.CONTEXT_ATTRIBUTE:
+                        return grammar.getAttributeDeclaration(localName) != null;
+                    case XSDDescription.CONTEXT_XSITYPE:
+                        return grammar.getTypeDefinition(localName) != null;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void setLocationHints(XSDDescription desc, String[] locations, SchemaGrammar grammar) {
+        int length = locations.length;
+        if (grammar == null) {
+            fXSDDescription.fLocationHints = new String[length];
+            System.arraycopy(locations, 0, fXSDDescription.fLocationHints, 0, length);
+        }
+        else {
+            setLocationHints(desc, locations, grammar.getDocumentLocations());
+        }
+    }
+    
+    private void setLocationHints(XSDDescription desc, String[] locations, StringList docLocations) {
+        int length = locations.length;
+        String[] hints = new String[length];
+        int counter = 0;
+
+        for (int i=0; i<length; i++) {
+            try {
+                String id = XMLEntityManager.expandSystemId(locations[i], desc.getBaseSystemId(), false);
+                if (!docLocations.contains(id)) {
+                    hints[counter++] = locations[i];
+                }
+            }
+            catch (MalformedURIException e) {
+            }
+        }
+
+        if (counter > 0) {
+            if (counter == length) {
+                fXSDDescription.fLocationHints = hints;
+            }
+            else {
+                fXSDDescription.fLocationHints = new String[counter];
+                System.arraycopy(hints, 0, fXSDDescription.fLocationHints, 0, counter);
+            }
+        }
+    }
+
     private boolean isValidBuiltInTypeName(String localpart) {
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_0_EXTENDED) {
             if (localpart.equals("duration") ||
@@ -2912,6 +3045,7 @@ public class XMLSchemaValidator
         }
         return true;
     }
+
     XSTypeDefinition getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint
         // Validation Rule: Schema-Validity Assessment (Element)

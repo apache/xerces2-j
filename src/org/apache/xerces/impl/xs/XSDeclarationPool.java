@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.dv.xs.BaseSchemaDVFactory;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 
 /**
@@ -71,6 +72,11 @@ public final class XSDeclarationPool {
     /** AttributeUse declaration pool */
     private XSAttributeUseImpl fAttributeUse[][] = new XSAttributeUseImpl[INITIAL_CHUNK_COUNT][];
     private int fAttributeUseIndex = 0;
+    
+    private BaseSchemaDVFactory dvFactory;
+    public void setDVFactory(BaseSchemaDVFactory dvFactory) {
+        this.dvFactory = dvFactory;
+    }
 
     public final  XSElementDecl getElementDecl(){
         int     chunk       = fElementDeclIndex >> CHUNK_SHIFT;
@@ -132,7 +138,7 @@ public final class XSDeclarationPool {
         int     index       = fSTDeclIndex &  CHUNK_MASK;
         ensureSTDeclCapacity(chunk);
         if (fSTDecl[chunk][index] == null) {
-            fSTDecl[chunk][index] = new XSSimpleTypeDecl();
+            fSTDecl[chunk][index] = dvFactory.newXSSimpleTypeDecl();
         } else {
             fSTDecl[chunk][index].reset();
         }

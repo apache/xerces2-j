@@ -282,6 +282,12 @@ public final class Constants {
     /** Honour all schemaLocations feature ("honour-all-schemaLocations"). */
     public static final String HONOUR_ALL_SCHEMALOCATIONS_FEATURE = "honour-all-schemaLocations";
     
+    /** Namespace growth feature ("namespace-growth"). */
+    public static final String NAMESPACE_GROWTH_FEATURE = "namespace-growth";
+
+    /** Tolerate duplicates feature ("internal/tolerate-duplicates"). */
+    public static final String TOLERATE_DUPLICATES_FEATURE = "internal/tolerate-duplicates";
+    
     /** XInclude processing feature ("xinclude"). */
     public static final String XINCLUDE_FEATURE = "xinclude";
     
@@ -421,11 +427,14 @@ public final class Constants {
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
     
-    /** Schema type of the root element in a document ("validation/schema/root-type-definition"). */
+    /** Schema type for the root element in a document ("validation/schema/root-type-definition"). */
     public static final String ROOT_TYPE_DEFINITION_PROPERTY = "validation/schema/root-type-definition";
     
     /** Schema element declaration for the root element in a document ("validation/schema/root-element-declaration"). */
     public static final String ROOT_ELEMENT_DECLARATION_PROPERTY = "validation/schema/root-element-declaration";
+
+    /** Schema element declaration for the root element in a document ("internal/validation/schema/dv-factory"). */
+    public static final String SCHEMA_DV_FACTORY_PROPERTY = "internal/validation/schema/dv-factory";
 
     /** Datatype XML version property ("validation/schema/datatype-xml-version"). */
     public static final String XML_SCHEMA_VERSION_PROPERTY ="validation/schema/version";
@@ -526,7 +535,9 @@ public final class Constants {
             ID_IDREF_CHECKING_FEATURE,
             IDC_CHECKING_FEATURE,
             UNPARSED_ENTITY_CHECKING_FEATURE,
-            TYPE_ALTERNATIVES_CHEKING_FEATURE,
+            NAMESPACE_GROWTH_FEATURE,
+            TOLERATE_DUPLICATES_FEATURE,
+            TYPE_ALTERNATIVES_CHEKING_FEATURE
     };
     
     /** Xerces properties. */
@@ -551,7 +562,8 @@ public final class Constants {
             LOCALE_PROPERTY,
             ROOT_TYPE_DEFINITION_PROPERTY,
             ROOT_ELEMENT_DECLARATION_PROPERTY,
-            XML_SCHEMA_VERSION_PROPERTY,
+            SCHEMA_DV_FACTORY_PROPERTY,
+            XML_SCHEMA_VERSION_PROPERTY
     };
     
     /** Empty enumeration. */

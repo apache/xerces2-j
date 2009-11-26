@@ -27,6 +27,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
@@ -55,6 +56,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.apache.xerces.xs.datatypes.ObjectList;
 import org.xml.sax.SAXException;
 
 /**
@@ -87,6 +89,21 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     SymbolHash fGlobalNotationDecls;
     SymbolHash fGlobalIDConstraintDecls;
     SymbolHash fGlobalTypeDecls;
+
+    // extended global decls: map from schema location + decl name to decl object
+    // key is location,name
+    SymbolHash fGlobalAttrDeclsExt;
+    SymbolHash fGlobalAttrGrpDeclsExt;
+    SymbolHash fGlobalElemDeclsExt;
+    SymbolHash fGlobalGroupDeclsExt;
+    SymbolHash fGlobalNotationDeclsExt;
+    SymbolHash fGlobalIDConstraintDeclsExt;
+    SymbolHash fGlobalTypeDeclsExt;
+    
+    // A global map of all global element declarations - used for substitution group computation
+    // (handy when sharing components by reference, since we might end up with duplicate components
+    //  that are not added to either of the global element declarations above)
+    SymbolHash fAllGlobalElemDecls;
 
     // the XMLGrammarDescription member
     XSDDescription fGrammarDescription = null;
@@ -151,6 +168,18 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         fGlobalNotationDecls = new SymbolHash();
         fGlobalIDConstraintDecls = new SymbolHash();
 
+        // Extended tables
+        fGlobalAttrDeclsExt  = new SymbolHash();
+        fGlobalAttrGrpDeclsExt = new SymbolHash();
+        fGlobalElemDeclsExt = new SymbolHash();
+        fGlobalGroupDeclsExt = new SymbolHash();
+        fGlobalNotationDeclsExt = new SymbolHash();
+        fGlobalIDConstraintDeclsExt = new SymbolHash();
+        fGlobalTypeDeclsExt = new SymbolHash();
+        
+        // All global elements table
+        fAllGlobalElemDecls = new SymbolHash();
+
         // if we are parsing S4S, put built-in types in first
         // they might get overwritten by the types from S4S, but that's
         // considered what the application wants to do.
@@ -160,7 +189,83 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         else {
             fGlobalTypeDecls = new SymbolHash();
         }
-    } // <init>(String, XSDDescription)
+    } // <init>(String, XSDDescription, SymbolTable, short)
+
+ // Clone an existing schema grammar
+    public SchemaGrammar(SchemaGrammar grammar) {
+        fTargetNamespace = grammar.fTargetNamespace;
+        fGrammarDescription = grammar.fGrammarDescription.makeClone();
+        //fGrammarDescription.fContextType |= XSDDescription.CONTEXT_COLLISION; // REVISIT
+        fSymbolTable = grammar.fSymbolTable; // REVISIT
+
+        fGlobalAttrDecls  = grammar.fGlobalAttrDecls.makeClone();
+        fGlobalAttrGrpDecls = grammar.fGlobalAttrGrpDecls.makeClone();
+        fGlobalElemDecls = grammar.fGlobalElemDecls.makeClone();
+        fGlobalGroupDecls = grammar.fGlobalGroupDecls.makeClone();
+        fGlobalNotationDecls = grammar.fGlobalNotationDecls.makeClone();
+        fGlobalIDConstraintDecls = grammar.fGlobalIDConstraintDecls.makeClone();
+        fGlobalTypeDecls = grammar.fGlobalTypeDecls.makeClone();
+    
+        // Extended tables
+        fGlobalAttrDeclsExt  = grammar.fGlobalAttrDeclsExt.makeClone();
+        fGlobalAttrGrpDeclsExt = grammar.fGlobalAttrGrpDeclsExt.makeClone();
+        fGlobalElemDeclsExt = grammar.fGlobalElemDeclsExt.makeClone();
+        fGlobalGroupDeclsExt = grammar.fGlobalGroupDeclsExt.makeClone();
+        fGlobalNotationDeclsExt = grammar.fGlobalNotationDeclsExt.makeClone();
+        fGlobalIDConstraintDeclsExt = grammar.fGlobalIDConstraintDeclsExt.makeClone();
+        fGlobalTypeDeclsExt = grammar.fGlobalTypeDeclsExt.makeClone();
+        
+        // All global elements table
+        fAllGlobalElemDecls = grammar.fAllGlobalElemDecls.makeClone();
+
+        // Annotations associated with the "root" schema of this targetNamespace
+        fNumAnnotations = grammar.fNumAnnotations;
+        if (fNumAnnotations > 0) {
+            fAnnotations = new XSAnnotationImpl[grammar.fAnnotations.length];
+            System.arraycopy(grammar.fAnnotations, 0, fAnnotations, 0, fNumAnnotations);
+        }
+        
+        // All substitution group information declared in this namespace
+        fSubGroupCount = grammar.fSubGroupCount;
+        if (fSubGroupCount > 0) {
+            fSubGroups = new XSElementDecl[grammar.fSubGroups.length];
+            System.arraycopy(grammar.fSubGroups, 0, fSubGroups, 0, fSubGroupCount);
+        }
+
+        // Array to store complex type decls for constraint checking
+        fCTCount = grammar.fCTCount;
+        if (fCTCount > 0) {
+            fComplexTypeDecls = new XSComplexTypeDecl[grammar.fComplexTypeDecls.length];
+            fCTLocators = new SimpleLocator[grammar.fCTLocators.length];
+            System.arraycopy(grammar.fComplexTypeDecls, 0, fComplexTypeDecls, 0, fCTCount);
+            System.arraycopy(grammar.fCTLocators, 0, fCTLocators, 0, fCTCount);
+        }
+        
+        // Groups being redefined by restriction
+        fRGCount = grammar.fRGCount;
+        if (fRGCount > 0) {
+            fRedefinedGroupDecls = new XSGroupDecl[grammar.fRedefinedGroupDecls.length];
+            fRGLocators = new SimpleLocator[grammar.fRGLocators.length];
+            System.arraycopy(grammar.fRedefinedGroupDecls, 0, fRedefinedGroupDecls, 0, fRGCount);
+            System.arraycopy(grammar.fRGLocators, 0, fRGLocators, 0, fRGCount);
+        }
+
+        // List of imported grammars
+        if (grammar.fImported != null) {
+            fImported = new Vector();
+            for (int i=0; i<grammar.fImported.size(); i++) {
+                fImported.add(grammar.fImported.elementAt(i));
+            }
+        }
+
+        // Locations
+        if (grammar.fLocations != null) {
+            for (int k=0; k<grammar.fLocations.size(); k++) {
+                addDocument(null, (String)grammar.fLocations.elementAt(k));
+            }
+        }
+
+    } // <init>(SchemaGrammar)
 
     // number of built-in XSTypes we need to create for base and full
     // datatype set
@@ -210,6 +315,18 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 fGlobalGroupDecls = new SymbolHash(1);
                 fGlobalNotationDecls = new SymbolHash(1);
                 fGlobalIDConstraintDecls = new SymbolHash(1);
+                
+                // no extended global decls
+                fGlobalAttrDeclsExt  = new SymbolHash(1);
+                fGlobalAttrGrpDeclsExt = new SymbolHash(1);
+                fGlobalElemDeclsExt = new SymbolHash(1);
+                fGlobalGroupDeclsExt = new SymbolHash(1);
+                fGlobalNotationDeclsExt = new SymbolHash(1);
+                fGlobalIDConstraintDeclsExt = new SymbolHash(1);
+                fGlobalTypeDeclsExt = new SymbolHash(1);
+
+                // all global element decls table
+                fAllGlobalElemDecls = new SymbolHash(1);
         
                 // get all built-in types
                 fGlobalTypeDecls = schemaFactory.getBuiltInTypes();
@@ -245,6 +362,18 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 fGlobalNotationDecls = new SymbolHash(1);
                 fGlobalIDConstraintDecls = new SymbolHash(1);
                 fGlobalTypeDecls = new SymbolHash(1);
+
+                // no extended global decls 
+                fGlobalAttrDeclsExt  = new SymbolHash(1);
+                fGlobalAttrGrpDeclsExt = new SymbolHash(1);
+                fGlobalElemDeclsExt = new SymbolHash(1);
+                fGlobalGroupDeclsExt = new SymbolHash(1);
+                fGlobalNotationDeclsExt = new SymbolHash(1);
+                fGlobalIDConstraintDeclsExt = new SymbolHash(1);
+                fGlobalTypeDeclsExt = new SymbolHash(1);
+                
+                // no all global element decls
+                fAllGlobalElemDecls = new SymbolHash(1);
     
                 // 4 attributes, so initialize the size as 4*2 = 8
                 fGlobalAttrDecls  = new SymbolHash(8);
@@ -298,25 +427,52 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         public void addGlobalAttributeDecl(XSAttributeDecl decl) {
             // ignore
         }
+        public void addGlobalAttributeDecl(XSAttributeDecl decl, String location) {
+            // ignore
+        }
         public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl, String location) {
             // ignore
         }
         public void addGlobalElementDecl(XSElementDecl decl) {
             // ignore
         }
+        public void addGlobalElementDecl(XSElementDecl decl, String location) {
+            // ignore
+        }
+        public void addGlobalElementDeclAll(XSElementDecl decl) {
+            // ignore
+        }
         public void addGlobalGroupDecl(XSGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalGroupDecl(XSGroupDecl decl, String location) {
             // ignore
         }
         public void addGlobalNotationDecl(XSNotationDecl decl) {
             // ignore
         }
+        public void addGlobalNotationDecl(XSNotationDecl decl, String location) {
+            // ignore
+        }
         public void addGlobalTypeDecl(XSTypeDefinition decl) {
+            // ignore
+        }
+        public void addGlobalTypeDecl(XSTypeDefinition decl, String location) {
             // ignore
         }
         public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl) {
             // ignore
         }
+        public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl, String location) {
+            // ignore
+        }
         public void addGlobalSimpleTypeDecl(XSSimpleType decl) {
+            // ignore
+        }
+        public void addGlobalSimpleTypeDecl(XSSimpleType decl, String location) {
             // ignore
         }
         public void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
@@ -385,6 +541,18 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fGlobalGroupDecls = new SymbolHash(1);
             fGlobalNotationDecls = new SymbolHash(1);
             fGlobalIDConstraintDecls = new SymbolHash(1);
+
+            // no extended global decls
+            fGlobalAttrDeclsExt  = new SymbolHash(1);
+            fGlobalAttrGrpDeclsExt = new SymbolHash(1);
+            fGlobalElemDeclsExt = new SymbolHash(6);
+            fGlobalGroupDeclsExt = new SymbolHash(1);
+            fGlobalNotationDeclsExt = new SymbolHash(1);
+            fGlobalIDConstraintDeclsExt = new SymbolHash(1);
+            fGlobalTypeDeclsExt = new SymbolHash(1);
+            
+            // all global element declarations
+            fAllGlobalElemDecls = new SymbolHash(6);
             
             // get all built-in types
             fGlobalTypeDecls = getS4SGrammar(schemaVersion).fGlobalTypeDecls;
@@ -398,6 +566,14 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fGlobalElemDecls.put(annotationDecl.fName, annotationDecl);
             fGlobalElemDecls.put(documentationDecl.fName, documentationDecl);
             fGlobalElemDecls.put(appinfoDecl.fName, appinfoDecl);
+            
+            fGlobalElemDeclsExt.put(","+annotationDecl.fName, annotationDecl);
+            fGlobalElemDeclsExt.put(","+documentationDecl.fName, documentationDecl);
+            fGlobalElemDeclsExt.put(","+appinfoDecl.fName, appinfoDecl);
+            
+            fAllGlobalElemDecls.put(annotationDecl, annotationDecl);
+            fAllGlobalElemDecls.put(documentationDecl, documentationDecl);
+            fAllGlobalElemDecls.put(appinfoDecl, appinfoDecl);
             
             // create complex type declarations for <annotation>, <documentation> and <appinfo>
             XSComplexTypeDecl annotationType = new XSComplexTypeDecl();
@@ -514,25 +690,52 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         public void addGlobalAttributeDecl(XSAttributeDecl decl) {
             // ignore
         }
+        public void addGlobalAttributeDecl(XSAttributeGroupDecl decl, String location) {
+            // ignore
+        }
         public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl, String location) {
             // ignore
         }
         public void addGlobalElementDecl(XSElementDecl decl) {
             // ignore
         }
+        public void addGlobalElementDecl(XSElementDecl decl, String location) {
+            // ignore
+        }
+        public void addGlobalElementDeclAll(XSElementDecl decl) {
+            // ignore
+        }
         public void addGlobalGroupDecl(XSGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalGroupDecl(XSGroupDecl decl, String location) {
             // ignore
         }
         public void addGlobalNotationDecl(XSNotationDecl decl) {
             // ignore
         }
+        public void addGlobalNotationDecl(XSNotationDecl decl, String location) {
+            // ignore
+        }
         public void addGlobalTypeDecl(XSTypeDefinition decl) {
+            // ignore
+        }
+        public void addGlobalTypeDecl(XSTypeDefinition decl, String location) {
             // ignore
         }
         public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl) {
             // ignore
         }
+        public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl, String location) {
+            // ignore
+        }
         public void addGlobalSimpleTypeDecl(XSSimpleType decl) {
+            // ignore
+        }
+        public void addGlobalSimpleTypeDecl(XSSimpleType decl, String location) {
             // ignore
         }
         public void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
@@ -650,6 +853,13 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         decl.setNamespaceItem(this);
     }
 
+    public void addGlobalAttributeDecl(XSAttributeDecl decl, String location) {
+        fGlobalAttrDeclsExt.put(((location!=null) ? location : "") + "," + decl.fName, decl);
+        if (decl.getNamespaceItem() == null) {
+            decl.setNamespaceItem(this);
+        }
+    }
+
     /**
      * register one global attribute group
      */
@@ -658,19 +868,38 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         decl.setNamespaceItem(this);
     }
 
+    public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl, String location) {
+        fGlobalAttrGrpDeclsExt.put(((location!=null) ? location : "") + "," + decl.fName, decl);
+        if (decl.getNamespaceItem() == null) {
+            decl.setNamespaceItem(this);
+        }
+    }
+
     /**
      * register one global element
      */
+    public void addGlobalElementDeclAll(XSElementDecl decl) {
+        if (fAllGlobalElemDecls.get(decl) == null) {
+            fAllGlobalElemDecls.put(decl, decl);
+            // if there is a substitution group affiliation, store in an array,
+            // for further constraint checking: UPA, PD, EDC
+            if (decl.fSubGroup != null) {
+               if (fSubGroupCount == fSubGroups.length)
+                    fSubGroups = resize(fSubGroups, fSubGroupCount+INC_SIZE);
+                fSubGroups[fSubGroupCount++] = decl;
+            }
+        }
+    }
+
     public void addGlobalElementDecl(XSElementDecl decl) {
         fGlobalElemDecls.put(decl.fName, decl);
         decl.setNamespaceItem(this);
+    }
 
-        // if there is a substitution group affiliation, store in an array,
-        // for further constraint checking: UPA, PD, EDC
-        if (decl.fSubGroup != null) {
-            if (fSubGroupCount == fSubGroups.length)
-                fSubGroups = resize(fSubGroups, fSubGroupCount+INC_SIZE);
-            fSubGroups[fSubGroupCount++] = decl;
+    public void addGlobalElementDecl(XSElementDecl decl, String location) {
+        fGlobalElemDeclsExt.put(((location != null) ? location : "") + "," + decl.fName, decl);
+        if (decl.getNamespaceItem() == null) {
+            decl.setNamespaceItem(this);
         }
     }
 
@@ -682,12 +911,26 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         decl.setNamespaceItem(this);
     }
 
+    public void addGlobalGroupDecl(XSGroupDecl decl, String location) {
+        fGlobalGroupDeclsExt.put(((location!=null) ? location : "") + "," + decl.fName, decl);
+        if (decl.getNamespaceItem() == null) {
+            decl.setNamespaceItem(this);
+        }
+    }
+
     /**
      * register one global notation
      */
     public void addGlobalNotationDecl(XSNotationDecl decl) {
         fGlobalNotationDecls.put(decl.fName, decl);
         decl.setNamespaceItem(this);
+    }
+
+    public void addGlobalNotationDecl(XSNotationDecl decl, String location) {
+        fGlobalNotationDeclsExt.put(((location!=null) ? location : "") + "," +decl.fName, decl);
+        if (decl.getNamespaceItem() == null) {
+            decl.setNamespaceItem(this);
+        }
     }
 
     /**
@@ -702,13 +945,32 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
         }
     }
-    
+
+    public void addGlobalTypeDecl(XSTypeDefinition decl, String location) {
+        fGlobalTypeDeclsExt.put(((location!=null) ? location : "") + "," + decl.getName(), decl);
+        if (decl.getNamespaceItem() == null) {
+            if (decl instanceof XSComplexTypeDecl) {
+                ((XSComplexTypeDecl) decl).setNamespaceItem(this);
+            }
+            else if (decl instanceof XSSimpleTypeDecl) {
+                ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
+            }
+        }
+    }
+
     /**
      * register one global complex type
      */
     public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl) {
         fGlobalTypeDecls.put(decl.getName(), decl);
         decl.setNamespaceItem(this);
+    }
+
+    public void addGlobalComplexTypeDecl(XSComplexTypeDecl decl, String location) {
+        fGlobalTypeDeclsExt.put(((location!=null) ? location : "") + "," + decl.getName(), decl);
+        if (decl.getNamespaceItem() == null) {
+            decl.setNamespaceItem(this);
+        }
     }
     
     /**
@@ -721,12 +983,23 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
     }
 
+    public void addGlobalSimpleTypeDecl(XSSimpleType decl, String location) {
+        fGlobalTypeDeclsExt.put(((location != null) ? location : "") + "," + decl.getName(), decl);
+        if (decl.getNamespaceItem() == null && decl instanceof XSSimpleTypeDecl) {
+            ((XSSimpleTypeDecl) decl).setNamespaceItem(this);
+        }
+    }
+
     /**
      * register one identity constraint
      */
     public final void addIDConstraintDecl(XSElementDecl elmDecl, IdentityConstraint decl) {
         elmDecl.addIDConstraint(decl);
         fGlobalIDConstraintDecls.put(decl.getIdentityConstraintName(), decl);
+    }
+
+    public final void addIDConstraintDecl(XSElementDecl elmDecl, IdentityConstraint decl, String location) {
+        fGlobalIDConstraintDeclsExt.put(((location != null) ? location : "") + "," + decl.getIdentityConstraintName(), decl);
     }
 
     /**
@@ -743,11 +1016,19 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         return(XSAttributeDecl)fGlobalAttrDecls.get(declName);
     }
 
+    public final XSAttributeDecl getGlobalAttributeDecl(String declName, String location) {
+        return(XSAttributeDecl)fGlobalAttrDeclsExt.get(((location != null) ? location : "") + "," + declName);
+    }
+
     /**
      * get one global attribute group
      */
     public final XSAttributeGroupDecl getGlobalAttributeGroupDecl(String declName) {
         return(XSAttributeGroupDecl)fGlobalAttrGrpDecls.get(declName);
+    }
+
+    public final XSAttributeGroupDecl getGlobalAttributeGroupDecl(String declName, String location) {
+        return(XSAttributeGroupDecl)fGlobalAttrGrpDeclsExt.get(((location != null) ? location : "") + "," + declName);
     }
 
     /**
@@ -757,11 +1038,19 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         return(XSElementDecl)fGlobalElemDecls.get(declName);
     }
 
+    public final XSElementDecl getGlobalElementDecl(String declName, String location) {
+        return(XSElementDecl)fGlobalElemDeclsExt.get(((location != null) ? location : "") + "," + declName);
+    }
+    
     /**
      * get one global group
      */
     public final XSGroupDecl getGlobalGroupDecl(String declName) {
         return(XSGroupDecl)fGlobalGroupDecls.get(declName);
+    }
+
+    public final XSGroupDecl getGlobalGroupDecl(String declName, String location) {
+        return(XSGroupDecl)fGlobalGroupDeclsExt.get(((location != null) ? location : "") + "," + declName);
     }
 
     /**
@@ -771,6 +1060,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         return(XSNotationDecl)fGlobalNotationDecls.get(declName);
     }
 
+    public final XSNotationDecl getGlobalNotationDecl(String declName, String location) {
+        return(XSNotationDecl)fGlobalNotationDeclsExt.get(((location != null) ? location : "") + "," + declName);
+    }
+
     /**
      * get one global type
      */
@@ -778,11 +1071,19 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         return(XSTypeDefinition)fGlobalTypeDecls.get(declName);
     }
 
+    public final XSTypeDefinition getGlobalTypeDecl(String declName, String location) {
+        return(XSTypeDefinition)fGlobalTypeDeclsExt.get(((location != null) ? location : "") + "," + declName);
+    }
+
     /**
      * get one identity constraint
      */
     public final IdentityConstraint getIDConstraintDecl(String declName) {
         return(IdentityConstraint)fGlobalIDConstraintDecls.get(declName);
+    }
+
+    public final IdentityConstraint getIDConstraintDecl(String declName, String location) {
+        return(IdentityConstraint)fGlobalIDConstraintDeclsExt.get(((location != null) ? location : "") + "," + declName);
     }
 
     /**
@@ -1130,6 +1431,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                                                  
     // store a certain kind of components from all namespaces
     private XSNamedMap[] fComponents = null;
+    private ObjectList[] fComponentsExt = null;
 
     // store the documents and their locations contributing to this namespace
     // REVISIT: use StringList and XSObjectList for there fields.
@@ -1269,6 +1571,53 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
         
         return fComponents[objectType];
+    }
+
+    public synchronized ObjectList getComponentsExt(short objectType) {
+        if (objectType <= 0 || objectType > MAX_COMP_IDX ||
+            !GLOBAL_COMP[objectType]) {
+            return ObjectListImpl.EMPTY_LIST;
+        }
+        
+        if (fComponentsExt == null)
+            fComponentsExt = new ObjectList[MAX_COMP_IDX+1];
+
+        // get the hashtable for this type of components
+        if (fComponentsExt[objectType] == null) {
+            SymbolHash table = null;
+            switch (objectType) {
+            case XSConstants.TYPE_DEFINITION:
+            case XSTypeDefinition.COMPLEX_TYPE:
+            case XSTypeDefinition.SIMPLE_TYPE:
+                table = fGlobalTypeDeclsExt;
+                break;
+            case XSConstants.ATTRIBUTE_DECLARATION:
+                table = fGlobalAttrDeclsExt;
+                break;
+            case XSConstants.ELEMENT_DECLARATION:
+                table = fGlobalElemDeclsExt;
+                break;
+            case XSConstants.ATTRIBUTE_GROUP:
+                table = fGlobalAttrGrpDeclsExt;
+                break;
+            case XSConstants.MODEL_GROUP_DEFINITION:
+                table = fGlobalGroupDeclsExt;
+                break;
+            case XSConstants.NOTATION_DECLARATION:
+                table = fGlobalNotationDeclsExt;
+                break;
+            }
+
+            Object[] entries = table.getEntries();
+            fComponentsExt[objectType] = new ObjectListImpl(entries, entries.length);
+        }
+
+        return fComponentsExt[objectType];
+    }
+
+    public synchronized void resetComponents() {
+        fComponents = null;
+        fComponentsExt = null;
     }
 
     /**

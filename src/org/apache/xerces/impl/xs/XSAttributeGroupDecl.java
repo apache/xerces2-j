@@ -69,24 +69,34 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
     // otherwise, return null
     public String addAttributeUse(XSAttributeUseImpl attrUse) {
 
+        // if this attribute use is prohibited, then don't check whether it's
+        // of type ID
+        if (attrUse.fUse != SchemaSymbols.USE_PROHIBITED) {
+            if (attrUse.fAttrDecl.fType.isIDType()) {
+                // if there is already an attribute use of type ID,
+                // return its name (and don't add it to the list, to avoid
+                // interruption to instance validation.
+                if (fIDAttrName == null)
+                    fIDAttrName = attrUse.fAttrDecl.fName;
+                else
+                    return fIDAttrName;
+            }
+        }
+
         if (fAttrUseNum == fAttributeUses.length) {
             fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
         }
         fAttributeUses[fAttrUseNum++] = attrUse;
-        // if this attribute use is prohibited, then don't check whether it's
-        // of type ID
-        if (attrUse.fUse == SchemaSymbols.USE_PROHIBITED)
-            return null;
-
-        if (attrUse.fAttrDecl.fType.isIDType()) {
-            // if there is already an attribute use of type ID, return it' sname
-            if (fIDAttrName == null)
-                fIDAttrName = attrUse.fAttrDecl.fName;
-            else
-                return fIDAttrName;
-        }
 
         return null;
+    }
+
+    public void replaceAttributeUse(XSAttributeUse oldUse, XSAttributeUseImpl newUse) {
+        for (int i=0; i<fAttrUseNum; i++) {
+            if (fAttributeUses[i] == oldUse) {
+                fAttributeUses[i] = newUse;
+            }
+        }
     }
 
     public XSAttributeUse getAttributeUse(String namespace, String name) {
@@ -99,36 +109,50 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         return null;
     }
 
-    public void removeProhibitedAttrs() {
-        if (fAttrUseNum == 0) return;
-        int pCount = 0;
-        XSAttributeUseImpl[] pUses = new XSAttributeUseImpl[fAttrUseNum];
-        for (int i = 0; i < fAttrUseNum; i++) {
-            if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED) {
-                pCount++;
-                // we use the entries at the end, so that we can use the
-                // first entries to store non-prohibited attribute uses,
-                // hence avoid creating a new array.
-                pUses[fAttrUseNum-pCount] = fAttributeUses[i];
-            }
+    public XSAttributeUse getAttributeUseNoProhibited(String namespace, String name) {
+        for (int i=0; i<fAttrUseNum; i++) {
+            if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == namespace) &&
+                 (fAttributeUses[i].fAttrDecl.fName == name) &&
+                 (fAttributeUses[i].fUse != SchemaSymbols.USE_PROHIBITED))
+                return fAttributeUses[i];
         }
 
-        int newCount = 0;
-        if (pCount > 0) {
-            OUTER: for (int i = 0; i < fAttrUseNum; i++) {
-                if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED)
-                    continue;
-                for (int j = 1; j <= pCount; j++) {
-                    if (fAttributeUses[i].fAttrDecl.fName == pUses[fAttrUseNum-pCount].fAttrDecl.fName &&
-                        fAttributeUses[i].fAttrDecl.fTargetNamespace == pUses[fAttrUseNum-pCount].fAttrDecl.fTargetNamespace) {
-                        continue OUTER;
-                    }
-                }
-                pUses[newCount++] = fAttributeUses[i];
+        return null;
+    }
+
+    public void removeProhibitedAttrs() {
+        if (fAttrUseNum == 0) return;
+        // Remove all prohibited attributes.
+        int count = 0;
+        XSAttributeUseImpl[] uses = new XSAttributeUseImpl[fAttrUseNum];
+        for (int i = 0; i < fAttrUseNum; i++) {
+            if (fAttributeUses[i].fUse != SchemaSymbols.USE_PROHIBITED) {
+                uses[count++] = fAttributeUses[i];
             }
-            fAttributeUses = pUses;
-            fAttrUseNum = newCount;
         }
+        fAttributeUses = uses;
+        fAttrUseNum = count;
+
+        // Do not remove attributes that have the same name as the prohibited
+        // ones, because they are specified at the same level. Prohibited
+        // attributes are only to remove attributes from the base type in a
+        // restriction.
+//        int newCount = 0;
+//        if (pCount > 0) {
+//            OUTER: for (int i = 0; i < fAttrUseNum; i++) {
+//                if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED)
+//                    continue;
+//                for (int j = 1; j <= pCount; j++) {
+//                    if (fAttributeUses[i].fAttrDecl.fName == pUses[fAttrUseNum-pCount].fAttrDecl.fName &&
+//                        fAttributeUses[i].fAttrDecl.fTargetNamespace == pUses[fAttrUseNum-pCount].fAttrDecl.fTargetNamespace) {
+//                        continue OUTER;
+//                    }
+//                }
+//                pUses[newCount++] = fAttributeUses[i];
+//            }
+//            fAttributeUses = pUses;
+//            fAttrUseNum = newCount;
+//        }
     }
 
     /**

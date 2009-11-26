@@ -129,6 +129,12 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String WARN_ON_DUPLICATE_ATTDEF =
         Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
     
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+    
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;    
     // property identifiers
 
     /** Property identifier: entity manager. */
@@ -189,6 +195,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     /** Property identifier: no namespace schema location. */
     protected static final String SCHEMA_NONS_LOCATION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
+    
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
     
     //
     // Data
@@ -300,7 +310,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             DISALLOW_DOCTYPE_DECL_FEATURE,
             BALANCE_SYNTAX_TREES,
             WARN_ON_DUPLICATE_ATTDEF,
-            PARSER_SETTINGS
+            PARSER_SETTINGS,
+            NAMESPACE_GROWTH,
+            TOLERATE_DUPLICATES
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -321,6 +333,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setFeature(BALANCE_SYNTAX_TREES, false);
         setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
         setFeature(PARSER_SETTINGS, true);
+        setFeature(NAMESPACE_GROWTH, false);
+        setFeature(TOLERATE_DUPLICATES, false);
 
         // add default recognized properties
         final String[] recognizedProperties = {
@@ -338,7 +352,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             SCHEMA_LOCATION,
             SCHEMA_NONS_LOCATION,
             DTD_VALIDATOR_PROPERTY,
-            DTD_VALIDATOR_FACTORY_PROPERTY
+            DTD_VALIDATOR_FACTORY_PROPERTY,
+            SCHEMA_DV_FACTORY
         };
         addRecognizedProperties(recognizedProperties);
 

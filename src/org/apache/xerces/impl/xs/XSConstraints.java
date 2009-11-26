@@ -30,6 +30,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
@@ -54,6 +55,23 @@ public abstract class XSConstraints {
     static final int OCCURRENCE_UNKNOWN = SchemaSymbols.OCCURRENCE_UNBOUNDED-1;
     // TODO: using 1.0 xs:string
     static final XSSimpleType STRING_TYPE = (XSSimpleType)SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_0).getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+
+    private static XSParticleDecl fEmptyParticle = null;
+    public static XSParticleDecl getEmptySequence() {
+        if (fEmptyParticle == null) {
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+            group.fParticleCount = 0;
+            group.fParticles = null;
+            group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+            XSParticleDecl particle = new XSParticleDecl();
+            particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            particle.fValue = group;
+            particle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
+            fEmptyParticle = particle;
+       }
+        return fEmptyParticle;
+    }
 
     static final XSConstraints XS_1_0_CONSTRAINTS = new XS10Constraints(Constants.SCHEMA_VERSION_1_0);
     static final XSConstraints XS_1_0_CONSTRAINTS_EXTENDED = new XS10Constraints(Constants.SCHEMA_VERSION_1_0_EXTENDED);
