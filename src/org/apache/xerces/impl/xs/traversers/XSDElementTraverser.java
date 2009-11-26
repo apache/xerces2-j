@@ -458,7 +458,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                         fSchemaHandler.checkForDuplicateNames(
                                 (schemaDoc.fTargetNamespace == null) ? ","+DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME)
                                         : schemaDoc.fTargetNamespace+","+ DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME),
-                                        fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
+                                        fSchemaHandler.ATTRIBUTE_TYPE, fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
                                         child, schemaDoc);
                     }
                 } else if (childName.equals(SchemaSymbols.ELT_KEYREF)) {
@@ -470,10 +470,6 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 }
             }
         }
-        
-        // Step 2: register the element decl to the grammar
-        if (isGlobal && nameAtt != null)
-            grammar.addGlobalElementDecl(element);
         
         // Step 3: check against schema for schemas
         
@@ -488,7 +484,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // element
         if (child != null) {
-            reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, alternative*, (unique | key | keyref)*))", DOMUtil.getLocalName(child)}, child);
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, alternative*, (unique | key | keyref)*))", DOMUtil.getLocalName(child)}, child);
+            }
+            else {
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))", DOMUtil.getLocalName(child)}, child);
+            }
         }
         
         // Step 4: check 3.3.3 constraints
@@ -543,6 +544,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (fSchemaHandler.fXSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault) == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue}, elmDecl);
+                element.fDefault = null;
                 element.setConstraintType(XSConstants.VC_NONE);
             }
         }
@@ -552,6 +554,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             for (int i=0; i< element.fSubGroup.length; i++) {
                 if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup[i].fType, element.fSubGroup[i].fFinal)) {
                     reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, ((QName)subGroupAtt.get(i)).prefix +":"+((QName)subGroupAtt.get(i)).localpart}, elmDecl);
+//TODO: remove the subGroup from the list?????
                 }
             }
         }
@@ -565,12 +568,39 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                     (elementType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
                             ((XSComplexTypeDecl)elementType).containsTypeID())) {
                 reportSchemaError ("e-props-correct.5", new Object[]{element.fName}, elmDecl);
+                element.fDefault = null;
+                element.setConstraintType(XSConstants.VC_NONE);
             }
         }
         
         // Element without a name. Return null.
         if (element.fName == null)
             return null;
+        
+        // Step 5: register the element decl to the grammar
+        if (isGlobal) {
+            grammar.addGlobalElementDeclAll(element);
+            
+            if (grammar.getGlobalElementDecl(element.fName) == null) {
+                grammar.addGlobalElementDecl(element);
+            }
+            
+            // we also add the element to the tolerate duplicates list as well
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSElementDecl element2 = grammar.getGlobalElementDecl(element.fName, loc);
+            if (element2 == null) {
+                grammar.addGlobalElementDecl(element, loc);
+            }
+
+            // if we are tolerating duplicates, and we found a duplicate declaration
+            // use the duplicate one instead
+            if (fSchemaHandler.fTolerateDuplicates) {
+                if (element2 != null) {
+                    element = element2;
+                }
+                fSchemaHandler.addGlobalElementDecl(element);
+            }
+        }
         
         return element;
     }

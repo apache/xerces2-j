@@ -18,7 +18,6 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
-import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
@@ -29,6 +28,7 @@ import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
@@ -68,12 +68,39 @@ import org.w3c.dom.Element;
  */
 
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
-
-    private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
-    private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
     
     // size of stack to hold globals:
     private final static int GLOBAL_NUM = 13;
+    
+    private static XSParticleDecl fErrorContent = null;
+    private static XSWildcardDecl fErrorWildcard = null;
+    private static XSParticleDecl getErrorContent() {
+        if (fErrorContent == null) {
+            XSParticleDecl particle = new XSParticleDecl();
+            particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
+            particle.fValue = getErrorWildcard();
+            particle.fMinOccurs = 0;
+            particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+            group.fParticleCount = 1;
+            group.fParticles = new XSParticleDecl[1];
+            group.fParticles[0] = particle;
+            XSParticleDecl errorContent = new XSParticleDecl();
+            errorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            errorContent.fValue = group;
+            fErrorContent = errorContent;
+        }
+        return fErrorContent;
+    }
+    private static XSWildcardDecl getErrorWildcard() {
+        if (fErrorWildcard == null) {
+            XSWildcardDecl wildcard = new XSWildcardDecl();
+            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
+            fErrorWildcard = wildcard;
+        }
+        return fErrorWildcard;
+    }
     
     // globals for building XSComplexTypeDecls
     private String fName = null;
@@ -92,8 +119,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private XSOpenContentDecl fOpenContent = null;
     private XSAssertImpl[] fAssertions = null;
     
-    private XSParticleDecl fEmptyParticle = null;
-    
     // our own little stack to retain state when getGlobalDecls is called:
     private Object [] fGlobalStore = null;
     private int fGlobalStorePos = 0;
@@ -101,21 +126,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     XSDComplexTypeTraverser (XSDHandler handler,
             XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
-        if (handler.fSchemaVersion == Constants.SCHEMA_VERSION_1_0) {
-            schemaFactory = SchemaDVFactory.getInstance();
-        }
-        else if (handler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            schemaFactory = SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
-        }
-        else {
-            schemaFactory =  SchemaDVFactory.getInstance(EXTENDED_SCHEMA_FACTORY_CLASS);
-        }
     }
     
     
     private static final boolean DEBUG=false;
-    
-    private SchemaDVFactory schemaFactory;
     
     private static final class ComplexTypeRecoverableError extends Exception {
         
@@ -181,13 +195,35 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                 complexTypeName, attrValues, schemaDoc, grammar);
         contentRestore();
-        if (complexTypeName == null) {
-            reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_COMPLEXTYPE, SchemaSymbols.ATT_NAME}, complexTypeNode);
-        } else {
-            grammar.addGlobalComplexTypeDecl(type);
-        }
         // need to add the type to the grammar for later constraint checking
         grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
+
+        if (complexTypeName == null) {
+            reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_COMPLEXTYPE, SchemaSymbols.ATT_NAME}, complexTypeNode);
+            type = null;
+        } else {
+            if (grammar.getGlobalTypeDecl(type.getName()) == null) {
+                grammar.addGlobalComplexTypeDecl(type);
+            }
+            
+            // also add it to extended map
+            final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+            final XSTypeDefinition type2 = grammar.getGlobalTypeDecl(type.getName(), loc); 
+            if (type2 == null) {
+                grammar.addGlobalComplexTypeDecl(type, loc);
+            }
+
+            // handle duplicates
+            if (fSchemaHandler.fTolerateDuplicates) {
+                if (type2 != null) {
+                    if (type2 instanceof XSComplexTypeDecl) {
+                        type = (XSComplexTypeDecl) type2;
+                    }
+                }
+                fSchemaHandler.addGlobalTypeDecl(type);
+            }
+        }
+
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
         return type;
@@ -672,16 +708,17 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             
             String name = genAnonTypeName(simpleContentElement);
-            fXSSimpleType = schemaFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
-            if (fXSSimpleType instanceof XSSimpleTypeDecl) {
-                ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
-            }
-            try {
+            fXSSimpleType = fSchemaHandler.fDVFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
+            try{
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
-            }
-            catch(InvalidDatatypeFacetException ex){
+            }catch(InvalidDatatypeFacetException ex){
                 reportSchemaError(ex.getKey(), ex.getArgs(), simpleContent);
+                // Recreate the type, ignoring the facets
+                fXSSimpleType = fSchemaHandler.fDVFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
+            }
+            if (fXSSimpleType instanceof XSSimpleTypeDecl) {
+                ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
             }
             
             // -----------------------------------------------------------------------
@@ -800,7 +837,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             boolean mixedOnType, XSDocumentInfo schemaDoc,
             SchemaGrammar grammar)
     throws ComplexTypeRecoverableError {
-
+        
         Object[] complexContentAttrValues = fAttrChecker.checkAttributes(complexContentElement, false,
                 schemaDoc);
 
@@ -1163,18 +1200,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //   {max occurs} 1
                 //   {term}       a model group whose {compositor} is sequence and whose {particles} is empty.
                 else if (fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
-                    if (fEmptyParticle == null) {
-                        XSModelGroupImpl group = new XSModelGroupImpl();
-                        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-                        group.fParticleCount = 0;
-                        group.fParticles = null;
-                        group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-                        fEmptyParticle = new XSParticleDecl();
-                        fEmptyParticle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-                        fEmptyParticle.fValue = group;
-                        fEmptyParticle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-                    }
-                    fParticle = fEmptyParticle;
+                    fParticle = XSConstraints.getEmptySequence();
                     fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
                 }
             }
@@ -1257,11 +1283,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                             elem);
                 }
             }
-            else {
+            else if (existingAttrUse != oneAttrUse) {
                 if (extension) {
-                    throw new ComplexTypeRecoverableError("ct-props-correct.4",
+                    reportSchemaError("ct-props-correct.4",
                             new Object[]{typeName, oneAttrUse.fAttrDecl.getName()},
                             elem);
+                    // Recover by using the attribute use from the base type,
+                    // to make the resulting schema "more valid".
+                    toAttrGrp.replaceAttributeUse(existingAttrUse, oneAttrUse);
                 }
             }
         }
@@ -1457,18 +1486,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // 6.3 Particle of Content type - based on wildcard element
         //    
         if (particle == null && (isMixed || (!isDerivation && fOpenContent != null))) {
-            if (fEmptyParticle == null) {
-                XSModelGroupImpl group = new XSModelGroupImpl();
-                group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-                group.fParticleCount = 0;
-                group.fParticles = null;
-                group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-                fEmptyParticle = new XSParticleDecl();
-                fEmptyParticle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-                fEmptyParticle.fValue = group;
-                fEmptyParticle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
-            }
-            particle = fEmptyParticle;
+            particle = XSConstraints.getEmptySequence();
         }
         fParticle = particle;
 
@@ -1659,6 +1677,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         //
         fBaseType = SchemaGrammar.getXSAnyType(fSchemaHandler.fSchemaVersion);
         fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+        fXSSimpleType = null;
         fParticle = getErrorContent();
         // REVISIT: do we need to remove all attribute uses already added into
         // the attribute group? maybe it's ok to leave them there. -SG
@@ -1666,30 +1685,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         
         return;
         
-    }
-    
-    private XSParticleDecl getErrorContent() {
-        XSParticleDecl particle = new XSParticleDecl();
-        particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
-        particle.fValue = getErrorWildcard();
-        particle.fMinOccurs = 0;
-        particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-        XSModelGroupImpl group = new XSModelGroupImpl();
-        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-        group.fParticleCount = 1;
-        group.fParticles = new XSParticleDecl[1];
-        group.fParticles[0] = particle;
-        XSParticleDecl errorContent = new XSParticleDecl();
-        errorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-        errorContent.fValue = group;
-        
-        return errorContent;
-    }
-    
-    private XSWildcardDecl getErrorWildcard() {
-        XSWildcardDecl errorWildcard = new XSWildcardDecl();
-        errorWildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
-        return errorWildcard;
     }
     
     private void contentBackup() {

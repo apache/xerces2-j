@@ -43,6 +43,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -128,12 +129,13 @@ abstract class XSDAbstractTraverser {
                         (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
                     reportSchemaError("src-annotation", new Object[]{name}, child);
                 }
-                
-                // General Attribute Checking
-                // There is no difference between global or local appinfo/documentation,
-                // so we assume it's always global.
-                attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc);
-                fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                else {
+                    // General Attribute Checking
+                    // There is no difference between global or local appinfo/documentation,
+                    // so we assume it's always global.
+                    attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc);
+                    fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+                }
                 
                 child = DOMUtil.getNextSiblingElement(child);
             }
@@ -366,13 +368,22 @@ abstract class XSDAbstractTraverser {
                         baseValidator.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
                     // need to use the namespace context returned from checkAttributes
                     schemaDoc.fValidationContext.setNamespaceSupport(nsDecls);
+                    Object notation = null;
                     try{
                         QName temp = (QName)fQNameDV.validate(enumVal, schemaDoc.fValidationContext, null);
                         // try to get the notation decl. if failed, getGlobalDecl
                         // reports an error, so we don't need to report one again.
-                        fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp, content);
+                        notation = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp, content);
                     }catch(InvalidDatatypeValueException ex){
                         reportSchemaError(ex.getKey(), ex.getArgs(), content);
+                    }
+                    if (notation == null) {
+                        // Either the QName value is invalid, or it doens't
+                        // resolve to a notation declaration.
+                        // Ignore this facet, to avoid instance validation problems
+                        fAttrChecker.returnAttrArray (attrs, schemaDoc);
+                        content = DOMUtil.getNextSiblingElement(content);
+                        continue;
                     }
                     // restore to the normal namespace context
                     schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
@@ -735,6 +746,7 @@ abstract class XSDAbstractTraverser {
         Element child=null;
         XSAttributeGroupDecl tempAttrGrp = null;
         XSAttributeUseImpl tempAttrUse = null;
+        XSAttributeUse otherUse = null;
         String childName;
         
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
@@ -744,9 +756,15 @@ abstract class XSDAbstractTraverser {
                         schemaDoc,
                         grammar,
                         enclosingCT);
-                if (tempAttrUse == null) break;
-                if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.getNamespace(),
-                        tempAttrUse.fAttrDecl.getName())==null) {
+                if (tempAttrUse == null) continue;
+                if (tempAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                    attrGrp.addAttributeUse(tempAttrUse);
+                    continue;
+                }
+                otherUse = attrGrp.getAttributeUseNoProhibited(
+                        tempAttrUse.fAttrDecl.getNamespace(),
+                        tempAttrUse.fAttrDecl.getName());
+                if (otherUse==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     // Only applies to XML Schema 1.0
                     if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
@@ -755,8 +773,7 @@ abstract class XSDAbstractTraverser {
                         reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName(), idName}, child);
                     }
                 }
-                else {
-                    // REVISIT: what if one of the attribute uses is "prohibited"
+                else if (otherUse != tempAttrUse) {
                     String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
                     String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                     reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName()}, child);
@@ -766,14 +783,20 @@ abstract class XSDAbstractTraverser {
                 //REVISIT: do we need to save some state at this point??
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
                         child, schemaDoc, grammar);
-                if(tempAttrGrp == null ) break;
+                if(tempAttrGrp == null ) continue;
                 XSObjectList attrUseS = tempAttrGrp.getAttributeUses();
-                XSAttributeUseImpl existingAttrUse = null, oneAttrUse;
+                XSAttributeUseImpl oneAttrUse;
                 int attrCount = attrUseS.getLength();
                 for (int i=0; i<attrCount; i++) {
                     oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
-                    if (existingAttrUse == attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
-                            oneAttrUse.fAttrDecl.getName())) {
+                    if (oneAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                        attrGrp.addAttributeUse(oneAttrUse);
+                        continue;
+                    }
+                    otherUse = attrGrp.getAttributeUseNoProhibited(
+                            oneAttrUse.fAttrDecl.getNamespace(),
+                            oneAttrUse.fAttrDecl.getName());
+                    if (otherUse==null) {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
                         // Only applies to XML Schema 1.0
                         if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
@@ -782,8 +805,7 @@ abstract class XSDAbstractTraverser {
                             reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName(), idName}, child);
                         }
                     }
-                    else {
-                        // REVISIT: what if one of the attribute uses is "prohibited"
+                    else if (oneAttrUse != otherUse) {
                         String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
                         String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                         reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName()}, child);
@@ -898,7 +920,7 @@ abstract class XSDAbstractTraverser {
         // reference a <group> whose model group is an all model group,
         // minOccurs and maxOccurs must be one.
         if (processingAllEl) {
-        	// XML Schema 1.1 - maxOccurs can have a value > 1
+            // XML Schema 1.1 - maxOccurs can have a value > 1
             if (max != 1 && fSchemaHandler.fSchemaVersion != Constants.SCHEMA_VERSION_1_1) {
                 reportSchemaError("cos-all-limited.2", new Object[]{new Integer(max),
                         ((XSElementDecl)particle.fValue).getName()}, parent);

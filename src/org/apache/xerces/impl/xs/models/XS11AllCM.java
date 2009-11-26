@@ -20,7 +20,6 @@ package org.apache.xerces.impl.xs.models;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -151,12 +150,12 @@ public class XS11AllCM implements XSCMValidator {
     private boolean allowExpandedName(XSWildcardDecl wildcard,
                                       QName curElem,
                                       SubstitutionGroupHandler subGroupHandler,
-                                      SchemaGrammar grammar) {
+                                      XCMValidatorHelper xcmHelper) {
         if (wildcard.allowQName(curElem)) {
             if (wildcard.fDisallowedSibling && findMatchingElemDecl(curElem, subGroupHandler) != null) {
                 return false;
             }
-            if (wildcard.fDisallowedDefined && grammar.getElementDeclaration(curElem.localpart) != null) {
+            if (wildcard.fDisallowedDefined && xcmHelper.getGlobalElementDecl(curElem) != null) {
                 return false;
             }
             return true;
@@ -171,7 +170,8 @@ public class XS11AllCM implements XSCMValidator {
      * @param currentState  Current state
      * @return an element decl object
      */
-    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar) {
+    public Object oneTransition (QName elementName, int[] currentState,
+            SubstitutionGroupHandler subGroupHandler, XCMValidatorHelper xcmHelper) {
         // error state
         if (currentState[0] < 0) {
             currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
@@ -180,7 +180,7 @@ public class XS11AllCM implements XSCMValidator {
 
         // open content - suffix mode
         if (currentState[0] == STATE_SUFFIX) {
-            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, grammar)) {
+            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, xcmHelper)) {
                 return fOpenContent;
             }
             else { // error
@@ -210,7 +210,7 @@ public class XS11AllCM implements XSCMValidator {
             if (currentState[i + 1] == fDeclsOccurs[declMaxOccurs]) {
                 continue;
             }
-            if (allowExpandedName((XSWildcardDecl)fAllDecls[i], elementName, subGroupHandler, grammar)) {
+            if (allowExpandedName((XSWildcardDecl)fAllDecls[i], elementName, subGroupHandler, xcmHelper)) {
                 // found the decl, mark this element as "seen".
                 ++currentState[i + 1];
                 return fAllDecls[i];
@@ -228,7 +228,7 @@ public class XS11AllCM implements XSCMValidator {
                     return findMatchingDecl(elementName, subGroupHandler);
                 }
             }
-            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, grammar)) {
+            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, xcmHelper)) {
             //if (fOpenContent.fWildcard.allowQName(elementName)) {
                 return fOpenContent;
             }

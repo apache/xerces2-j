@@ -76,7 +76,6 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // get global decl
         attrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, refAttr, elmNode);
         
-        
         // no children are allowed here except annotation, which is optional.
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null) {
@@ -116,7 +115,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // global declaration must have a name
         if (nameAttr == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (global)", "name"}, elmNode);
-            nameAttr = "no name";
+            nameAttr = NO_NAME;
         }
         
         attrGrp.fName = nameAttr;
@@ -147,6 +146,12 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-elt-must-match.1", args, nextNode);
         } 
         
+        if (nameAttr.equals(NO_NAME)) {
+            // if a global group doesn't have a name, then don't add it.
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+            return null;
+        }
+
         // Remove prohibited attributes from the set
         attrGrp.removeProhibitedAttrs();
         
@@ -174,7 +179,24 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         attrGrp.fAnnotations = annotations;
         
         // make an entry in global declarations.
-        grammar.addGlobalAttributeGroupDecl(attrGrp);
+        if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName) == null) {
+            grammar.addGlobalAttributeGroupDecl(attrGrp);
+        }
+
+        // also add it to extended map
+        final String loc = fSchemaHandler.schemaDocument2SystemId(schemaDoc);
+        final XSAttributeGroupDecl attrGrp2 = grammar.getGlobalAttributeGroupDecl(attrGrp.fName, loc);
+        if (attrGrp2 == null) {
+            grammar.addGlobalAttributeGroupDecl(attrGrp, loc);
+        }
+
+        // handle duplicates
+        if (fSchemaHandler.fTolerateDuplicates) {
+            if (attrGrp2 != null) {
+                attrGrp = attrGrp2;
+            }
+            fSchemaHandler.addGlobalAttributeGroupDecl(attrGrp);
+        }
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         return attrGrp;

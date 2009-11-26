@@ -23,7 +23,6 @@ import java.util.Vector;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
-import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
@@ -269,7 +268,7 @@ public class XSDFACM
      *
      * @exception RuntimeException thrown on error
      */
-    public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar) {
+    public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, XCMValidatorHelper xcmHelper) {
         int curState = state[0];
 
         if(curState == XSCMValidator.FIRST_ERROR || curState == XSCMValidator.SUBSEQUENT_ERROR) {
@@ -283,7 +282,7 @@ public class XSDFACM
         }
         // apply open content - suffix mode 
         else if (state[3] == STATE_SUFFIX) {
-            if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, grammar)) {//if (fOpenContent.fWildcard.allowQName(curElem)) {
+            if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, xcmHelper)) {//if (fOpenContent.fWildcard.allowQName(curElem)) {
                 return fOpenContent;
             }
 
@@ -317,7 +316,7 @@ public class XSDFACM
                     }
                 }
                 // XML Schema 1.1
-                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, grammar)) {
+                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, xcmHelper)) {
                     matchingDecl = fElemMap[elemIndex];
                     // Element has precedence over a wildcard
                     // if no occurences or we reached minOccurs, keep looking for
@@ -356,7 +355,7 @@ public class XSDFACM
         if (matchingDecl == null) {
             // XML Schema 1.1
             // Validate against Open Content
-            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, grammar)) {
+            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, xcmHelper)) {
                 return fOpenContent;
             }
 
@@ -395,7 +394,7 @@ public class XSDFACM
                         // we've already seen enough instances of the first "foo" perhaps there is
                         // another element declaration or wildcard deeper in the element map which
                         // matches.
-                        return findMatchingDecl(curElem, state, subGroupHandler, elemIndex, grammar);
+                        return findMatchingDecl(curElem, state, subGroupHandler, elemIndex, xcmHelper);
                     }  
                 }
                 else if (state[2] < o.minOccurs) {
@@ -450,7 +449,7 @@ public class XSDFACM
         return null;
     } // findMatchingDecl(QName, SubstitutionGroupHandler): Object
     
-    Object findMatchingDecl(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int elemIndex, SchemaGrammar grammar) {    
+    Object findMatchingDecl(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int elemIndex, XCMValidatorHelper xcmHelper) {    
         
         int curState = state[0];
         int nextState = 0;
@@ -477,7 +476,7 @@ public class XSDFACM
                     }
                 }
                 // XML Schema 1.1
-                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, grammar)) {
+                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, xcmHelper)) {
                     matchingDecl = fElemMap[elemIndex];
                     // Element has precedence over a wildcard
                     // if no occurences or we reached minOccurs, keep looking for
@@ -514,7 +513,7 @@ public class XSDFACM
         if (matchingDecl == null) {
             // XML Schema 1.1
             // Validate against Open Content
-            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, grammar)) {
+            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, xcmHelper)) {
                 return fOpenContent;
             }
 
@@ -549,12 +548,12 @@ public class XSDFACM
         return null;
     } // findMatchingDecl(QName, SubstitutionGroupHandler): Object
     
-    boolean allowExpandedName(XSWildcardDecl wildcard, QName curElem, SubstitutionGroupHandler subGroupHandler, SchemaGrammar grammar) {
+    boolean allowExpandedName(XSWildcardDecl wildcard, QName curElem, SubstitutionGroupHandler subGroupHandler, XCMValidatorHelper xcmHelper) {
         if (wildcard.allowQName(curElem)) {
             if (wildcard.fDisallowedSibling && findMatchingElemDecl(curElem, subGroupHandler) != null) {
                 return false;
             }
-            if (wildcard.fDisallowedDefined && grammar != null && grammar.getElementDeclaration(curElem.localpart) != null) {
+            if (wildcard.fDisallowedDefined && xcmHelper.getGlobalElementDecl(curElem) != null) {
                 return false;
             }
             return true;
@@ -562,7 +561,7 @@ public class XSDFACM
         return false;
     }
     
-    boolean matchOpenContentModel(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int curState, SchemaGrammar grammar) {
+    boolean matchOpenContentModel(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int curState, XCMValidatorHelper xcmHelper) {
         // if suffix mode, we should have reached a final state
         if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
             if (fFinalStateFlags[curState]) {
@@ -578,7 +577,7 @@ public class XSDFACM
                 return false;
             }
         }
-        if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, grammar)) {
+        if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, xcmHelper)) {
             return true;
         }
 

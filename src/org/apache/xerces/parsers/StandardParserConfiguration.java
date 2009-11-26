@@ -104,6 +104,14 @@ public class StandardParserConfiguration
     protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
+
     /** Feature identifier: whether to ignore xsi:type attributes until a global element declaration is encountered */
     protected static final String IGNORE_XSI_TYPE =
         Constants.XERCES_FEATURE_PREFIX + Constants.IGNORE_XSI_TYPE_FEATURE;
@@ -146,6 +154,10 @@ public class StandardParserConfiguration
     protected static final String ROOT_ELEMENT_DECL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     //
     // Data
     //
@@ -214,6 +226,8 @@ public class StandardParserConfiguration
             GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS,
             HONOUR_ALL_SCHEMALOCATIONS,
+            NAMESPACE_GROWTH,
+            TOLERATE_DUPLICATES,
             // NOTE: These shouldn't really be here but since the XML Schema
             //       validator is constructed dynamically, its recognized
             //       features might not have been set and it would cause a
@@ -235,7 +249,9 @@ public class StandardParserConfiguration
         setFeature(GENERATE_SYNTHETIC_ANNOTATIONS, false);
         setFeature(VALIDATE_ANNOTATIONS, false);
         setFeature(HONOUR_ALL_SCHEMALOCATIONS, false);
-        
+        setFeature(NAMESPACE_GROWTH, false);
+        setFeature(TOLERATE_DUPLICATES, false);
+
         setFeature(IGNORE_XSI_TYPE, false);
         setFeature(ID_IDREF_CHECKING, true);
         setFeature(IDENTITY_CONSTRAINT_CHECKING, true);
@@ -253,6 +269,7 @@ public class StandardParserConfiguration
             SCHEMA_NONS_LOCATION,
             ROOT_TYPE_DEF,
             ROOT_ELEMENT_DECL,
+            SCHEMA_DV_FACTORY,
         };
         
         addRecognizedProperties(recognizedProperties);

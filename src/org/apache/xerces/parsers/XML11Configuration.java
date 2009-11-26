@@ -145,11 +145,19 @@ public class XML11Configuration extends ParserConfigurationSettings
     /** Feature identifier: honour all schemaLocations */
     protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
+
+    /** Feature identifier: namespace growth */
+    protected static final String NAMESPACE_GROWTH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACE_GROWTH_FEATURE;
+
+    /** Feature identifier: tolerate duplicates */
+    protected static final String TOLERATE_DUPLICATES = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
     
     /** Feature identifier: use grammar pool only */
     protected static final String USE_GRAMMAR_POOL_ONLY =
         Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
-        
+
 	// feature identifiers
 
 	/** Feature identifier: validation. */
@@ -282,6 +290,10 @@ public class XML11Configuration extends ParserConfigurationSettings
     protected static final String ROOT_ELEMENT_DECL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_ELEMENT_DECLARATION_PROPERTY;
 
+    /** Property identifier: Schema DV Factory */
+    protected static final String SCHEMA_DV_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
     // debugging
 
     /** Set to true and recompile to print exception stack trace. */
@@ -482,7 +494,8 @@ public class XML11Configuration extends ParserConfigurationSettings
 		        NAMESPACES,
 		        NORMALIZE_DATA, SCHEMA_ELEMENT_DEFAULT, SCHEMA_AUGMENT_PSVI,
 		        GENERATE_SYNTHETIC_ANNOTATIONS, VALIDATE_ANNOTATIONS,
-		        HONOUR_ALL_SCHEMALOCATIONS, IGNORE_XSI_TYPE,
+		        HONOUR_ALL_SCHEMALOCATIONS, NAMESPACE_GROWTH,
+		        TOLERATE_DUPLICATES, IGNORE_XSI_TYPE,
 		        ID_IDREF_CHECKING, IDENTITY_CONSTRAINT_CHECKING,
 		        UNPARSED_ENTITY_CHECKING, USE_GRAMMAR_POOL_ONLY,
 		        TYPE_ALTERNATIVES_CHECKING,
@@ -510,6 +523,8 @@ public class XML11Configuration extends ParserConfigurationSettings
         fFeatures.put(GENERATE_SYNTHETIC_ANNOTATIONS, Boolean.FALSE);
         fFeatures.put(VALIDATE_ANNOTATIONS, Boolean.FALSE);
         fFeatures.put(HONOUR_ALL_SCHEMALOCATIONS, Boolean.FALSE);
+        fFeatures.put(NAMESPACE_GROWTH, Boolean.FALSE);
+        fFeatures.put(TOLERATE_DUPLICATES, Boolean.FALSE);
         fFeatures.put(IGNORE_XSI_TYPE, Boolean.FALSE);
         fFeatures.put(ID_IDREF_CHECKING, Boolean.TRUE);
         fFeatures.put(IDENTITY_CONSTRAINT_CHECKING, Boolean.TRUE);
@@ -546,6 +561,7 @@ public class XML11Configuration extends ParserConfigurationSettings
                 LOCALE,
                 ROOT_TYPE_DEF,
                 ROOT_ELEMENT_DECL,
+                SCHEMA_DV_FACTORY,
         };
         addRecognizedProperties(recognizedProperties);
 		
