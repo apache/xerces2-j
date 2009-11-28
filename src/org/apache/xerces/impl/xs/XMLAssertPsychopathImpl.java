@@ -278,21 +278,25 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     private void setValueOf$value(String value) {
        PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl) currentAssertDomNode;
        
-       String typeName = "";
-       if (Constants.NS_XMLSCHEMA.equals(currentAssertPSVINode.getTypeNamespace())) {
-           typeName = currentAssertPSVINode.getTypeDefinition().getName();    
-       } else if (Constants.NS_XMLSCHEMA.equals(currentAssertPSVINode.
-                                         getTypeDefinition().
-                                         getBaseType().getNamespace())) {
-           typeName = currentAssertPSVINode.getTypeDefinition().getBaseType().
-                                         getName();
-       }
-       
+       String xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.getTypeDefinition());       
        Object psychoPathType = abstrPsychopathImpl.getPsychoPathTypeForXSDType
-                                                             (typeName, value);
-       
+                                                         (xsdTypeName, value);       
        fDynamicContext.set_variable(
                new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                        "value"), (AnyType) psychoPathType);
+    }
+    
+    /*
+       Find the built in XSD type for XPath2 variable, $value. This function
+       recursively searches the XSD type hierarchy navigating up the base
+       types, to find the needed built-in type.
+    */
+    private String getXSDtypeOf$Value(XSTypeDefinition elementType) {
+      if (Constants.NS_XMLSCHEMA.equals(elementType.getNamespace())) {
+        return elementType.getName();    
+      }
+      else {
+        return getXSDtypeOf$Value(elementType.getBaseType()); 
+      }
     }
 }
