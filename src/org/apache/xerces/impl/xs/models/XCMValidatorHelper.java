@@ -21,6 +21,8 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.xni.QName;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public interface XCMValidatorHelper {
