@@ -760,7 +760,7 @@ public class HTMLDocumentImpl
                 ObjectFactory.findProviderClass("org.apache.html.dom." + className,
                     HTMLDocumentImpl.class.getClassLoader(), true) );
         } catch ( Exception except ) {
-            new RuntimeException( "HTM019 OpenXML Error: Could not find or execute class " + className + " implementing HTML element " + tagName
+            throw new RuntimeException( "HTM019 OpenXML Error: Could not find or execute class " + className + " implementing HTML element " + tagName
                                   + "\n" + className + "\t" + tagName);
         }
     }
