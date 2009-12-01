@@ -48,75 +48,75 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     /**
      * No facets defined.
      */
-    public static final int FACET_NONE                  = 0;
+    public static final short FACET_NONE                = 0;
     /**
      * 4.3.1 Length
      */
-    public static final int FACET_LENGTH                = 1;
+    public static final short FACET_LENGTH              = 1;
     /**
      * 4.3.2 minLength. 
      */
-    public static final int FACET_MINLENGTH             = 2;
+    public static final short FACET_MINLENGTH           = 2;
     /**
      * 4.3.3 maxLength.
      */
-    public static final int FACET_MAXLENGTH             = 4;
+    public static final short FACET_MAXLENGTH           = 4;
     /**
      * 4.3.4 pattern.
      */
-    public static final int FACET_PATTERN               = 8;
+    public static final short FACET_PATTERN             = 8;
     /**
      * 4.3.6 whitespace.
      */
-    public static final int FACET_WHITESPACE            = 16;
+    public static final short FACET_WHITESPACE          = 16;
     /**
      * 4.3.7 maxInclusive.
      */
-    public static final int FACET_MAXINCLUSIVE          = 32;
+    public static final short FACET_MAXINCLUSIVE        = 32;
     /**
      * 4.3.9 maxExclusive.
      */
-    public static final int FACET_MAXEXCLUSIVE          = 64;
+    public static final short FACET_MAXEXCLUSIVE        = 64;
     /**
      * 4.3.9 minExclusive.
      */
-    public static final int FACET_MINEXCLUSIVE          = 128;
+    public static final short FACET_MINEXCLUSIVE        = 128;
     /**
      * 4.3.10 minInclusive.
      */
-    public static final int FACET_MININCLUSIVE          = 256;
+    public static final short FACET_MININCLUSIVE        = 256;
     /**
      * 4.3.11 totalDigits .
      */
-    public static final int FACET_TOTALDIGITS           = 512;
+    public static final short FACET_TOTALDIGITS         = 512;
     /**
      * 4.3.12 fractionDigits.
      */
-    public static final int FACET_FRACTIONDIGITS        = 1024;
+    public static final short FACET_FRACTIONDIGITS      = 1024;
     /**
      * 4.3.5 enumeration.
      */
-    public static final int FACET_ENUMERATION           = 2048;
+    public static final short FACET_ENUMERATION         = 2048;
     
     /**
      * 4.3.13 maxScale (XML Schema 1.1)
      */
-    public static final int FACET_MAXSCALE              = 4096;         
+    public static final short FACET_MAXSCALE            = 4096;         
 
     /**
      * 4.3.14 minScale (XML Schema 1.1)
      */
-    public static final int FACET_MINSCALE              = 8192;
+    public static final short FACET_MINSCALE            = 8192;
 
     /**
      * 4.3.15 assert (XML Schema 1.1)
      */
-    public static final int FACET_ASSERT                = 16384;
+    public static final short FACET_ASSERT              = 16384;
 
     /**
      * 4.3.16 explicitTimeZone (XML Schema 1.1)
      */
-    public static final int FACET_EXPLICITTIMEZONE      = 32768;
+    public static final short FACET_EXPLICITTIMEZONE    = -32768;
 
     /**
      * A constant defined for the 'ordered' fundamental facet: not ordered.
@@ -168,7 +168,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * [facets]: all facets defined on this type. The value is a bit 
      * combination of FACET_XXX constants of all defined facets. 
      */
-    public int getDefinedFacets();
+    public short getDefinedFacets();
 
     /**
      * Convenience method. [Facets]: check whether a facet is defined on this 
@@ -176,12 +176,12 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * @param facetName  The name of the facet. 
      * @return  True if the facet is defined, false otherwise.
      */
-    public boolean isDefinedFacet(int facetName);
+    public boolean isDefinedFacet(short facetName);
 
     /**
      * [facets]: all defined facets for this type which are fixed.
      */
-    public int getFixedFacets();
+    public short getFixedFacets();
 
     /**
      * Convenience method. [Facets]: check whether a facet is defined and 
@@ -189,7 +189,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * @param facetName  The name of the facet. 
      * @return  True if the facet is fixed, false otherwise.
      */
-    public boolean isFixedFacet(int facetName);
+    public boolean isFixedFacet(short facetName);
 
     /**
      * Convenience method. Returns a value of a single constraining facet for 
@@ -203,7 +203,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * @return A value of the facet specified in <code>facetName</code> for 
      *   this simple type definition or <code>null</code>. 
      */
-    public String getLexicalFacetValue(int facetName);
+    public String getLexicalFacetValue(short facetName);
 
     /**
      * A list of enumeration values if it exists, otherwise an empty 

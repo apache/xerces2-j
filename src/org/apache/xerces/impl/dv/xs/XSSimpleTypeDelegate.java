@@ -61,7 +61,7 @@ public class XSSimpleTypeDelegate
         return type.getBuiltInKind();
     }
 
-    public int getDefinedFacets() {
+    public short getDefinedFacets() {
         return type.getDefinedFacets();
     }
 
@@ -73,7 +73,7 @@ public class XSSimpleTypeDelegate
         return type.getFinite();
     }
 
-    public int getFixedFacets() {
+    public short getFixedFacets() {
         return type.getFixedFacets();
     }
 
@@ -85,7 +85,7 @@ public class XSSimpleTypeDelegate
         return type.getLexicalEnumeration();
     }
 
-    public String getLexicalFacetValue(int facetName) {
+    public String getLexicalFacetValue(short facetName) {
         return type.getLexicalFacetValue(facetName);
     }
 
@@ -117,11 +117,11 @@ public class XSSimpleTypeDelegate
         return type.getVariety();
     }
 
-    public boolean isDefinedFacet(int facetName) {
+    public boolean isDefinedFacet(short facetName) {
         return type.isDefinedFacet(facetName);
     }
 
-    public boolean isFixedFacet(int facetName) {
+    public boolean isFixedFacet(short facetName) {
         return type.isFixedFacet(facetName);
     }
 

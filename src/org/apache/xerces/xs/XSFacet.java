@@ -26,7 +26,7 @@ public interface XSFacet extends XSObject {
      * The name of the facet, e.g. <code>FACET_LENGTH, FACET_TOTALDIGITS</code>
      *  (see <code>XSSimpleTypeDefinition</code>). 
      */
-    public int getFacetKind();
+    public short getFacetKind();
 
     /**
      * A value of this facet. 

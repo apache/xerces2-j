@@ -2118,7 +2118,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         }
     }
 
-    private String translateFacetKind(int kind) {
+    private String translateFacetKind(short kind) {
         switch (kind) {
             case XSSimpleTypeDefinition.FACET_WHITESPACE :
                 return SchemaSymbols.ELT_WHITESPACE;

@@ -263,8 +263,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private short fVariety = -1;
     private short fValidationDV = -1;
 
-    private int fFacetsDefined = 0;
-    private int fFixedFacet = 0;
+    private short fFacetsDefined = 0;
+    private short fFixedFacet = 0;
 
     //for constraining facets
     private short fWhiteSpace = 0;
@@ -2161,7 +2161,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @param facetName  The name of the facet.
      * @return  True if the facet is defined, false otherwise.
      */
-    public boolean isDefinedFacet(int facetName) {
+    public boolean isDefinedFacet(short facetName) {
         if ((fFacetsDefined & facetName) != 0)
             return true;
         if (fPatternType != SPECIAL_PATTERN_NONE)
@@ -2175,11 +2175,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * [facets]: all facets defined on this type. The value is a bit
      * combination of FACET_XXX constants of all defined facets.
      */
-    public int getDefinedFacets() {
+    public short getDefinedFacets() {
         if (fPatternType != SPECIAL_PATTERN_NONE)
-            return fFacetsDefined | FACET_PATTERN;
+            return (short)(fFacetsDefined | FACET_PATTERN);
         if (fValidationDV == DV_INTEGER)
-            return fFacetsDefined | FACET_PATTERN | FACET_FRACTIONDIGITS;
+            return (short)(fFacetsDefined | FACET_PATTERN | FACET_FRACTIONDIGITS);
         return fFacetsDefined;
     }
 
@@ -2189,7 +2189,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @param facetName  The name of the facet.
      * @return  True if the facet is fixed, false otherwise.
      */
-    public boolean isFixedFacet(int facetName) {
+    public boolean isFixedFacet(short facetName) {
         if ((fFixedFacet & facetName) != 0)
             return true;
         if (fValidationDV == DV_INTEGER)
@@ -2200,9 +2200,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * [facets]: all defined facets for this type which are fixed.
      */
-    public int getFixedFacets() {
+    public short getFixedFacets() {
         if (fValidationDV == DV_INTEGER)
-            return fFixedFacet | FACET_FRACTIONDIGITS;
+            return (short)(fFixedFacet | FACET_FRACTIONDIGITS);
         return fFixedFacet;
     }
 
@@ -2218,7 +2218,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @return A value of the facet specified in <code>facetName</code> for
      *   this simple type definition or <code>null</code>.
      */
-    public String getLexicalFacetValue(int facetName) {
+    public String getLexicalFacetValue(short facetName) {
         switch (facetName) {
             case FACET_LENGTH:
                 return (fLength == -1)?null:Integer.toString(fLength);
@@ -3246,12 +3246,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     private static final class XSFacetImpl implements XSFacet {
-        final int kind;
+        final short kind;
         final String value;
         final boolean fixed;
         final XSObjectList annotations;  
 
-        public XSFacetImpl(int kind, String value, boolean fixed, XSAnnotation annotation) {
+        public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
             this.kind = kind;
             this.value = value;
             this.fixed = fixed;
@@ -3292,7 +3292,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#getFacetKind()
          */
-        public int getFacetKind() {
+        public short getFacetKind() {
             return kind;
         }
 
@@ -3342,12 +3342,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     private static final class XSMVFacetImpl implements XSMultiValueFacet {
-        final int kind;
+        final short kind;
         final XSObjectList annotations;
         final StringList values;
         final Vector asserts;
 
-        public XSMVFacetImpl(int kind, StringList values, XSObjectList annotations) {
+        public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
             this.kind = kind;
             this.values = values;
             this.annotations = (annotations != null) ? annotations : XSObjectListImpl.EMPTY_LIST;
@@ -3356,7 +3356,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         /*
          * overloaded constructor. added to support assertions.
          */
-        public XSMVFacetImpl(int kind, Vector asserts) {
+        public XSMVFacetImpl(short kind, Vector asserts) {
             this.kind = kind;
             this.asserts = asserts;
             this.values = null;
@@ -3366,7 +3366,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#getFacetKind()
          */
-        public int getFacetKind() {
+        public short getFacetKind() {
             return kind;
         }	
 
