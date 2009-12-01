@@ -32,10 +32,6 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class BooleanDV extends TypeValidator {
 
-    public short getAllowedFacets() {
-        return (XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE);
-    }
-
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         if ("false".equals(content) || "0".equals(content)) {
             return Boolean.FALSE;

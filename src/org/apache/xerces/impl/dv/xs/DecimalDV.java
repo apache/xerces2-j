@@ -36,10 +36,6 @@ import org.apache.xerces.xs.datatypes.XSDecimal;
  */
 public class DecimalDV extends TypeValidator {
 
-    public final short getAllowedFacets(){
-        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE | XSSimpleTypeDecl.FACET_TOTALDIGITS | XSSimpleTypeDecl.FACET_FRACTIONDIGITS);
-    }
-
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try {
             return new XDecimal(content);

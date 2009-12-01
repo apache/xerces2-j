@@ -32,11 +32,6 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class AnySimpleDV extends TypeValidator {
 
-    public short getAllowedFacets() {
-        // anySimpleType doesn't allow any facet, not even whiteSpace
-        return 0;
-    }
-
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         return content;
     }

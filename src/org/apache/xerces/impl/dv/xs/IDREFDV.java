@@ -33,10 +33,6 @@ import org.apache.xerces.util.XMLChar;
  */
 public class IDREFDV extends TypeValidator{
 
-    public short getAllowedFacets(){
-        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
-    }
-
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         if (!XMLChar.isValidNCName(content)) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "NCName"});

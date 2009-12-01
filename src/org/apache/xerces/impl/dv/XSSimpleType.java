@@ -151,7 +151,7 @@ public interface XSSimpleType extends XSSimpleTypeDefinition {
      * @param context       the validation context
      * @exception InvalidDatatypeFacetException  exception for invalid facet values.
      */
-    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
+    public void applyFacets(XSFacets facets, int presentFacet, int fixedFacet, ValidationContext context)
         throws InvalidDatatypeFacetException;
 
     /**

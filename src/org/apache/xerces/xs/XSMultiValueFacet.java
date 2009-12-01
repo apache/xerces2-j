@@ -27,7 +27,7 @@ public interface XSMultiValueFacet extends XSObject {
      * The name of the facet, i.e. <code>FACET_ENUMERATION</code> and 
      * <code>FACET_PATTERN</code> (see <code>XSSimpleTypeDefinition</code>). 
      */
-    public short getFacetKind();
+    public int getFacetKind();
 
     /**
      * Values of this facet. 

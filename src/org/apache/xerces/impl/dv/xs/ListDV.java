@@ -35,10 +35,6 @@ import org.apache.xerces.xs.datatypes.ObjectList;
  */
 public class ListDV extends TypeValidator{
 
-    public short getAllowedFacets(){
-          return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
-    }
-
     // this method should never be called: XSSimpleTypeDecl is responsible for
     // calling the item type for the convertion
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{

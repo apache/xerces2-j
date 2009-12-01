@@ -35,9 +35,6 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public abstract class TypeValidator {
 
-    // which facets are allowed for this type
-    public abstract short getAllowedFacets();
-
     // convert a string to an actual value. for example,
     // for number types (decimal, double, float, and types derived from them),
     // get the BigDecimal, Double, Flout object.

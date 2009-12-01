@@ -322,13 +322,6 @@ class PrecisionDecimalDV extends TypeValidator {
         
     }
     /* (non-Javadoc)
-     * @see org.apache.xerces.impl.dv.xs.TypeValidator#getAllowedFacets()
-     */
-    public short getAllowedFacets() {
-        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE | XSSimpleTypeDecl.FACET_TOTALDIGITS | XSSimpleTypeDecl.FACET_FRACTIONDIGITS);
-    }
-    
-    /* (non-Javadoc)
      * @see org.apache.xerces.impl.dv.xs.TypeValidator#getActualValue(java.lang.String, org.apache.xerces.impl.dv.ValidationContext)
      */
     public Object getActualValue(String content, ValidationContext context)

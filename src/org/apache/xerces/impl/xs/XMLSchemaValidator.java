@@ -36,6 +36,7 @@ import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.validation.ConfigurableValidationState;
 import org.apache.xerces.impl.validation.ValidationManager;
@@ -1553,9 +1554,12 @@ public class XMLSchemaValidator
 
         fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);
 
+        final TypeValidatorHelper typeValidatorHelper = TypeValidatorHelper.getInstance(fSchemaVersion);
+        
         fValidationManager = (ValidationManager) componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.addValidationState(fValidationState);
         fValidationState.setSymbolTable(fSymbolTable);
+        fValidationState.setTypeValidatorHelper(typeValidatorHelper);
         
         try {
             final Object rootType = componentManager.getProperty(ROOT_TYPE_DEF);
@@ -1673,6 +1677,9 @@ public class XMLSchemaValidator
 
         fState4XsiType.setSymbolTable(symbolTable);
         fState4ApplyDefault.setSymbolTable(symbolTable);
+        
+        fState4XsiType.setTypeValidatorHelper(typeValidatorHelper);
+        fState4ApplyDefault.setTypeValidatorHelper(typeValidatorHelper);
 
     } // reset(XMLComponentManager)
 

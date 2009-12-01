@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Locale;
 
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 
@@ -53,6 +54,8 @@ public class ValidationState implements ValidationContext {
     private final HashMap fIdTable    = new HashMap();
     private final HashMap fIdRefTable = new HashMap();
     private final static Object fNullValue = new Object();
+    
+    private TypeValidatorHelper fTypeValidatorHelper = null;
 
     //
     // public methods
@@ -198,5 +201,15 @@ public class ValidationState implements ValidationContext {
     
     public Locale getLocale() {
         return fLocale;
+    }
+    
+    // TypeValidatorHelper
+    
+    public void setTypeValidatorHelper(TypeValidatorHelper typeValidatorHelper) {
+        fTypeValidatorHelper = typeValidatorHelper;
+    }
+
+    public TypeValidatorHelper getTypeValidatorHelper() {
+        return fTypeValidatorHelper;
     }
 }

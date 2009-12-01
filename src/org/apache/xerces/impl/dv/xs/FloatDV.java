@@ -33,10 +33,6 @@ import org.apache.xerces.xs.datatypes.XSFloat;
  */
 public class FloatDV extends TypeValidator {
 
-    public short getAllowedFacets(){
-        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
-    }//getAllowedFacets()
-
     //convert a String to Float form, we have to take care of cases specified in spec like INF, -INF and NaN
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{

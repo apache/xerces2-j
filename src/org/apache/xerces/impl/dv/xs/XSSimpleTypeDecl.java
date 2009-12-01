@@ -229,6 +229,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public Locale getLocale() {
             return Locale.getDefault();
         }
+        public TypeValidatorHelper getTypeValidatorHelper() {
+            return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
+        }
     };
 
     protected static TypeValidator[] getGDVs() {
@@ -239,6 +242,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fDVs = dvs;
     }
     
+
+    // Default TypeValidatorHelper
+    private static TypeValidatorHelper fDefaultTypeValidatorHelper = TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
+
     // this will be true if this is a static XSSimpleTypeDecl
     // and hence must remain immutable (i.e., applyFacets
     // may not be permitted to have any effect).
@@ -256,8 +263,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private short fVariety = -1;
     private short fValidationDV = -1;
 
-    private short fFacetsDefined = 0;
-    private short fFixedFacet = 0;
+    private int fFacetsDefined = 0;
+    private int fFixedFacet = 0;
 
     //for constraining facets
     private short fWhiteSpace = 0;
@@ -657,7 +664,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     public short getPrimitiveKind() {
-        if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
+        if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE && fValidationDV != DV_ANYATOMICTYPE) {
             if (fValidationDV == DV_ID || fValidationDV == DV_IDREF || fValidationDV == DV_ENTITY) {
                 return DV_STRING;
             }
@@ -692,11 +699,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * definition) is available, otherwise <code>null</code>.
      */
     public XSSimpleTypeDefinition getPrimitiveType() {
-        if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
+        if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE && fValidationDV != DV_ANYATOMICTYPE) {
             XSSimpleTypeDecl pri = this;
             // recursively get base, until we reach anySimpleType
-            while (pri.fBase != fAnySimpleType)
+            while (pri.fBase != fAnySimpleType && pri.fBase != fAnyAtomicType) {
                 pri = pri.fBase;
+            }
             return pri;
         }
         else {
@@ -737,7 +745,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * If <restriction> is chosen
      */
-    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
+    public void applyFacets(XSFacets facets, int presentFacet, int fixedFacet, ValidationContext context)
     throws InvalidDatatypeFacetException {
         if (context == null) {
             context = fEmptyContext;
@@ -748,7 +756,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * built-in derived types by restriction
      */
-    void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet) {
+    void applyFacets1(XSFacets facets, int presentFacet, int fixedFacet) {
 
         try {
             applyFacets(facets, presentFacet, fixedFacet, SPECIAL_PATTERN_NONE, fDummyContext);
@@ -763,7 +771,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * built-in derived types by restriction
      */
-    void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet, short patternType) {
+    void applyFacets1(XSFacets facets, int presentFacet, int fixedFacet, short patternType) {
 
         try {
             applyFacets(facets, presentFacet, fixedFacet, patternType, fDummyContext);
@@ -778,7 +786,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * If <restriction> is chosen, or built-in derived types by restriction
      */
-    void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short patternType, ValidationContext context)
+    void applyFacets(XSFacets facets, int presentFacet, int fixedFacet, short patternType, ValidationContext context)
     throws InvalidDatatypeFacetException {
 
         // if the object is immutable, should not apply facets...
@@ -798,7 +806,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         int result = 0 ;
 
         // step 1: parse present facets
-        short allowedFacet = fDVs[fValidationDV].getAllowedFacets();
+        TypeValidatorHelper typeValidatorHelper = context.getTypeValidatorHelper();
+        if (typeValidatorHelper == null) {
+            // fall back to 1.0 simple types
+            typeValidatorHelper = fDefaultTypeValidatorHelper;
+        }
+        int allowedFacet = typeValidatorHelper.getAllowedFacets(fValidationDV);
 
         // length
         if ((presentFacet & FACET_LENGTH) != 0) {
@@ -2148,7 +2161,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @param facetName  The name of the facet.
      * @return  True if the facet is defined, false otherwise.
      */
-    public boolean isDefinedFacet(short facetName) {
+    public boolean isDefinedFacet(int facetName) {
         if ((fFacetsDefined & facetName) != 0)
             return true;
         if (fPatternType != SPECIAL_PATTERN_NONE)
@@ -2162,11 +2175,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * [facets]: all facets defined on this type. The value is a bit
      * combination of FACET_XXX constants of all defined facets.
      */
-    public short getDefinedFacets() {
+    public int getDefinedFacets() {
         if (fPatternType != SPECIAL_PATTERN_NONE)
-            return (short)(fFacetsDefined | FACET_PATTERN);
+            return fFacetsDefined | FACET_PATTERN;
         if (fValidationDV == DV_INTEGER)
-            return (short)(fFacetsDefined | FACET_PATTERN | FACET_FRACTIONDIGITS);
+            return fFacetsDefined | FACET_PATTERN | FACET_FRACTIONDIGITS;
         return fFacetsDefined;
     }
 
@@ -2176,7 +2189,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @param facetName  The name of the facet.
      * @return  True if the facet is fixed, false otherwise.
      */
-    public boolean isFixedFacet(short facetName) {
+    public boolean isFixedFacet(int facetName) {
         if ((fFixedFacet & facetName) != 0)
             return true;
         if (fValidationDV == DV_INTEGER)
@@ -2187,9 +2200,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * [facets]: all defined facets for this type which are fixed.
      */
-    public short getFixedFacets() {
+    public int getFixedFacets() {
         if (fValidationDV == DV_INTEGER)
-            return (short)(fFixedFacet | FACET_FRACTIONDIGITS);
+            return fFixedFacet | FACET_FRACTIONDIGITS;
         return fFixedFacet;
     }
 
@@ -2205,7 +2218,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @return A value of the facet specified in <code>facetName</code> for
      *   this simple type definition or <code>null</code>.
      */
-    public String getLexicalFacetValue(short facetName) {
+    public String getLexicalFacetValue(int facetName) {
         switch (facetName) {
             case FACET_LENGTH:
                 return (fLength == -1)?null:Integer.toString(fLength);
@@ -2899,6 +2912,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public Locale getLocale() {
             return Locale.getDefault();
         }
+        
+        public TypeValidatorHelper getTypeValidatorHelper() {
+            return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
+        }
     };
 
     private boolean fAnonymous = false;
@@ -2970,6 +2987,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         
         public Locale getLocale() {
             return fExternal.getLocale();
+        }
+        
+        public TypeValidatorHelper getTypeValidatorHelper() {
+            return fExternal.getTypeValidatorHelper();
         }
     }
 
@@ -3225,12 +3246,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     private static final class XSFacetImpl implements XSFacet {
-        final short kind;
+        final int kind;
         final String value;
         final boolean fixed;
         final XSObjectList annotations;  
 
-        public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
+        public XSFacetImpl(int kind, String value, boolean fixed, XSAnnotation annotation) {
             this.kind = kind;
             this.value = value;
             this.fixed = fixed;
@@ -3271,7 +3292,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#getFacetKind()
          */
-        public short getFacetKind() {
+        public int getFacetKind() {
             return kind;
         }
 
@@ -3321,12 +3342,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     private static final class XSMVFacetImpl implements XSMultiValueFacet {
-        final short kind;
+        final int kind;
         final XSObjectList annotations;
         final StringList values;
         final Vector asserts;
 
-        public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
+        public XSMVFacetImpl(int kind, StringList values, XSObjectList annotations) {
             this.kind = kind;
             this.values = values;
             this.annotations = (annotations != null) ? annotations : XSObjectListImpl.EMPTY_LIST;
@@ -3335,7 +3356,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         /*
          * overloaded constructor. added to support assertions.
          */
-        public XSMVFacetImpl(short kind, Vector asserts) {
+        public XSMVFacetImpl(int kind, Vector asserts) {
             this.kind = kind;
             this.asserts = asserts;
             this.values = null;
@@ -3345,7 +3366,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#getFacetKind()
          */
-        public short getFacetKind() {
+        public int getFacetKind() {
             return kind;
         }	
 

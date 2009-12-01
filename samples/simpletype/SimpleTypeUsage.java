@@ -191,7 +191,7 @@ public void querySimpleType(XSSimpleType simpleType){
 
     // 'facets' property
     // gives bit combination of the constants defined in XSSimpleType interface.
-    short facets = simpleType.getDefinedFacets() ;
+    int facets = simpleType.getDefinedFacets() ;
     printFacets(facets);
 
     //'final' property
@@ -270,7 +270,7 @@ void printCardinality (boolean isFinite){
 
 }//printCardinality()
 
-void printFacets(short facets){
+void printFacets(int facets){
 
     System.err.println("'facets' present \t\t: " );
 

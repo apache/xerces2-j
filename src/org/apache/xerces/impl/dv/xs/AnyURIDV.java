@@ -43,10 +43,6 @@ public class AnyURIDV extends TypeValidator {
         BASE_URI = uri;
     }
 
-    public short getAllowedFacets(){
-        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
-    }
-
     // before we return string we have to make sure it is correct URI as per spec.
     // for some types (string and derived), they just return the string itself
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {

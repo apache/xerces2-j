@@ -61,7 +61,7 @@ public class XSSimpleTypeDelegate
         return type.getBuiltInKind();
     }
 
-    public short getDefinedFacets() {
+    public int getDefinedFacets() {
         return type.getDefinedFacets();
     }
 
@@ -73,7 +73,7 @@ public class XSSimpleTypeDelegate
         return type.getFinite();
     }
 
-    public short getFixedFacets() {
+    public int getFixedFacets() {
         return type.getFixedFacets();
     }
 
@@ -85,7 +85,7 @@ public class XSSimpleTypeDelegate
         return type.getLexicalEnumeration();
     }
 
-    public String getLexicalFacetValue(short facetName) {
+    public String getLexicalFacetValue(int facetName) {
         return type.getLexicalFacetValue(facetName);
     }
 
@@ -117,11 +117,11 @@ public class XSSimpleTypeDelegate
         return type.getVariety();
     }
 
-    public boolean isDefinedFacet(short facetName) {
+    public boolean isDefinedFacet(int facetName) {
         return type.isDefinedFacet(facetName);
     }
 
-    public boolean isFixedFacet(short facetName) {
+    public boolean isFixedFacet(int facetName) {
         return type.isFixedFacet(facetName);
     }
 
@@ -169,7 +169,7 @@ public class XSSimpleTypeDelegate
         return type.getType();
     }
 
-    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context) 
+    public void applyFacets(XSFacets facets, int presentFacet, int fixedFacet, ValidationContext context) 
         throws InvalidDatatypeFacetException {
         type.applyFacets(facets, presentFacet, fixedFacet, context);
     }

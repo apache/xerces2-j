@@ -31,10 +31,6 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class ErrorDV extends TypeValidator {
 
-    public short getAllowedFacets() {
-        return XSSimpleTypeDecl.FACET_NONE;
-    }
-
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "error"});
     }

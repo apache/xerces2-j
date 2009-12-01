@@ -37,6 +37,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.xs.DecimalDV;
 import org.apache.xerces.impl.dv.xs.TypeValidator;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
@@ -443,6 +444,9 @@ public class XSDHandler {
     // XML Schema constraint checker
     XSConstraints fXSConstraints;
 
+    // TypeValidatorHelper
+    TypeValidatorHelper fTypeValidatorHelper;
+    
     // these data members are needed for the deferred traversal
     // of local elements.
 
@@ -812,7 +816,7 @@ public class XSDHandler {
         XSDocumentInfo currSchemaInfo = null;
         try {
             // note that attributes are freed at end of traverseSchemas()
-            currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable);
+            currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable, fTypeValidatorHelper);
         } catch (XMLSchemaException se) {
             reportSchemaError(ELE_ERROR_CODES[referType],
                     new Object[]{locationHint},
@@ -3688,6 +3692,8 @@ public class XSDHandler {
             }
         } catch (XMLConfigurationException e) {
         }
+        
+        fTypeValidatorHelper = TypeValidatorHelper.getInstance(fSchemaVersion);
         
     } // reset(XMLComponentManager)
     

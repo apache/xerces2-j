@@ -24,6 +24,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -105,6 +106,7 @@ abstract class XSDAbstractTraverser {
         fValidationState.setExtraChecking(false);
         fValidationState.setSymbolTable(symbolTable);
         fValidationState.setLocale(locale);
+        fValidationState.setTypeValidatorHelper(fSchemaHandler.fTypeValidatorHelper);
     }
     
     // traverse the annotation declaration

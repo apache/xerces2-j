@@ -62,10 +62,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     
     protected final DatatypeFactory factory = new DatatypeFactoryImpl();
 	
-	public short getAllowedFacets(){
-		return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
-	}//getAllowedFacets()
-	
 	
 	// distinguishes between identity and equality for date/time values
 	// ie: two values representing the same "moment in time" but with different 

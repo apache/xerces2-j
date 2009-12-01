@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs.traversers;
 import java.util.Stack;
 import java.util.Vector;
 
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -100,7 +101,7 @@ class XSDocumentInfo {
 
     // note that the caller must ensure to call returnSchemaAttrs()
     // to avoid memory leaks!
-    XSDocumentInfo (Element schemaRoot, XSAttributeChecker attrChecker, SymbolTable symbolTable)
+    XSDocumentInfo (Element schemaRoot, XSAttributeChecker attrChecker, SymbolTable symbolTable, TypeValidatorHelper typeValidatorHelper)
                     throws XMLSchemaException {
         
         fSchemaElement = schemaRoot;
@@ -117,6 +118,7 @@ class XSDocumentInfo {
             // set namespace support
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
             fValidationContext.setSymbolTable(symbolTable);
+            fValidationContext.setTypeValidatorHelper(typeValidatorHelper);
             
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element

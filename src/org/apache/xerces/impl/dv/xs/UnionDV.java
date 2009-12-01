@@ -32,10 +32,6 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class UnionDV extends TypeValidator{
 
-    public short getAllowedFacets(){
-          return (XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION );
-    }
-
     // this method should never be called: XSSimpleTypeDecl is responsible for
     // calling the member types for the convertion
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
