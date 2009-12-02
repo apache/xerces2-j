@@ -102,4 +102,8 @@ public abstract class TypeValidator {
         return isDigit(ch) ? ch - '0' : -1;
     }
     
+    public boolean hasTimeZone(Object value){
+        return false;
+    }
+    
 } // interface TypeValidator

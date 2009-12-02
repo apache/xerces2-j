@@ -45,7 +45,9 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         final String DAYTIMEDURATION   = "dayTimeDuration";
         final String PRECISIONDECIMAL  = "precisionDecimal";
         final String ERROR             = "error";
-
+        final String DATETIMESTAMP     = "dateTimeStamp"; 
+        final String DATETIME          = "dateTime";
+        
     	createBuiltInTypes(fBuiltInTypes, XSSimpleTypeDecl.fAnyAtomicType);
 
         // add anyAtomicType
@@ -58,7 +60,11 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         XSSimpleTypeDecl durationDV = (XSSimpleTypeDecl)fBuiltInTypes.get(DURATION);
         fBuiltInTypes.put(YEARMONTHDURATION, new XSSimpleTypeDecl(durationDV, YEARMONTHDURATION, XSSimpleTypeDecl.DV_YEARMONTHDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.YEARMONTHDURATION_DT));
         fBuiltInTypes.put(DAYTIMEDURATION, new XSSimpleTypeDecl(durationDV, DAYTIMEDURATION, XSSimpleTypeDecl.DV_DAYTIMEDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.DAYTIMEDURATION_DT));
-
+        
+        //add dateTimeStamp
+        XSSimpleTypeDecl dateTimeDV = (XSSimpleTypeDecl)fBuiltInTypes.get(DATETIME);
+        fBuiltInTypes.put(DATETIMESTAMP, new XSSimpleTypeDecl(dateTimeDV, DATETIMESTAMP, XSSimpleTypeDecl.DV_DATETIMESTAMP, XSSimpleTypeDecl.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.DATETIMESTAMP_DT));
+                
         // add precision decimal
         fBuiltInTypes.put(PRECISIONDECIMAL, new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, PRECISIONDECIMAL, XSSimpleTypeDecl.DV_PRECISIONDECIMAL, XSSimpleType.ORDERED_PARTIAL, false, false, true, true, XSSimpleTypeDecl.PRECISIONDECIMAL_DT));
     } //createBuiltInTypes()

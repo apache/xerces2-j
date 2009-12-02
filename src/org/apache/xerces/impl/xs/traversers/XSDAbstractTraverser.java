@@ -557,6 +557,9 @@ abstract class XSDAbstractTraverser {
                 else if (facet.equals(SchemaSymbols.ELT_LENGTH)) {
                     currentFacet = XSSimpleType.FACET_LENGTH;
                 }
+                else if (facet.equals(SchemaSymbols.ELT_EXPLICITTIMEZONE)){
+                    currentFacet = XSSimpleType.FACET_EXPLICITTIMEZONE;
+                }
                 else {
                     break;   // a non-facet
                 }
@@ -623,6 +626,9 @@ abstract class XSDAbstractTraverser {
                 case XSSimpleType.FACET_LENGTH:
                     xsFacets.length = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
+                case XSSimpleType.FACET_EXPLICITTIMEZONE:
+                    xsFacets.explicitTimezone = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).shortValue();
+                    break;
                 }
                 
                 Element child = DOMUtil.getFirstChildElement( content );
@@ -669,6 +675,9 @@ abstract class XSDAbstractTraverser {
                 break;
                 case XSSimpleType.FACET_LENGTH:
                     xsFacets.lengthAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_EXPLICITTIMEZONE:    //XML Schema 1.1
+                    xsFacets.explicitTimezoneAnnotation = annotation;
                 break;
                 }
                 if (child != null) {

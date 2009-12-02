@@ -66,6 +66,7 @@ public final class SchemaSymbols {
     public static final String ELT_DOCUMENTATION          = "documentation".intern();
     public static final String ELT_ELEMENT                = "element".intern();
     public static final String ELT_ENUMERATION            = "enumeration".intern();
+    public static final String ELT_EXPLICITTIMEZONE       = "explicitTimezone".intern();
     public static final String ELT_EXTENSION              = "extension".intern();
     public static final String ELT_FIELD                  = "field".intern();
     public static final String ELT_FRACTIONDIGITS         = "fractionDigits".intern();

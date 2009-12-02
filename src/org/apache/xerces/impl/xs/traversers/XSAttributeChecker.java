@@ -153,6 +153,9 @@ public class XSAttributeChecker {
     private static final XInt INT_WS_PRESERVE     = fXIntPool.getXInt(XSSimpleType.WS_PRESERVE);
     private static final XInt INT_WS_REPLACE      = fXIntPool.getXInt(XSSimpleType.WS_REPLACE);
     private static final XInt INT_WS_COLLAPSE     = fXIntPool.getXInt(XSSimpleType.WS_COLLAPSE);
+    private static final XInt INT_ET_OPTION       = fXIntPool.getXInt(XSSimpleType.ET_OPTIONAL);
+    private static final XInt INT_ET_REQUIRED     = fXIntPool.getXInt(XSSimpleType.ET_REQUIRED);
+    private static final XInt INT_ET_PROHIBITED   = fXIntPool.getXInt(XSSimpleType.ET_PROHIBITED);
     private static final XInt INT_UNBOUNDED       = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
     private static final XInt INT_MODE_NONE       = fXIntPool.getXInt(XSOpenContentDecl.MODE_NONE);
     private static final XInt INT_MODE_INTERLEAVE = fXIntPool.getXInt(XSOpenContentDecl.MODE_INTERLEAVE);
@@ -170,7 +173,7 @@ public class XSAttributeChecker {
     // for 15 global elements
     private static final Hashtable fEleAttrs11MapG = new Hashtable(31);
     // for 47 local elements
-    private static final Hashtable fEleAttrs11MapL = new Hashtable(97);
+    private static final Hashtable fEleAttrs11MapL = new Hashtable(102);
 
     // used to initialize fEleAttrsMap
     // step 1: all possible data types
@@ -237,6 +240,7 @@ public class XSAttributeChecker {
     protected static final int DT_MODE1            = -20;
     protected static final int DT_NOTNAMESPACE     = -21;
     protected static final int DT_NOTQNAME         = -22;
+    protected static final int DT_EXPLICITTIMEZONE = -24;
 
     static {
         // step 2: all possible attributes for all elements
@@ -302,6 +306,7 @@ public class XSAttributeChecker {
         int ATT_NOTQNAME_N           = attCount++;
         int ATT_TEST_XPATH_R         = attCount++;
         int ATT_INHERITABLE_N        = attCount++;
+        int ATT_VALUE_ET_N           = attCount++;
 
         // step 3: store all these attributes in an array
         OneAttr[] allAttrs = new OneAttr[attCount];
@@ -543,6 +548,10 @@ public class XSAttributeChecker {
                                                         DT_BOOLEAN,
                                                         ATTIDX_INHERITABLE,
                                                         Boolean.FALSE);
+        allAttrs[ATT_VALUE_ET_N]           = new OneAttr(SchemaSymbols.ATT_VALUE,
+                                                        DT_EXPLICITTIMEZONE,
+                                                        ATTIDX_VALUE,
+                                                        null);
 
         // step 4: for each element, make a list of possible attributes
         Container attrList;
@@ -1125,6 +1134,16 @@ public class XSAttributeChecker {
         fEleAttrs11MapL.put(SchemaSymbols.ELT_MINEXCLUSIVE, attrList);
 
 
+        // for element "explicitTimezone" - local
+        attrList = Container.getContainer(3);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // value = optional | required | prohibited
+        attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_ET_N]);
+        // fixed = boolean : false
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);        
+        // XML Schema 1.1 - same list
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_EXPLICITTIMEZONE, attrList);
         // XML Schema 1.1
         // same components - modified representation
 
@@ -1541,7 +1560,7 @@ public class XSAttributeChecker {
                                 attrValues[ATTIDX_SUBSGROUP] = new Vector();
                             }
                             if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                                StringTokenizer st = new StringTokenizer(attrVal, " ");
+                                StringTokenizer st = new StringTokenizer(attrVal, " \n\t\r");
                                 while (st.hasMoreTokens()) {
                                     Object avalue = dv.validate(st.nextToken(), schemaDoc.fValidationContext, null);
                                     ((Vector)attrValues[ATTIDX_SUBSGROUP]).addElement(avalue);
@@ -2015,8 +2034,19 @@ public class XSAttributeChecker {
                 }
             }
             break;
+        case DT_EXPLICITTIMEZONE:
+            // value = optional | required | prohibited
+            if (value.equals (SchemaSymbols.ATTVAL_OPTIONAL))
+                retValue = INT_ET_OPTION;
+            else if (value.equals (SchemaSymbols.ATTVAL_REQUIRED))
+                retValue = INT_ET_REQUIRED;
+            else if (value.equals (SchemaSymbols.ATTVAL_PROHIBITED))
+                retValue = INT_ET_PROHIBITED;
+            else
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(optional | required | prohibited)"});
+            break;
         }
-
         return retValue;
     }
 

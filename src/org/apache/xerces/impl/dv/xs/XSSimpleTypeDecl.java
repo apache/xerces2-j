@@ -92,6 +92,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     protected static final short DV_DAYTIMEDURATION	  = DV_NOTATION + 8;
     protected static final short DV_ANYATOMICTYPE     = DV_NOTATION + 9;
     protected static final short DV_ERROR             = DV_NOTATION + 10;
+    protected static final short DV_DATETIMESTAMP     = DV_NOTATION + 11;
 
     private static final TypeValidator[] gDVs = {
         new AnySimpleDV(),
@@ -124,7 +125,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         new YearMonthDurationDV(), // XML Schema 1.1 type
         new DayTimeDurationDV(), // XML Schema 1.1 type
         new AnyAtomicDV(), // XML Schema 1.1 type
-        new ErrorDV() // XML Schema 1.1 type
+        new ErrorDV(), // XML Schema 1.1 type
+        new DateTimeStampDV() //XML Schema 1.1 type
     };
 
     static final short NORMALIZE_NONE = 0;
@@ -162,6 +164,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         NORMALIZE_TRIM, //DayTimeDurationDV() (Schema 1.1)
         NORMALIZE_NONE, //AnyAtomicDV() (Schema 1.1)
         NORMALIZE_NONE, //ErrorDV() (Schema 1.1)
+        NORMALIZE_TRIM, //DateTimeStampDV(), (Schema 1.1)
     };
 
     static final short SPECIAL_PATTERN_NONE     = 0;
@@ -177,6 +180,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         "preserve", "replace", "collapse"
     };
 
+    static final String[] ET_FACET_STRING = {
+        "optional", "required", "prohibited"
+    };
+    
     static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
     static final String ANY_TYPE = "anyType";
 
@@ -186,6 +193,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     public static final short PRECISIONDECIMAL_DT       = 48;
     public static final short ANYATOMICTYPE_DT          = 49;
     public static final short ERROR_DT                  = 50;
+    public static final short DATETIMESTAMP_DT          = 51;
 
     // DOM Level 3 TypeInfo Derivation Method constants
     static final int DERIVATION_ANY = 0;
@@ -268,6 +276,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     //for constraining facets
     private short fWhiteSpace = 0;
+    private short fExplicitTimezone = ET_OPTIONAL; //for XML Schema 1.1
     private int fLength = -1;
     private int fMinLength = -1;
     private int fMaxLength = -1;
@@ -302,6 +311,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     public XSAnnotation maxExclusiveAnnotation;
     public XSAnnotation minInclusiveAnnotation;
     public XSAnnotation minExclusiveAnnotation;
+    public XSAnnotation explicitTimezoneAnnotation;
 
     // facets as objects
     private XSObjectListImpl fFacets;
@@ -406,6 +416,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPatternType = fBase.fPatternType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
+        fExplicitTimezone = fBase.fExplicitTimezone;
 
         // always inherit facet annotations in case applyFacets is not called.
         lengthAnnotation = fBase.lengthAnnotation;
@@ -420,6 +431,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         minInclusiveAnnotation = fBase.minInclusiveAnnotation;
         totalDigitsAnnotation = fBase.totalDigitsAnnotation;
         fractionDigitsAnnotation = fBase.fractionDigitsAnnotation;
+        explicitTimezoneAnnotation = fBase.explicitTimezoneAnnotation;
 
         //we also set fundamental facets information in case applyFacets is not called.
         calcFundamentalFacets();
@@ -527,6 +539,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPatternType = fBase.fPatternType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
+        fExplicitTimezone = fBase.fExplicitTimezone;
 
         //we also set fundamental facets information in case applyFacets is not called.
         calcFundamentalFacets();
@@ -928,6 +941,19 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 fFixedFacet |= FACET_ASSERT;
         }
 
+        //explicitTimezone
+        if ((presentFacet & FACET_EXPLICITTIMEZONE) != 0) {
+            if ((allowedFacet & FACET_EXPLICITTIMEZONE) == 0) {
+                reportError("cos-applicable-facets", new Object[]{"explicitTimezone", fTypeName});
+            } else {
+                fExplicitTimezone = facets.explicitTimezone;
+                explicitTimezoneAnnotation = facets.explicitTimezoneAnnotation;
+                fFacetsDefined |= FACET_EXPLICITTIMEZONE;
+                if ((fixedFacet & FACET_EXPLICITTIMEZONE) != 0)
+                    fFixedFacet |= FACET_EXPLICITTIMEZONE;
+            }
+        }
+        
         // maxInclusive
         if ((presentFacet & FACET_MAXINCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MAXINCLUSIVE) == 0) {
@@ -1450,6 +1476,26 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     reportError( "whiteSpace-valid-restriction.2", new Object[]{fTypeName});
                 }
             }
+
+            if ((fFacetsDefined & FACET_EXPLICITTIMEZONE) != 0) {
+                if ((fBase.fFacetsDefined & FACET_EXPLICITTIMEZONE ) != 0 && fExplicitTimezone != fBase.fExplicitTimezone){
+                    final String explicitTZStr = explicitTimezoneValue(fExplicitTimezone);
+                    final String baseExplicitTZStr = explicitTimezoneValue(fBase.fExplicitTimezone);
+                    if ((fBase.fFixedFacet & FACET_EXPLICITTIMEZONE) != 0) {
+                        reportError( "FixedFacetValue", new Object[]{"explicitTimezone", explicitTZStr, baseExplicitTZStr, fTypeName});
+                    }
+                    //check 4.3.16.4 error:
+                    //(explicitTimezone != prohibited && fBase.explicitTimezone = prohibited)
+                    //or (explicitTimezone != required && fBase.explicitTimezone = required)
+                    if (fBase.fExplicitTimezone != ET_OPTIONAL) {
+                        reportError("timezone-valid-restriction", new Object[]{fTypeName, explicitTZStr, baseExplicitTZStr});
+                    }                
+                }
+                if ( (fValidationDV == DV_DATETIMESTAMP) && fExplicitTimezone != XSSimpleType.ET_REQUIRED){
+                    reportError( "FixedFacetValue", new Object[]{"explicitTimezone", explicitTimezoneValue(fExplicitTimezone), explicitTimezoneValue(ET_REQUIRED), fTypeName});
+                }
+            }
+            
         }//fFacetsDefined != null
 
         // step 4: inherit other facets from base (including fTokeyType)
@@ -1503,6 +1549,14 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             fWhiteSpace = fBase.fWhiteSpace;
             whiteSpaceAnnotation = fBase.whiteSpaceAnnotation;
         }
+        
+        //inherit explicitTimezone
+        if ( (fFacetsDefined & FACET_EXPLICITTIMEZONE) == 0 &&  (fBase.fFacetsDefined & FACET_EXPLICITTIMEZONE) != 0 ) {
+            fFacetsDefined |= FACET_EXPLICITTIMEZONE;
+            fExplicitTimezone = fBase.fExplicitTimezone;
+            explicitTimezoneAnnotation = fBase.explicitTimezoneAnnotation;
+        }
+        
         // inherit enumeration
         if ((fFacetsDefined & FACET_ENUMERATION) == 0 && (fBase.fFacetsDefined & FACET_ENUMERATION) != 0) {
             fFacetsDefined |= FACET_ENUMERATION;
@@ -1763,6 +1817,22 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             }
         }
 
+        
+        //explicitTimezone
+        if ( ( fFacetsDefined & FACET_EXPLICITTIMEZONE) !=0 ) {
+            boolean hasTimezone = fDVs[fValidationDV].hasTimeZone(ob);
+            if (hasTimezone) {
+                if (fExplicitTimezone == ET_PROHIBITED ) {
+                    throw new InvalidDatatypeValueException("cvc-explicitTimezone-valid",
+                        new Object[] {content, "prohibited", fTypeName});
+                }
+            }
+            else if (fExplicitTimezone == ET_REQUIRED) {
+                throw new InvalidDatatypeValueException("cvc-explicitTimezone-valid",
+                        new Object[] {content, "required", fTypeName});
+            }
+        }
+        
         int compare;
 
         //maxinclusive
@@ -2127,6 +2197,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         return WS_FACET_STRING[ws];
     }
 
+    private String explicitTimezoneValue(short et){
+        return ET_FACET_STRING[et];
+    }
+    
     /**
      *  Fundamental Facet: ordered.
      */
@@ -2238,6 +2312,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 return (fMinInclusive == null)?null:fMinInclusive.toString();
             case FACET_TOTALDIGITS:
                 return (fTotalDigits == -1)?null:Integer.toString(fTotalDigits);
+            case FACET_EXPLICITTIMEZONE:
+                return ET_FACET_STRING[fExplicitTimezone];
             case FACET_FRACTIONDIGITS:
                 if (fValidationDV == DV_INTEGER) {
                     return "0";
@@ -3013,6 +3089,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         //for constraining facets
         fWhiteSpace = 0;
+        fExplicitTimezone = ET_OPTIONAL;
         fLength = -1;
         fMinLength = -1;
         fMaxLength = -1;
@@ -3041,6 +3118,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         maxExclusiveAnnotation = null;
         minInclusiveAnnotation = null;
         minExclusiveAnnotation = null;
+        explicitTimezoneAnnotation = null;
 
         fPatternType = SPECIAL_PATTERN_NONE;
         fAnnotations = null;
@@ -3077,7 +3155,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if (fFacets == null &&
                 (fFacetsDefined != 0 || fValidationDV == DV_INTEGER)) {
 
-            XSFacetImpl[] facets = new XSFacetImpl[10];
+            XSFacetImpl[] facets = new XSFacetImpl[11];
             int count = 0;
             if ((fFacetsDefined & FACET_WHITESPACE) != 0) {
                 facets[count] =
@@ -3176,6 +3254,15 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                             fMinInclusive.toString(),
                             (fFixedFacet & FACET_MININCLUSIVE) != 0,
                             minInclusiveAnnotation);
+                count++;
+            }
+            if ((fFacetsDefined & FACET_EXPLICITTIMEZONE) != 0) {
+                facets[count] = 
+                    new XSFacetImpl (
+                            FACET_EXPLICITTIMEZONE,
+                            ET_FACET_STRING[fExplicitTimezone],
+                            (fFixedFacet & FACET_EXPLICITTIMEZONE) != 0,
+                            explicitTimezoneAnnotation);
                 count++;
             }
             fFacets = new XSObjectListImpl(facets, count);

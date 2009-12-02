@@ -53,6 +53,11 @@ public class XSFacets {
      * value of whiteSpace facet.
      */
     public short whiteSpace;
+    
+    /**
+     * value of explicitTimezone facet.
+     */
+    public short explicitTimezone;
 
     /**
      * value of totalDigits facet.
@@ -119,6 +124,7 @@ public class XSFacets {
     public XSAnnotation maxExclusiveAnnotation;
     public XSAnnotation minInclusiveAnnotation;
     public XSAnnotation minExclusiveAnnotation;
+    public XSAnnotation explicitTimezoneAnnotation; //XML schema 1.1
     
     // the annotations of the assertions are stored in XSAssertImpl objects
     // stored in the 'assertFacets' Vector. 
@@ -137,5 +143,6 @@ public class XSFacets {
         minInclusiveAnnotation = null;
         minExclusiveAnnotation = null;
         assertFacets = null;
+        explicitTimezoneAnnotation = null; //XML Schema 1.1
     }
 }
