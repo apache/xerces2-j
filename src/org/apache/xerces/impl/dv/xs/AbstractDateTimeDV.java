@@ -89,6 +89,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 				((DateTimeData)value2), true);
 	}//compare()
 	
+	public boolean hasTimeZone(Object value){
+	    return ((DateTimeData)value).hasTimeZone();
+	}
+	
 	/**
 	 * Compare algorithm described in dateDime (3.2.7).
 	 * Duration datatype overwrites this method
