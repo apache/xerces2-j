@@ -46,23 +46,43 @@ import org.eclipse.wst.xml.xpath2.processor.function.XSCtrLibrary;
 import org.eclipse.wst.xml.xpath2.processor.internal.Focus;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.ElementType;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.QName;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSAnyURI;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSBoolean;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSByte;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDate;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDateTime;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDayTimeDuration;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDecimal;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDouble;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDuration;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSFloat;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGDay;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGMonth;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGMonthDay;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGYear;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGYearMonth;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSInt;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSInteger;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSLong;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSNegativeInteger;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSNonNegativeInteger;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSNonPositiveInteger;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSPositiveInteger;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSShort;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSString;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSTime;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSUnsignedByte;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSUnsignedInt;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSUnsignedLong;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSUnsignedShort;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.XSYearMonthDuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class, providing common services for XPath 2 evaluation,
- * with PsychoPath XPath 2.0 engine.
+ * A base class, providing common services for XPath 2 evaluation, with
+ * PsychoPath XPath 2.0 engine.
  * 
  * @xerces.internal
  * 
@@ -176,42 +196,106 @@ public class AbstractPsychoPathImpl {
                                                  String value) {
         Object psychoPathType = null;
         
-        if ("string".equals(xsdTypeName)) {
-            psychoPathType = new XSString(value);   
-        }
-        else if ("date".equals(xsdTypeName)) {       
-            psychoPathType = XSDate.parse_date(value);
-        }
-        else if ("int".equals(xsdTypeName)) {      
-            psychoPathType = new XSInt(new BigInteger(value));
-        }
-        else if ("long".equals(xsdTypeName)) {     
-           psychoPathType = new XSLong(new BigInteger(value));
-        }
-        else if ("integer".equals(xsdTypeName)) {      
-           psychoPathType = new XSInteger(new BigInteger(value));
-        }
-        else if ("double".equals(xsdTypeName)) {       
-           psychoPathType = new XSDouble(Double.parseDouble(value));
-        }
-        else if ("float".equals(xsdTypeName)) {        
-           psychoPathType = new XSFloat(Float.parseFloat(value));
-        }
-        else if ("decimal".equals(xsdTypeName)) {      
-           psychoPathType = new XSDecimal(new BigDecimal(value));
-        }
-        else if ("dateTime".equals(xsdTypeName)) {
-           psychoPathType = XSDateTime.parseDateTime(value);
-        }
-        else if ("time".equals(xsdTypeName)) {
-           psychoPathType = XSTime.parse_time(value);
+        if ("anyURI".equals(xsdTypeName)) {
+           psychoPathType = new XSAnyURI(value);
         }
         else if ("boolean".equals(xsdTypeName)) {
            psychoPathType = new XSBoolean(Boolean.valueOf(value).booleanValue());
         }
+        else if ("date".equals(xsdTypeName)) {       
+           psychoPathType = XSDate.parse_date(value);
+        }
+        else if ("dateTime".equals(xsdTypeName)) {
+           psychoPathType = XSDateTime.parseDateTime(value);
+        }
+        // decimal and it's subtypes
+        else if ("decimal".equals(xsdTypeName)) {      
+           psychoPathType = new XSDecimal(new BigDecimal(value));
+        }
+        else if ("integer".equals(xsdTypeName)) {      
+           psychoPathType = new XSInteger(new BigInteger(value));
+        }
+        else if ("long".equals(xsdTypeName)) {     
+           psychoPathType = new XSLong(new BigInteger(value));
+        }
+        else if ("int".equals(xsdTypeName)) {      
+           psychoPathType = new XSInt(new BigInteger(value));
+        }
+        else if ("short".equals(xsdTypeName)) {      
+           psychoPathType = new XSShort(new BigInteger(value));
+        }
+        else if ("byte".equals(xsdTypeName)) {      
+           psychoPathType = new XSByte(new BigInteger(value));
+        }
+        else if ("nonNegativeInteger".equals(xsdTypeName)) {      
+           psychoPathType = new XSNonNegativeInteger(new BigInteger(value));
+        }
+        else if ("positiveInteger".equals(xsdTypeName)) {      
+           psychoPathType = new XSPositiveInteger(new BigInteger(value));
+        }
+        else if ("unsignedLong".equals(xsdTypeName)) {      
+           psychoPathType = new XSUnsignedLong(new BigInteger(value));
+        }
+        else if ("unsignedInt".equals(xsdTypeName)) {      
+           psychoPathType = new XSUnsignedInt(new BigInteger(value));
+        }
+        else if ("unsignedShort".equals(xsdTypeName)) {      
+           psychoPathType = new XSUnsignedShort(new BigInteger(value));
+        }
+        else if ("unsignedByte".equals(xsdTypeName)) {      
+           psychoPathType = new XSUnsignedByte(new BigInteger(value));
+        }
+        else if ("nonPositiveInteger".equals(xsdTypeName)) {      
+           psychoPathType = new XSNonPositiveInteger(new BigInteger(value));
+        }
+        else if ("negativeInteger".equals(xsdTypeName)) {      
+           psychoPathType = new XSNegativeInteger(new BigInteger(value));
+        }
+        // end of, decimal types
+        else if ("double".equals(xsdTypeName)) {       
+           psychoPathType = new XSDouble(Double.parseDouble(value));
+        }
+        // duration and it's subtypes
+        else if ("duration".equals(xsdTypeName)) {       
+           psychoPathType = XSDuration.parseDTDuration(value);
+        }
+        else if ("dayTimeDuration".equals(xsdTypeName)) {       
+           psychoPathType = XSDayTimeDuration.parseDTDuration(value);
+        }
+        else if ("yearMonthDuration".equals(xsdTypeName)) {       
+           psychoPathType = XSYearMonthDuration.parseYMDuration(value);
+        }
+        // end of, duration types
+        else if ("float".equals(xsdTypeName)) {        
+           psychoPathType = new XSFloat(Float.parseFloat(value));
+        }
+        else if ("gDay".equals(xsdTypeName)) {        
+           psychoPathType = XSGDay.parse_gDay(value);
+        }
+        else if ("gMonth".equals(xsdTypeName)) {        
+           psychoPathType = XSGMonth.parse_gMonth(value);
+        }
+        else if ("gMonthDay".equals(xsdTypeName)) {        
+           psychoPathType = XSGMonthDay.parse_gMonthDay(value);
+        }
+        else if ("gYear".equals(xsdTypeName)) {        
+           psychoPathType = XSGYear.parse_gYear(value);
+        }
+        else if ("gYearMonth".equals(xsdTypeName)) {        
+           psychoPathType = XSGYearMonth.parse_gYearMonth(value);
+        }
         else if ("NOTATION".equals(xsdTypeName)) {
            psychoPathType = new XSString(value);
         }
+        else if ("QName".equals(xsdTypeName)) {
+           psychoPathType = QName.parse_QName(value);
+        }
+        else if ("string".equals(xsdTypeName)) {
+           psychoPathType = new XSString(value);   
+        }                        
+        else if ("time".equals(xsdTypeName)) {
+           psychoPathType = XSTime.parse_time(value);
+        }               
         else {
            // create a XSString value, as fallback option 
            psychoPathType = new XSString(value);

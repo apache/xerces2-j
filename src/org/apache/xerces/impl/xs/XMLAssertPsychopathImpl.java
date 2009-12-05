@@ -38,7 +38,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
-import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyAtomicType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -283,7 +283,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                          (xsdTypeName, value);       
        fDynamicContext.set_variable(
                new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
-                       "value"), (AnyType) psychoPathType);
+                       "value"), (AnyAtomicType) psychoPathType);
     }
     
     /*
