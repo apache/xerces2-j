@@ -33,6 +33,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLAssertAdapter;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -220,11 +221,16 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             }
             XSObjectList assertList = (XSObjectList) assertions;
             for (int i = 0; i < assertList.size(); i++) {
-               XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
+               XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);               
+               boolean xpathContextExists = false;
+               if (assertImpl.getType() == XSConstants.ASSERTION) {
+                  // not an assertion facet
+                  xpathContextExists = true;   
+               }               
                evaluateAssertion(element,
                                  assertImpl,
                                  value,
-                                 xPathContextExistsForComplexType());
+                                 xpathContextExists);
             }
         } else if (assertions instanceof Vector) {
             // assertions from a simple type definition
@@ -235,37 +241,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                 evaluateAssertion(element, assertImpl, value, false);
             }
         }
-    }
-
-    /*
-     * Determine, if XPath context should exist, for assertions on
-     * complex types.
-     * an XPath context should exist, if complex type has following
-     * content model:
-     * complexType -> simpleContent -> extension
-     * OR
-     * complexType -> mixed content type
-     *                (i.e, <xs:complexType ... mixed="true")
-     */
-    private boolean xPathContextExistsForComplexType() {
-        boolean contextExistsForComplexType = false;
-        
-        PSVIElementNSImpl psviElemCurrent = (PSVIElementNSImpl)
-                                                 currentAssertDomNode;         
-        if (psviElemCurrent.getTypeDefinition().getTypeCategory() == 
-                                         XSTypeDefinition.COMPLEX_TYPE) {
-             XSComplexTypeDecl compTypeDecl = (XSComplexTypeDecl)
-                                           psviElemCurrent.getTypeDefinition();                                       
-             if (compTypeDecl.isDerivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA,
-                                    SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
-                                    XSComplexTypeDecl.DERIVATION_EXTENSION) ||
-                                    (compTypeDecl.getContentType() ==
-                                           compTypeDecl.CONTENTTYPE_MIXED)) {
-                 contextExistsForComplexType = true;    
-             }
-        }
-         
-        return contextExistsForComplexType;
     }
 
     /*
@@ -293,17 +268,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             boolean result;            
             if ((value == null) ||
                 (xPathContextExists == true)) {
-                // assertion on complex type, with complex content
-                // OR, complex type -> simpleContent -> extension
-                // OR, complex type -> mixed
                 result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
                                  assertImpl.getXPathDefaultNamespace(),
                                  currentAssertDomNode);  
-            }
+            } 
             else {
-                // assertion on simple type
-                // OR, complex type -> simpleContent -> restriction.
-                // here, XPath context is "undefined"
+                // XPath context is "undefined"
                 result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
                                  assertImpl.getXPathDefaultNamespace(),
                                  null); 

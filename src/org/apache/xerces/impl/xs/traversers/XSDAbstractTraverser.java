@@ -24,7 +24,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -45,6 +44,7 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -511,6 +511,7 @@ abstract class XSDAbstractTraverser {
                                                            fSchemaHandler);
                     Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
                                            schemaDoc.fNamespaceSupport), assertImpl);                 
+                    assertImpl.setType(XSConstants.ASSERTION_FACET);
                     assertImpl.setTest(testExpr);
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
                     assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);

@@ -37,6 +37,8 @@ import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
  */
 public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
 
+    protected short assertType = XSConstants.ASSERTION;
+    
     /** The type definition associated with the assertion component */
     protected XSTypeDefinition fTypeDefinition;
 
@@ -91,6 +93,13 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     public void setXPath2NamespaceContext(NamespaceSupport namespaceContext) {
         fXPath2NamespaceContext = namespaceContext;       
     }
+    
+    /**
+     * Sets the type of the object
+     */
+    public void setType(short assertType) {
+        this.assertType = assertType;
+    }
    
     public XSObjectList getAnnotations() {
         return fAnnotations;
@@ -141,7 +150,7 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
      * Get the type of the object
      */
     public short getType() {
-        return XSConstants.ASSERTION;
+        return assertType;
     }
        
     /**

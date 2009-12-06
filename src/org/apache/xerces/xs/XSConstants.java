@@ -89,11 +89,16 @@ public interface XSConstants {
      * The object describes a XML Schema assertion
      */
     public static final short ASSERTION                 = 16;
+    
+    /**
+     * The object describes a XML Schema assertion, facet
+     */
+    public static final short ASSERTION_FACET           = 17;
 
     /**
      * The object describes an openContent
      */
-    public static final short OPEN_CONTENT              = 17;
+    public static final short OPEN_CONTENT              = 18;
 
     // Derivation constants
     /**
