@@ -37,6 +37,8 @@ import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
+import org.eclipse.wst.xml.xpath2.processor.DynamicError;
+import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyAtomicType;
 import org.w3c.dom.Document;
@@ -65,15 +67,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // a factory Document object to construct DOM tree nodes
     Document assertDocument = null;
 
-    // an element to track construction of assertion DOM tree. This object changes
-    // as per the XNI document events.
+    // an element to track construction of assertion DOM tree. This object
+    // changes as per the XNI document events.
     Element currentAssertDomNode = null;
 
     // a stack holding the DOM root for assertions evaluation
     Stack assertRootStack = null;
 
-    // a stack parallel to 'assertRootStack' storing all assertions for a single
-    // assert tree
+    // a stack parallel to 'assertRootStack' storing all assertions for a
+    // single assert tree.
     Stack assertListStack = null;
 
     // XMLSchemaValidator reference. set from the XMLSchemaValidator object
@@ -100,15 +102,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * Initialize the PsychoPath XPath processor
      */
     private void initXPathProcessor() throws Exception {
-        validator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
+        validator = (XMLSchemaValidator) getProperty
+                        ("http://apache.org/xml/properties/assert/validator");        
         abstrPsychopathImpl = new AbstractPsychoPathImpl();
-        fDynamicContext = abstrPsychopathImpl.initDynamicContext(fSchema,
-                                                      assertDocument,
-                                                      assertParams);
-        
-        // create variable, $value in XPath dynamic context
-        fDynamicContext.add_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
-                                         "value"));
+        fDynamicContext = abstrPsychopathImpl.initDynamicContext(
+                                                    fSchema,
+                                                    assertDocument,
+                                                    assertParams);
     }
 
     /*
@@ -118,10 +118,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     public void startElement(QName element, XMLAttributes attributes,
                                               Augmentations augs) {
         if (currentAssertDomNode == null) {
-           currentAssertDomNode = new PSVIElementNSImpl((CoreDocumentImpl) assertDocument, element.uri, element.rawname);
+           currentAssertDomNode = new PSVIElementNSImpl((CoreDocumentImpl)
+                                assertDocument, element.uri, element.rawname);
            assertDocument.appendChild(currentAssertDomNode);
         } else {
-            Element elem = new PSVIElementNSImpl((CoreDocumentImpl) assertDocument, element.uri, element.rawname);
+            Element elem = new PSVIElementNSImpl((CoreDocumentImpl)
+                                assertDocument, element.uri, element.rawname);
             currentAssertDomNode.appendChild(elem);
             currentAssertDomNode = elem;
         }
@@ -132,12 +134,14 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             String attQName = attributes.getQName(attIndex);
             String attValue = attributes.getValue(attIndex);
             
-            PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl) assertDocument, attrUri, attQName);
+            PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)
+                                          assertDocument, attrUri, attQName);
             attrNode.setNodeValue(attValue);
             
             // set PSVI information for the attribute
             Augmentations attrAugs = attributes.getAugmentations(attIndex);
-            AttributePSVImpl attrPSVI = (AttributePSVImpl) attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
+            AttributePSVImpl attrPSVI = (AttributePSVImpl) attrAugs.
+                                         getItem(Constants.ATTRIBUTE_PSVI);
             attrNode.setPSVI(attrPSVI);
             
             currentAssertDomNode.setAttributeNode(attrNode);
@@ -159,12 +163,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     public void endElement(QName element, Augmentations augs) throws Exception {
         if (currentAssertDomNode != null) {
             // set PSVI information on the element
-            ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+            ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(
+                                                 Constants.ELEMENT_PSVI);
             ((PSVIElementNSImpl)currentAssertDomNode).setPSVI(elemPSVI);
             
-            if (!assertRootStack.empty() && (currentAssertDomNode == assertRootStack.peek())) {               
+            if (!assertRootStack.empty() && (currentAssertDomNode == 
+                                             assertRootStack.peek())) {               
                  // get XSModel                
-                 fSchema =  ((PSVIElementNSImpl) currentAssertDomNode).getSchemaInformation();
+                 fSchema =  ((PSVIElementNSImpl) currentAssertDomNode).
+                                                 getSchemaInformation();
                  
                  // pop the stack, to go one level up
                  assertRootStack.pop();
@@ -175,7 +182,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             }
 
             if (currentAssertDomNode.getParentNode() instanceof Element) {
-              currentAssertDomNode = (Element)currentAssertDomNode.getParentNode();
+              currentAssertDomNode = (Element)currentAssertDomNode.
+                                                       getParentNode();
             }
         }
     }
@@ -183,8 +191,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Method to evaluate all assertions for the element tree
      */
-    private void processAllAssertionsOnElement(QName element, Object assertions)
-            throws Exception {
+    private void processAllAssertionsOnElement(
+                                    QName element,
+                                    Object assertions)
+                                    throws Exception {
          // initialize the XPath engine
          initXPathProcessor();
          
@@ -197,7 +207,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  value = node.getNodeValue();
              }
          }
-         
+
          // evaluate assertions
          if (assertions instanceof XSObjectList) {
             // assertions from a complex type definition
@@ -211,7 +221,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             XSObjectList assertList = (XSObjectList) assertions;
             for (int i = 0; i < assertList.size(); i++) {
                XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
-               evaluateAssertion(element, assertImpl);
+               evaluateAssertion(element,
+                                 assertImpl,
+                                 value,
+                                 xPathContextExistsForComplexType());
             }
         } else if (assertions instanceof Vector) {
             // assertions from a simple type definition
@@ -219,9 +232,40 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             Vector assertList = (Vector) assertions;                    
             for (int i = 0; i < assertList.size(); i++) {
                 XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
-                evaluateAssertion(element, assertImpl);
+                evaluateAssertion(element, assertImpl, value, false);
             }
         }
+    }
+
+    /*
+     * Determine, if XPath context should exist, for assertions on
+     * complex types.
+     * an XPath context should exist, if complex type has following
+     * content model:
+     * complexType -> simpleContent -> extension
+     * OR
+     * complexType -> mixed content type
+     *                (i.e, <xs:complexType ... mixed="true")
+     */
+    private boolean xPathContextExistsForComplexType() {
+        boolean contextExistsForComplexType = false;
+        
+        PSVIElementNSImpl psviElemCurrent = (PSVIElementNSImpl)
+                                                 currentAssertDomNode;         
+        if (psviElemCurrent.getTypeDefinition().getTypeCategory() == 
+                                         XSTypeDefinition.COMPLEX_TYPE) {
+             XSComplexTypeDecl compTypeDecl = (XSComplexTypeDecl)
+                                           psviElemCurrent.getTypeDefinition();                                       
+             if (compTypeDecl.isDerivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA,
+                                    SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
+                                    XSComplexTypeDecl.DERIVATION_EXTENSION) ||
+                                    (compTypeDecl.getContentType() ==
+                                           compTypeDecl.CONTENTTYPE_MIXED)) {
+                 contextExistsForComplexType = true;    
+             }
+        }
+         
+        return contextExistsForComplexType;
     }
 
     /*
@@ -239,18 +283,47 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Method to evaluate an assertion for the element
      */
-    private void evaluateAssertion(QName element, XSAssertImpl assertImpl) {
+    private void evaluateAssertion(QName element,
+                                   XSAssertImpl assertImpl,
+                                   String value,
+                                   boolean xPathContextExists) {
         try {  
-            XPath xp = assertImpl.getCompiledXPath();            
-            boolean result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
-                                     assertImpl.getXPathDefaultNamespace(),
-                                     currentAssertDomNode);
+            XPath xp = assertImpl.getCompiledXPath();
+            
+            boolean result;            
+            if ((value == null) ||
+                (xPathContextExists == true)) {
+                // assertion on complex type, with complex content
+                // OR, complex type -> simpleContent -> extension
+                // OR, complex type -> mixed
+                result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
+                                 assertImpl.getXPathDefaultNamespace(),
+                                 currentAssertDomNode);  
+            }
+            else {
+                // assertion on simple type
+                // OR, complex type -> simpleContent -> restriction.
+                // here, XPath context is "undefined"
+                result = abstrPsychopathImpl.evaluatePsychoPathExpr(xp,
+                                 assertImpl.getXPathDefaultNamespace(),
+                                 null); 
+            }
             
             if (!result) {
                // assertion evaluation is false
                reportError("cvc-assertion.3.13.4.1", element, assertImpl);
             }
-        } catch (Exception ex) {
+        }
+        catch (DynamicError ex) {
+            if (ex.code().equals("XPDY0002")) {
+               // ref: http://www.w3.org/TR/xpath20/#eval_context
+               reportError("cvc-assertion.4.3.15.3", element, assertImpl);
+            }
+            else {
+               reportError("cvc-assertion.3.13.4.1", element, assertImpl);  
+            }
+        }
+        catch (StaticError ex) {
             reportError("cvc-assertion.3.13.4.1", element, assertImpl);
         }
     }
@@ -258,12 +331,14 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Method to report error messages
      */
-    private void reportError(String key, QName element, XSAssertImpl assertImpl) {
+    private void reportError(String key, QName element,
+                             XSAssertImpl assertImpl) {
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
         String typeString = "";
         
         if (typeDef != null) {
-           typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
+           typeString = (typeDef.getName() != null) ? typeDef.getName() :
+                                                      "#anonymous";   
         }
         else {
            typeString = "#anonymous"; 
@@ -276,9 +351,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     // assign value to the XPath2 "dynamic context" variable, $value
     private void setValueOf$value(String value) {
-       PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl) currentAssertDomNode;
+       PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl)
+                                                 currentAssertDomNode;
        
-       String xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.getTypeDefinition());       
+       String xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.
+                                               getTypeDefinition());       
        Object psychoPathType = abstrPsychopathImpl.getPsychoPathTypeForXSDType
                                                          (xsdTypeName, value);       
        fDynamicContext.set_variable(

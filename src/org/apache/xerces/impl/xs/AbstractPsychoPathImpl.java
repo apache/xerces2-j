@@ -103,9 +103,10 @@ public class AbstractPsychoPathImpl {
         
         fDynamicContext = new DefaultDynamicContext(schema, document);        
         
-        // populate the PsychoPath XPath 2.0 static context, with namespace bindings
-        // derived from the XSD Schema document
-        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
+        // populate the PsychoPath XPath 2.0 static context, with namespace
+        // bindings derived from the XSD Schema document
+        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport)
+                                    psychoPathParams.get("XPATH2_NS_CONTEXT");
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
         while (currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
@@ -127,21 +128,27 @@ public class AbstractPsychoPathImpl {
                                  String xPathDefaultNamespace,
                                  Element contextNode)
                                  throws StaticError, DynamicError {
-        if (xPathDefaultNamespace != null) {
-           fDynamicContext.add_namespace(null, xPathDefaultNamespace);  
-        }
+        
         StaticChecker sc = new StaticNameResolver(fDynamicContext);
         sc.check(xp);
        
-        Evaluator eval = new DefaultEvaluator(fDynamicContext, domDoc);
-        
-        // change focus to the top most element
-        ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
-        nodeEvalRS.add(new ElementType(contextNode, 
+        Evaluator eval = null;
+        if (contextNode != null) {
+           eval = new DefaultEvaluator(fDynamicContext, domDoc);           
+           // change focus to the top most element
+           ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
+           nodeEvalRS.add(new ElementType(contextNode, 
                            fDynamicContext.node_position(contextNode)));
-
-        fDynamicContext.set_focus(new Focus(nodeEvalRS));
-
+           if (xPathDefaultNamespace != null) {
+             fDynamicContext.add_namespace(null, xPathDefaultNamespace);  
+           }
+           
+           fDynamicContext.set_focus(new Focus(nodeEvalRS));
+        }
+        else {
+           eval = new DefaultEvaluator(fDynamicContext, null);   
+        }
+        
         ResultSequence rs = eval.evaluate(xp);
 
         boolean result = false;
@@ -200,7 +207,8 @@ public class AbstractPsychoPathImpl {
            psychoPathType = new XSAnyURI(value);
         }
         else if ("boolean".equals(xsdTypeName)) {
-           psychoPathType = new XSBoolean(Boolean.valueOf(value).booleanValue());
+           psychoPathType = new XSBoolean(Boolean.valueOf(value).
+                                                  booleanValue());
         }
         else if ("date".equals(xsdTypeName)) {       
            psychoPathType = XSDate.parse_date(value);
@@ -313,7 +321,8 @@ public class AbstractPsychoPathImpl {
         String typeString = "";
         
         if (typeDef != null) {
-           typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
+           typeString = (typeDef.getName() != null) ? typeDef.getName() :
+                                                            "#anonymous";   
         }
         else {
            typeString = "#anonymous"; 
