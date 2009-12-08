@@ -26,6 +26,7 @@ import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSOpenContent;
 import org.apache.xerces.xs.XSParticle;
@@ -98,6 +99,9 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     
     // list of assertions affiliated with this type
     XSObjectListImpl fAssertions = null;
+    
+    // context
+    XSObject fContext = null;
 
     // DOM Level 3 TypeInfo Derivation Method constants
     static final int DERIVATION_ANY = 0;
@@ -577,6 +581,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
             fAssertions.clear();
         }
         fAssertions = null;
+        fContext = null;
     }
 
     /**
@@ -758,6 +763,14 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     
     public XSObjectList getAssertions() {
         return (fAssertions != null) ? fAssertions : XSObjectListImpl.EMPTY_LIST;
+    }
+
+    public void setContext(XSObject context) {
+        fContext = context;
+    }
+
+    public XSObject getContext() {
+        return fContext;
     }
 
 } // class XSComplexTypeDecl

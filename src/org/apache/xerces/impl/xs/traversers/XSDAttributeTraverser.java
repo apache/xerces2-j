@@ -331,7 +331,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             String childName = DOMUtil.getLocalName(child);
             
             if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                attrType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
+                attrType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar, attribute);
                 haveAnonType = true;
                 child = DOMUtil.getNextSiblingElement(child);
             }

@@ -98,5 +98,39 @@ public interface XSTypeDefinition extends XSObject {
     public boolean derivedFrom(String namespace, 
                                String name, 
                                short derivationMethod);
-
+    
+    /**
+     * A property that simplifies testing for the identity of anonymous type
+     * definitions.
+     * 
+     * For complex type definition:
+     * 1. If the name [attribute] is present (with the exception of the type being
+     *    redefined, number 2 below), then absent, otherwise the Element
+     *    Declaration corresponding to that parent information item
+     * 2. In the case of redefine, the context of the redefined complex type is the
+     *    redefining complex type definition
+     * 
+     * For simple type definition,
+     * 1. If the name [attribute] is present (with the exception of the type being
+     *    redefined, number 3 below), then absent
+     * 2. otherwise the appropriate case among the following:
+     *    2.1 If the parent element information item is attribute, then the
+     *        corresponding Attribute Declaration
+     *    2.2 If the parent element information item is element, then the
+     *        corresponding Element Declaration
+     *    2.3 If the parent element information item is list or union, then
+     *        the Simple Type Definition corresponding to the grandparent simpleType
+     *        element information item
+     *    2.4 otherwise (the parent element information item is restriction), the
+     *        appropriate case among the following:
+     *        2.4.1 If the grandparent element information item is simpleType, then
+     *              the Simple Type Definition corresponding to the grandparent
+     *        2.4.2 otherwise (the grandparent element information item is simpleContent),
+     *              the Simple Type Definition which is the {content type} of the Complex
+     *              Type Definition corresponding to the great-grandparent complexType
+     *              element information item.
+     * 3. In the case of redefine, the context of the redefined simple type is the
+     *    redefining simple type definition
+     */
+    public XSObject getContext();
 }

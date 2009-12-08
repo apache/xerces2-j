@@ -42,6 +42,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
@@ -158,7 +159,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
      */
     XSComplexTypeDecl traverseLocal(Element complexTypeNode,
             XSDocumentInfo schemaDoc,
-            SchemaGrammar grammar) {
+            SchemaGrammar grammar,
+            XSObject context) {
         
         
         Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, false,
@@ -166,7 +168,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         String complexTypeName = genAnonTypeName(complexTypeNode);
         contentBackup();
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
-                complexTypeName, attrValues, schemaDoc, grammar);
+                complexTypeName, attrValues, schemaDoc, grammar, context);
         contentRestore();
         // need to add the type to the grammar for later constraint checking
         grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
@@ -193,7 +195,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         String complexTypeName = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         contentBackup();
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
-                complexTypeName, attrValues, schemaDoc, grammar);
+                complexTypeName, attrValues, schemaDoc, grammar, null);
         contentRestore();
         // need to add the type to the grammar for later constraint checking
         grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
@@ -202,6 +204,17 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_COMPLEXTYPE, SchemaSymbols.ATT_NAME}, complexTypeNode);
             type = null;
         } else {
+
+            // XML Schema 1.1
+            // If parent of complex type is redefine, then we need to set the
+            // context of the redefined complex type
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                Element parent = DOMUtil.getParent(complexTypeNode);
+                if (DOMUtil.getLocalName(parent).equals(SchemaSymbols.ELT_REDEFINE)) {
+                    ((XSComplexTypeDecl)type.getBaseType()).setContext(type);
+                }
+            }
+            
             if (grammar.getGlobalTypeDecl(type.getName()) == null) {
                 grammar.addGlobalComplexTypeDecl(type);
             }
@@ -308,7 +321,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             String complexTypeName,
             Object[] attrValues,
             XSDocumentInfo schemaDoc,
-            SchemaGrammar grammar) {
+            SchemaGrammar grammar,
+            XSObject context) {
         
         fComplexTypeDecl = new XSComplexTypeDecl();
         fAttrGrp = new XSAttributeGroupDecl();
@@ -461,6 +475,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fDerivedBy, fFinal, fBlock, fContentType, fIsAbstract,
                 fAttrGrp, fXSSimpleType, fParticle, new XSObjectListImpl(fAnnotations, 
                         fAnnotations == null? 0 : fAnnotations.length), fOpenContent);
+
+        // XML Schema 1.1
+        // Store context information
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fComplexTypeDecl.setContext(context);
+        }
+
         fComplexTypeDecl.setAssertions(fAssertions != null 
                 ? new XSObjectListImpl(fAssertions, fAssertions.length) : null);
         return fComplexTypeDecl;
@@ -656,11 +677,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // There may be a simple type definition in the restriction element
             // The data type validator will be based on it, if specified
             // -----------------------------------------------------------------------
+            boolean needToSetContext = false;
             if (simpleContent !=null &&
                     DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
                 
                 XSSimpleType dv = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(
-                        simpleContent, schemaDoc, grammar);
+                        simpleContent, schemaDoc, grammar, null);
                 if (dv == null) {
                     fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                     fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
@@ -677,6 +699,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.2.2.1",
                             new Object[]{fName, dv.getName(), baseValidator.getName()},
                             simpleContent);
+                }
+                // XML Schema 1.1 - need to set context of dv
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                   if (dv instanceof XSSimpleTypeDecl) {
+                       needToSetContext = true;
+                   }
                 }
                 baseValidator = dv;
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
@@ -719,6 +747,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             if (fXSSimpleType instanceof XSSimpleTypeDecl) {
                 ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
+            }
+            
+            // set context of local simple type (baseValidator)
+            if (needToSetContext) {
+                ((XSSimpleTypeDecl)baseValidator).setContext(fXSSimpleType);
             }
             
             // -----------------------------------------------------------------------

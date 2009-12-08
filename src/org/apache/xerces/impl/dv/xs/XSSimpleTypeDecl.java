@@ -44,6 +44,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSFacet;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -333,6 +334,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     // The namespace schema information item corresponding to the target namespace 
     // of the simple type definition, if it is globally declared; or null otherwise.
     private XSNamespaceItem fNamespaceItem = null;
+    
+    // context
+    XSObject fContext = null;
 
     // default constructor
     public XSSimpleTypeDecl(){}
@@ -3124,6 +3128,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fAnnotations = null;
         fFacets = null;
 
+        fContext = null;
+
         // REVISIT: reset for fundamental facets
     }
     
@@ -3136,6 +3142,17 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     
     public void setNamespaceItem(XSNamespaceItem namespaceItem) {
         fNamespaceItem = namespaceItem;
+    }
+    
+    /**
+     * 
+     */
+    public void setContext(XSObject context) {
+        fContext = context;
+    }
+    
+    public XSObject getContext() {
+        return fContext;
     }
 
     /**

@@ -116,12 +116,12 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             String childName = DOMUtil.getLocalName(childNode);
             XSTypeDefinition typeDef = null;
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                typeDef = fSchemaHandler.fComplexTypeTraverser.traverseLocal(childNode, schemaDoc, grammar);
+                typeDef = fSchemaHandler.fComplexTypeTraverser.traverseLocal(childNode, schemaDoc, grammar, element);
                 hasAnonType = true;
                 childNode = DOMUtil.getNextSiblingElement(childNode);
             }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                typeDef = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(childNode, schemaDoc, grammar);
+                typeDef = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(childNode, schemaDoc, grammar, element);
                 hasAnonType = true;
                 childNode = DOMUtil.getNextSiblingElement(childNode);
             }

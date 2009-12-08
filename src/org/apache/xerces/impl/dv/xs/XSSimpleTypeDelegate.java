@@ -26,6 +26,7 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -203,6 +204,10 @@ public class XSSimpleTypeDelegate
     public Object validate(Object content, ValidationContext context, ValidatedInfo validatedInfo) 
         throws InvalidDatatypeValueException {
         return type.validate(content, context, validatedInfo);
+    }
+    
+    public XSObject getContext() {
+        return type.getContext();
     }
     
     public String toString() {

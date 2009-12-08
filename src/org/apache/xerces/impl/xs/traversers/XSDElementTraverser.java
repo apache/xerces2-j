@@ -384,12 +384,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             String childName = DOMUtil.getLocalName(child);
             
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                elementType = fSchemaHandler.fComplexTypeTraverser.traverseLocal(child, schemaDoc, grammar);
+                elementType = fSchemaHandler.fComplexTypeTraverser.traverseLocal(child, schemaDoc, grammar, element);
                 haveAnonType = true;
                 child = DOMUtil.getNextSiblingElement(child);
             }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                elementType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
+                elementType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar, element);
                 haveAnonType = true;
                 child = DOMUtil.getNextSiblingElement(child);
             }

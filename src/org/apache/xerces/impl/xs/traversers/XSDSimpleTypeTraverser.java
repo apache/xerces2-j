@@ -32,6 +32,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
@@ -108,6 +109,20 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         
         // don't add global components without name to the grammar
         if (type != null) {
+            
+            // XML Schema 1.1
+            // If parent is redefine, then we need to set the
+            // context of the redefined simple type
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                Element parent = DOMUtil.getParent(elmNode);
+                if (DOMUtil.getLocalName(parent).equals(SchemaSymbols.ELT_REDEFINE)) {
+                    final XSTypeDefinition baseType = type.getBaseType();
+                    if (baseType instanceof XSSimpleTypeDecl) {
+                        ((XSSimpleTypeDecl)baseType).setContext(type);
+                    }
+                }
+            }
+            
             if (grammar.getGlobalTypeDecl(type.getName()) == null) {
                 grammar.addGlobalSimpleTypeDecl(type);
             }
@@ -135,14 +150,18 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     
     XSSimpleType traverseLocal(Element elmNode,
             XSDocumentInfo schemaDoc,
-            SchemaGrammar grammar) {
+            SchemaGrammar grammar,
+            XSObject context) {
         
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         String name = genAnonTypeName(elmNode);
-        XSSimpleType type = getSimpleType (name, elmNode, attrValues, schemaDoc, grammar);
+        XSSimpleType type = getSimpleType(name, elmNode, attrValues, schemaDoc, grammar);
         if (type instanceof XSSimpleTypeDecl) {
             ((XSSimpleTypeDecl)type).setAnonymous(true);
+            if (context != null && fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                ((XSSimpleTypeDecl)type).setContext(context);
+            }
         }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
@@ -310,6 +329,11 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
 
+        // XML Schema 1.1
+        //
+        // Store local simple types, so we can set the proper context on them
+        ArrayList localValidators = new ArrayList(2);
+
         // check if there is a child "simpleType"
         if (content != null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_SIMPLETYPE)) {
             if (restriction || list) {
@@ -319,7 +343,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
                 if (baseValidator == null) {
                     // traverse this child to get the base type
-                    baseValidator = traverseLocal(content, schemaDoc, grammar);
+                    baseValidator = traverseLocal(content, schemaDoc, grammar, null);
+                    if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                            baseValidator instanceof XSSimpleTypeDecl) {
+                        localValidators.add(baseValidator);
+                    }
+                    
                 }
                 // get the next element
                 content = DOMUtil.getNextSiblingElement(content);
@@ -330,18 +359,25 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
                 do {
                     // traverse this child to get the member type
-                    dv = traverseLocal(content, schemaDoc, grammar);
+                    dv = traverseLocal(content, schemaDoc, grammar,null);
                     if (dv != null) {
                         // if it's a union, expand it (only in XML 1.0)
-                        if (dv.getVariety() == XSSimpleType.VARIETY_UNION &&
-                                fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
-                            dvs = dv.getMemberTypes();
-                            for (int j = 0; j < dvs.getLength(); j++) {
-                                dTValidators.add(dvs.item(j));
-                            }
-                        } 
-                        else {
+                        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
                             dTValidators.add(dv);
+                            if (dv instanceof XSSimpleTypeDecl) {
+                                localValidators.add(dv);
+                            }
+                        }
+                        else {
+                            if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
+                                dvs = dv.getMemberTypes();
+                                for (int j = 0; j < dvs.getLength(); j++) {
+                                    dTValidators.add(dvs.item(j));
+                                }
+                            }
+                            else {
+                                dTValidators.add(dv);
+                            }
                         }
                     }
                     // get the next element
@@ -408,6 +444,14 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
             }
         }
+        
+        // XML Schema 1.1
+        // Set context information
+        final int localValidatorsSize = localValidators.size();
+        for (int i=0; i<localValidatorsSize; i++) {
+            ((XSSimpleTypeDecl)localValidators.get(i)).setContext(newDecl);
+        }
+        
         // no element should appear after this point
         if (content != null) {
             if (restriction) {
