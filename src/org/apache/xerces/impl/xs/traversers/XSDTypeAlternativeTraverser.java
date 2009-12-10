@@ -17,11 +17,14 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
@@ -54,6 +57,12 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
+    
+    private static final XSSimpleType fErrorType;
+    static {
+        SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_1);
+        fErrorType = (XSSimpleType)grammar.getGlobalTypeDecl("error");
+    }
 
     XSDTypeAlternativeTraverser (XSDHandler handler,
             XSAttributeChecker attrChecker) {
@@ -141,10 +150,28 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         if (typeAtt == null && !hasAnonType) {
             reportSchemaError("src-type-alternative.3.12.13.2", null, altElement);
         }
-        
+
         // fall back to the element declaration's type
         if (alternativeType == null) {
-            alternativeType= element.fType;
+            alternativeType = element.fType;
+        }
+        // Element Properties Correct
+        // 7.1 T is validly substitutable for E.{type definition}, subject to
+        //     the blocking keywords of E.{disallowed substitutions}.
+        // 7.2 T is the type xs:error
+        else if (alternativeType != fErrorType){
+            short block = element.fBlock; 
+            if (element.fType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+                block |= ((XSComplexTypeDecl) element.fType).getProhibitedSubstitutions();
+            }
+            if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(alternativeType, element.fType, block)) {
+                reportSchemaError(
+                        "e-props-correct.7",
+                        new Object[] { element.getName(), alternativeType.getName(), element.fType.getName()},
+                        altElement);
+            }
+            // fall back to element declaration's type
+            alternativeType = element.fType;
         }
 
         // not expecting any more children
@@ -185,7 +212,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             //set the xpathDefaultNamespace attribute value
             typeAlternative.setXPathDefauleNamespace(xpathNS);
         }
-
+        
         grammar.addTypeAlternative(element, typeAlternative);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
     }
