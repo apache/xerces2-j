@@ -55,7 +55,6 @@ import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDateTime;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDayTimeDuration;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDecimal;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDouble;
-import org.eclipse.wst.xml.xpath2.processor.internal.types.XSDuration;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSFloat;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGDay;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSGMonth;
@@ -264,9 +263,13 @@ public class AbstractPsychoPathImpl {
            psychoPathType = new XSDouble(Double.parseDouble(value));
         }
         // duration and it's subtypes
+        /*
+         * doesn't compile with JRE 1.3 PsychoPath binary. Can be provided
+         * later.
         else if ("duration".equals(xsdTypeName)) {       
            psychoPathType = XSDuration.parseDTDuration(value);
         }
+        */
         else if ("dayTimeDuration".equals(xsdTypeName)) {       
            psychoPathType = XSDayTimeDuration.parseDTDuration(value);
         }
