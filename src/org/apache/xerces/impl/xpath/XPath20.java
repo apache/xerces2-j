@@ -81,6 +81,13 @@ abstract class XPathSyntaxTreeNode {
     public static final int TYPE_UNTYPED    = 2;    //for attributes (untypedAtomic)
     public static final int TYPE_OTHER      = 3;    //for everything else which should have some valid type
 
+    private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
+    protected static SchemaDVFactory dvFactory;
+    
+    static {
+        dvFactory = SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
+    }
+
     public abstract boolean evaluate(QName element, XMLAttributes attributes) throws Exception;
     
     public Object getValue(XMLAttributes attributes) throws Exception {
@@ -120,12 +127,11 @@ class LiteralNode extends XPathSyntaxTreeNode {
     }
 
     public Object getValue(XMLAttributes attributes) throws Exception {
-        SchemaDVFactory validator = SchemaDVFactory.getInstance();
         XSSimpleType type;
         if (isNumeric) {
-            type = validator.getBuiltInType("double");
+            type = dvFactory.getBuiltInType("double");
         } else {
-            type = validator.getBuiltInType("string");
+            type = dvFactory.getBuiltInType("string");
         }
         return type.validate(value, null, null);
     }
@@ -217,12 +223,11 @@ class CompNode extends XPathSyntaxTreeNode {
         int type2 = child2.getType();
         Object obj1, obj2;
         XSSimpleTypeDecl simpleType;
-        SchemaDVFactory validator = SchemaDVFactory.getInstance();
 
         if (type1 == TYPE_UNTYPED && type2 == TYPE_DOUBLE) {
             // attribute and numeral
             String attrValue = child1.getValue(attributes).toString();
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("double");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("double");
             //cast the attribute value into double as per the XPath 2.0 general comparison rules
             obj1 = simpleType.validate(attrValue, null, null);
             obj2 = child2.getValue(attributes);
@@ -231,7 +236,7 @@ class CompNode extends XPathSyntaxTreeNode {
         } else if (type1 == TYPE_UNTYPED && type2 == TYPE_STRING) {
             // attribute and string
             String attrValue = child1.getValue(attributes).toString();
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("string");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             //cast the attribute value into string as per the XPath 2.0 general comparison rules
             obj1 = simpleType.validate(attrValue, null, null);
             obj2 = child2.getValue(attributes);
@@ -240,7 +245,7 @@ class CompNode extends XPathSyntaxTreeNode {
         } else if (type1 == TYPE_DOUBLE && type2 == TYPE_UNTYPED) {
             // numeral and attribute
             String attrValue = child2.getValue(attributes).toString();
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("double");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("double");
             obj1 = child1.getValue(attributes);
             //cast the attribute value into double as per the XPath 2.0 general comparison rules
             obj2 = simpleType.validate(attrValue, null, null);
@@ -249,7 +254,7 @@ class CompNode extends XPathSyntaxTreeNode {
         } else if (type1 == TYPE_STRING && type2 == TYPE_UNTYPED) {
             // string and attribute
             String attrValue = child2.getValue(attributes).toString();
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("string");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             obj1 = child1.getValue(attributes);
             //cast the attribute value into string as per the XPath 2.0 general comparison rules
             obj2 = simpleType.validate(attrValue, null, null);
@@ -259,7 +264,7 @@ class CompNode extends XPathSyntaxTreeNode {
             // attr and attr
             String attrVal1 = child1.getValue(attributes).toString();
             String attrVal2 = child2.getValue(attributes).toString();
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("string");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             //cast the both attribute values into string as per the XPath 2.0 general comparison rules
             obj1 = simpleType.validate(attrVal1, null, null);
             obj2 = simpleType.validate(attrVal2, null, null);
@@ -270,7 +275,7 @@ class CompNode extends XPathSyntaxTreeNode {
             String type = child2.getTypeName();
             String attrVal = child1.getValue(attributes).toString();
             
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType(type);
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
@@ -284,7 +289,7 @@ class CompNode extends XPathSyntaxTreeNode {
             String type = child1.getTypeName();
             String attrVal = child2.getValue(attributes).toString();
             
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType(type);
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
@@ -298,13 +303,13 @@ class CompNode extends XPathSyntaxTreeNode {
             String typeName1 = child1.getTypeName();
             String typeName2 = child2.getTypeName();
             
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType(typeName1);
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(typeName1);
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
             short dt1 = simpleType.getBuiltInKind();
             
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType(typeName2);
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(typeName2);
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
@@ -323,14 +328,14 @@ class CompNode extends XPathSyntaxTreeNode {
             // numeric and numeric
             obj1 = child1.getValue(attributes);
             obj2 = child2.getValue(attributes);
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("double");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("double");
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_STRING && type2 == TYPE_STRING) {
             // string and string
             obj1 = child1.getValue(attributes);
             obj2 = child2.getValue(attributes);
-            simpleType = (XSSimpleTypeDecl) validator.getBuiltInType("string");
+            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else {
@@ -351,8 +356,7 @@ class CastNode extends XPathSyntaxTreeNode {
 
     public boolean evaluate(QName element, XMLAttributes attributes) throws Exception {
         Object obj = getValue(attributes);
-        SchemaDVFactory validator = SchemaDVFactory.getInstance();
-        XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) validator.getBuiltInType(getTypeName());
+        XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(getTypeName());
         if (simpleType.getNumeric()) {
             return obj != null && 0.0 != ((Double) obj).doubleValue();
         } 
@@ -362,8 +366,7 @@ class CastNode extends XPathSyntaxTreeNode {
     }
 
     public Object getValue(XMLAttributes attributes) throws Exception {
-        SchemaDVFactory validator = SchemaDVFactory.getInstance();
-        XSSimpleType type = validator.getBuiltInType(getTypeName());
+        XSSimpleType type = dvFactory.getBuiltInType(getTypeName());
         if (type == null) {
             throw new XPathException("Casted type is not a built-in type");
         }
@@ -380,7 +383,7 @@ class CastNode extends XPathSyntaxTreeNode {
         
         //Workaround (this is here because double validator can only validate double values)
         if (type.getNumeric()) {
-           obj = validator.getBuiltInType("double").validate(obj, null, null);
+           obj = dvFactory.getBuiltInType("double").validate(obj, null, null);
         }
         return obj;
     }
@@ -396,8 +399,7 @@ class CastNode extends XPathSyntaxTreeNode {
 
     public int getType() {
         String type = getTypeName();
-        SchemaDVFactory validator = SchemaDVFactory.getInstance();
-        XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) validator.getBuiltInType(type);
+        XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
         if (simpleType.getNumeric()) {
             return TYPE_DOUBLE;
         } else if (type.equals("string")) {
