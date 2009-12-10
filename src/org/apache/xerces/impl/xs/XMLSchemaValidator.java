@@ -2168,7 +2168,32 @@ public class XMLSchemaValidator
                 processRootTypeQName(fRootTypeQName);
             }
         }
-             
+        
+        // if there was no processor stipulated type
+        if (fCurrentType == null) {
+            // try again to get the element decl:
+            // case 1: find declaration for root element
+            // case 2: find declaration for element from another namespace
+            if (fCurrentElemDecl == null) {
+                // try to find schema grammar by different means..
+                SchemaGrammar sGrammar =
+                    findSchemaGrammar(
+                        XSDDescription.CONTEXT_ELEMENT,
+                        element.uri,
+                        null,
+                        element,
+                        attributes);
+                if (sGrammar != null) {
+                    fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
+                }
+            }
+            
+            if (fCurrentElemDecl != null) {
+                // then get the type
+                fCurrentType = fCurrentElemDecl.fType;
+            }
+        }
+
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
             boolean typeSelected = false;
@@ -2195,31 +2220,6 @@ public class XMLSchemaValidator
                     }
                 }
             }            
-        }
-        
-        // if there was no processor stipulated type
-        if (fCurrentType == null) {
-            // try again to get the element decl:
-            // case 1: find declaration for root element
-            // case 2: find declaration for element from another namespace
-            if (fCurrentElemDecl == null) {
-                // try to find schema grammar by different means..
-                SchemaGrammar sGrammar =
-                    findSchemaGrammar(
-                        XSDDescription.CONTEXT_ELEMENT,
-                        element.uri,
-                        null,
-                        element,
-                        attributes);
-                if (sGrammar != null) {
-                    fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
-                }
-            }
-            
-            if (fCurrentElemDecl != null) {
-                // then get the type
-                fCurrentType = fCurrentElemDecl.fType;
-            }
         }
 
         // check if we should be ignoring xsi:type on this element
