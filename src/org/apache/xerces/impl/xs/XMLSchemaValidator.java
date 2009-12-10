@@ -2436,8 +2436,8 @@ public class XMLSchemaValidator
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fInhrAttrCountStack.push(fInheritableAttrList.size());
             if (attributes.getLength() > 0) {
-               // get inheritable attributes, only if an element has a complex type (i.e, has
-               // > 0 attributes.
+               // get inheritable attributes, only if an element has a complex
+               // type (i.e, has > 0 attributes).
                saveInheritableAttributes(attributes);
             }
         }
@@ -2511,20 +2511,48 @@ public class XMLSchemaValidator
                assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
             }
           }
+          
+          // there could be assertions, to be evaluated on attributes. add these
+          // assertions to the assertions to be processed.
+          for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
+              Augmentations attrAugs = attributes.getAugmentations(attrIndx);
+              AttributePSVImpl attrPSVI = (AttributePSVImpl)attrAugs.getItem
+                                                 (Constants.ATTRIBUTE_PSVI);
+              XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition)attrPSVI.
+                                                        getTypeDefinition();
+              if (attrType != null) {
+                 XSObjectList facets = attrType.getMultiValueFacets();              
+                 for (int i = 0; i < facets.getLength(); i++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                       Vector attrAsserts = facet.getAsserts();
+                       for (int j = 0; j < attrAsserts.size(); j++) {
+                         XSAssertImpl attrAssert = (XSAssertImpl) attrAsserts.elementAt(j);
+                         attrAssert.setAttrName(attributes.getLocalName(attrIndx));
+                         attrAssert.setAttrValue(attributes.getValue(attrIndx));
+                         assertions.addXSObject(attrAssert);    
+                       }                        
+                       break;
+                    }
+                 }
+              }
+          }
               
           if (assertions.size() > 0) {
-            assertObject = assertions;             
-            // instantiate the assertions processor
-            if (fAssertionProcessor == null) {
-              // construct parameter values for the assertion processor
-              Map assertProcessorParams = new HashMap();
-              assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                                        ((XSAssertImpl)assertions.get(0)).getXPath2NamespaceContext());
-              // initialize the assertions processor
-              initializeAssertProcessor(assertProcessorParams);
-            }
+              assertObject = assertions;             
+              // instantiate the assertions processor
+              if (fAssertionProcessor == null) {
+                // construct parameter values for the assertion processor
+                Map assertProcessorParams = new HashMap();
+                assertProcessorParams.put("XPATH2_NS_CONTEXT",
+                                     ((XSAssertImpl)assertions.get(0)).
+                                     getXPath2NamespaceContext());
+                // initialize the assertions processor
+                initializeAssertProcessor(assertProcessorParams);
+              }
           }
-        } else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+        }
+        else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
             // if elements's governing type is a "simple type"
             XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
             XSObjectList facets = simpleTypeDef.getMultiValueFacets();
@@ -2537,7 +2565,8 @@ public class XMLSchemaValidator
                    // construct parameter values for the assertion processor
                    Map assertProcessorParams = new HashMap();
                    assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                           ((XSAssertImpl)facet.getAsserts().get(0)).getXPath2NamespaceContext());
+                                     ((XSAssertImpl)facet.getAsserts().get(0)).
+                                     getXPath2NamespaceContext());
                    // initialize the assertions processor
                    initializeAssertProcessor(assertProcessorParams);
                 }
@@ -2545,7 +2574,7 @@ public class XMLSchemaValidator
               }
             }
          }
-
+               
          // invoke the assertions processor method
          if (fAssertionProcessor != null) {
             // construct the augmentations object, for assertions

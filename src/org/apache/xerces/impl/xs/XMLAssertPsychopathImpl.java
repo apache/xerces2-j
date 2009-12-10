@@ -214,7 +214,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // assertions from a complex type definition
             if (value != null) {
               // complex type with simple content
-              setValueOf$value(value);
+              setValueOf$value(value, null);
             } else {
               // complex type with complex content                
               // $value should be, the XPath2 "empty sequence" ... TO DO 
@@ -226,21 +226,29 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                if (assertImpl.getType() == XSConstants.ASSERTION) {
                   // not an assertion facet
                   xpathContextExists = true;   
-               }               
+               }
+               // check if this is an assertion, from the attribute
+               if (assertImpl.getAttrValue() != null) {
+                  // reassign value (the attribute's value) to variable
+                  // $value.
+                  value = assertImpl.getAttrValue();
+                  setValueOf$value(value, assertImpl.getTypeDefinition());
+               }
                evaluateAssertion(element,
                                  assertImpl,
                                  value,
                                  xpathContextExists);
             }
-        } else if (assertions instanceof Vector) {
+         }
+         else if (assertions instanceof Vector) {
             // assertions from a simple type definition
-            setValueOf$value(value);
+            setValueOf$value(value, null);
             Vector assertList = (Vector) assertions;                    
             for (int i = 0; i < assertList.size(); i++) {
                 XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
                 evaluateAssertion(element, assertImpl, value, false);
             }
-        }
+         }
     }
 
     /*
@@ -281,7 +289,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             
             if (!result) {
                // assertion evaluation is false
-               reportError("cvc-assertion.3.13.4.1", element, assertImpl);
+                if (assertImpl.getAttrName() == null) {
+                   reportError("cvc-assertion.3.13.4.1", element, assertImpl);
+                }
+                else {
+                   reportError("cvc-assertion.3.13.4.1", element, assertImpl); 
+                }
             }
         }
         catch (DynamicError ex) {
@@ -314,21 +327,37 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
            typeString = "#anonymous"; 
         }
         
-        validator.reportSchemaError(key, new Object[] { element.rawname,
+        String elemErrorAnnotation = element.rawname;
+        if (assertImpl.getAttrName() != null) {
+           elemErrorAnnotation = element.rawname + " (attribute => " +
+                                              assertImpl.getAttrName()+ ")";    
+        }
+        
+        validator.reportSchemaError(key, new Object[] { elemErrorAnnotation,
                                assertImpl.getTest().getXPath().toString(),
                                typeString } );
     }
     
     // assign value to the XPath2 "dynamic context" variable, $value
-    private void setValueOf$value(String value) {
-       PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl)
+    private void setValueOf$value(String value, XSTypeDefinition attrType) {
+        String xsdTypeName = "";
+        
+        if (attrType != null) {
+           // is value of an attribute
+           xsdTypeName = getXSDtypeOf$Value(attrType);  
+        }
+        else {
+          // is "simple type" value of an element
+          PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl)
                                                  currentAssertDomNode;
        
-       String xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.
-                                               getTypeDefinition());       
-       Object psychoPathType = abstrPsychopathImpl.getPsychoPathTypeForXSDType
+          xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.
+                                               getTypeDefinition()); 
+        }
+        
+        Object psychoPathType = abstrPsychopathImpl.getPsychoPathTypeForXSDType
                                                          (xsdTypeName, value);       
-       fDynamicContext.set_variable(
+        fDynamicContext.set_variable(
                new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                        "value"), (AnyAtomicType) psychoPathType);
     }

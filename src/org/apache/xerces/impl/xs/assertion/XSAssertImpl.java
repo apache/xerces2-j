@@ -57,7 +57,17 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
     protected NamespaceSupport fXPath2NamespaceContext = null;
     
-    // XSDHandler object, passed on from the tarversers 
+    // a non null value of this object indicates, that this assertion is
+    // for an attribute, and value of this object would be the attribute's
+    // name.
+    protected String attrName = null;
+    
+    // a non null value of this object indicates, that this assertion is
+    // for an attribute, and value of this object would be the attribute's
+    // value.
+    protected String attrValue = null;
+    
+    // XSDHandler object, passed on from the traversers 
     protected XSDHandler fSchemaHandler = null;
 
     /** Constructor */
@@ -100,6 +110,21 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     public void setType(short assertType) {
         this.assertType = assertType;
     }
+    
+    /**
+     * Sets the attribute name
+     */
+    public void setAttrName(String attrName) {
+        this.attrName = attrName;   
+    }
+    
+    /**
+     * Sets the attribute value
+     */
+    public void setAttrValue(String attrValue) {
+        this.attrValue = attrValue;   
+    }
+    
    
     public XSObjectList getAnnotations() {
         return fAnnotations;
@@ -151,6 +176,20 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
      */
     public short getType() {
         return assertType;
+    }
+    
+    /**
+     * Get the attribute name
+     */
+    public String getAttrName() {
+        return attrName;  
+    }
+    
+    /**
+     * Get the attribute value
+     */
+    public String getAttrValue() {
+        return attrValue;  
     }
        
     /**
