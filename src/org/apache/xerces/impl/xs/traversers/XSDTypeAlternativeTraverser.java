@@ -169,9 +169,9 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                         "e-props-correct.7",
                         new Object[] { element.getName(), alternativeType.getName(), element.fType.getName()},
                         altElement);
+                // fall back to element declaration's type
+                alternativeType = element.fType;
             }
-            // fall back to element declaration's type
-            alternativeType = element.fType;
         }
 
         // not expecting any more children
