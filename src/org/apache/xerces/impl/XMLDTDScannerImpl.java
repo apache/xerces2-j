@@ -1400,7 +1400,7 @@ public class XMLDTDScannerImpl
                 isPEDecl = true;
             }
             else if (scanningInternalSubset()) {
-                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_ENTITYDECL",
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_PEDECL",
                                  null);
                 isPEDecl = true;
             }
