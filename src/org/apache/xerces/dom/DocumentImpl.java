@@ -18,8 +18,14 @@
 package org.apache.xerces.dom;
 
 import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.xerces.dom.events.EventImpl;
@@ -94,9 +100,11 @@ public class DocumentImpl
     // Data
     //
 
-    /** Iterators */
-    // REVISIT: Should this be transient? -Ac
-    protected Vector iterators;
+    /** Node Iterators */
+    protected transient List iterators;
+    
+    /** Reference queue for cleared Node Iterator references */
+    protected transient ReferenceQueue iteratorReferenceQueue;
 
      /** Ranges */
     // REVISIT: Should this be transient? -Ac
@@ -227,10 +235,12 @@ public class DocumentImpl
                                                      filter,
                                                      entityReferenceExpansion);
         if (iterators == null) {
-            iterators = new Vector();
+            iterators = new LinkedList();
+            iteratorReferenceQueue = new ReferenceQueue();
         }
 
-        iterators.addElement(iterator);
+        removeStaleIteratorReferences();
+        iterators.add(new WeakReference(iterator, iteratorReferenceQueue));
 
         return iterator;
     }
@@ -276,18 +286,55 @@ public class DocumentImpl
     // Not DOM Level 2. Support DocumentTraversal methods.
     //
 
-    /** This is not called by the developer client. The
-     *  developer client uses the detach() function on the
-     *  NodeIterator itself. <p>
+    /** 
+     * This is not called by the developer client. The
+     * developer client uses the detach() function on the
+     * NodeIterator itself. <p>
      *
-     *  This function is called from the NodeIterator#detach().
+     * This function is called from the NodeIterator#detach().
      */
-     void removeNodeIterator(NodeIterator nodeIterator) {
+    void removeNodeIterator(NodeIterator nodeIterator) {
 
         if (nodeIterator == null) return;
         if (iterators == null) return;
 
-        iterators.removeElement(nodeIterator);
+        removeStaleIteratorReferences();
+        Iterator i = iterators.iterator();
+        while (i.hasNext()) {
+            Object iterator = ((Reference) i.next()).get();
+            if (iterator == nodeIterator) {
+                i.remove();
+                return;
+            }
+            // Remove stale reference from the list.
+            else if (iterator == null) {
+                i.remove();
+            } 
+        }
+    }
+    
+    /**
+     * Remove stale iterator references from the iterator list.
+     */
+    void removeStaleIteratorReferences() {
+        Reference ref = iteratorReferenceQueue.poll();
+        int count = 0;
+        while (ref != null) {
+            ++count;
+            ref = iteratorReferenceQueue.poll();
+        }
+        if (count > 0) {
+            Iterator i = iterators.iterator();
+            while (i.hasNext()) {
+                Object iterator = ((Reference) i.next()).get();
+                if (iterator == null) {
+                    i.remove();
+                    if (--count <= 0) {
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     //
@@ -1177,9 +1224,17 @@ public class DocumentImpl
     }
     
     private void notifyIteratorsRemovingNode(NodeImpl oldChild) {
-        final int size = iterators.size();
-        for (int i = 0; i != size; i++) {
-           ((NodeIteratorImpl)iterators.elementAt(i)).removeNode(oldChild);
+        removeStaleIteratorReferences();
+        final Iterator i = iterators.iterator();
+        while (i.hasNext()) {
+            NodeIteratorImpl iterator = (NodeIteratorImpl) ((Reference) i.next()).get();
+            if (iterator != null) {
+                iterator.removeNode(oldChild);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
     }
     
