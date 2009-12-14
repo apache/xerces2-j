@@ -97,7 +97,25 @@ public class ElementImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	    this.name = name;
+        if (ownerDocument.errorChecking) {
+            int colon1 = name.indexOf(':');
+            if(colon1 != -1){
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "NAMESPACE_ERR",
+                            null);
+                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+            }
+            if (!CoreDocumentImpl.isXMLName(name, ownerDocument.isXML11Version())) {
+                String msg = DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "INVALID_CHARACTER_ERR", null);
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
+                        msg);
+            }
+        }
+        this.name = name;
         reconcileDefaultAttributes();
     }
 
@@ -689,7 +707,7 @@ public class ElementImpl
                 // This case is not defined by the DOM spec, we choose
                 // to create a new attribute in this case and remove an old one from the tree
                 // note this might cause events to be propagated or user data to be lost 
-                newAttr = new AttrNSImpl((CoreDocumentImpl)getOwnerDocument(), namespaceURI, qualifiedName, localName);
+                newAttr = ((CoreDocumentImpl)getOwnerDocument()).createAttributeNS(namespaceURI, qualifiedName, localName);
                 attributes.setNamedItemNS(newAttr);
             }
 
