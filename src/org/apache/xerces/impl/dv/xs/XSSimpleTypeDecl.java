@@ -283,6 +283,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private int fMaxLength = -1;
     private int fTotalDigits = -1;
     private int fFractionDigits = -1;
+    private int fMaxScale; //for XML Schema 1.1     
+    private int fMinScale; //for XML Schema 1.1
     private Vector fPattern;
     private Vector fPatternStr;
     private Vector fEnumeration;
@@ -312,6 +314,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     public XSAnnotation maxExclusiveAnnotation;
     public XSAnnotation minInclusiveAnnotation;
     public XSAnnotation minExclusiveAnnotation;
+    public XSAnnotation maxScaleAnnotation;     
+    public XSAnnotation minScaleAnnotation;   
     public XSAnnotation explicitTimezoneAnnotation;
 
     // facets as objects
@@ -420,6 +424,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPatternType = fBase.fPatternType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
+        fMaxScale = fBase.fMaxScale;
+        fMinScale = fBase.fMinScale;
         fExplicitTimezone = fBase.fExplicitTimezone;
 
         // always inherit facet annotations in case applyFacets is not called.
@@ -435,6 +441,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         minInclusiveAnnotation = fBase.minInclusiveAnnotation;
         totalDigitsAnnotation = fBase.totalDigitsAnnotation;
         fractionDigitsAnnotation = fBase.fractionDigitsAnnotation;
+        maxScaleAnnotation = fBase.maxScaleAnnotation;
+        minScaleAnnotation = fBase.minScaleAnnotation;
         explicitTimezoneAnnotation = fBase.explicitTimezoneAnnotation;
 
         //we also set fundamental facets information in case applyFacets is not called.
@@ -543,6 +551,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPatternType = fBase.fPatternType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
+        fMaxScale = fBase.fMaxScale;
+        fMinScale = fBase.fMinScale;
         fExplicitTimezone = fBase.fExplicitTimezone;
 
         //we also set fundamental facets information in case applyFacets is not called.
@@ -1147,6 +1157,31 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             }
         }
 
+        //maxScale      
+        if ((presentFacet & FACET_MAXSCALE) !=0 ){
+            if ((allowedFacet & FACET_MAXSCALE) == 0) {
+                reportError("cos-applicable-facets", new Object[]{"maxScale", fTypeName});
+            }else {
+                maxScaleAnnotation = facets.maxScaleAnnotation;
+                fMaxScale = facets.maxScale;
+                fFacetsDefined |= FACET_MAXSCALE;
+                if ((fixedFacet & FACET_MAXSCALE) != 0)
+                    fFixedFacet |= FACET_MAXSCALE;
+                }
+        }
+        //minScale 
+        if ((presentFacet & FACET_MINSCALE) !=0 ){
+            if ((allowedFacet & FACET_MINSCALE) == 0) {
+                reportError("cos-applicable-facets", new Object[]{"minScale", fTypeName});
+            }else {
+                minScaleAnnotation = facets.minScaleAnnotation;
+                fMinScale = facets.minScale;
+                fFacetsDefined |= FACET_MINSCALE;
+                if ((fixedFacet & FACET_MINSCALE) != 0)
+                    fFixedFacet |= FACET_MINSCALE;
+            }
+        }           
+        
         // token type: internal use, so do less checking
         if (patternType != SPECIAL_PATTERN_NONE) {
             fPatternType = patternType;
@@ -1203,6 +1238,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     ((fFacetsDefined & FACET_TOTALDIGITS) != 0)) {
                 if (fFractionDigits > fTotalDigits)
                     reportError( "fractionDigits-totalDigits", new Object[]{Integer.toString(fFractionDigits), Integer.toString(fTotalDigits), fTypeName});
+            }
+            
+            // check 4.3.14.4 must: minScale <= maxScale           
+            if (((fFacetsDefined & FACET_MAXSCALE) != 0 ) && ((fFacetsDefined & FACET_MINSCALE) != 0)) {
+                if (fMinScale > fMaxScale)
+                    reportError ("minScale-totalDigits", new Object[]{Integer.toString(fMinScale), Integer.toString(fMaxScale), fTypeName});
             }
 
             // step 3: check facets against base
@@ -1435,7 +1476,43 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     }
                 }
             }
-
+            
+            //check maxScale > fBase.maxScale
+            if ( (fFacetsDefined & FACET_MAXSCALE) != 0 ) {
+                if ( (fBase.fFacetsDefined & FACET_MAXSCALE) != 0 ){
+                    if(( (fBase.fFixedFacet & FACET_MAXSCALE) != 0 )&& fMaxScale != fBase.fMaxScale ) {
+                        reportError( "FixedFacetValue", new Object[]{"maxScale", Integer.toString(fMaxScale), Integer.toString(fBase.fMaxScale), fTypeName});
+                    }
+                    if ( fMaxScale > fBase.fMaxScale) {
+                        reportError( "maxScale-valid-restriction", new Object[]{Integer.toString(fMaxScale), Integer.toString(fBase.fMaxScale), fTypeName});
+                    }
+                }
+            }
+            //check minScale < fBase.minScale
+            if ( (fFacetsDefined & FACET_MINSCALE) != 0 ) {
+                if ( (fBase.fFacetsDefined & FACET_MINSCALE) != 0 ){
+                    if(( (fBase.fFixedFacet & FACET_MINSCALE) != 0 )&& fMinScale != fBase.fMinScale ) {
+                        reportError( "FixedFacetValue", new Object[]{"minScale", Integer.toString(fMinScale), Integer.toString(fBase.fMinScale), fTypeName});
+                    }
+                    if (fMinScale < fBase.fMinScale) {
+                        reportError( "minScale-valid-restriction", new Object[]{Integer.toString(fMinScale), Integer.toString(fBase.fMinScale), fTypeName});
+                    }
+                }
+            }
+            //check must maxScale >= fBase.minScale            
+            if ( ((fFacetsDefined & FACET_MAXSCALE ) != 0 ) && ((fBase.fFacetsDefined & FACET_MINSCALE ) != 0 )) {
+                if ( fMaxScale < fBase.fMinScale) {
+                    reportError ("minScale-totalDigits", new Object[]{Integer.toString(fBase.fMinScale), Integer.toString(fMaxScale), fTypeName});
+                }
+            }
+            
+            //check must minScale <= fBase.maxScale            
+            if ( ((fFacetsDefined & FACET_MINSCALE ) != 0 ) && ((fBase.fFacetsDefined & FACET_MAXSCALE ) != 0 )) {
+                if ( fMinScale > fBase.fMaxScale) {
+                    reportError ("minScale-totalDigits", new Object[]{Integer.toString(fMinScale), Integer.toString(fBase.fMaxScale), fTypeName});
+                }
+            }
+            
             // check 4.3.12.c1 must: fractionDigits <= base.totalDigits
             if ((fFacetsDefined & FACET_FRACTIONDIGITS) != 0) {
                 if ((fBase.fFacetsDefined & FACET_TOTALDIGITS) != 0) {
@@ -1595,6 +1672,22 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             fMinInclusive = fBase.fMinInclusive;
             minInclusiveAnnotation = fBase.minInclusiveAnnotation;
         }
+        
+        //inherit maxScale
+        if ((( fBase.fFacetsDefined & FACET_MAXSCALE) != 0) &&
+                !((fFacetsDefined & FACET_MAXSCALE) != 0) && !((fFacetsDefined & FACET_MAXSCALE) != 0)) {
+            fFacetsDefined |= FACET_MAXSCALE;
+            fMaxScale = fBase.fMaxScale;
+            maxScaleAnnotation = fBase.maxScaleAnnotation;
+        }
+        //inherit minScale
+        if ((( fBase.fFacetsDefined & FACET_MINSCALE) != 0) &&
+                !((fFacetsDefined & FACET_MINSCALE) != 0) && !((fFacetsDefined & FACET_MINSCALE) != 0)) {
+            fFacetsDefined |= FACET_MINSCALE;
+            fMinScale = fBase.fMinScale;
+            minScaleAnnotation = fBase.minScaleAnnotation;
+        }
+        
         // inherit totalDigits
         if ((( fBase.fFacetsDefined & FACET_TOTALDIGITS) != 0) &&
                 !((fFacetsDefined & FACET_TOTALDIGITS) != 0)) {
@@ -1820,7 +1913,24 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                         new Object[] {content, Integer.toString(totalDigits), Integer.toString(fTotalDigits)});
             }
         }
-
+        
+        //maxScale      
+        if ((fFacetsDefined & FACET_MAXSCALE) != 0) {            
+            int precision = fDVs[fValidationDV].getPrecision(ob);
+            if (precision > fMaxScale){
+                throw new InvalidDatatypeValueException("cvc-maxScale-valid",
+                        new Object[] {content, Integer.toString(fMaxScale), fTypeName, Integer.toString(precision)});
+            }
+        } 
+        
+        //minScale      
+        if ((fFacetsDefined & FACET_MINSCALE) != 0) {            
+            int precision = fDVs[fValidationDV].getPrecision(ob);
+            if (precision < fMinScale){
+                throw new InvalidDatatypeValueException("cvc-minScale-valid",
+                        new Object[] {content, Integer.toString(fMinScale), fTypeName, Integer.toString(precision)} );
+            }
+        }
         
         //explicitTimezone
         if ( ( fFacetsDefined & FACET_EXPLICITTIMEZONE) !=0 ) {
@@ -2316,6 +2426,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 return (fMinInclusive == null)?null:fMinInclusive.toString();
             case FACET_TOTALDIGITS:
                 return (fTotalDigits == -1)?null:Integer.toString(fTotalDigits);
+            case FACET_MAXSCALE:
+                return ((fFacetsDefined & FACET_MAXSCALE) == 0)?null:Integer.toString(fMaxScale);
+            case FACET_MINSCALE:
+                return ((fFacetsDefined & FACET_MINSCALE) == 0)?null:Integer.toString(fMinScale);
             case FACET_EXPLICITTIMEZONE:
                 return ET_FACET_STRING[fExplicitTimezone];
             case FACET_FRACTIONDIGITS:
@@ -3110,6 +3224,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fMaxExclusive = null;
         fMinExclusive = null;
         fMinInclusive = null;
+        fMaxScale = 0;
+        fMinScale = 0;
         lengthAnnotation = null;
         minLengthAnnotation = null;
         maxLengthAnnotation = null;
@@ -3122,6 +3238,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         maxExclusiveAnnotation = null;
         minInclusiveAnnotation = null;
         minExclusiveAnnotation = null;
+        maxScaleAnnotation = null;
+        minScaleAnnotation = null;
         explicitTimezoneAnnotation = null;
 
         fPatternType = SPECIAL_PATTERN_NONE;
@@ -3172,7 +3290,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if (fFacets == null &&
                 (fFacetsDefined != 0 || fValidationDV == DV_INTEGER)) {
 
-            XSFacetImpl[] facets = new XSFacetImpl[11];
+            XSFacetImpl[] facets = new XSFacetImpl[13];
             int count = 0;
             if ((fFacetsDefined & FACET_WHITESPACE) != 0) {
                 facets[count] =
@@ -3273,15 +3391,24 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                             minInclusiveAnnotation);
                 count++;
             }
-            if ((fFacetsDefined & FACET_EXPLICITTIMEZONE) != 0) {
+            if ((fFacetsDefined & FACET_MAXSCALE) != 0) {
                 facets[count] = 
                     new XSFacetImpl (
-                            FACET_EXPLICITTIMEZONE,
-                            ET_FACET_STRING[fExplicitTimezone],
-                            (fFixedFacet & FACET_EXPLICITTIMEZONE) != 0,
-                            explicitTimezoneAnnotation);
+                            FACET_MAXSCALE,
+                            Integer.toString(fMaxScale),
+                            (fFixedFacet & FACET_MAXSCALE) != 0,
+                            maxScaleAnnotation);
                 count++;
             }
+            if ((fFacetsDefined & FACET_MINSCALE) != 0) {
+                facets[count] = 
+                    new XSFacetImpl (
+                            FACET_MINSCALE,
+                            Integer.toString(fMinScale),
+                            (fFixedFacet & FACET_MINSCALE) != 0,
+                            minScaleAnnotation);
+                count++;
+            }           
             fFacets = new XSObjectListImpl(facets, count);
         }
         return (fFacets != null) ? fFacets : XSObjectListImpl.EMPTY_LIST;

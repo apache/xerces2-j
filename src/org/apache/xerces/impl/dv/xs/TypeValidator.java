@@ -102,6 +102,12 @@ public abstract class TypeValidator {
         return isDigit(ch) ? ch - '0' : -1;
     }
     
+    //get the number of precision of the value
+    //the parameters are in compiled form (from getActualValue)
+    public int getPrecision(Object value){
+        return 0;
+    }
+    
     public boolean hasTimeZone(Object value){
         return false;
     }

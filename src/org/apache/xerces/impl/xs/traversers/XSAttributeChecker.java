@@ -240,6 +240,7 @@ public class XSAttributeChecker {
     protected static final int DT_MODE1            = -20;
     protected static final int DT_NOTNAMESPACE     = -21;
     protected static final int DT_NOTQNAME         = -22;
+    protected static final int DT_INT              = -23;
     protected static final int DT_EXPLICITTIMEZONE = -24;
 
     static {
@@ -293,6 +294,7 @@ public class XSAttributeChecker {
         int ATT_XML_LANG             = attCount++;
         int ATT_XPATH_R              = attCount++;
         int ATT_XPATH1_R             = attCount++;
+        int ATT_VALUE_INT            = attCount++;
 
         // XML Schema 1.1 attributes
         int ATT_APPLIESTO_EMPTY_D    = attCount++;
@@ -502,7 +504,11 @@ public class XSAttributeChecker {
                                                         DT_XPATH1,
                                                         ATTIDX_XPATH,
                                                         null);
-
+        allAttrs[ATT_VALUE_INT]            = new OneAttr(SchemaSymbols.ATT_VALUE,
+                                                        DT_INT,
+                                                        ATTIDX_VALUE,
+                                                        null);
+        
         // XML Schema 1.1
         allAttrs[ATT_APPLIESTO_EMPTY_D]    = new OneAttr(SchemaSymbols.ATT_APPLIESTOEMPTY,
                                                         DT_BOOLEAN,
@@ -884,6 +890,18 @@ public class XSAttributeChecker {
         // for element "key" - local
         fEleAttrs11MapL.put(SchemaSymbols.ELT_KEY, attrList);
 
+        // for element "unique", "key", "keyref" with the ref attribute
+        attrList = Container.getContainer(2);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // ref = QName        
+        attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
+        fEleAttrs11MapL.put(UNIQUE_R, attrList);
+        // for element "key" with the ref attribute - same list
+        fEleAttrs11MapL.put(KEY_R, attrList);
+        // for element "keyref" with the ref attribute - same list
+        fEleAttrs11MapL.put(KEYREF_R, attrList);
+        
         // for element "keyref" - local
         attrList = Container.getContainer(3);
         // id = ID
@@ -1133,7 +1151,20 @@ public class XSAttributeChecker {
         fEleAttrs11MapL.put(SchemaSymbols.ELT_MININCLUSIVE, attrList);
         fEleAttrs11MapL.put(SchemaSymbols.ELT_MINEXCLUSIVE, attrList);
 
-
+        //for element "maxScale", "minScale - local
+        attrList = Container.getContainer(3);
+        //id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // value = integer
+        //attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_INT_N]);
+        attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_INT]);
+        // fixed = boolean : false
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
+        //for element "maxScale", in Schema 1.1 - local
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_MAXSCALE, attrList);
+        //for element "minScale", in Schema 1.1 - local
+        fEleAttrs11MapL.put(SchemaSymbols.ELT_MINSCALE, attrList);
+        
         // for element "explicitTimezone" - local
         attrList = Container.getContainer(3);
         // id = ID
@@ -2033,6 +2064,23 @@ public class XSAttributeChecker {
                     throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "anyURI | ##defaultNamespace | ##targetNamespace | ##local"});
                 }
             }
+            break;
+        case DT_INT:
+            {
+                boolean isPositive = false;
+                try {
+                    if (value.length() > 0 &&  value.charAt(0) == '+') {
+                        isPositive = true;
+                        value = value.substring(1);
+                    }
+                    retValue = fXIntPool.getXInt(Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "Integer"});
+                }
+                if (isPositive && (((XInt)retValue).intValue() < 0)) {
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{"+" + value, "Integer"});
+                }
+            }            
             break;
         case DT_EXPLICITTIMEZONE:
             // value = optional | required | prohibited

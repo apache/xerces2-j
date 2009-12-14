@@ -80,9 +80,11 @@ public final class SchemaSymbols {
     public static final String ELT_MAXEXCLUSIVE           = "maxExclusive".intern();
     public static final String ELT_MAXINCLUSIVE           = "maxInclusive".intern();
     public static final String ELT_MAXLENGTH              = "maxLength".intern();
+    public static final String ELT_MAXSCALE               = "maxScale".intern();
     public static final String ELT_MINEXCLUSIVE           = "minExclusive".intern();
     public static final String ELT_MININCLUSIVE           = "minInclusive".intern();
     public static final String ELT_MINLENGTH              = "minLength".intern();
+    public static final String ELT_MINSCALE               = "minScale".intern();
     public static final String ELT_NOTATION               = "notation".intern();
     public static final String ELT_OPENCONTENT            = "openContent".intern();
     public static final String ELT_PATTERN                = "pattern".intern();

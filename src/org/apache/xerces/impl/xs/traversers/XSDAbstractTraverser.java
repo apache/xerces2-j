@@ -558,6 +558,12 @@ abstract class XSDAbstractTraverser {
                 else if (facet.equals(SchemaSymbols.ELT_LENGTH)) {
                     currentFacet = XSSimpleType.FACET_LENGTH;
                 }
+                else if (facet.equals(SchemaSymbols.ELT_MAXSCALE)) {  //XML Schema 1.1
+                    currentFacet = XSSimpleType.FACET_MAXSCALE;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_MINSCALE)) {  //XML Schema 1.1
+                    currentFacet = XSSimpleType.FACET_MINSCALE;
+                }
                 else if (facet.equals(SchemaSymbols.ELT_EXPLICITTIMEZONE)){
                     currentFacet = XSSimpleType.FACET_EXPLICITTIMEZONE;
                 }
@@ -627,6 +633,12 @@ abstract class XSDAbstractTraverser {
                 case XSSimpleType.FACET_LENGTH:
                     xsFacets.length = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue();
                     break;
+                case XSSimpleType.FACET_MAXSCALE:
+                    xsFacets.maxScale = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue(); //XML Schema 1.1
+                    break;
+                case XSSimpleType.FACET_MINSCALE:
+                    xsFacets.minScale = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).intValue(); //XML Schema 1.1
+                    break;
                 case XSSimpleType.FACET_EXPLICITTIMEZONE:
                     xsFacets.explicitTimezone = ((XInt)attrs[XSAttributeChecker.ATTIDX_VALUE]).shortValue();
                     break;
@@ -676,6 +688,12 @@ abstract class XSDAbstractTraverser {
                 break;
                 case XSSimpleType.FACET_LENGTH:
                     xsFacets.lengthAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MAXSCALE:       //XML Schema 1.1
+                    xsFacets.maxScaleAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MINSCALE:       //XML Schema 1.1
+                    xsFacets.minScaleAnnotation = annotation;
                 break;
                 case XSSimpleType.FACET_EXPLICITTIMEZONE:    //XML Schema 1.1
                     xsFacets.explicitTimezoneAnnotation = annotation;

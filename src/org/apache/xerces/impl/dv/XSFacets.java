@@ -38,7 +38,17 @@ public class XSFacets {
      * value of length facet.
      */
     public int length;
+    
+    /**     
+     * value of maxScale facet.
+     */
+    public int maxScale;
 
+    /**     
+     * value of minScale facet.
+     */
+    public int minScale;
+    
     /**
      * value of minLength facet.
      */
@@ -124,6 +134,8 @@ public class XSFacets {
     public XSAnnotation maxExclusiveAnnotation;
     public XSAnnotation minInclusiveAnnotation;
     public XSAnnotation minExclusiveAnnotation;
+    public XSAnnotation maxScaleAnnotation; //XML Schema 1.1    
+    public XSAnnotation minScaleAnnotation; //XML Schema 1.1   
     public XSAnnotation explicitTimezoneAnnotation; //XML schema 1.1
     
     // the annotations of the assertions are stored in XSAssertImpl objects
@@ -143,6 +155,8 @@ public class XSFacets {
         minInclusiveAnnotation = null;
         minExclusiveAnnotation = null;
         assertFacets = null;
+        maxScaleAnnotation = null;//XML Schema 1.1      
+        minScaleAnnotation = null;//XML Schema 1.1  
         explicitTimezoneAnnotation = null; //XML Schema 1.1
     }
 }
