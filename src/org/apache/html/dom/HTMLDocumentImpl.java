@@ -23,6 +23,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xerces.dom.ElementImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -514,7 +515,7 @@ public class HTMLDocumentImpl
         return super.createAttribute( name.toLowerCase(Locale.ENGLISH) );
     }
 
-
+    
     public String getReferrer()
     {
         // Information not available on server side.
@@ -636,8 +637,25 @@ public class HTMLDocumentImpl
         cloneNode(newdoc, deep);
         return newdoc;
     }
+    
+    
+    /* (non-Javadoc)
+     * @see CoreDocumentImpl#canRenameElements()
+     */
+    protected boolean canRenameElements(String newNamespaceURI, String newNodeName, ElementImpl el) {
+        if (el.getNamespaceURI() != null) {
+            // element is not HTML:
+            // can be renamed if not changed to HTML
+            return newNamespaceURI != null;
+        }
+        
+        // check whether a class change is required
+        Class newClass = (Class) _elementTypesHTML.get(newNodeName.toUpperCase(Locale.ENGLISH));
+        Class oldClass = (Class) _elementTypesHTML.get(el.getTagName());
+        return newClass == oldClass;
+    }
 
-
+    
     /**
      * Recursive method retreives an element by its <code>id</code> attribute.
      * Called by {@link #getElementById(String)}.

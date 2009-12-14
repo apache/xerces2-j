@@ -21,6 +21,7 @@ import java.util.Hashtable;
 
 import org.apache.wml.WMLDocument;
 import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xerces.dom.ElementImpl;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -63,6 +64,14 @@ public class WMLDocumentImpl extends DocumentImpl implements WMLDocument {
             }
         }
         return new WMLElementImpl( this, tagName );
+    }
+    
+    /* (non-Javadoc)
+     * @see CoreDocumentImpl#canRenameElements()
+     */
+    protected boolean canRenameElements(String newNamespaceURI, String newNodeName, ElementImpl el) {
+        // check whether a class change is required
+        return _elementTypesWML.get(newNodeName) == _elementTypesWML.get(el.getTagName());
     }
     
     static {

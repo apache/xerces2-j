@@ -959,6 +959,19 @@ extends ParentNode implements Document  {
     }
 
 
+    /* NON-DOM
+     * Used by DOM Level 3 WD remameNode.
+     * 
+     * Some DOM implementations do not allow nodes to be renamed and require 
+     * creating new elements.
+     * In this case this method should be overwritten.
+     * 
+     * @return true if the given element can be renamed, false, if it must be replaced.
+     */
+    protected boolean canRenameElements(String newNamespaceURI, String newNodeName, ElementImpl el) {
+        return true;
+    }
+    
     /**
      * DOM Level 3 WD - Experimental.
      * Renaming node
@@ -975,76 +988,23 @@ extends ParentNode implements Document  {
             case ELEMENT_NODE: {
                 ElementImpl el = (ElementImpl) n;
                 if (el instanceof ElementNSImpl) {
-                    ((ElementNSImpl) el).rename(namespaceURI, name);
-                    
-                    // fire user data NODE_RENAMED event
-                    callUserDataHandlers(el, null, UserDataHandler.NODE_RENAMED);
+                    if (canRenameElements(namespaceURI, name, el)) {
+                        ((ElementNSImpl) el).rename(namespaceURI, name);
+                        // fire user data NODE_RENAMED event
+                        callUserDataHandlers(el, null, UserDataHandler.NODE_RENAMED);
+                    } 
+                    else {
+                        el = replaceRenameElement(el, namespaceURI, name);
+                    }
                 }
                 else {
-                    if (namespaceURI == null) {
-                        if (errorChecking) {
-                            int colon1 = name.indexOf(':');
-                            if(colon1 != -1){
-                                String msg =
-                                    DOMMessageFormatter.formatMessage(
-                                            DOMMessageFormatter.DOM_DOMAIN,
-                                            "NAMESPACE_ERR",
-                                            null);
-                                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                            }
-                            if (!isXMLName(name,xml11Version)) {
-                                String msg = DOMMessageFormatter.formatMessage(
-                                        DOMMessageFormatter.DOM_DOMAIN,
-                                        "INVALID_CHARACTER_ERR", null);
-                                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                        msg);
-                            }
-                        }
+                    if (namespaceURI == null && canRenameElements(null, name, el)) {
                         el.rename(name);
-                        
                         // fire user data NODE_RENAMED event
-                        callUserDataHandlers(el, null,
-                                UserDataHandler.NODE_RENAMED);
+                        callUserDataHandlers(el, null, UserDataHandler.NODE_RENAMED);
                     }
                     else {
-                        // we need to create a new object
-                        ElementNSImpl nel =
-                            new ElementNSImpl(this, namespaceURI, name);
-                        
-                        // register event listeners on new node
-                        copyEventListeners(el, nel);
-                        
-                        // remove user data from old node
-                        Hashtable data = removeUserDataTable(el);
-                        
-                        // remove old node from parent if any
-                        Node parent = el.getParentNode();
-                        Node nextSib = el.getNextSibling();
-                        if (parent != null) {
-                            parent.removeChild(el);
-                        }
-                        // move children to new node
-                        Node child = el.getFirstChild();
-                        while (child != null) {
-                            el.removeChild(child);
-                            nel.appendChild(child);
-                            child = el.getFirstChild();
-                        }
-                        // move specified attributes to new node
-                        nel.moveSpecifiedAttributes(el);
-                        
-                        // attach user data to new node
-                        setUserDataTable(nel, data);
-                        
-                        // and fire user data NODE_RENAMED event
-                        callUserDataHandlers(el, nel,
-                                UserDataHandler.NODE_RENAMED);
-                        
-                        // insert new node where old one was
-                        if (parent != null) {
-                            parent.insertBefore(nel, nextSib);
-                        }
-                        el = nel;
+                        el = replaceRenameElement(el, namespaceURI, name);
                     }
                 }
                 // fire ElementNameChanged event
@@ -1054,7 +1014,7 @@ extends ParentNode implements Document  {
             case ATTRIBUTE_NODE: {
                 AttrImpl at = (AttrImpl) n;
                 
-                // dettach attr from element
+                // detach attr from element
                 Element el = at.getOwnerElement();
                 if (el != null) {
                     el.removeAttributeNode(at);
@@ -1082,7 +1042,7 @@ extends ParentNode implements Document  {
                     }
                     else {
                         // we need to create a new object
-                        AttrNSImpl nat = new AttrNSImpl(this, namespaceURI, name);
+                        AttrNSImpl nat = (AttrNSImpl) createAttributeNS(namespaceURI, name);
                         
                         // register event listeners on new node
                         copyEventListeners(at, nat);
@@ -1122,6 +1082,47 @@ extends ParentNode implements Document  {
             }
         }
         
+    }
+    
+    private ElementImpl replaceRenameElement(ElementImpl el, String namespaceURI, String name) {
+        
+        // we need to create a new object
+        ElementNSImpl nel = (ElementNSImpl)createElementNS(namespaceURI, name);
+        
+        // register event listeners on new node
+        copyEventListeners(el, nel);
+        
+        // remove user data from old node
+        Hashtable data = removeUserDataTable(el);
+        
+        // remove old node from parent if any
+        Node parent = el.getParentNode();
+        Node nextSib = el.getNextSibling();
+        if (parent != null) {
+            parent.removeChild(el);
+        }
+        // move children to new node
+        Node child = el.getFirstChild();
+        while (child != null) {
+            el.removeChild(child);
+            nel.appendChild(child);
+            child = el.getFirstChild();
+        }
+        // move specified attributes to new node
+        nel.moveSpecifiedAttributes(el);
+        
+        // attach user data to new node
+        setUserDataTable(nel, data);
+        
+        // and fire user data NODE_RENAMED event
+        callUserDataHandlers(el, nel,
+                UserDataHandler.NODE_RENAMED);
+        
+        // insert new node where old one was
+        if (parent != null) {
+            parent.insertBefore(nel, nextSib);
+        }
+        return nel;
     }
 
 
