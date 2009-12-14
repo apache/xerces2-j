@@ -132,7 +132,7 @@ extends ParentNode implements Document  {
     protected String fDocumentURI;
 
     /** Table for user data attached to this document nodes. */
-    protected Map userData;
+    protected Map userData;  // serialized as Hashtable
 
     /** Identifiers. */
     protected Hashtable identifiers;
@@ -204,7 +204,7 @@ extends ParentNode implements Document  {
     // document.  Node number values are negative integers.  Nodes are
     // assigned numbers on demand.
     private int nodeCounter = 0;
-    private Hashtable nodeTable;
+    private Map nodeTable;  // serialized as Hashtable
     private boolean xml11Version = false; //by default 1.0
     //
     // Static initialization
@@ -1468,7 +1468,7 @@ extends ParentNode implements Document  {
         // Node numbers are negative, from -1 to -n
         int num;
         if (nodeTable == null) {
-            nodeTable = new Hashtable();
+            nodeTable = new WeakHashMap();
             num = --nodeCounter;
             nodeTable.put(node, new Integer(num));
         }
@@ -2765,8 +2765,9 @@ extends ParentNode implements Document  {
     }
     
     /**
-     * Serialized form of user data is a Hashtable. 
-     * Convert it into a WeakHashMap on load.
+     * The serialized forms of the user data and node table
+     * maps are Hashtables. Convert them into WeakHashMaps 
+     * on load.
      */
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException {
@@ -2774,25 +2775,34 @@ extends ParentNode implements Document  {
         if (userData != null) {
             userData = new WeakHashMap(userData);
         }
+        if (nodeTable != null) {
+            nodeTable = new WeakHashMap(nodeTable);
+        }
     }
     
     /**
      * To allow DOM trees serialized by newer versions of Xerces
      * to be read by older versions briefly move the user data
-     * into a Hashtable.
+     * and node table into Hashtables.
      */
     private void writeObject(ObjectOutputStream out) throws IOException {
+        // Keep references to the original objects for restoration after serialization
         final Map oldUserData = this.userData;
+        final Map oldNodeTable = this.nodeTable;
         try {
             if (oldUserData != null) {
                 this.userData = new Hashtable(oldUserData);
-            } 
+            }
+            if (oldNodeTable != null) {
+                nodeTable = new Hashtable(oldNodeTable);
+            }
             out.defaultWriteObject();
         }
         // If the write fails for some reason ensure 
-        // that we restore the original object.
+        // that we restore the original objects.
         finally {
             this.userData = oldUserData;
+            this.nodeTable = oldNodeTable;
         }
     }
 
