@@ -21,7 +21,6 @@ import java.util.Vector;
 
 import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.ProcessingInstructionImpl;
-import org.apache.xerces.dom.TextImpl;
 import org.w3c.dom.Node;
 import org.w3c.dom.html.HTMLDocument;
 import org.xml.sax.AttributeList;
@@ -173,7 +172,7 @@ public class HTMLBuilder
     {
 	if ( _current == null )
             throw new SAXException( "HTM009 State error: character data found outside of root element." );
-	_current.appendChild( new TextImpl( _document, text ) );
+        _current.appendChild( _document.createTextNode(text) );
     }
 
     
@@ -182,7 +181,7 @@ public class HTMLBuilder
     {
 	if ( _current == null )
             throw new SAXException( "HTM010 State error: character data found outside of root element." );
-	_current.appendChild( new TextImpl( _document, new String( text, start, length ) ) );
+        _current.appendChild( _document.createTextNode(new String(text, start, length)) );
     }
     
     
@@ -190,7 +189,7 @@ public class HTMLBuilder
         throws SAXException
     {        
         if ( ! _ignoreWhitespace )
-	    _current.appendChild( new TextImpl( _document, new String( text, start, length ) ) );
+            _current.appendChild( _document.createTextNode(new String(text, start, length)) );
      }
     
     
@@ -207,9 +206,9 @@ public class HTMLBuilder
 	}
 	else
         if ( _current == null && _document != null )
-	    _document.appendChild( new ProcessingInstructionImpl( _document, target, instruction ) );
+            _document.appendChild( _document.createProcessingInstruction(target, instruction) );
 	else
-	    _current.appendChild( new ProcessingInstructionImpl( _document, target, instruction ) );
+        _current.appendChild( _document.createProcessingInstruction(target, instruction) );
     }
     
     
