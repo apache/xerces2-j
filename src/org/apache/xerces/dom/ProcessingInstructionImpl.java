@@ -17,7 +17,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -105,40 +104,6 @@ public class ProcessingInstructionImpl
         return target;
 
     } // getTarget():String
-
-    /**
-     * A PI's data content tells the processor what we actually want it
-     * to do.  It is defined slightly differently in HTML and XML.
-     * <p>
-     * In XML, the data begins with the non-whitespace character
-     * immediately after the target -- @see getTarget().
-     * <p>
-     * In HTML, the data begins with the character immediately after the
-     * "&lt;?" token that begins the PI.
-     * <p>
-     * Note that getNodeValue is aliased to getData
-     */
-    public String getData() {
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-        return data;
-
-    } // getData():String
-
-    /**
-     * Change the data content of this PI.
-     * Note that setData is aliased to setNodeValue.
-     * @see #getData().
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if node is read-only.
-     */
-    public void setData(String data) {
-        // Hand off to setNodeValue for code-reuse reasons (mutation
-        // events, readonly protection, synchronizing, etc.)
-        setNodeValue(data);
-    } // setData(String)
-
-
 
    /**
      * Returns the absolute base URI of this node or null if the implementation
