@@ -3391,6 +3391,15 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                             minInclusiveAnnotation);
                 count++;
             }
+            if ((fFacetsDefined & FACET_EXPLICITTIMEZONE) != 0) {
+                facets[count] = 
+                    new XSFacetImpl (
+                            FACET_EXPLICITTIMEZONE,
+                            ET_FACET_STRING[fExplicitTimezone],
+                            (fFixedFacet & FACET_EXPLICITTIMEZONE) != 0,
+                            explicitTimezoneAnnotation);
+                count++;
+            }
             if ((fFacetsDefined & FACET_MAXSCALE) != 0) {
                 facets[count] = 
                     new XSFacetImpl (
