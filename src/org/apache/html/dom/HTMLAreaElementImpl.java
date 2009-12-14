@@ -90,7 +90,7 @@ public class HTMLAreaElementImpl
     
     public boolean getNoHref()
     {
-        return getBinary( "href" );
+        return getBinary( "nohref" );
     }
     
     
