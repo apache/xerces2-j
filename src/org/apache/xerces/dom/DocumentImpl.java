@@ -106,9 +106,11 @@ public class DocumentImpl
     /** Reference queue for cleared Node Iterator references */
     protected transient ReferenceQueue iteratorReferenceQueue;
 
-     /** Ranges */
-    // REVISIT: Should this be transient? -Ac
-    protected Vector ranges;
+    /** Ranges */
+    protected transient List ranges;
+    
+    /** Reference queue for cleared Range references */
+    protected transient ReferenceQueue rangeReferenceQueue;
 
     /** Table for event listeners registered to this document nodes. */
     protected Hashtable eventListeners;
@@ -316,18 +318,25 @@ public class DocumentImpl
     /**
      * Remove stale iterator references from the iterator list.
      */
-    void removeStaleIteratorReferences() {
-        Reference ref = iteratorReferenceQueue.poll();
+    private void removeStaleIteratorReferences() {
+        removeStaleReferences(iteratorReferenceQueue, iterators);
+    }
+    
+    /**
+     * Remove stale references from the given list.
+     */
+    private void removeStaleReferences(ReferenceQueue queue, List list) {
+        Reference ref = queue.poll();
         int count = 0;
         while (ref != null) {
             ++count;
-            ref = iteratorReferenceQueue.poll();
+            ref = queue.poll();
         }
         if (count > 0) {
-            Iterator i = iterators.iterator();
+            final Iterator i = list.iterator();
             while (i.hasNext()) {
-                Object iterator = ((Reference) i.next()).get();
-                if (iterator == null) {
+                Object o = ((Reference) i.next()).get();
+                if (o == null) {
                     i.remove();
                     if (--count <= 0) {
                         return;
@@ -345,17 +354,19 @@ public class DocumentImpl
     public Range createRange() {
 
         if (ranges == null) {
-            ranges = new Vector();
+            ranges = new LinkedList();
+            rangeReferenceQueue = new ReferenceQueue();
         }
 
         Range range = new RangeImpl(this);
 
-        ranges.addElement(range);
+        removeStaleRangeReferences();
+        ranges.add(new WeakReference(range, rangeReferenceQueue));
 
         return range;
 
     }
-
+    
     /** Not a client function. Called by Range.detach(),
      *  so a Range can remove itself from the list of
      *  Ranges.
@@ -365,7 +376,19 @@ public class DocumentImpl
         if (range == null) return;
         if (ranges == null) return;
 
-        ranges.removeElement(range);
+        removeStaleRangeReferences();
+        Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            Object otherRange = ((Reference) i.next()).get();
+            if (otherRange == range) {
+                i.remove();
+                return;
+            }
+            // Remove stale reference from the list.
+            else if (otherRange == null) {
+                i.remove();
+            } 
+        }
     }
 
     /**
@@ -380,9 +403,17 @@ public class DocumentImpl
     }
     
     private void notifyRangesReplacedText(CharacterDataImpl node) {
-        final int size = ranges.size();
-        for (int i = 0; i != size; i++) {
-            ((RangeImpl)ranges.elementAt(i)).receiveReplacedText(node);
+        removeStaleRangeReferences();
+        final Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            RangeImpl range = (RangeImpl) ((Reference) i.next()).get();
+            if (range != null) {
+                range.receiveReplacedText(node);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
     }
 
@@ -398,9 +429,17 @@ public class DocumentImpl
     }
     
     private void notifyRangesDeletedText(CharacterDataImpl node, int offset, int count) {
-        final int size = ranges.size();
-        for (int i = 0; i != size; i++) {
-            ((RangeImpl)ranges.elementAt(i)).receiveDeletedText(node, offset, count);
+        removeStaleRangeReferences();
+        final Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            RangeImpl range = (RangeImpl) ((Reference) i.next()).get();
+            if (range != null) {
+                range.receiveDeletedText(node, offset, count);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
     }
 
@@ -416,9 +455,17 @@ public class DocumentImpl
     }
     
     private void notifyRangesInsertedText(CharacterDataImpl node, int offset, int count) {
-        final int size = ranges.size();
-        for (int i = 0; i != size; i++) {
-            ((RangeImpl)ranges.elementAt(i)).receiveInsertedText(node, offset, count);
+        removeStaleRangeReferences();
+        final Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            RangeImpl range = (RangeImpl) ((Reference) i.next()).get();
+            if (range != null) {
+                range.receiveInsertedText(node, offset, count);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
     }
 
@@ -434,10 +481,25 @@ public class DocumentImpl
     }
     
     private void notifyRangesSplitData(Node node, Node newNode, int offset) {
-        final int size = ranges.size();
-        for (int i = 0; i != size; i++) {
-            ((RangeImpl)ranges.elementAt(i)).receiveSplitData(node, newNode, offset);
+        removeStaleRangeReferences();
+        final Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            RangeImpl range = (RangeImpl) ((Reference) i.next()).get();
+            if (range != null) {
+                range.receiveSplitData(node, newNode, offset);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
+    }
+    
+    /**
+     * Remove stale range references from the range list.
+     */
+    private void removeStaleRangeReferences() {
+        removeStaleReferences(rangeReferenceQueue, ranges);
     }
 
     //
@@ -1196,9 +1258,17 @@ public class DocumentImpl
     }
     
     private void notifyRangesInsertedNode(NodeImpl newInternal) {
-        final int size = ranges.size();
-        for (int i = 0; i != size; i++) {
-            ((RangeImpl)ranges.elementAt(i)).insertedNodeFromDOM(newInternal);
+        removeStaleRangeReferences();
+        final Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            RangeImpl range = (RangeImpl) ((Reference) i.next()).get();
+            if (range != null) {
+                range.insertedNodeFromDOM(newInternal);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
     }
 
@@ -1239,9 +1309,17 @@ public class DocumentImpl
     }
     
     private void notifyRangesRemovingNode(NodeImpl oldChild) {
-        final int size = ranges.size();
-        for (int i = 0; i != size; i++) {
-            ((RangeImpl)ranges.elementAt(i)).removeNode(oldChild);
+        removeStaleRangeReferences();
+        final Iterator i = ranges.iterator();
+        while (i.hasNext()) {
+            RangeImpl range = (RangeImpl) ((Reference) i.next()).get();
+            if (range != null) {
+                range.removeNode(oldChild);
+            }
+            // Remove stale reference from the list.
+            else {
+                i.remove();
+            }
         }
     }
     
