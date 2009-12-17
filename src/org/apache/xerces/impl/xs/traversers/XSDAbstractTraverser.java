@@ -46,6 +46,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSMultiValueFacet;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -771,7 +772,7 @@ abstract class XSDAbstractTraverser {
     //
     Element traverseAttrsAndAttrGrps(Element firstAttr, XSAttributeGroupDecl attrGrp,
             XSDocumentInfo schemaDoc, SchemaGrammar grammar,
-            XSComplexTypeDecl enclosingCT) {
+            XSObject enclosingParent) {
         
         Element child=null;
         XSAttributeGroupDecl tempAttrGrp = null;
@@ -785,7 +786,7 @@ abstract class XSDAbstractTraverser {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
                         schemaDoc,
                         grammar,
-                        enclosingCT);
+                        enclosingParent);
                 if (tempAttrUse == null) continue;
                 if (tempAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
                     attrGrp.addAttributeUse(tempAttrUse);
@@ -798,14 +799,14 @@ abstract class XSDAbstractTraverser {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     // Only applies to XML Schema 1.0
                     if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
-                        String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
-                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                        String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "ag-props-correct.3" : "ct-props-correct.5";
+                        String name = enclosingParent.getName();
                         reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName(), idName}, child);
                     }
                 }
                 else if (otherUse != tempAttrUse) {
-                    String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
-                    String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                    String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "ag-props-correct.2" : "ct-props-correct.4";
+                    String name = enclosingParent.getName();
                     reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName()}, child);
                 }
             }
@@ -830,14 +831,14 @@ abstract class XSDAbstractTraverser {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
                         // Only applies to XML Schema 1.0
                         if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
-                            String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
-                            String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                            String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "ag-props-correct.3" : "ct-props-correct.5";
+                            String name = enclosingParent.getName();
                             reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName(), idName}, child);
                         }
                     }
                     else if (oneAttrUse != otherUse) {
-                        String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
-                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                        String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "ag-props-correct.2" : "ct-props-correct.4";
+                        String name = enclosingParent.getName();
                         reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName()}, child);
                     }
                 }
@@ -851,8 +852,8 @@ abstract class XSDAbstractTraverser {
                         attrGrp.fAttributeWC = fSchemaHandler.fXSConstraints.
                         performIntersectionWith(attrGrp.fAttributeWC, tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
                         if (attrGrp.fAttributeWC == null) {
-                            String code = (enclosingCT == null) ? "src-attribute_group.2" : "src-ct.4";
-                            String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                            String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "src-attribute_group.2" : "src-ct.4";
+                            String name = enclosingParent.getName();
                             reportSchemaError(code, new Object[]{name}, child);
                         }
                     }
@@ -875,8 +876,8 @@ abstract class XSDAbstractTraverser {
                     attrGrp.fAttributeWC = fSchemaHandler.fXSConstraints.
                     performIntersectionWith(tempAttrWC, attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
                     if (attrGrp.fAttributeWC == null) {
-                        String code = (enclosingCT == null) ? "src-attribute_group.2" : "src-ct.4";
-                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                        String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "src-attribute_group.2" : "src-ct.4";
+                        String name = enclosingParent.getName();
                         reportSchemaError(code, new Object[]{name}, child);
                     }
                 }

@@ -33,6 +33,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
@@ -70,7 +71,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
     protected XSAttributeUseImpl traverseLocal(Element attrDecl,
             XSDocumentInfo schemaDoc,
             SchemaGrammar grammar,
-            XSComplexTypeDecl enclosingCT) {
+            XSObject enclosingParent) {
         
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc);
@@ -110,7 +111,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attribute = null;
             }
         } else {
-            attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false, enclosingCT);
+            attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false, enclosingParent);
         }
         
         // get 'value constraint'
@@ -247,7 +248,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             XSDocumentInfo schemaDoc,
             SchemaGrammar grammar,
             boolean isGlobal,
-            XSComplexTypeDecl enclosingCT) {
+            XSObject enclosingParent) {
         
         String  defaultAtt     = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
         String  fixedAtt       = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
@@ -272,15 +273,22 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // get 'target namespace'
         String tnsAtt = null;
         XSComplexTypeDecl enclCT = null;
+        XSObject enclParent = null;
         short scope = XSAttributeDecl.SCOPE_ABSENT;
         if (isGlobal) {
             tnsAtt = schemaDoc.fTargetNamespace;
             scope = XSAttributeDecl.SCOPE_GLOBAL;
         }
         else {
-            if (enclosingCT != null) {
-                enclCT = enclosingCT;
-                scope = XSAttributeDecl.SCOPE_LOCAL;
+            if (enclosingParent != null) {
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    enclParent = enclosingParent;
+                    scope = XSAttributeDecl.SCOPE_LOCAL;
+                }
+                else if (enclosingParent instanceof XSComplexTypeDecl) {
+                    enclCT = (XSComplexTypeDecl) enclosingParent;
+                    scope = XSAttributeDecl.SCOPE_LOCAL;
+                }
             }
             if (targetNsAtt != null) {
                 // XML Schema 1.1, set the target namespace to be the value of the targetNamespace attribute if one is defined
@@ -369,7 +377,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
         
         attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
-                attDefault, enclCT, annotations, inheritable);
+                attDefault, enclParent, annotations, inheritable);
         
         // Step 3: check against schema for schemas
         
@@ -450,7 +458,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attDefault = null;
                 constraintType = XSConstants.VC_NONE;
                 attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
-                        attDefault, enclCT, annotations, inheritable);
+                        attDefault, enclParent, annotations, inheritable);
             }
         }
         
@@ -464,7 +472,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attDefault = null;
                 constraintType = XSConstants.VC_NONE;
                 attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
-                        attDefault, enclCT, annotations, inheritable);
+                        attDefault, enclParent, annotations, inheritable);
             }
         }
         

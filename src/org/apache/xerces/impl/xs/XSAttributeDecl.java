@@ -27,6 +27,7 @@ import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 
@@ -58,8 +59,8 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     short fConstraintType = XSConstants.VC_NONE;
     // scope
     short fScope = XSConstants.SCOPE_ABSENT;
-    // enclosing complex type, when the scope is local
-    XSComplexTypeDecl fEnclosingCT = null;
+    // enclosing complex type or attribute group definition, when the scope is local
+    XSObject fEnclosingParent = null;
     // optional annotations
     XSObjectList fAnnotations = null;    
     // value constraint value
@@ -72,7 +73,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
 
     public void setValues(String name, String targetNamespace,
             XSSimpleType simpleType, short constraintType, short scope,
-            ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT,
+            ValidatedInfo valInfo, XSObject enclosingParent,
             XSObjectList annotations, boolean inheritable) {
         fName = name;
         fTargetNamespace = targetNamespace;
@@ -80,7 +81,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fConstraintType = constraintType;
         fScope = scope;
         fDefault = valInfo;
-        fEnclosingCT = enclosingCT;
+        fEnclosingParent = enclosingParent;
         fAnnotations = annotations;
         fInheritable = inheritable;
     }
@@ -145,7 +146,17 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
      * property.
      */
     public XSComplexTypeDefinition getEnclosingCTDefinition() {
-        return fEnclosingCT;
+        return (fEnclosingParent instanceof XSComplexTypeDecl)
+                    ? (XSComplexTypeDecl)fEnclosingParent : null;
+    }
+
+    /**
+     * Locally scoped declarations are available for use only within the
+     * complex type definition or attribute group definition identified
+     * by the <code>scope</code> property.
+     */
+    public XSObject getParent() {
+        return fEnclosingParent;
     }
 
     /**

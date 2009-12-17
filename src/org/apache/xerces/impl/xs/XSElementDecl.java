@@ -30,6 +30,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -60,8 +61,8 @@ public class XSElementDecl implements XSElementDeclaration {
     // misc flag of the element: nillable/abstract/fixed
     short fMiscFlags = 0;
     public short fScope = XSConstants.SCOPE_ABSENT;
-    // enclosing complex type, when the scope is local
-    XSComplexTypeDecl fEnclosingCT = null;
+    // enclosing parent, when the scope is local
+    XSObject fEnclosingParent = null;
     // block set (disallowed substitutions) of the element
     public short fBlock = XSConstants.DERIVATION_NONE;
     // final set (substitution group exclusions) of the element
@@ -105,9 +106,9 @@ public class XSElementDecl implements XSElementDeclaration {
     public void setIsGlobal() {
         fScope = SCOPE_GLOBAL;
     }
-    public void setIsLocal(XSComplexTypeDecl enclosingCT) {
+    public void setIsLocal(XSObject enclosingParent) {
         fScope = SCOPE_LOCAL;
-        fEnclosingCT = enclosingCT;
+        fEnclosingParent = enclosingParent;
     }
 
     public void addIDConstraint(IdentityConstraint idc) {
@@ -305,7 +306,17 @@ public class XSElementDecl implements XSElementDeclaration {
      * property.
      */
     public XSComplexTypeDefinition getEnclosingCTDefinition() {
-        return fEnclosingCT;
+        return (fEnclosingParent instanceof XSComplexTypeDecl) 
+                    ? (XSComplexTypeDecl)fEnclosingParent : null;
+    }
+
+    /**
+     * Locally scoped declarations are available for use only within the
+     * complex type definition or model group definition identified by the
+     * <code>scope</code> property.
+     */
+    public XSObject getParent() {
+        return fEnclosingParent;
     }
 
     /**

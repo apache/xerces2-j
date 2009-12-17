@@ -290,8 +290,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             element.setIsGlobal();
         }
         else {
-            if (parent instanceof XSComplexTypeDecl)
-                element.setIsLocal((XSComplexTypeDecl)parent);
+            // Sanity check, parent should not be null
+            if (parent != null) {
+                if (parent instanceof XSComplexTypeDecl || fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    element.setIsLocal(parent);
+                }
+            }
             
             if (targetNsAtt!=null) {
                 // XML Schema 1.1, set the target namespace to be the value of the targetNamespace attribute if one is defined

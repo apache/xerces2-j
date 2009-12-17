@@ -16,6 +16,7 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -139,7 +140,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // Traverse the attribute and attribute group elements and fill in the 
         // attributeGroup structure
         
-        Element nextNode = traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar, null);
+        Element nextNode = traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar,attrGrp);
         if (nextNode!=null) {
             // An invalid element was found...
             Object[] args = new Object [] {nameAttr, "(annotation?, ((attribute | attributeGroup)*, anyAttribute?))", DOMUtil.getLocalName(nextNode)};
