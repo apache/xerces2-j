@@ -200,13 +200,22 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
          initXPathProcessor();
          
          // determine value of variable, $value
-         String value = null;
-         NodeList childList = currentAssertDomNode.getChildNodes();
-         if (childList.getLength() == 1) {
-             Node node = childList.item(0);
+         String value = "";
+         NodeList childList = currentAssertDomNode.getChildNodes();         
+         int textChildCount = 0;
+         // there could be adjacent text nodes. merge them to get the value.
+         for (int childNodeIndex = 0; childNodeIndex < childList.getLength();
+                                                       childNodeIndex++) {
+             Node node = childList.item(childNodeIndex);
              if (node.getNodeType() == Node.TEXT_NODE) {
-                 value = node.getNodeValue();
+                 textChildCount++;
+                 value = value + node.getNodeValue();
              }
+         }
+         
+         if (!(textChildCount > 0 && (textChildCount ==
+                                      childList.getLength()))) {
+            value = null;  
          }
 
          // evaluate assertions

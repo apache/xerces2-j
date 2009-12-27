@@ -16,6 +16,8 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Vector;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.XSFacets;
@@ -42,8 +44,10 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
 
@@ -668,6 +672,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         }
         
+        // add any assertions from the base types, for assertions to be processed
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            addAssertsFromBaseTypes(fBaseType);
+        }
+        
         // -----------------------------------------------------------------------
         // Process a RESTRICTION
         // -----------------------------------------------------------------------
@@ -823,7 +832,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     if (node != null) {
                         if (isAssert(node)) {
                             traverseAsserts(node, schemaDoc, grammar,
-                                    fComplexTypeDecl);
+                                            fComplexTypeDecl);
                         } else {
                             // a non assert element after attributes is an error
                             fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
@@ -1022,7 +1031,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 
         // add any assertions from the base types, for assertions to be processed
         if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            getAssertsFromBaseTypes(fBaseType);
+            addAssertsFromBaseTypes(fBaseType);
         }
         
         // -----------------------------------------------------------------------
@@ -1345,22 +1354,43 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
     /*
-     * Helper method to find all assertions up in the type hierarchy
+     * Method to find all assertions up in the type hierarchy, and add them to
+     * the list of assertions to be processed.
      */
-    private void getAssertsFromBaseTypes(XSTypeDefinition baseValidator) {        
-        if (baseValidator != null && baseValidator instanceof XSComplexTypeDefinition) {
-            XSObjectList assertList = ((XSComplexTypeDefinition) baseValidator)
+    private void addAssertsFromBaseTypes(XSTypeDefinition baseValidator) {        
+        if (baseValidator != null) {
+            if (baseValidator instanceof XSComplexTypeDefinition) {
+               XSObjectList assertList = ((XSComplexTypeDefinition) baseValidator)
                                                  .getAssertions();
-            for (int i = 0; i < assertList.size(); i++) {
-                // add assertion to the list, only if it's already not present
-                if (!assertExists((XSAssertImpl) assertList.get(i))) {
-                  addAssertion((XSAssertImpl) assertList.get(i));
+               for (int i = 0; i < assertList.size(); i++) {
+                  // add assertion to the list, only if it's already not present
+                  if (!assertExists((XSAssertImpl) assertList.get(i))) {
+                    addAssertion((XSAssertImpl) assertList.get(i));
+                  }
+               }
+            }
+            else if (baseValidator instanceof XSSimpleTypeDefinition) {
+                XSObjectList facets = ((XSSimpleTypeDefinition)baseValidator).getMultiValueFacets();
+                for (int i = 0; i < facets.getLength(); i++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                       Vector assertionFacets = facet.getAsserts();
+                       for (int j = 0; j < assertionFacets.size(); j++) {
+                          XSAssertImpl assertImpl = (XSAssertImpl) assertionFacets.get(j);
+                          addAssertion(assertImpl);
+                       }
+                       break;
+                    }
                 }
             }
             
             // invoke the method recursively. go up the type hierarchy.
-            if (!baseValidator.getBaseType().getName().equals("anyType")) {              
-              getAssertsFromBaseTypes(baseValidator.getBaseType());
+            XSTypeDefinition ancestorType = baseValidator.getBaseType();
+            if (ancestorType != null && 
+                           !(ancestorType.getName().equals("anyType") ||
+                                ancestorType.derivedFrom(Constants.NS_XMLSCHEMA,
+                                "anyAtomicType", XSConstants.DERIVATION_RESTRICTION))) {              
+               addAssertsFromBaseTypes(ancestorType);
             }
         } 
     } // end of method, getAssertsFromBaseTypes

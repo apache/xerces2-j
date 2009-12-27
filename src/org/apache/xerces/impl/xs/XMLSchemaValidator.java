@@ -2485,35 +2485,16 @@ public class XMLSchemaValidator
           // if elements's governing type is a "complex type"
           XSObjectListImpl assertions = new XSObjectListImpl();                
           XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
-                
-          // there could be assertion facets from complexType -> simpleContent
-          // (xs:assertion). add them to the list of assertions to be evaluated.
-          XSSimpleTypeDefinition simpleContentModel = complexTypeDef.getSimpleType();                
-          if (simpleContentModel != null) {
-             XSObjectList facets = simpleContentModel.getMultiValueFacets();
-             for (int i = 0; i < facets.getLength(); i++) {
-               XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-               if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                 Vector simpleTypeAsserts = facet.getAsserts();
-                 for (int j = 0; j < simpleTypeAsserts.size(); j++) {
-                   assertions.addXSObject((XSAssert)simpleTypeAsserts.elementAt(j));    
-                 }                        
-                 break;
-               }
-             }  
-          }
-              
-          // there could be assertions, from the complex type definition
-          // (xs:assert). add them to the list of assertions to be evaluated.
+          
           XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
           if (complexTypeAsserts.getLength() > 0) {
             for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
                assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
             }
           }
-          
+
           // there could be assertions, to be evaluated on attributes. add these
-          // assertions to the assertions to be processed.
+          // assertions to the list of assertions to be processed.
           for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
               Augmentations attrAugs = attributes.getAugmentations(attrIndx);
               AttributePSVImpl attrPSVI = (AttributePSVImpl)attrAugs.getItem
