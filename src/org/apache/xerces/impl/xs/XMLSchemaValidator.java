@@ -2583,7 +2583,9 @@ public class XMLSchemaValidator
         // modify the Vector list, 'fInheritableAttrList' and pop the stack,
         // 'fInhrAttrCountStack', to reflect inheritable attributes processing. 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-           fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
+           if (fInhrAttrCountStack.size() > 0) {
+             fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
+           }
         }
         
         // if we are skipping, return
