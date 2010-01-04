@@ -77,7 +77,7 @@ Authors:
     <property name='default.parser.config.name' value='XIncludeAwareParserConfiguration'/>
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XIncludeAwareParserConfiguration'/>
 
-    <property name="year" value="1999-2009"/>
+    <property name="year" value="1999-2010"/>
     <property name="copyright" value="Copyright &#169; ${year} The Apache Software Foundation. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
