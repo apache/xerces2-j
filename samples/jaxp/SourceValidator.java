@@ -98,6 +98,9 @@ public class SourceValidator
     /** Default schema language (http://www.w3.org/2001/XMLSchema). */
     protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     
+    /** XSD 1.1 schema language */
+    protected static final String XSD11_SCHEMA_LANGUAGE = "http://www.w3.org/2001/XMLSchema/v1.1";
+    
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
     
@@ -396,6 +399,12 @@ public class SourceValidator
                     memoryUsage = option.equals("m");
                     continue;
                 }
+                if (option.equals("xsd11")) {
+                    schemaLanguage = XSD11_SCHEMA_LANGUAGE;
+                    System.setProperty("javax.xml.validation.SchemaFactory:http://www.w3.org/2001/XMLSchema/v1.1",
+                                       "org.apache.xerces.jaxp.validation.XMLSchema11Factory");
+                    continue;
+                }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
@@ -410,7 +419,7 @@ public class SourceValidator
             SourceValidator sourceValidator = new SourceValidator();
             
             // Create SchemaFactory and configure
-            SchemaFactory factory = SchemaFactory.newInstance(schemaLanguage);
+            SchemaFactory factory = SchemaFactory.newInstance(schemaLanguage);            
             factory.setErrorHandler(sourceValidator);
             
             try {
@@ -595,6 +604,7 @@ public class SourceValidator
         System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -m  | -M    Turn on/off memory usage report");
+        System.err.println("  -xsd11      Turn on XSD 1.1 support");
         System.err.println("  -h          This help screen.");
         
         System.err.println();
