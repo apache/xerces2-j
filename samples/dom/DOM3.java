@@ -59,7 +59,7 @@ public class DOM3 implements DOMErrorHandler, LSParserFilter {
         try {
 
             // get DOM Implementation using DOM Registry
-            System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMXSImplementationSourceImpl");
+            // System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMXSImplementationSourceImpl");
             DOMImplementationRegistry registry =
                 DOMImplementationRegistry.newInstance();
 
