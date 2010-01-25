@@ -62,13 +62,14 @@ public class XJavac extends Javac {
                 setBootclasspath(createIBMJDKBootclasspath());
             }
             // need to do special things for Sun too and also
-            // for Apple, HP, SableVM, Kaffe and Blackdown: a Linux port of Sun Java
+            // for Apple, HP, FreeBSD, SableVM, Kaffe and Blackdown: a Linux port of Sun Java
             else if( (vendor.indexOf("SUN") >= 0) || 
                      (vendor.indexOf("BLACKDOWN") >= 0) || 
                      (vendor.indexOf("APPLE") >= 0) ||
                      (vendor.indexOf("HEWLETT-PACKARD") >= 0) ||
                      (vendor.indexOf("KAFFE") >= 0) ||
-                     (vendor.indexOf("SABLE") >= 0)) {
+                     (vendor.indexOf("SABLE") >= 0) ||
+                     (vendor.indexOf("FREEBSD") >= 0)) {
                 // we're on an SUN 1.4 or higher; fiddle with the bootclasspath.
                 // since we can't eviscerate XML-related info here,
                 // we must use the classpath
