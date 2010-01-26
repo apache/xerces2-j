@@ -34,6 +34,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.xerces.impl.Constants;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -97,6 +98,9 @@ public class SourceValidator
     
     /** Default schema language (http://www.w3.org/2001/XMLSchema). */
     protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    
+    /** XSD 1.1 schema language. */
+    protected static final String XSD11_SCHEMA_LANGUAGE = Constants.W3C_XML_SCHEMA11_NS_URI;
     
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
@@ -323,6 +327,10 @@ public class SourceValidator
                         schemaLanguage = argv[i];
                     }
                     continue;
+                }
+                if (option.equals("xsd11")) {
+                   schemaLanguage = XSD11_SCHEMA_LANGUAGE;
+                   continue;
                 }
                 if (option.equals("x")) {
                     if (++i == argv.length) {
@@ -595,6 +603,7 @@ public class SourceValidator
         System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -m  | -M    Turn on/off memory usage report");
+        System.err.println("  -xsd11      Turn on XSD 1.1 support.");
         System.err.println("  -h          This help screen.");
         
         System.err.println();
