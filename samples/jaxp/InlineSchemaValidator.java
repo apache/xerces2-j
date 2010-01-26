@@ -94,6 +94,9 @@ public class InlineSchemaValidator
     /** Default schema language (http://www.w3.org/2001/XMLSchema). */
     protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     
+    /** XSD 1.1 schema language (http://www.w3.org/XML/XMLSchema/v1.1). */
+    protected static final String XSD11_SCHEMA_LANGUAGE = "http://www.w3.org/XML/XMLSchema/v1.1";
+    
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
     
@@ -381,6 +384,10 @@ public class InlineSchemaValidator
                     }
                     continue;
                 }
+                if (option.equals("xsd11")) {
+                    schemaLanguage = XSD11_SCHEMA_LANGUAGE;
+                    continue;
+                }
                 if (option.equals("x")) {
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -x option.");
@@ -659,6 +666,7 @@ public class InlineSchemaValidator
         System.err.println("  -ga | -GA        Turn on/off generation of synthetic schema annotations.");
         System.err.println("                   NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -m  | -M         Turn on/off memory usage report");
+        System.err.println("  -xsd11           Turn on XSD 1.1 support.");
         System.err.println("  -h               This help screen.");
         
         System.err.println();

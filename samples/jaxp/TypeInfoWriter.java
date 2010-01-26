@@ -81,6 +81,9 @@ public class TypeInfoWriter
     /** Default schema language (http://www.w3.org/2001/XMLSchema). */
     protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     
+    /** XSD 1.1 schema language (http://www.w3.org/XML/XMLSchema/v1.1). */
+    protected static final String XSD11_SCHEMA_LANGUAGE = "http://www.w3.org/XML/XMLSchema/v1.1";
+    
     /** Default parser name (org.apache.xerces.parsers.SAXParser). */
     protected static final String DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
     
@@ -363,6 +366,10 @@ public class TypeInfoWriter
                     }
                     continue;
                 }
+                if (option.equals("xsd11")) {
+                    schemaLanguage = XSD11_SCHEMA_LANGUAGE;
+                    continue;
+                }
                 if (option.equals("p")) {
                     // get parser name
                     if (++i == argv.length) {
@@ -604,6 +611,7 @@ public class TypeInfoWriter
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
+        System.err.println("  -xsd11      Turn on XSD 1.1 support.");
         System.err.println("  -h          This help screen.");
         
         System.err.println();
