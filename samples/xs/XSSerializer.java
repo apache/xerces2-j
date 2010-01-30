@@ -26,6 +26,7 @@ import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSLoaderImpl;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
@@ -42,6 +43,7 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSWildcard;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -155,6 +157,17 @@ public class XSSerializer {
       // iterating global element declarations in the Schema
       for (int elemIdx = 0; elemIdx < globalElemDecls.size(); elemIdx++) {
          XSElementDecl elemDecl = (XSElementDecl) globalElemDecls.item(elemIdx);
+         addElementDeclToSchemaComponent(document, schemaDeclDomNode, elemDecl);
+       }
+    } // end of, processGolabElementDecl
+
+    /*
+     * Adding an element declaration to Schema component
+     */
+    private void addElementDeclToSchemaComponent(Document document,
+                                             Element parentDomNode,
+                                             XSElementDecl elemDecl)
+                                             throws DOMException {
          String elemName = elemDecl.getName();         
          Element elemDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                         XSD_LANGUAGE_PREFIX
@@ -191,9 +204,9 @@ public class XSSerializer {
            }   
          }
 
-         schemaDeclDomNode.appendChild(elemDeclDomNode);
-       }
-    } // end of, processGolabElementDecl
+         parentDomNode.appendChild(elemDeclDomNode);
+         
+    } // end of, addElementDeclToSchemaComponent
 
     /*
      * Process global complex type declarations
@@ -425,7 +438,7 @@ public class XSSerializer {
     private void addAttributesToComplexType(Document document,
                                             XSComplexTypeDecl complexTypeDecl,
                                             Element complexTypeDomNode)
-            throws DOMException {
+                                            throws DOMException {
         // iterate all attributes on the Complex type.
         // all attributes on a complex type (from all of xs:attribute & xs:attributeGroup
         // declarations) are expanded, into an XSObjectList list.  
@@ -448,129 +461,110 @@ public class XSSerializer {
         if (particleTerm instanceof XSModelGroup) {
             XSModelGroup modelGroup = (XSModelGroup) particleTerm;
             if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) {
-                processSequenceDeclOnComplexType(document, complxTypeDomNode,
-                                                 modelGroup);
+                addCompositorOnComplexType(document, complxTypeDomNode,
+                                           modelGroup, "sequence");
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_CHOICE) {
-                processChoiceDeclOnComplexType(document, complxTypeDomNode,
-                                               modelGroup);
+                addCompositorOnComplexType(document, complxTypeDomNode,
+                                           modelGroup, "choice");
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_ALL) {
-                processAllDeclOnComplexType(document, complxTypeDomNode,
-                                            modelGroup);
+                addAllCompositorOnComplexType(document, complxTypeDomNode,
+                                              modelGroup);
             }
         }        
         
     } // end of, processParticleFromComplexType
 
     /*
-     * Processing a "sequence" declaration on a complex type
+     * Adding a "sequence" or "choice" compositor on a complex type
      */
-    private void processSequenceDeclOnComplexType(Document document,
-                                                  Element complxTypeDomNode,
-                                                  XSModelGroup modelGroup)
-                                                  throws DOMException {
+    private void addCompositorOnComplexType(Document document,
+                                            Element complxTypeDomNode,
+                                            XSModelGroup modelGroup,
+                                            String compositor)
+                                            throws DOMException {
         
         Element sequenceDeclDomNode = document.createElementNS(
                                                XSD_LANGUAGE_URI,
                                                XSD_LANGUAGE_PREFIX
-                                               + "sequence");
-        XSObjectList sequenceChildren = modelGroup.getParticles();
-        for (int seqIdx = 0; seqIdx < sequenceChildren.getLength(); seqIdx++) {
-            XSObject seqItem = sequenceChildren.item(seqIdx);
-            if (seqItem instanceof XSParticle) {
-                XSParticle seqParticle = (XSParticle) seqItem;
-                if (seqParticle.getTerm() instanceof XSElementDeclaration) {
-                    XSElementDecl elemDecl = (XSElementDecl) seqParticle.getTerm();
-                    String elemName = elemDecl.getName();
-                    Element elemDeclDomNode = document.createElementNS(
-                                                      XSD_LANGUAGE_URI,
-                                                      XSD_LANGUAGE_PREFIX 
-                                                      + "element");
-                    elemDeclDomNode.setAttributeNS(null, "name", elemName);
-                    XSTypeDefinition typeDef = elemDecl.getTypeDefinition();
-                    if (!typeDef.getAnonymous()) {
-                        // handling a non-anonymous schema type
-                        String typeName = typeDef.getName();                     
-                        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals
-                                          (typeDef.getNamespace())) {               
-                            elemDeclDomNode.setAttributeNS(null, "type",
-                                                           XSD_LANGUAGE_PREFIX +
-                                                           typeName);
-                        }
-                        else {
-                            elemDeclDomNode.setAttributeNS(null, "type", typeName);  
-                        }
-                        int minOccurs = seqParticle.getMinOccurs();
-                        int maxOccurs = seqParticle.getMaxOccurs();
-                        if (minOccurs != 1) {
-                            elemDeclDomNode.setAttributeNS(null, "minOccurs",
-                                                           String.valueOf(minOccurs));   
-                        }
-                        if (seqParticle.getMaxOccursUnbounded()) {
-                            elemDeclDomNode.setAttributeNS(null, "maxOccurs",
-                                                           "unbounded");   
-                        } 
-                        else {
-                            if (maxOccurs != 1) {
-                                elemDeclDomNode.setAttributeNS(null, "maxOccurs",
-                                                          String.valueOf(maxOccurs));   
-                            }
-                        }
-                    }
-                    else {
-                        // handling an anonymous schema type
-                        if (typeDef.getTypeCategory() == 
-                                   XSTypeDefinition.SIMPLE_TYPE) {
-                  
-                        }
-                        else if (typeDef.getTypeCategory() == 
-                                  XSTypeDefinition.COMPLEX_TYPE) {
-                            processAnonComplexTypeOnElement(document,
-                                                            elemDeclDomNode,
-                                                            typeDef);
-                        }   
-                    }
-                    sequenceDeclDomNode.appendChild(elemDeclDomNode);
-                }
+                                               + compositor);
+        XSObjectList compositorChildren = modelGroup.getParticles();
+        for (int seqIdx = 0; seqIdx < compositorChildren.getLength(); seqIdx++) {
+            XSObject seqItem = compositorChildren.item(seqIdx);
+            XSParticle seqParticle = (XSParticle) seqItem;
+            XSTerm partclTerm = seqParticle.getTerm();
+            if (partclTerm instanceof XSElementDeclaration) {
+               XSElementDecl elemDecl = (XSElementDecl) partclTerm;
+               addElementDeclToSchemaComponent(document,
+                                    sequenceDeclDomNode,
+                                    elemDecl);
             }
+            
+            // handle more compositor children like, group | choice |
+            // sequence | any ... 
         }
         
         complxTypeDomNode.appendChild(sequenceDeclDomNode);
         
-    } // end of, processSequenceOnComplexType
-    
-    /*
-     * Processing a "choice" declaration on a complex type
-     */
-    private void processChoiceDeclOnComplexType(Document document,
-                                            Element complxTypeDomNode,
-                                            XSModelGroup modelGroup)
-                                            throws DOMException {
-        Element choiceDeclDomNode = document.createElementNS(
-                                                 XSD_LANGUAGE_URI,
-                                                 XSD_LANGUAGE_PREFIX
-                                                 + "choice");
-        // TO DO ...        
-        complxTypeDomNode.appendChild(choiceDeclDomNode);
-        
-    } // end of, processChoiceOnComplexType
+    } // end of, addCompositorOnComplexType
     
     /*
      * Processing an "all" declaration on a complex type
      */
-    private void processAllDeclOnComplexType(Document document,
-                                            Element complxTypeDomNode,
-                                            XSModelGroup modelGroup)
-                                            throws DOMException {
+    private void addAllCompositorOnComplexType(Document document,
+                                               Element complxTypeDomNode,
+                                               XSModelGroup modelGroup)
+                                               throws DOMException {
+        
         Element allDeclDomNode = document.createElementNS(
                                                  XSD_LANGUAGE_URI,
                                                  XSD_LANGUAGE_PREFIX
                                                  + "all");        
-        // TO DO ...        
+              
+        XSObjectList modelParticles = modelGroup.getParticles();
+        for (int prtclIdx = 0; prtclIdx < modelParticles.getLength(); 
+                                                         prtclIdx++) {
+            XSParticle partclItem = (XSParticle) modelParticles.item(prtclIdx);
+            XSTerm partclTerm = partclItem.getTerm();
+            if (partclTerm instanceof XSElementDeclaration) {                
+               addElementDeclToSchemaComponent(document,
+                                               allDeclDomNode,
+                                               (XSElementDecl) partclTerm);   
+            }
+            else if (partclTerm instanceof XSWildcard) {
+               // new in XML Schema 1.1
+               XSWildcardDecl wildCardDecl = (XSWildcardDecl) partclTerm;
+               /*
+               addWildcardToSchemaComponent(document,
+                                            allDeclDomNode,
+                                            wildCardDecl,
+                                            "any");
+               */                                            
+            }
+        }
+        
         complxTypeDomNode.appendChild(allDeclDomNode);
         
-    } // end of, processChoiceOnComplexType 
+    } // end of, addAllCompositorOnComplexType 
+    
+    /*
+     * Adding wild card to a Schema component
+     */
+    private void addWildcardToSchemaComponent(Document document,
+                                              Element parentNode,
+                                              XSWildcardDecl wildCardDecl,
+                                              String wildCardType) {
+        Element wildCardDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                         XSD_LANGUAGE_PREFIX
+                                                         + wildCardType);
+        String processContentsVal = wildCardDecl.getProcessContentsAsString();
+        wildCardDomNode.setAttributeNS(null,
+                                       "processContents",
+                                       processContentsVal);
+        parentNode.appendChild(wildCardDomNode);        
+        
+    } // end of, addWildcardToSchemaComponent
     
     /*
      * Add xs:list as child of xs:simpleType
