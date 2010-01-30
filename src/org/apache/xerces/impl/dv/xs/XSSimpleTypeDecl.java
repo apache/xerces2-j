@@ -723,7 +723,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     /**
      * If variety is <code>atomic</code> the primitive type definition (a
      * built-in primitive datatype definition or the simple ur-type
-     * definition) is available, otherwise <code>null</code>.
+     * definition) if available, otherwise <code>null</code>.
      */
     public XSSimpleTypeDefinition getPrimitiveType() {
         if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE && fValidationDV != DV_ANYATOMICTYPE) {
@@ -742,7 +742,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     /**
      * If variety is <code>list</code> the item type definition (an atomic or
-     * union simple type definition) is available, otherwise
+     * union simple type definition) if available, otherwise
      * <code>null</code>.
      */
     public XSSimpleTypeDefinition getItemType() {
@@ -757,7 +757,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     /**
      * If variety is <code>union</code> the list of member type definitions (a
-     * non-empty sequence of simple type definitions) is available,
+     * non-empty sequence of simple type definitions) if available,
      * otherwise an empty <code>XSObjectList</code>.
      */
     public XSObjectList getMemberTypes() {
