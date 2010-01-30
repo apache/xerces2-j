@@ -57,8 +57,7 @@ import org.w3c.dom.ls.LSSerializer;
  * This is a work in progress.
  * 
  * @author Mukul Gandhi, IBM
- * 
- * @version $Id: XSSerializer.java $
+ * @version $Id$
  */
 public class XSSerializer {
     
