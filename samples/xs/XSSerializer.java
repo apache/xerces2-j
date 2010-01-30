@@ -221,6 +221,10 @@ public class XSSerializer {
                                              complxTypeDomNode,
                                              particle);
            }
+           
+           // add attributes to complex type
+           addAttributesToComplexType(document, complexTypeDecl,
+                                      complxTypeDomNode);
        }        
     } // end of, processGlobalComplexTypeDecl
     
@@ -408,19 +412,30 @@ public class XSSerializer {
           processParticleFromComplexType(document, complexTypeDomNode, particle);
        }
        
-       // iterate all attributes on the Complex type.
-       // all attributes on a complex type (from all of xs:attribute & xs:attributeGroup
-       // declarations) are expanded, into an XSObjectList list.  
-       XSObjectList attributeUses = complexTypeDecl.getAttributeUses();
-       for (int attrUsesIdx = 0; attrUsesIdx < attributeUses.getLength(); attrUsesIdx++) {
-          XSAttributeUse attrUse = (XSAttributeUse) attributeUses.item(attrUsesIdx);
-          XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
-          addAttributeToSchemaComponent(document, complexTypeDomNode, attrDecl);          
-       }
+       // add attributes to the complex type
+       addAttributesToComplexType(document, complexTypeDecl, complexTypeDomNode);
       
        //XSWildcard attrWildCard = complexTypeDecl.getAttributeWildcard();
        
     } // end of, processAnonComplexTypeOnElement
+
+    /*
+     * Add attributes to the complex type
+     */
+    private void addAttributesToComplexType(Document document,
+                                            XSComplexTypeDecl complexTypeDecl,
+                                            Element complexTypeDomNode)
+            throws DOMException {
+        // iterate all attributes on the Complex type.
+        // all attributes on a complex type (from all of xs:attribute & xs:attributeGroup
+        // declarations) are expanded, into an XSObjectList list.  
+        XSObjectList attributeUses = complexTypeDecl.getAttributeUses();
+        for (int attrUsesIdx = 0; attrUsesIdx < attributeUses.getLength(); attrUsesIdx++) {
+           XSAttributeUse attrUse = (XSAttributeUse) attributeUses.item(attrUsesIdx);
+           XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
+           addAttributeToSchemaComponent(document, complexTypeDomNode, attrDecl);          
+        }
+    }
 
     /*
      * Processing a "particle" from a complex type
