@@ -21,11 +21,12 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSLoaderImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
@@ -33,7 +34,6 @@ import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSFacet;
-import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSMultiValueFacet;
@@ -66,27 +66,46 @@ public class XSSerializer {
     
     private static final String XSD_LANGUAGE_URI = "http://www.w3.org/2001/XMLSchema";
     private static final String XSD_LANGUAGE_PREFIX = "xs:";
+    private static final String XML_SCHEMA_VERSION =
+                                   Constants.XERCES_PROPERTY_PREFIX + 
+                                   Constants.XML_SCHEMA_VERSION_PROPERTY;
   
     /*
      * "Main method"
      * 
      * An entry point to test this utility. e.g, command line:
-     * java XSSerializer schema.xsd
+     * java XSSerializer -xsd11 schema.xsd
      * 
      * The XSModel could be synthesized by any means (for example, by direct
      * API calls to Xerces Schema API, methods) -- in which case, the method
      * "serialize" will be used directly, passing in the XSModel object. 
      */
     public static void main(String[] args) {
-       if (args.length != 1) {
+       
+        if (args.length == 0 || args.length > 2) {
          System.err.println("Usage:");
-         System.err.println("java XSSerializer schema.xsd");
+         System.err.println("java XSSerializer [-xsd11] schema.xsd");
+         System.err.println("-xsd11        Turn on XSD 1.1 support");
          System.exit(-1);
        }
-       XSSerializer xsSerializer = new XSSerializer();
-       XSLoader xsLoader = new XSLoaderImpl();
-       XSModel xsModel = xsLoader.loadURI(args[0]);
+       
+       XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+       
+       String schemaUri = "";
+       if (args.length == 1) {
+          schemaUri = args[0];    
+       }
+       else {
+          schemaUri = args[1];
+          if (args[0].equals("-xsd11")) {
+              xsLoader.setProperty(XML_SCHEMA_VERSION,
+                        Constants.W3C_XML_SCHEMA11_NS_URI);  
+          }
+       }
+       
+       XSModel xsModel = xsLoader.loadURI(schemaUri);       
        try {
+          XSSerializer xsSerializer = new XSSerializer();
           xsSerializer.serialize(xsModel);
        }
        catch(Exception ex) {
@@ -587,14 +606,11 @@ public class XSSerializer {
                                                (XSElementDecl) partclTerm);   
             }
             else if (partclTerm instanceof XSWildcard) {
-               // new in XML Schema 1.1
                XSWildcardDecl wildCardDecl = (XSWildcardDecl) partclTerm;
-               /*
                addWildcardToSchemaComponent(document,
                                             allDeclDomNode,
                                             wildCardDecl,
-                                            "any");
-               */                                            
+                                            "any");                                        
             }
         }
         
@@ -613,9 +629,11 @@ public class XSSerializer {
                                                          XSD_LANGUAGE_PREFIX
                                                          + wildCardType);
         String processContentsVal = wildCardDecl.getProcessContentsAsString();
-        wildCardDomNode.setAttributeNS(null,
-                                       "processContents",
-                                       processContentsVal);
+        if (!processContentsVal.equals("strict")) {
+           wildCardDomNode.setAttributeNS(null,
+                                          "processContents",
+                                          processContentsVal);
+        }
         parentNode.appendChild(wildCardDomNode);        
         
     } // end of, addWildcardToSchemaComponent
