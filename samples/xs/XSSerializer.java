@@ -29,6 +29,7 @@ import org.apache.xerces.impl.xs.XSLoaderImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSFacet;
@@ -226,18 +227,11 @@ public class XSSerializer {
                                                    XSD_LANGUAGE_PREFIX +
                                                    "complexType");
            complxTypeDomNode.setAttributeNS(null, "name", ctName);
-           schemaDeclDomNode.appendChild(complxTypeDomNode);
-               
-           XSParticle particle = complexTypeDecl.getParticle();
-           if (particle != null) {
-              processParticleFromComplexType(document,
-                                             complxTypeDomNode,
-                                             particle);
-           }
            
-           // add attributes to complex type
-           addAttributesToComplexType(document, complexTypeDecl,
-                                      complxTypeDomNode);
+           addChildrenToComplexType(document,
+                                    schemaDeclDomNode,
+                                    complexTypeDecl,
+                                    complxTypeDomNode);
        }        
     } // end of, processGlobalComplexTypeDecl
     
@@ -415,22 +409,82 @@ public class XSSerializer {
                                                  Element elemDeclDomNode,
                                                  XSTypeDefinition typeDef)
                                                  throws DOMException {
-       XSComplexTypeDecl complexTypeDecl = (XSComplexTypeDecl) typeDef;
+       
+       XSComplexTypeDecl complexTypeDecl = (XSComplexTypeDecl) typeDef;       
        Element complexTypeDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                             XSD_LANGUAGE_PREFIX +
                                                             "complexType");
-       elemDeclDomNode.appendChild(complexTypeDomNode);
-       XSParticle particle = complexTypeDecl.getParticle();
-       if (particle != null) {
-          processParticleFromComplexType(document, complexTypeDomNode, particle);
-       }
-       
-       // add attributes to the complex type
-       addAttributesToComplexType(document, complexTypeDecl, complexTypeDomNode);
-      
-       //XSWildcard attrWildCard = complexTypeDecl.getAttributeWildcard();
+       addChildrenToComplexType(document,
+                                elemDeclDomNode,
+                                complexTypeDecl,
+                                complexTypeDomNode);
        
     } // end of, processAnonComplexTypeOnElement
+
+    /*
+     * Add child content to complex type declaration
+     */
+    private void addChildrenToComplexType(Document document,
+                                          Element parentDomNode,
+                                          XSComplexTypeDecl complexTypeDecl,
+                                          Element complexTypeDomNode)
+                                          throws DOMException {
+        
+        // adding "abstract" & "mixed" attributes if applicable  
+        boolean isAbstract = complexTypeDecl.getAbstract();
+        boolean isMixed = (complexTypeDecl.getContentType() == 
+                            XSComplexTypeDefinition.CONTENTTYPE_MIXED);
+        if (isAbstract) {
+            complexTypeDomNode.setAttributeNS(null, "abstract", "true");   
+        }
+        if (isMixed) {
+            complexTypeDomNode.setAttributeNS(null, "mixed", "true");   
+        }
+        
+        // adding "block" attribute if applicable
+        short prohSubstitutions = complexTypeDecl.getProhibitedSubstitutions();
+        String prohSubsStr = "";
+        if (prohSubstitutions == (XSConstants.DERIVATION_EXTENSION | 
+                                  XSConstants.DERIVATION_RESTRICTION)) {
+           prohSubsStr = "#all";   
+        }
+        else if (prohSubstitutions == XSConstants.DERIVATION_EXTENSION) {
+           prohSubsStr = "extension"; 
+        }
+        else if (prohSubstitutions == XSConstants.DERIVATION_RESTRICTION) {
+           prohSubsStr = "restriction"; 
+        }        
+        if (!prohSubsStr.equals("")) {
+           complexTypeDomNode.setAttributeNS(null, "block", prohSubsStr);   
+        }
+        
+        // adding "final" attribute if applicable
+        short finalSet = complexTypeDecl.getFinalSet();
+        String finalStr = "";
+        if (finalSet == (XSConstants.DERIVATION_EXTENSION | 
+                         XSConstants.DERIVATION_RESTRICTION)) {
+           finalStr = "#all";   
+        }
+        else if (finalSet == XSConstants.DERIVATION_EXTENSION) {
+           finalStr = "extension"; 
+        }
+        else if (finalSet == XSConstants.DERIVATION_RESTRICTION) {
+           finalStr = "restriction"; 
+        }        
+        if (!finalStr.equals("")) {
+           complexTypeDomNode.setAttributeNS(null, "final", finalStr);   
+        }
+
+        parentDomNode.appendChild(complexTypeDomNode);
+        XSParticle particle = complexTypeDecl.getParticle();
+        if (particle != null) {
+            processParticleFromComplexType(document, complexTypeDomNode, particle);
+        }
+
+        // add attributes to the complex type
+        addAttributesToComplexType(document, complexTypeDecl, complexTypeDomNode);
+           
+    } // end of, addChildrenToComplexType
 
     /*
      * Add attributes to the complex type
