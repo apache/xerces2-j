@@ -177,7 +177,8 @@ public class XSSerializer {
       // iterating global element declarations in the Schema
       for (int elemIdx = 0; elemIdx < globalElemDecls.size(); elemIdx++) {
          XSElementDecl elemDecl = (XSElementDecl) globalElemDecls.item(elemIdx);
-         addElementDeclToSchemaComponent(document, schemaDeclDomNode, elemDecl);
+         addElementDeclToSchemaComponent(document, schemaDeclDomNode,
+                                         elemDecl, null, null, true);
        }
     } // end of, processGolabElementDecl
 
@@ -186,13 +187,16 @@ public class XSSerializer {
      */
     private void addElementDeclToSchemaComponent(Document document,
                                              Element parentDomNode,
-                                             XSElementDecl elemDecl)
+                                             XSElementDecl elemDecl,
+                                             String minOccurs,
+                                             String maxOccurs,
+                                             boolean isGlobal)
                                              throws DOMException {
          String elemName = elemDecl.getName();         
          Element elemDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                         XSD_LANGUAGE_PREFIX
                                                         + "element");
-         elemDeclDomNode.setAttributeNS(null, "name", elemName);        
+         elemDeclDomNode.setAttributeNS(null, "name", elemName); 
 
          XSTypeDefinition typeDef = elemDecl.getTypeDefinition();
          if (!typeDef.getAnonymous()) {
@@ -222,6 +226,16 @@ public class XSSerializer {
                                               elemDeclDomNode,
                                               typeDef);
            }   
+         }
+         
+         // add possible, minOccurs & maxOccurs attributes
+         if (!isGlobal) {
+            if (minOccurs != null) {
+               elemDeclDomNode.setAttributeNS(null, "minOccurs", minOccurs);  
+            }
+            if (maxOccurs != null) {
+               elemDeclDomNode.setAttributeNS(null, "maxOccurs", maxOccurs);  
+            }
          }
 
          parentDomNode.appendChild(elemDeclDomNode);
@@ -565,13 +579,19 @@ public class XSSerializer {
         XSObjectList compositorChildren = modelGroup.getParticles();
         for (int seqIdx = 0; seqIdx < compositorChildren.getLength(); seqIdx++) {
             XSObject seqItem = compositorChildren.item(seqIdx);
-            XSParticle seqParticle = (XSParticle) seqItem;
-            XSTerm partclTerm = seqParticle.getTerm();
+            XSParticle seqParticle = (XSParticle) seqItem;            
+            String minOccurs = getMinOccursVal(seqParticle);
+            String maxOccurs = getMaxOccursVal(seqParticle);
+            
+            XSTerm partclTerm = seqParticle.getTerm();            
             if (partclTerm instanceof XSElementDeclaration) {
                XSElementDecl elemDecl = (XSElementDecl) partclTerm;
                addElementDeclToSchemaComponent(document,
-                                    sequenceDeclDomNode,
-                                    elemDecl);
+                                               sequenceDeclDomNode,
+                                               elemDecl,
+                                               minOccurs,
+                                               maxOccurs,
+                                               false);
             }
             
             // handle more compositor children like, group | choice |
@@ -599,11 +619,17 @@ public class XSSerializer {
         for (int prtclIdx = 0; prtclIdx < modelParticles.getLength(); 
                                                          prtclIdx++) {
             XSParticle partclItem = (XSParticle) modelParticles.item(prtclIdx);
+            String minOccurs = getMinOccursVal(partclItem);
+            String maxOccurs = getMaxOccursVal(partclItem);
+            
             XSTerm partclTerm = partclItem.getTerm();
             if (partclTerm instanceof XSElementDeclaration) {                
                addElementDeclToSchemaComponent(document,
                                                allDeclDomNode,
-                                               (XSElementDecl) partclTerm);   
+                                               (XSElementDecl) partclTerm,
+                                               minOccurs,
+                                               maxOccurs,
+                                               false);   
             }
             else if (partclTerm instanceof XSWildcard) {
                XSWildcardDecl wildCardDecl = (XSWildcardDecl) partclTerm;
@@ -753,6 +779,39 @@ public class XSSerializer {
       
       // unreach
       return null;
+    }
+    
+    /*
+     * Given an XSD particle, get it's minOccurs value as a String.
+     */
+    private String getMinOccursVal(XSParticle particle) {
+       String minOccursStr = null;
+       
+       int minOccurs = particle.getMinOccurs();        
+       if (minOccurs != 1) {
+          minOccursStr = String.valueOf(minOccurs);   
+       } 
+
+       return minOccursStr; 
+    }
+    
+    /*
+     * Given an XSD particle, get it's maxOccurs value as a String.
+     */
+    private String getMaxOccursVal(XSParticle particle) {
+       String maxOccursStr = null;  
+       
+       int maxOccurs = particle.getMaxOccurs();
+       if (particle.getMaxOccursUnbounded()) {
+          maxOccursStr = "unbounded";  
+       }
+       else {
+          if (maxOccurs != 1) {
+             maxOccursStr = String.valueOf(maxOccurs);  
+          }
+       }
+
+       return maxOccursStr; 
     }
 
 }
