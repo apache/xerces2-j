@@ -313,62 +313,8 @@ public class XSSerializer {
                                                 "restriction");
             XSTypeDefinition baseType = simpleTypeDecl.getBaseType();
             
-            if (XMLConstants.W3C_XML_SCHEMA_NS_URI.
-                             equals(baseType.getNamespace())) {
-                restrictionDomNode.setAttributeNS(null, "base", 
-                                           XSD_LANGUAGE_PREFIX + 
-                                           baseType.getName());   
-            }
-            else {
-                restrictionDomNode.setAttributeNS(null, "base",  
-                                           baseType.getName());   
-            }
-            
-            // handling single-valued Facets
-            XSObjectList facets = simpleTypeDecl.getFacets();
-            for (int facetIdx = 0; facetIdx < facets.getLength(); facetIdx++) {
-                XSFacet facet = (XSFacet) facets.item(facetIdx);                        
-                String facetName = getFacetName(facet.getFacetKind());
-                String facetValue = facet.getLexicalFacetValue();
-                Element facetDomNode = document.createElementNS(
-                                                XSD_LANGUAGE_URI,
-                                                XSD_LANGUAGE_PREFIX +
-                                                facetName);
-                facetDomNode.setAttributeNS(null, "value", facetValue);
-                restrictionDomNode.appendChild(facetDomNode);
-            }
-            
-            // handling multi-valued Facets ("enumeration" or "pattern")
-            XSObjectList mvFacets = simpleTypeDecl.getMultiValueFacets();
-            for (int mvFacetIdx = 0; mvFacetIdx < mvFacets.getLength(); 
-                                                  mvFacetIdx++) {
-               XSMultiValueFacet mvFacet = (XSMultiValueFacet) 
-                                                  mvFacets.item(mvFacetIdx);
-               StringList facetValues = mvFacet.getLexicalFacetValues();
-               for (int facValIdex = 0; facValIdex < facetValues.getLength(); 
-                                                     facValIdex++) {
-                   String facetValue = (String) facetValues.get(facValIdex);
-                   Element facetDomNode = null;
-                   if (mvFacet.getFacetKind() == XSSimpleTypeDefinition.
-                                                 FACET_ENUMERATION) {
-                       facetDomNode = document.createElementNS(
-                                                 XSD_LANGUAGE_URI,
-                                                 XSD_LANGUAGE_PREFIX +
-                                                 "enumeration");
-                   }
-                   else if (mvFacet.getFacetKind() == XSSimpleTypeDefinition.
-                                                      FACET_PATTERN) {
-                       facetDomNode = document.createElementNS(
-                                                 XSD_LANGUAGE_URI,
-                                                 XSD_LANGUAGE_PREFIX +
-                                                 "pattern");
-                   }
-                   facetDomNode.setAttributeNS(null, "value", facetValue);
-                   restrictionDomNode.appendChild(facetDomNode);
-               }
-            }
-            
-            simpleTypeDomNode.appendChild(restrictionDomNode);
+            addRestrictionToSimpleContent(document, simpleTypeDecl,
+                            simpleTypeDomNode, restrictionDomNode, baseType);
         }
         else if (simpleTypeDecl.getVariety() == 
                        XSSimpleTypeDefinition.VARIETY_LIST) {
@@ -381,6 +327,86 @@ public class XSSerializer {
            addUnionDeclToSimpleType(document, simpleTypeDomNode, unionMemberTypes);
         }
     } // end of, processSimpleTypeContents
+
+    /*
+     * Add children to "xs:restriction" for simple contents
+     */
+    private void addRestrictionToSimpleContent(Document document,
+                                               XSTypeDefinition typeDefn, 
+                                               Element parentDomNode,
+                                               Element restrictionDomNode, 
+                                               XSTypeDefinition baseType)
+                                               throws DOMException {
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.
+                         equals(baseType.getNamespace())) {
+            restrictionDomNode.setAttributeNS(null, "base", 
+                                       XSD_LANGUAGE_PREFIX + 
+                                       baseType.getName());   
+        }
+        else {
+            restrictionDomNode.setAttributeNS(null, "base",  
+                                       baseType.getName());   
+        }                
+        
+        // simple type definition to be used, to get the facets
+        XSSimpleTypeDefinition simpleTypeDefn = null;
+        
+        if (typeDefn instanceof XSComplexTypeDefinition) {
+            XSComplexTypeDefinition complexTypeDefn = (XSComplexTypeDefinition) typeDefn;
+            simpleTypeDefn = complexTypeDefn.getSimpleType();
+            
+        }
+        else {
+            simpleTypeDefn = (XSSimpleTypeDefinition) typeDefn;     
+        }
+        
+        // handling single-valued Facets
+        XSObjectList facets = simpleTypeDefn.getFacets();
+        for (int facetIdx = 0; facetIdx < facets.getLength(); facetIdx++) {
+            XSFacet facet = (XSFacet) facets.item(facetIdx);                        
+            String facetName = getFacetName(facet.getFacetKind());
+            String facetValue = facet.getLexicalFacetValue();
+            Element facetDomNode = document.createElementNS(
+                                            XSD_LANGUAGE_URI,
+                                            XSD_LANGUAGE_PREFIX +
+                                            facetName);
+            facetDomNode.setAttributeNS(null, "value", facetValue);
+            restrictionDomNode.appendChild(facetDomNode);
+        }
+        
+        // handling multi-valued Facets ("enumeration" or "pattern")
+        XSObjectList mvFacets = simpleTypeDefn.getMultiValueFacets();
+        for (int mvFacetIdx = 0; mvFacetIdx < mvFacets.getLength(); 
+                                              mvFacetIdx++) {
+           XSMultiValueFacet mvFacet = (XSMultiValueFacet) 
+                                              mvFacets.item(mvFacetIdx);
+           StringList facetValues = mvFacet.getLexicalFacetValues();
+           for (int facValIdex = 0; facValIdex < facetValues.getLength(); 
+                                                 facValIdex++) {
+               String facetValue = (String) facetValues.get(facValIdex);
+               Element facetDomNode = null;
+               if (mvFacet.getFacetKind() == XSSimpleTypeDefinition.
+                                             FACET_ENUMERATION) {
+                   facetDomNode = document.createElementNS(
+                                             XSD_LANGUAGE_URI,
+                                             XSD_LANGUAGE_PREFIX +
+                                             "enumeration");
+               }
+               else if (mvFacet.getFacetKind() == XSSimpleTypeDefinition.
+                                                  FACET_PATTERN) {
+                   facetDomNode = document.createElementNS(
+                                             XSD_LANGUAGE_URI,
+                                             XSD_LANGUAGE_PREFIX +
+                                             "pattern");
+               }
+               facetDomNode.setAttributeNS(null, "value", facetValue);
+               restrictionDomNode.appendChild(facetDomNode);
+           }
+        }
+        
+        parentDomNode.appendChild(restrictionDomNode);
+        
+    } // end of, addRestrictionToSimpleContent
 
     /*
      * Process global attribute declarations
@@ -463,7 +489,7 @@ public class XSSerializer {
                                           Element complexTypeDomNode)
                                           throws DOMException {
         
-        // adding "abstract" & "mixed" attributes if applicable  
+        // add "abstract" & "mixed" attributes if applicable  
         boolean isAbstract = complexTypeDecl.getAbstract();
         boolean isMixed = (complexTypeDecl.getContentType() == 
                             XSComplexTypeDefinition.CONTENTTYPE_MIXED);
@@ -474,7 +500,7 @@ public class XSSerializer {
             complexTypeDomNode.setAttributeNS(null, "mixed", "true");   
         }
         
-        // adding "block" attribute if applicable
+        // add "block" attribute if applicable
         short prohSubstitutions = complexTypeDecl.getProhibitedSubstitutions();
         String prohSubsStr = "";
         if (prohSubstitutions == (XSConstants.DERIVATION_EXTENSION | 
@@ -491,7 +517,7 @@ public class XSSerializer {
            complexTypeDomNode.setAttributeNS(null, "block", prohSubsStr);   
         }
         
-        // adding "final" attribute if applicable
+        // add "final" attribute if applicable
         short finalSet = complexTypeDecl.getFinalSet();
         String finalStr = "";
         if (finalSet == (XSConstants.DERIVATION_EXTENSION | 
@@ -511,20 +537,85 @@ public class XSSerializer {
         parentDomNode.appendChild(complexTypeDomNode);
         XSParticle particle = complexTypeDecl.getParticle();
         if (particle != null) {
-            processParticleFromComplexType(document, complexTypeDomNode, particle);
+            processParticleFromComplexType(document, complexTypeDomNode, 
+                                           particle);
+            // add attributes to the complex type
+            addAttributesToComplexType(document, complexTypeDecl, 
+                                       complexTypeDomNode);
         }
-
-        // add attributes to the complex type
-        addAttributesToComplexType(document, complexTypeDecl, complexTypeDomNode);
-           
+        else {
+           if (complexTypeDecl.getContentType() == 
+                      XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
+             // add xs:simpleContent as child of xs:complexType
+             addSimpleContentToComplexType(document, complexTypeDomNode,
+                                           complexTypeDecl);   
+           }
+           else if (complexTypeDecl.getContentType() == 
+                       XSComplexTypeDefinition.CONTENTTYPE_EMPTY) {
+              // add attributes to the complex type
+              addAttributesToComplexType(document, complexTypeDecl, 
+                                         complexTypeDomNode); 
+           }
+        }
+                   
     } // end of, addChildrenToComplexType
+    
+    /*
+     * Add xs:simpleContent as child of xs:complexType
+     */
+    private void addSimpleContentToComplexType(Document document,
+                                               Element complexTypeDomNode,
+                                               XSComplexTypeDecl complexTypeDecl) {
+        Element simpleContentDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                            XSD_LANGUAGE_PREFIX +
+                                                            "simpleContent");
+        if (complexTypeDecl.getDerivationMethod() == 
+                               XSConstants.DERIVATION_RESTRICTION) {
+            Element simpleContentRestrDomNode = document.createElementNS
+                                                          (XSD_LANGUAGE_URI,
+                                                           XSD_LANGUAGE_PREFIX +
+                                                           "restriction"); 
+            addAttributesToComplexType(document, complexTypeDecl, 
+                                       simpleContentRestrDomNode);
+            addRestrictionToSimpleContent(document,
+                                          complexTypeDecl,
+                                          simpleContentDomNode, 
+                                          simpleContentRestrDomNode, 
+                                          complexTypeDecl.getBaseType());
+            simpleContentDomNode.appendChild(simpleContentRestrDomNode);
+        }
+        else if (complexTypeDecl.getDerivationMethod() == 
+                                    XSConstants.DERIVATION_EXTENSION) {
+            Element simpleContentExtDomNode = document.createElementNS
+                                                        (XSD_LANGUAGE_URI,
+                                                         XSD_LANGUAGE_PREFIX +
+                                                         "extension");
+            XSTypeDefinition baseType = complexTypeDecl.getBaseType();
+            if (XMLConstants.W3C_XML_SCHEMA_NS_URI.
+                              equals(baseType.getNamespace())) {
+                simpleContentExtDomNode.setAttributeNS(null, "base", 
+                                               XSD_LANGUAGE_PREFIX + 
+                                               baseType.getName());   
+            }
+            else {
+                simpleContentExtDomNode.setAttributeNS(null, "base",  
+                                                baseType.getName());   
+            }
+            addAttributesToComplexType(document, complexTypeDecl, 
+                                       simpleContentExtDomNode);
+            simpleContentDomNode.appendChild(simpleContentExtDomNode);
+        }
+        
+        complexTypeDomNode.appendChild(simpleContentDomNode);
+        
+    } // end of, addSimpleContentToComplexType 
 
     /*
      * Add attributes to the complex type
      */
     private void addAttributesToComplexType(Document document,
                                             XSComplexTypeDecl complexTypeDecl,
-                                            Element complexTypeDomNode)
+                                            Element parentDomNode)
                                             throws DOMException {
         // iterate all attributes on the Complex type.
         // all attributes on a complex type (from all of xs:attribute & xs:attributeGroup
@@ -533,7 +624,7 @@ public class XSSerializer {
         for (int attrUsesIdx = 0; attrUsesIdx < attributeUses.getLength(); attrUsesIdx++) {
            XSAttributeUse attrUse = (XSAttributeUse) attributeUses.item(attrUsesIdx);
            XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
-           addAttributeToSchemaComponent(document, complexTypeDomNode, attrDecl);          
+           addAttributeToSchemaComponent(document, parentDomNode, attrDecl);          
         }
     }
 
