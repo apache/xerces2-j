@@ -27,6 +27,7 @@ import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
@@ -163,6 +164,10 @@ public class XSSerializer {
        XSNamedMap globalAttrDecls = xsModel.getComponents
                                              (XSConstants.ATTRIBUTE_DECLARATION);
        processGlobalAttrDecl(globalAttrDecls, document, schemaDeclDomNode);
+       
+       XSNamedMap globalGroupDecls = xsModel.getComponents
+                                             (XSConstants.MODEL_GROUP_DEFINITION);
+       processGlobalGroupDecl(globalGroupDecls, document, schemaDeclDomNode);
      
        return document;
     } // end of, transformXSModelToDOM
@@ -420,12 +425,63 @@ public class XSSerializer {
            XSAttributeDecl attrDecl = (XSAttributeDecl)
                                        globalAttrDecls.item(attrIdx);
            addAttributeToSchemaComponent(document, schemaDeclDomNode, attrDecl);
-         }
+        }
     } // end of, processGlobalAttrDecl
+    
+    /*
+     * Process global group declarations
+     */
+    private void processGlobalGroupDecl(XSNamedMap globalGroupDecls,
+                                        Document document,
+                                        Element schemaDeclDomNode) {
+        // iterating global group declarations in the Schema             
+        for (int groupIdx = 0; groupIdx < globalGroupDecls.size(); groupIdx++) {
+           XSGroupDecl groupDecl = (XSGroupDecl)
+                                       globalGroupDecls.item(groupIdx);
+           addGroupChildToSchemaComponent(document, schemaDeclDomNode, 
+                                          groupDecl, true);
+        }   
+        
+    } // end of, processGlobalGroupDecl
+
+    /*
+     * Add xs:group child to a Schema component
+     */
+    private void addGroupChildToSchemaComponent(Document document,
+                                                Element parentDomNode, 
+                                                XSGroupDecl groupDecl,
+                                                boolean isGlobal) {
+        Element groupDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                            XSD_LANGUAGE_PREFIX
+                                                            + "group");        
+        if (isGlobal) {
+            String groupName = groupDecl.getName();
+            groupDeclDomNode.setAttributeNS(null, "name", groupName); 
+            XSModelGroup modelGroup = groupDecl.getModelGroup();
+            if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) {
+                addCompositorOnSchemaComponent(document, groupDeclDomNode,
+                                               modelGroup, "sequence", "1", "1");
+            }
+            else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_CHOICE) {
+                addCompositorOnSchemaComponent(document, groupDeclDomNode,
+                                               modelGroup, "choice", "1", "1");
+            }
+            else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_ALL) {
+                addAllCompositorOnComplexType(document, groupDeclDomNode,
+                                              modelGroup, "1", "1");
+            }
+        }
+        else {
+            
+        }
+        
+        parentDomNode.appendChild(groupDeclDomNode);
+        
+    } // end of, addGroupToSchemaComponent 
 
     /*
      * Add attribute declaration to a Schema component (like xs:schema, 
-     * xs:complexType, ).
+     * xs:complexType etc).
      */
     private void addAttributeToSchemaComponent(Document document,
                                                Element parentDomNode,
@@ -715,19 +771,28 @@ public class XSSerializer {
                                                 XSParticle particle)
                                                 throws DOMException {
         XSTerm particleTerm = particle.getTerm();
+        
         if (particleTerm instanceof XSModelGroup) {
             XSModelGroup modelGroup = (XSModelGroup) particleTerm;
+            String minOccurs = getMinOccursVal(particle);
+            String maxOccurs = getMaxOccursVal(particle);
             if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) {
                 addCompositorOnSchemaComponent(document, parentDomNode,
-                                               modelGroup, "sequence");
+                                               modelGroup, "sequence",
+                                               minOccurs,
+                                               maxOccurs);
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_CHOICE) {
                 addCompositorOnSchemaComponent(document, parentDomNode,
-                                               modelGroup, "choice");
+                                               modelGroup, "choice",
+                                               minOccurs,
+                                               maxOccurs);
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_ALL) {
                 addAllCompositorOnComplexType(document, parentDomNode,
-                                              modelGroup);
+                                              modelGroup,
+                                              minOccurs,
+                                              maxOccurs);
             }
         }        
         
@@ -739,42 +804,57 @@ public class XSSerializer {
     private void addCompositorOnSchemaComponent(Document document,
                                             Element parentDomNode,
                                             XSModelGroup modelGroup,
-                                            String compositor)
+                                            String compositor,
+                                            String minOccurs,
+                                            String maxOccurs)
                                             throws DOMException {
         
         Element compositorDomNode = document.createElementNS(
                                                XSD_LANGUAGE_URI,
                                                XSD_LANGUAGE_PREFIX
                                                + compositor);
+        // add minOccurs & maxOccurs attributes to the compositor root
+        if (minOccurs != null && !minOccurs.equals("1")) {
+           compositorDomNode.setAttributeNS(null, "minOccurs", 
+                                            minOccurs);
+        }
+        if (maxOccurs != null && !maxOccurs.equals("1")) {
+           compositorDomNode.setAttributeNS(null, "maxOccurs", 
+                                            maxOccurs);
+        }
+        
         XSObjectList compositorChildren = modelGroup.getParticles();
         for (int seqIdx = 0; seqIdx < compositorChildren.getLength(); seqIdx++) {
             XSObject seqItem = compositorChildren.item(seqIdx);
-            XSParticle seqParticle = (XSParticle) seqItem;            
-            String minOccurs = getMinOccursVal(seqParticle);
-            String maxOccurs = getMaxOccursVal(seqParticle);
-            
-            XSTerm partclTerm = seqParticle.getTerm();            
+            XSParticle compositorParticle = (XSParticle) seqItem;
+            String minOccursParticle = getMinOccursVal(compositorParticle);
+            String maxOccursParticle = getMaxOccursVal(compositorParticle);
+            XSTerm partclTerm = compositorParticle.getTerm();            
             if (partclTerm instanceof XSElementDeclaration) {
                XSElementDecl elemDecl = (XSElementDecl) partclTerm;
                addElementDeclToSchemaComponent(document,
                                                compositorDomNode,
                                                elemDecl,
-                                               minOccurs,
-                                               maxOccurs,
+                                               minOccursParticle,
+                                               maxOccursParticle,
                                                false);
             }
             else if (partclTerm instanceof XSModelGroup) {
                 // Recursively adding model groups
                 XSModelGroup partlModelGroup = (XSModelGroup) partclTerm;
-                if (modelGroup.getCompositor() == 
+                if (partlModelGroup.getCompositor() == 
                                 XSModelGroup.COMPOSITOR_CHOICE) {
                     addCompositorOnSchemaComponent(document, compositorDomNode,
-                                                   partlModelGroup, "choice"); 
+                                                   partlModelGroup, "choice",
+                                                   minOccursParticle,
+                                                   maxOccursParticle); 
                 }
-                else if (modelGroup.getCompositor() == 
+                else if (partlModelGroup.getCompositor() == 
                                 XSModelGroup.COMPOSITOR_SEQUENCE) {
                     addCompositorOnSchemaComponent(document, compositorDomNode,
-                                                   partlModelGroup, "sequence");  
+                                                   partlModelGroup, "sequence",
+                                                   minOccursParticle,
+                                                   maxOccursParticle);  
                 }
             }
             else if (partclTerm instanceof XSWildcard) {
@@ -783,8 +863,6 @@ public class XSSerializer {
                                              (XSWildcardDecl) partclTerm,
                                              "any");   
             }
-            
-            // handle more compositor children like, group ... 
         }
         
         parentDomNode.appendChild(compositorDomNode);
@@ -796,28 +874,39 @@ public class XSSerializer {
      */
     private void addAllCompositorOnComplexType(Document document,
                                                Element complxTypeDomNode,
-                                               XSModelGroup modelGroup)
+                                               XSModelGroup modelGroup,
+                                               String minOccurs,
+                                               String maxOccurs)
                                                throws DOMException {
         
         Element allDeclDomNode = document.createElementNS(
                                                  XSD_LANGUAGE_URI,
                                                  XSD_LANGUAGE_PREFIX
-                                                 + "all");        
+                                                 + "all");
+        // add minOccurs & maxOccurs attributes to the compositor root
+        if (minOccurs != null && !minOccurs.equals("1")) {
+            allDeclDomNode.setAttributeNS(null, "minOccurs", 
+                                          minOccurs);
+        }
+        if (maxOccurs != null && !maxOccurs.equals("1")) {
+            allDeclDomNode.setAttributeNS(null, "maxOccurs", 
+                                          maxOccurs);
+        }
               
         XSObjectList modelParticles = modelGroup.getParticles();
         for (int prtclIdx = 0; prtclIdx < modelParticles.getLength(); 
                                                          prtclIdx++) {
             XSParticle partclItem = (XSParticle) modelParticles.item(prtclIdx);
-            String minOccurs = getMinOccursVal(partclItem);
-            String maxOccurs = getMaxOccursVal(partclItem);
-            
+            String minOccursParticle = getMinOccursVal(partclItem);
+            String maxOccursParticle = getMaxOccursVal(partclItem);            
             XSTerm partclTerm = partclItem.getTerm();
+            
             if (partclTerm instanceof XSElementDeclaration) {                
                addElementDeclToSchemaComponent(document,
                                                allDeclDomNode,
                                                (XSElementDecl) partclTerm,
-                                               minOccurs,
-                                               maxOccurs,
+                                               minOccursParticle,
+                                               maxOccursParticle,
                                                false);   
             }
             else if (partclTerm instanceof XSWildcard) {
@@ -968,7 +1057,7 @@ public class XSSerializer {
       
       // unreach
       return null;
-    }
+    } // end of, getFacetName 
     
     /*
      * Given an XSD particle, get it's minOccurs value as a String.
@@ -982,7 +1071,7 @@ public class XSSerializer {
        } 
 
        return minOccursStr; 
-    }
+    } // end of, getMinOccursVal 
     
     /*
      * Given an XSD particle, get it's maxOccurs value as a String.
@@ -1001,6 +1090,6 @@ public class XSSerializer {
        }
 
        return maxOccursStr; 
-    }
-
+    } // end of, getMaxOccursVal 
+    
 }
