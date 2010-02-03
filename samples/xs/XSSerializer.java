@@ -535,27 +535,40 @@ public class XSSerializer {
         }
 
         parentDomNode.appendChild(complexTypeDomNode);
-        XSParticle particle = complexTypeDecl.getParticle();
-        if (particle != null) {
-            processParticleFromComplexType(document, complexTypeDomNode, 
-                                           particle);
-            // add attributes to the complex type
-            addAttributesToComplexType(document, complexTypeDecl, 
-                                       complexTypeDomNode);
+
+        short derivationMethod = complexTypeDecl.getDerivationMethod();
+        
+        if (complexTypeDecl.getContentType() == 
+                          XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
+            // add xs:simpleContent as child of xs:complexType
+            addSimpleContentToComplexType(document, complexTypeDomNode,
+                    complexTypeDecl);   
         }
-        else {
-           if (complexTypeDecl.getContentType() == 
-                      XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
-             // add xs:simpleContent as child of xs:complexType
-             addSimpleContentToComplexType(document, complexTypeDomNode,
-                                           complexTypeDecl);   
-           }
-           else if (complexTypeDecl.getContentType() == 
-                       XSComplexTypeDefinition.CONTENTTYPE_EMPTY) {
-              // add attributes to the complex type
-              addAttributesToComplexType(document, complexTypeDecl, 
-                                         complexTypeDomNode); 
-           }
+        else if ((derivationMethod == XSConstants.DERIVATION_RESTRICTION) || 
+                 (derivationMethod == XSConstants.DERIVATION_EXTENSION)) {
+            if (!XMLConstants.W3C_XML_SCHEMA_NS_URI.
+                    equals(complexTypeDecl.getBaseType().getNamespace())) {
+                // add xs:complexContent as child of xs:complexType
+                addComplexContentToComplexType(document, 
+                                               complexTypeDomNode,
+                                               complexTypeDecl, 
+                                               derivationMethod);
+            }
+            else {
+                XSParticle particle = complexTypeDecl.getParticle();
+                if (particle != null) {
+                    processParticleFromComplexType(document, 
+                                                   complexTypeDomNode, 
+                                                   particle);
+                    // add attributes to the complex type
+                    addAttributesToComplexType(document, 
+                                               complexTypeDecl,
+                                               complexTypeDomNode);
+                }
+                addAttributesToComplexType(document, 
+                                           complexTypeDecl, 
+                                           complexTypeDomNode);
+            }
         }
                    
     } // end of, addChildrenToComplexType
@@ -574,14 +587,27 @@ public class XSSerializer {
             Element simpleContentRestrDomNode = document.createElementNS
                                                           (XSD_LANGUAGE_URI,
                                                            XSD_LANGUAGE_PREFIX +
-                                                           "restriction"); 
-            addAttributesToComplexType(document, complexTypeDecl, 
-                                       simpleContentRestrDomNode);
+                                                           "restriction");
+            XSTypeDefinition baseType = complexTypeDecl.getBaseType();
+            if (XMLConstants.W3C_XML_SCHEMA_NS_URI.
+                              equals(baseType.getNamespace())) {
+                simpleContentRestrDomNode.setAttributeNS(null, "base", 
+                                                 XSD_LANGUAGE_PREFIX + 
+                                                 baseType.getName());   
+            }
+            else {
+                simpleContentRestrDomNode.setAttributeNS(null, "base",  
+                                                baseType.getName());   
+            }     
+            
             addRestrictionToSimpleContent(document,
                                           complexTypeDecl,
                                           simpleContentDomNode, 
                                           simpleContentRestrDomNode, 
                                           complexTypeDecl.getBaseType());
+            addAttributesToComplexType(document, complexTypeDecl, 
+                                       simpleContentRestrDomNode);
+            
             simpleContentDomNode.appendChild(simpleContentRestrDomNode);
         }
         else if (complexTypeDecl.getDerivationMethod() == 
@@ -609,6 +635,59 @@ public class XSSerializer {
         complexTypeDomNode.appendChild(simpleContentDomNode);
         
     } // end of, addSimpleContentToComplexType 
+    
+    /*
+     * Add xs:complexContent as child of xs:complexType
+     */
+    private void addComplexContentToComplexType(Document document,
+                                       Element complexTypeDomNode,
+                                       XSComplexTypeDecl complexTypeDecl,
+                                       short derivationMethod) {
+        Element complexContentDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                             XSD_LANGUAGE_PREFIX +
+                                                             "complexContent");
+        Element complexContentDerivationNode = null;        
+        if (derivationMethod == XSConstants.DERIVATION_RESTRICTION) {
+            complexContentDerivationNode = document.createElementNS
+                                                          (XSD_LANGUAGE_URI,
+                                                          XSD_LANGUAGE_PREFIX +
+                                                          "restriction");                                    
+        }
+        else if (derivationMethod == XSConstants.DERIVATION_EXTENSION) {
+            complexContentDerivationNode = document.createElementNS
+                                                         (XSD_LANGUAGE_URI,
+                                                         XSD_LANGUAGE_PREFIX +
+                                                         "extension");
+        }
+        
+        if (complexContentDerivationNode != null) {
+            XSTypeDefinition baseType = complexTypeDecl.getBaseType();
+            if (XMLConstants.W3C_XML_SCHEMA_NS_URI.
+                              equals(baseType.getNamespace())) {
+                complexContentDerivationNode.setAttributeNS(null, "base", 
+                                                       XSD_LANGUAGE_PREFIX + 
+                                                       baseType.getName());   
+            }
+            else {
+                complexContentDerivationNode.setAttributeNS(null, "base",  
+                                                    baseType.getName());   
+            }
+            complexContentDomNode.appendChild(complexContentDerivationNode);
+         }
+        
+        XSParticle particle = complexTypeDecl.getParticle();
+        if (particle != null) {
+            processParticleFromComplexType(document, 
+                                           complexContentDerivationNode,
+                                           particle);
+        }
+        
+        addAttributesToComplexType(document, complexTypeDecl, 
+                                   complexContentDerivationNode);
+        
+        complexTypeDomNode.appendChild(complexContentDomNode);
+        
+    } // end of, addComplexContentToComplexType
 
     /*
      * Add attributes to the complex type
@@ -632,22 +711,22 @@ public class XSSerializer {
      * Processing a "particle" from a complex type
      */
     private void processParticleFromComplexType(Document document,
-                                                Element complxTypeDomNode,
+                                                Element parentDomNode,
                                                 XSParticle particle)
                                                 throws DOMException {
         XSTerm particleTerm = particle.getTerm();
         if (particleTerm instanceof XSModelGroup) {
             XSModelGroup modelGroup = (XSModelGroup) particleTerm;
             if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) {
-                addCompositorOnSchemaComponent(document, complxTypeDomNode,
+                addCompositorOnSchemaComponent(document, parentDomNode,
                                                modelGroup, "sequence");
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_CHOICE) {
-                addCompositorOnSchemaComponent(document, complxTypeDomNode,
+                addCompositorOnSchemaComponent(document, parentDomNode,
                                                modelGroup, "choice");
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_ALL) {
-                addAllCompositorOnComplexType(document, complxTypeDomNode,
+                addAllCompositorOnComplexType(document, parentDomNode,
                                               modelGroup);
             }
         }        
