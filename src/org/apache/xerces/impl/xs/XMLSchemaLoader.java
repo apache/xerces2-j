@@ -233,7 +233,7 @@ XSLoader, DOMConfiguration {
     // Data
     
     // features and properties
-    private ParserConfigurationSettings fLoaderConfig = new ParserConfigurationSettings();
+    private final ParserConfigurationSettings fLoaderConfig = new ParserConfigurationSettings();
     private XMLErrorReporter fErrorReporter = new XMLErrorReporter ();
     private XMLEntityManager fEntityManager = null;
     private XMLEntityResolver fUserEntityResolver = null;
@@ -1138,10 +1138,15 @@ XSLoader, DOMConfiguration {
         return SchemaDVFactory.getInstance();
     }
     private boolean parserSettingsUpdated(XMLComponentManager componentManager) {
-        try {
-            return componentManager.getFeature(PARSER_SETTINGS);     
+        // If the component manager is the loader config don't bother querying it since it doesn't 
+        // recognize the PARSER_SETTINGS feature. Prevents an XMLConfigurationException from being 
+        // thrown.
+        if (componentManager != fLoaderConfig) {
+            try {
+                return componentManager.getFeature(PARSER_SETTINGS);     
+            }
+            catch (XMLConfigurationException e) {}
         }
-        catch (XMLConfigurationException e) {}
         return true;
     }
     
