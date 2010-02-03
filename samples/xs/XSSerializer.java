@@ -424,8 +424,8 @@ public class XSSerializer {
     } // end of, processGlobalAttrDecl
 
     /*
-     * Add attribute declaration to a Schema component (like, xs:schema or
-     * xs:complexType).
+     * Add attribute declaration to a Schema component (like xs:schema, 
+     * xs:complexType, ).
      */
     private void addAttributeToSchemaComponent(Document document,
                                                Element parentDomNode,
@@ -639,12 +639,12 @@ public class XSSerializer {
         if (particleTerm instanceof XSModelGroup) {
             XSModelGroup modelGroup = (XSModelGroup) particleTerm;
             if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) {
-                addCompositorOnComplexType(document, complxTypeDomNode,
-                                           modelGroup, "sequence");
+                addCompositorOnSchemaComponent(document, complxTypeDomNode,
+                                               modelGroup, "sequence");
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_CHOICE) {
-                addCompositorOnComplexType(document, complxTypeDomNode,
-                                           modelGroup, "choice");
+                addCompositorOnSchemaComponent(document, complxTypeDomNode,
+                                               modelGroup, "choice");
             }
             else if (modelGroup.getCompositor() == XSModelGroup.COMPOSITOR_ALL) {
                 addAllCompositorOnComplexType(document, complxTypeDomNode,
@@ -657,13 +657,13 @@ public class XSSerializer {
     /*
      * Adding a "sequence" or "choice" compositor on a complex type
      */
-    private void addCompositorOnComplexType(Document document,
-                                            Element complxTypeDomNode,
+    private void addCompositorOnSchemaComponent(Document document,
+                                            Element parentDomNode,
                                             XSModelGroup modelGroup,
                                             String compositor)
                                             throws DOMException {
         
-        Element sequenceDeclDomNode = document.createElementNS(
+        Element compositorDomNode = document.createElementNS(
                                                XSD_LANGUAGE_URI,
                                                XSD_LANGUAGE_PREFIX
                                                + compositor);
@@ -678,18 +678,37 @@ public class XSSerializer {
             if (partclTerm instanceof XSElementDeclaration) {
                XSElementDecl elemDecl = (XSElementDecl) partclTerm;
                addElementDeclToSchemaComponent(document,
-                                               sequenceDeclDomNode,
+                                               compositorDomNode,
                                                elemDecl,
                                                minOccurs,
                                                maxOccurs,
                                                false);
             }
+            else if (partclTerm instanceof XSModelGroup) {
+                // Recursively adding model groups
+                XSModelGroup partlModelGroup = (XSModelGroup) partclTerm;
+                if (modelGroup.getCompositor() == 
+                                XSModelGroup.COMPOSITOR_CHOICE) {
+                    addCompositorOnSchemaComponent(document, compositorDomNode,
+                                                   partlModelGroup, "choice"); 
+                }
+                else if (modelGroup.getCompositor() == 
+                                XSModelGroup.COMPOSITOR_SEQUENCE) {
+                    addCompositorOnSchemaComponent(document, compositorDomNode,
+                                                   partlModelGroup, "sequence");  
+                }
+            }
+            else if (partclTerm instanceof XSWildcard) {
+                addWildcardToSchemaComponent(document,
+                                             compositorDomNode,
+                                             (XSWildcardDecl) partclTerm,
+                                             "any");   
+            }
             
-            // handle more compositor children like, group | choice |
-            // sequence | any ... 
+            // handle more compositor children like, group ... 
         }
         
-        complxTypeDomNode.appendChild(sequenceDeclDomNode);
+        parentDomNode.appendChild(compositorDomNode);
         
     } // end of, addCompositorOnComplexType
     
@@ -834,7 +853,7 @@ public class XSSerializer {
     } // end of, addUnionDeclToSimpleType
     
     /*
-     * Find name of a facet given it's kind
+     * Get name of a facet given it's kind
      */
     private String getFacetName(short facetKind) {
       if (facetKind == XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) {
