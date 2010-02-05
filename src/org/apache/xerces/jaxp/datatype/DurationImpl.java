@@ -573,6 +573,9 @@ class DurationImpl
 
         int idx = tokens.length();
         for (int i = len - 1; i >= 0; i--) {
+            if (parts[i] == null) {
+                throw new IllegalArgumentException(whole);
+            }
             int nidx =
                 tokens.lastIndexOf(
                     parts[i].charAt(parts[i].length() - 1),
