@@ -424,7 +424,17 @@ public class XSSerializer {
         for (int attrIdx = 0; attrIdx < globalAttrDecls.size(); attrIdx++) {
            XSAttributeDecl attrDecl = (XSAttributeDecl)
                                        globalAttrDecls.item(attrIdx);
-           addAttributeToSchemaComponent(document, schemaDeclDomNode, attrDecl);
+           String constraintName = null;
+           String constraintVal = null;           
+           if (attrDecl.getConstraintType() != XSConstants.VC_NONE) {
+              constraintName = (attrDecl.getConstraintType() == 
+                                          XSConstants.VC_DEFAULT) ? 
+                                          "default" : "fixed";
+              constraintVal = attrDecl.getConstraintValue();
+           }
+           addAttributeToSchemaComponent(document, schemaDeclDomNode, 
+                                         attrDecl, constraintName, 
+                                         constraintVal, null);
         }
     } // end of, processGlobalAttrDecl
     
@@ -485,7 +495,10 @@ public class XSSerializer {
      */
     private void addAttributeToSchemaComponent(Document document,
                                                Element parentDomNode,
-                                               XSAttributeDecl attrDecl)
+                                               XSAttributeDecl attrDecl,
+                                               String constraintName, 
+                                               String constraintVal,
+                                               String requiredVal)
                                                throws DOMException {
         String attrName = attrDecl.getName();            
         Element attrDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
@@ -493,7 +506,15 @@ public class XSSerializer {
                                                               + "attribute");
         attrDeclDomNode.setAttributeNS(null, "name", attrName);        
         parentDomNode.appendChild(attrDeclDomNode);
-            
+        
+        if (constraintName != null) {
+           attrDeclDomNode.setAttributeNS(null, constraintName, constraintVal);  
+        }
+        
+        if (requiredVal != null) {
+           attrDeclDomNode.setAttributeNS(null, "use", requiredVal);  
+        }
+                    
         XSTypeDefinition typeDef = attrDecl.getTypeDefinition();
         if (!typeDef.getAnonymous()) {
            // handling a non-anonymous schema type
@@ -620,10 +641,12 @@ public class XSSerializer {
                     addAttributesToComplexType(document, 
                                                complexTypeDecl,
                                                complexTypeDomNode);
+                } 
+                else {
+                   addAttributesToComplexType(document, 
+                                              complexTypeDecl, 
+                                              complexTypeDomNode);
                 }
-                addAttributesToComplexType(document, 
-                                           complexTypeDecl, 
-                                           complexTypeDomNode);
             }
         }
                    
@@ -758,8 +781,22 @@ public class XSSerializer {
         XSObjectList attributeUses = complexTypeDecl.getAttributeUses();
         for (int attrUsesIdx = 0; attrUsesIdx < attributeUses.getLength(); attrUsesIdx++) {
            XSAttributeUse attrUse = (XSAttributeUse) attributeUses.item(attrUsesIdx);
+           String constraintName = null;
+           String constraintVal = null;           
+           if (attrUse.getConstraintType() != XSConstants.VC_NONE) {
+              constraintName = (attrUse.getConstraintType() == 
+                                         XSConstants.VC_DEFAULT) ? 
+                                         "default" : "fixed";
+              constraintVal = attrUse.getConstraintValue();
+           }
+           
+           String requiredVal = (attrUse.getRequired() == true) ? 
+                                 "required" : "optional"; 
+           
            XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
-           addAttributeToSchemaComponent(document, parentDomNode, attrDecl);          
+           addAttributeToSchemaComponent(document, parentDomNode, 
+                                         attrDecl, constraintName, 
+                                         constraintVal, requiredVal);          
         }
     }
 
