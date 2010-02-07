@@ -25,6 +25,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
+import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
@@ -142,7 +143,8 @@ public class XSSerializer {
      
        Element schemaDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                             XSD_LANGUAGE_PREFIX
-                                                            + "schema");
+                                                            + "schema");     
+       
        document.appendChild(schemaDeclDomNode);
        
        // process global element declarations
@@ -165,6 +167,12 @@ public class XSSerializer {
                                              (XSConstants.ATTRIBUTE_DECLARATION);
        processGlobalAttrDecl(globalAttrDecls, document, schemaDeclDomNode);
        
+       // process global attribute group declarations
+       XSNamedMap globalAttrGroupDecls = xsModel.getComponents
+                                             (XSConstants.ATTRIBUTE_GROUP);
+       processGlobalAttrGroupDecl(globalAttrGroupDecls, document, schemaDeclDomNode);
+       
+       // process global model group declarations
        XSNamedMap globalGroupDecls = xsModel.getComponents
                                              (XSConstants.MODEL_GROUP_DEFINITION);
        processGlobalGroupDecl(globalGroupDecls, document, schemaDeclDomNode);
@@ -172,6 +180,52 @@ public class XSSerializer {
        return document;
     } // end of, transformXSModelToDOM
     
+    /*
+     * Process global attribute group declarations
+     */
+    private void processGlobalAttrGroupDecl(XSNamedMap globalAttrGpDecls,
+                                            Document document, 
+                                            Element schemaDeclDomNode) {
+        // iterating global attribute group declarations in the Schema
+        for (int attrGpIdx = 0; attrGpIdx < globalAttrGpDecls.size(); attrGpIdx++) {
+            XSAttributeGroupDecl attrGpDecl = (XSAttributeGroupDecl) 
+                                                 globalAttrGpDecls.item(attrGpIdx);            
+            String attrGpName = attrGpDecl.getName();
+            Element attrGpDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                             XSD_LANGUAGE_PREFIX
+                                                             + "attributeGroup");
+            attrGpDomNode.setAttributeNS(null, "name", attrGpName);            
+            XSObjectList attrUses = attrGpDecl.getAttributeUses();
+            for (int attrUsesIdx = 0; attrUsesIdx < attrUses.size(); attrUsesIdx++) {
+               XSAttributeUse attrUse = (XSAttributeUse) attrUses.item(attrUsesIdx);
+               XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
+               String constraintName = null;
+               String constraintVal = null;           
+               if (attrUse.getConstraintType() != XSConstants.VC_NONE) {
+                   constraintName = (attrUse.getConstraintType() == 
+                                               XSConstants.VC_DEFAULT) ? 
+                                               "default" : "fixed";
+                   constraintVal = attrUse.getConstraintValue();
+               }
+               String requiredVal = (attrUse.getRequired() == true) ? 
+                                              "required" : "optional"; 
+               addAttributeToSchemaComponent(document, attrGpDomNode, 
+                                             attrDecl, constraintName, 
+                                             constraintVal, requiredVal);
+            }
+            
+            XSWildcard attrWildCard = attrGpDecl.getAttributeWildcard();
+            if (attrWildCard != null) {
+               addWildcardToSchemaComponent(document, attrGpDomNode, 
+                                           (XSWildcardDecl) attrWildCard, 
+                                           "anyAttribute");
+            }
+            
+            schemaDeclDomNode.appendChild(attrGpDomNode);
+        }  
+        
+    } // end of, processGlobalAttrGroupDecl
+
     /*
      * Process global element declarations
      */
@@ -184,7 +238,7 @@ public class XSSerializer {
          XSElementDecl elemDecl = (XSElementDecl) globalElemDecls.item(elemIdx);
          addElementDeclToSchemaComponent(document, schemaDeclDomNode,
                                          elemDecl, null, null, true);
-       }
+      }
     } // end of, processGolabElementDecl
 
     /*
