@@ -2695,13 +2695,14 @@ public class XMLSchemaValidator
                     if (toParseSchema) {
                         grammar = fSchemaLoader.loadSchema(fXSDDescription, xis, fLocationPairs);
                     }
-                } catch (IOException ex) {
+                } 
+                catch (IOException ex) {
                     final String [] locationHints = fXSDDescription.getLocationHints();
                     fXSIErrorReporter.fErrorReporter.reportError(
                         XSMessageFormatter.SCHEMA_DOMAIN,
                         "schema_reference.4",
                         new Object[] { locationHints != null ? locationHints[0] : XMLSymbols.EMPTY_STRING },
-                        XMLErrorReporter.SEVERITY_WARNING);
+                        XMLErrorReporter.SEVERITY_WARNING, ex);
                 }
             }
         }
