@@ -30,12 +30,17 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.impl.xs.identity.Field;
+import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.identity.KeyRef;
+import org.apache.xerces.impl.xs.identity.Selector;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSFacet;
+import org.apache.xerces.xs.XSIDCDefinition;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSMultiValueFacet;
@@ -116,7 +121,7 @@ public class XSSerializer {
     }
 
     /*
-     * Serialize an XML Schema, XSModel object to the standard output
+     * Serialize an XML Schema, XSModel object to the standard output.
      */
     public void serialize(XSModel xsModel) throws Exception {       
         //get DOM after conversion, from XSModel
@@ -134,7 +139,7 @@ public class XSSerializer {
     }
   
     /*
-     * Transform an XML Schema, XSModel object into DOM document
+     * Transform an XML Schema, XSModel object into DOM document.
      */
     public Document transformXSModelToDOM(XSModel xsModel) throws Exception {
        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -181,7 +186,7 @@ public class XSSerializer {
     } // end of, transformXSModelToDOM
     
     /*
-     * Process global attribute group declarations
+     * Process global attribute group declarations.
      */
     private void processGlobalAttrGroupDecl(XSNamedMap globalAttrGpDecls,
                                             Document document, 
@@ -227,7 +232,7 @@ public class XSSerializer {
     } // end of, processGlobalAttrGroupDecl
 
     /*
-     * Process global element declarations
+     * Process global element declarations.
      */
     private void processGlobalElementDecl(XSNamedMap globalElemDecls,
                                          Document document,
@@ -242,7 +247,7 @@ public class XSSerializer {
     } // end of, processGolabElementDecl
 
     /*
-     * Adding an element declaration to Schema component
+     * Adding an element declaration to Schema component.
      */
     private void addElementDeclToSchemaComponent(Document document,
                                              Element parentDomNode,
@@ -296,13 +301,74 @@ public class XSSerializer {
                elemDeclDomNode.setAttributeNS(null, "maxOccurs", maxOccurs);  
             }
          }
+         
+         addIDConstraintsToElementDecl(document, elemDecl, elemDeclDomNode);
 
          parentDomNode.appendChild(elemDeclDomNode);
          
     } // end of, addElementDeclToSchemaComponent
 
     /*
-     * Process global complex type declarations
+     * Add identity constraints to element declaration.
+     */
+    private void addIDConstraintsToElementDecl(Document document,
+                                               XSElementDecl elemDecl, 
+                                               Element elemDeclDomNode)
+                                               throws DOMException {
+         XSNamedMap idConstraintsMap = elemDecl.getIdentityConstraints();
+         
+         // iterate all identity constraints on an element declaration
+         for (int idConsIdx = 0; idConsIdx < idConstraintsMap.getLength(); 
+                                               idConsIdx++) {
+             IdentityConstraint idCons = (IdentityConstraint) 
+                                           idConstraintsMap.item(idConsIdx);
+             String consType = null;
+             String idReferStr = null;             
+             if (idCons.getCategory() == XSIDCDefinition.IC_UNIQUE) {
+                 consType = "unique";  
+             }
+             else if (idCons.getCategory() == XSIDCDefinition.IC_KEY) {
+                 consType = "key";    
+             }
+             else if (idCons.getCategory() == XSIDCDefinition.IC_KEYREF) {
+                 consType = "keyref";
+                 idReferStr = (((KeyRef) idCons).getKey()).getName(); 
+             }
+             
+             Element idConsDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                           XSD_LANGUAGE_PREFIX
+                                                           + consType);
+             String idConsName = idCons.getName();
+             idConsDomNode.setAttributeNS(null, "name", idConsName);
+             
+             if (idReferStr != null) {
+                idConsDomNode.setAttributeNS(null, "refer", idReferStr);  
+             }
+             
+             Selector idSelector = idCons.getSelector();
+             String selectorXPathStr = idSelector.getXPath().toString();
+             Element selectorDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                              XSD_LANGUAGE_PREFIX
+                                                              + "selector");
+             selectorDomNode.setAttributeNS(null, "xpath", selectorXPathStr);
+             idConsDomNode.appendChild(selectorDomNode);
+             
+             for (int fieldIdx = 0; fieldIdx < idCons.getFieldCount(); fieldIdx++) {
+                Field field = idCons.getFieldAt(fieldIdx);
+                String fieldXpathStr = field.getXPath().toString();
+                Element fieldDomNode = document.createElementNS(XSD_LANGUAGE_URI,
+                                                                XSD_LANGUAGE_PREFIX
+                                                                + "field");
+                fieldDomNode.setAttributeNS(null, "xpath", fieldXpathStr);
+                idConsDomNode.appendChild(fieldDomNode);
+             }
+             
+             elemDeclDomNode.appendChild(idConsDomNode);             
+         }
+    } // end of, addIDConstraintsToElementDecl
+
+    /*
+     * Process global complex type declarations.
      */
     private void processGlobalComplexTypeDecl(XSNamedMap globalComplexTypeDecls,
                                               Document document,
@@ -328,7 +394,7 @@ public class XSSerializer {
     } // end of, processGlobalComplexTypeDecl
     
     /*
-     * Process global simple type declarations
+     * Process global simple type declarations.
      */
     private void processGlobalSimpleTypeDecl(XSNamedMap globalSimpleTypeDecls,
                                              Document document,
@@ -349,7 +415,7 @@ public class XSSerializer {
     } // end of, processGlobalSimpleTypeDecl
 
     /*
-     * Processing Simple Type contents
+     * Processing Simple Type contents.
      */
     private void processSimpleTypeContents(Document document,
                                            Element parentDomNode,
@@ -388,7 +454,7 @@ public class XSSerializer {
     } // end of, processSimpleTypeContents
 
     /*
-     * Add children to "xs:restriction" for simple contents
+     * Add children to "xs:restriction" for simple contents.
      */
     private void addRestrictionToSimpleContent(Document document,
                                                XSTypeDefinition typeDefn, 
@@ -468,7 +534,7 @@ public class XSSerializer {
     } // end of, addRestrictionToSimpleContent
 
     /*
-     * Process global attribute declarations
+     * Process global attribute declarations.
      */
     private void processGlobalAttrDecl(XSNamedMap globalAttrDecls,
                                        Document document,
@@ -493,7 +559,7 @@ public class XSSerializer {
     } // end of, processGlobalAttrDecl
     
     /*
-     * Process global group declarations
+     * Process global group declarations.
      */
     private void processGlobalGroupDecl(XSNamedMap globalGroupDecls,
                                         Document document,
@@ -509,7 +575,7 @@ public class XSSerializer {
     } // end of, processGlobalGroupDecl
 
     /*
-     * Add xs:group child to a Schema component
+     * Add xs:group child to a Schema component.
      */
     private void addGroupChildToSchemaComponent(Document document,
                                                 Element parentDomNode, 
@@ -593,7 +659,7 @@ public class XSSerializer {
     } // end of, addAttributeToSchemaComponent
 
     /*
-     * Processing an "anonymous" complex type declaration, on an element
+     * Processing an "anonymous" complex type declaration, on an element.
      */
     private void processAnonComplexTypeOnElement(Document document,
                                                  Element elemDeclDomNode,
@@ -612,7 +678,7 @@ public class XSSerializer {
     } // end of, processAnonComplexTypeOnElement
 
     /*
-     * Add child content to complex type declaration
+     * Add child content to complex type declaration.
      */
     private void addChildrenToComplexType(Document document,
                                           Element parentDomNode,
@@ -707,7 +773,7 @@ public class XSSerializer {
     } // end of, addChildrenToComplexType
     
     /*
-     * Add xs:simpleContent as child of xs:complexType
+     * Add xs:simpleContent as child of xs:complexType.
      */
     private void addSimpleContentToComplexType(Document document,
                                                Element complexTypeDomNode,
@@ -770,7 +836,7 @@ public class XSSerializer {
     } // end of, addSimpleContentToComplexType 
     
     /*
-     * Add xs:complexContent as child of xs:complexType
+     * Add xs:complexContent as child of xs:complexType.
      */
     private void addComplexContentToComplexType(Document document,
                                        Element complexTypeDomNode,
@@ -823,7 +889,7 @@ public class XSSerializer {
     } // end of, addComplexContentToComplexType
 
     /*
-     * Add attributes to the complex type
+     * Add attributes to the complex type.
      */
     private void addAttributesToComplexType(Document document,
                                             XSComplexTypeDecl complexTypeDecl,
@@ -855,7 +921,7 @@ public class XSSerializer {
     }
 
     /*
-     * Processing a "particle" from a complex type
+     * Processing a "particle" from a complex type.
      */
     private void processParticleFromComplexType(Document document,
                                                 Element parentDomNode,
@@ -890,7 +956,7 @@ public class XSSerializer {
     } // end of, processParticleFromComplexType
 
     /*
-     * Adding a "sequence" or "choice" compositor on a complex type
+     * Adding a "sequence" or "choice" compositor on a complex type.
      */
     private void addCompositorOnSchemaComponent(Document document,
                                             Element parentDomNode,
@@ -961,7 +1027,7 @@ public class XSSerializer {
     } // end of, addCompositorOnComplexType
     
     /*
-     * Processing an "all" declaration on a complex type
+     * Processing an "all" declaration on a complex type.
      */
     private void addAllCompositorOnComplexType(Document document,
                                                Element complxTypeDomNode,
@@ -1014,7 +1080,7 @@ public class XSSerializer {
     } // end of, addAllCompositorOnComplexType 
     
     /*
-     * Adding wild card to a Schema component
+     * Adding wild card to a Schema component.
      */
     private void addWildcardToSchemaComponent(Document document,
                                               Element parentNode,
@@ -1066,7 +1132,7 @@ public class XSSerializer {
     } // end of, addListDeclToSimpleType
     
     /*
-     * Add xs:union as child of xs:simpleType
+     * Add xs:union as child of xs:simpleType.
      */
     private void addUnionDeclToSimpleType(Document document,
                                           Element simpleTypeDomNode,
@@ -1112,7 +1178,7 @@ public class XSSerializer {
     } // end of, addUnionDeclToSimpleType
     
     /*
-     * Get name of a facet given it's kind
+     * Get name of a facet given it's kind.
      */
     private String getFacetName(short facetKind) {
       if (facetKind == XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) {
