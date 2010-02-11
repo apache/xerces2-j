@@ -959,7 +959,7 @@ public class RegularExpression implements java.io.Serializable {
                 case '^':
                     if (isSet(opts, MULTIPLE_LINES)) {
                         if (!(offset == con.start
-                              || offset > con.start && isEOLChar( target [  offset-1 ] )))
+                              || offset > con.start && offset < con.limit && isEOLChar( target [  offset-1 ] )))
                             return -1;
                     } else {
                         if (offset != con.start)
@@ -1646,7 +1646,7 @@ public class RegularExpression implements java.io.Serializable {
                 case '^':
                     if (isSet(opts, MULTIPLE_LINES)) {
                         if (!(offset == con.start
-                              || offset > con.start && isEOLChar( target .charAt(  offset-1 ) )))
+                              || offset > con.start && offset < con.limit && isEOLChar( target .charAt(  offset-1 ) )))
                             return -1;
                     } else {
                         if (offset != con.start)
@@ -2258,7 +2258,7 @@ public class RegularExpression implements java.io.Serializable {
                 case '^':
                     if (isSet(opts, MULTIPLE_LINES)) {
                         if (!(offset == con.start
-                              || offset > con.start && isEOLChar( target .setIndex(  offset-1 ) )))
+                              || offset > con.start && offset < con.limit && isEOLChar( target .setIndex(  offset-1 ) )))
                             return -1;
                     } else {
                         if (offset != con.start)
