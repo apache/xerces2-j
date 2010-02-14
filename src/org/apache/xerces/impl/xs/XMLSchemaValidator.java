@@ -2492,6 +2492,24 @@ public class XMLSchemaValidator
                assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
             }
           }
+          
+          // add assertion facets, from "complexType -> simpleContent -> restriction"
+          XSSimpleTypeDefinition simpleTypeDef = complexTypeDef.getSimpleType();
+          if (simpleTypeDef != null) {
+            XSObjectList complexTypeFacets = simpleTypeDef.getMultiValueFacets();
+            for (int i = 0; i < complexTypeFacets.getLength(); i++) {
+              XSMultiValueFacet facet = (XSMultiValueFacet) complexTypeFacets.item(i);
+              if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                 Vector simpleContentAsserts = facet.getAsserts();
+                 for (int simpleAssertIdx = 0; simpleAssertIdx < 
+                              simpleContentAsserts.size(); simpleAssertIdx++) {
+                    XSAssert simpleContentAssert = (XSAssert)
+                                         simpleContentAsserts.get(simpleAssertIdx);
+                    assertions.addXSObject(simpleContentAssert);
+                 }
+              }
+            }
+          }
 
           // there could be assertions, to be evaluated on attributes. add these
           // assertions to the list of assertions to be processed.
