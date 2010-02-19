@@ -71,20 +71,24 @@ public class CMNodeFactory {
     public CMNodeFactory() {
     }
     
-    public void reset(XMLComponentManager componentManager){
+    public void reset(XMLComponentManager componentManager) {
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         try {
             fSecurityManager = (SecurityManager)componentManager.getProperty(SECURITY_MANAGER);
-            //we are setting the limit of number of nodes to 3times the maxOccur value..
-            if(fSecurityManager != null){
-                maxNodeLimit = fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY ;
-            }
+            reset();
         }
         catch (XMLConfigurationException e) {
             fSecurityManager = null;
         }
         
     }//reset()
+    
+    public void reset() {
+        // we are setting the limit of number of nodes to 3 times the maxOccurs value.
+        if (fSecurityManager != null) {
+            maxNodeLimit = fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY;
+        }
+    }
     
     public CMNode getCMLeafNode(int type, Object leaf, int id, int position) {
         nodeCountCheck();
