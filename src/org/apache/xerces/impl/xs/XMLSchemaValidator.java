@@ -1350,9 +1350,6 @@ public class XMLSchemaValidator
         // cleanup id table
         fValidationState.resetIDTables();
 
-        //pass the component manager to the factory..
-        nodeFactory.reset(componentManager);
-
         // reset schema loader
         fSchemaLoader.reset(componentManager);
 
@@ -1384,9 +1381,11 @@ public class XMLSchemaValidator
             parser_settings = true;
         }
 
-        if (!parser_settings){
+        if (!parser_settings) {
             // parser settings have not been changed
             fValidationManager.addValidationState(fValidationState);
+            // the node limit on the SecurityManager may have changed so need to refresh.
+            nodeFactory.reset();
             // Re-parse external schema location properties.
             XMLSchemaLoader.processExternalHints(
                 fExternalSchemas,
@@ -1395,7 +1394,9 @@ public class XMLSchemaValidator
                 fXSIErrorReporter.fErrorReporter);
             return;
         }
-
+        
+        // pass the component manager to the factory..
+        nodeFactory.reset(componentManager);
 
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable) componentManager.getProperty(SYMBOL_TABLE);
