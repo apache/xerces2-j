@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -4286,7 +4287,7 @@ public class XMLSchemaValidator
         // values stores
 
         /** stores all global Values stores. */
-        protected final Vector fValueStores = new Vector();
+        protected final ArrayList fValueStores = new ArrayList();
 
         /**
          * Values stores associated to specific identity constraints.
@@ -4297,7 +4298,7 @@ public class XMLSchemaValidator
          * descendant-or-self axes occur on recursively-defined
          * elements.
          */
-        protected final Hashtable fIdentityConstraint2ValueStoreMap = new Hashtable();
+        protected final HashMap fIdentityConstraint2ValueStoreMap = new HashMap();
 
         // sketch of algorithm:
         // - when a constraint is first encountered, its
@@ -4319,7 +4320,7 @@ public class XMLSchemaValidator
         // the fGlobalIDConstraintMap contains descendants+self.
         // keyrefs can only match descendants+self.
         protected final Stack fGlobalMapStack = new Stack();
-        protected final Hashtable fGlobalIDConstraintMap = new Hashtable();
+        protected final HashMap fGlobalIDConstraintMap = new HashMap();
 
         //
         // Constructors
@@ -4335,7 +4336,7 @@ public class XMLSchemaValidator
 
         /** Resets the identity constraint cache. */
         public void startDocument() {
-            fValueStores.removeAllElements();
+            fValueStores.clear();
             fIdentityConstraint2ValueStoreMap.clear();
             fGlobalIDConstraintMap.clear();
             fGlobalMapStack.removeAllElements();
@@ -4344,7 +4345,7 @@ public class XMLSchemaValidator
         // startElement:  pushes the current fGlobalIDConstraintMap
         // onto fGlobalMapStack and clears fGlobalIDConstraint map.
         public void startElement() {
-            // only clone the hashtable when there are elements
+            // only clone the map when there are elements
             if (fGlobalIDConstraintMap.size() > 0)
                 fGlobalMapStack.push(fGlobalIDConstraintMap.clone());
             else
@@ -4404,7 +4405,7 @@ public class XMLSchemaValidator
                         } else {
                             uniqueValueStore.clear();
                         }
-                        fValueStores.addElement(uniqueValueStore);
+                        fValueStores.add(uniqueValueStore);
                         activateSelectorFor(icArray[i]);
                         break;
                     case (IdentityConstraint.IC_KEY) :
@@ -4419,7 +4420,7 @@ public class XMLSchemaValidator
                         } else {
                             keyValueStore.clear();
                         }
-                        fValueStores.addElement(keyValueStore);
+                        fValueStores.add(keyValueStore);
                         activateSelectorFor(icArray[i]);
                         break;
                     case (IdentityConstraint.IC_KEYREF) :
@@ -4434,7 +4435,7 @@ public class XMLSchemaValidator
                         } else {
                             keyRefValueStore.clear();
                         }
-                        fValueStores.addElement(keyRefValueStore);
+                        fValueStores.add(keyRefValueStore);
                         activateSelectorFor(icArray[i]);
                         break;
                 }
@@ -4478,7 +4479,7 @@ public class XMLSchemaValidator
 
             int count = fValueStores.size();
             for (int i = 0; i < count; i++) {
-                ValueStoreBase valueStore = (ValueStoreBase) fValueStores.elementAt(i);
+                ValueStoreBase valueStore = (ValueStoreBase) fValueStores.get(i);
                 valueStore.endDocument();
             }
 
