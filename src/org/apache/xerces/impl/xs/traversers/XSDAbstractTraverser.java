@@ -953,7 +953,7 @@ abstract class XSDAbstractTraverser {
             // XML Schema 1.1 - maxOccurs can have a value > 1
             if (max != 1 && fSchemaHandler.fSchemaVersion != Constants.SCHEMA_VERSION_1_1) {
                 reportSchemaError("cos-all-limited.2", new Object[]{
-                        (max == -1) ? SchemaSymbols.ATTVAL_UNBOUNDED : Integer.toString(max),
+                        (max == SchemaSymbols.OCCURRENCE_UNBOUNDED) ? SchemaSymbols.ATTVAL_UNBOUNDED : Integer.toString(max),
                         ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;
                 if (min > 1)
