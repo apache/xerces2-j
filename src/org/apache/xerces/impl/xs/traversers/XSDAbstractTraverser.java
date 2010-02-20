@@ -31,7 +31,6 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
@@ -940,7 +939,7 @@ abstract class XSDAbstractTraverser {
         }
         
         // If minOccurs=maxOccurs=0, no component is specified
-        if (min == 0 && max== 0) {
+        if (min == 0 && max == 0) {
             particle.fType = XSParticleDecl.PARTICLE_EMPTY;
             return null;
         }
@@ -953,7 +952,8 @@ abstract class XSDAbstractTraverser {
         if (processingAllEl) {
             // XML Schema 1.1 - maxOccurs can have a value > 1
             if (max != 1 && fSchemaHandler.fSchemaVersion != Constants.SCHEMA_VERSION_1_1) {
-                reportSchemaError("cos-all-limited.2", new Object[]{new Integer(max),
+                reportSchemaError("cos-all-limited.2", new Object[]{
+                        (max == -1) ? SchemaSymbols.ATTVAL_UNBOUNDED : Integer.toString(max),
                         ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;
                 if (min > 1)
