@@ -285,5 +285,9 @@ public class ElementPSVImpl implements ElementPSVI {
         fActualValueType = XSConstants.UNAVAILABLE_DT;
         fItemValueTypes = null;
     }
-
+    
+    public void copySchemaInformationTo(ElementPSVImpl target) {
+        target.fGrammars = fGrammars;
+        target.fSchemaInformation = fSchemaInformation;
+    }
 }
