@@ -777,7 +777,7 @@ abstract class XSDAbstractTraverser {
         if (processingAllEl) {
             if (max != 1) {
                 reportSchemaError("cos-all-limited.2", new Object[]{
-                        (max == -1) ? SchemaSymbols.ATTVAL_UNBOUNDED : Integer.toString(max),
+                        (max == SchemaSymbols.OCCURRENCE_UNBOUNDED) ? SchemaSymbols.ATTVAL_UNBOUNDED : Integer.toString(max),
                         ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;
                 if (min > 1)
