@@ -17,6 +17,8 @@
 
 package xs;
 
+import java.io.StringReader;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,6 +26,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
@@ -59,6 +62,7 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.InputSource;
 
 /**
  * XSModel serialization utility.
@@ -181,7 +185,7 @@ public class XSSerializer {
        XSNamedMap globalGroupDecls = xsModel.getComponents
                                              (XSConstants.MODEL_GROUP_DEFINITION);
        processGlobalGroupDecl(globalGroupDecls, document, schemaDeclDomNode);
-     
+
        return document;
     } // end of, transformXSModelToDOM
     
@@ -199,7 +203,17 @@ public class XSSerializer {
             Element attrGpDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                              XSD_LANGUAGE_PREFIX
                                                              + "attributeGroup");
-            attrGpDomNode.setAttributeNS(null, "name", attrGpName);            
+            attrGpDomNode.setAttributeNS(null, "name", attrGpName);
+            
+            // add annotation to attribute group
+            XSAnnotationImpl attrGpAnnotation = (XSAnnotationImpl) 
+                                                 attrGpDecl.getAnnotation();
+            if (attrGpAnnotation != null) {
+               addAnnotationToSchemaComponent(document, 
+                                              attrGpDomNode, 
+                                              attrGpAnnotation);
+            }
+            
             XSObjectList attrUses = attrGpDecl.getAttributeUses();
             for (int attrUsesIdx = 0; attrUsesIdx < attrUses.size(); attrUsesIdx++) {
                XSAttributeUse attrUse = (XSAttributeUse) attrUses.item(attrUsesIdx);
@@ -260,7 +274,15 @@ public class XSSerializer {
          Element elemDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                         XSD_LANGUAGE_PREFIX
                                                         + "element");
-         elemDeclDomNode.setAttributeNS(null, "name", elemName); 
+         elemDeclDomNode.setAttributeNS(null, "name", elemName);
+         
+         // add annotation to an element declaration
+         XSAnnotationImpl elemAnnotation = (XSAnnotationImpl) elemDecl.getAnnotation();
+         if (elemAnnotation != null) {
+            addAnnotationToSchemaComponent(document, 
+                                           elemDeclDomNode, 
+                                           elemAnnotation);
+         }
 
          XSTypeDefinition typeDef = elemDecl.getTypeDefinition();
          if (!typeDef.getAnonymous()) {
@@ -303,7 +325,7 @@ public class XSSerializer {
          }
          
          addIDConstraintsToElementDecl(document, elemDecl, elemDeclDomNode);
-
+         
          parentDomNode.appendChild(elemDeclDomNode);
          
     } // end of, addElementDeclToSchemaComponent
@@ -386,6 +408,15 @@ public class XSSerializer {
                                                    "complexType");
            complxTypeDomNode.setAttributeNS(null, "name", ctName);
            
+           // add annotation to complex type
+           XSAnnotationImpl complexTypeAnnot = (XSAnnotationImpl) 
+                                                 complexTypeDecl.getAnnotations().item(0);
+           if (complexTypeAnnot != null) {
+              addAnnotationToSchemaComponent(document, 
+                                             complxTypeDomNode, 
+                                             complexTypeAnnot);
+           }
+           
            addChildrenToComplexType(document,
                                     schemaDeclDomNode,
                                     complexTypeDecl,
@@ -430,6 +461,16 @@ public class XSSerializer {
            simpleTypeDomNode.setAttributeNS(null, "name", stName);
         }
         parentDomNode.appendChild(simpleTypeDomNode);
+        
+        // add annotation to a simple type
+        XSAnnotationImpl simpleTypeAnnotation = (XSAnnotationImpl) 
+                                             simpleTypeDecl.getAnnotations().item(0);
+        if (simpleTypeAnnotation != null) {
+           addAnnotationToSchemaComponent(document, 
+                                          simpleTypeDomNode, 
+                                          simpleTypeAnnotation);
+        }
+        
         if (simpleTypeDecl.getVariety() == 
                         XSSimpleTypeDefinition.VARIETY_ATOMIC) {
             Element restrictionDomNode = document.createElementNS(
@@ -583,7 +624,15 @@ public class XSSerializer {
                                                 boolean isGlobal) {
         Element groupDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                             XSD_LANGUAGE_PREFIX
-                                                            + "group");        
+                                                            + "group");
+        // add annotation to a group declaration
+        XSAnnotationImpl groupAnnotation = (XSAnnotationImpl) groupDecl.getAnnotation();
+        if (groupAnnotation != null) {
+           addAnnotationToSchemaComponent(document, 
+                                          groupDeclDomNode, 
+                                          groupAnnotation);
+        }
+        
         if (isGlobal) {
             String groupName = groupDecl.getName();
             groupDeclDomNode.setAttributeNS(null, "name", groupName); 
@@ -602,7 +651,7 @@ public class XSSerializer {
             }
         }
         else {
-            
+          // TO DO ...   
         }
         
         parentDomNode.appendChild(groupDeclDomNode);
@@ -626,6 +675,15 @@ public class XSSerializer {
                                                               + "attribute");
         attrDeclDomNode.setAttributeNS(null, "name", attrName);        
         parentDomNode.appendChild(attrDeclDomNode);
+        
+        // add annotation to attribute declaration
+        XSAnnotationImpl attrAnnotation = (XSAnnotationImpl) 
+                                             attrDecl.getAnnotation();
+        if (attrAnnotation != null) {
+           addAnnotationToSchemaComponent(document, 
+                                          attrDeclDomNode, 
+                                          attrAnnotation);
+        }
         
         if (constraintName != null) {
            attrDeclDomNode.setAttributeNS(null, constraintName, constraintVal);  
@@ -670,6 +728,15 @@ public class XSSerializer {
        Element complexTypeDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                             XSD_LANGUAGE_PREFIX +
                                                             "complexType");
+       // add annotation to a complex type
+       XSAnnotationImpl cmplxTypeAnnotation = (XSAnnotationImpl) 
+                                            complexTypeDecl.getAnnotations().item(0);
+       if (cmplxTypeAnnotation != null) {
+          addAnnotationToSchemaComponent(document, 
+                                         complexTypeDomNode, 
+                                         cmplxTypeAnnotation);
+       }
+       
        addChildrenToComplexType(document,
                                 elemDeclDomNode,
                                 complexTypeDecl,
@@ -1176,6 +1243,31 @@ public class XSSerializer {
                                         memberTypesStr);   
         }
     } // end of, addUnionDeclToSimpleType
+    
+    /*
+     * Add annotation to a schema component.
+     */
+    private void addAnnotationToSchemaComponent(Document document,                                            
+                                                Element parentDomNode,
+                                                XSAnnotationImpl annotation) 
+                                                throws DOMException {
+        String annotString = annotation.getAnnotationString();
+        StringReader annotationReader = new StringReader(annotString);
+        InputSource annotationInputSrc = new InputSource(annotationReader);
+        DocumentBuilderFactory annotationDbf = DocumentBuilderFactory.newInstance();
+        Element annotationElement = null;
+        try {
+          DocumentBuilder annotationDb = annotationDbf.newDocumentBuilder();
+          Document annotationDom = annotationDb.parse(annotationInputSrc);
+          annotationElement = (Element) document.importNode
+                                 (annotationDom.getDocumentElement(), true);
+        }
+        catch(Exception ex) {
+          ex.printStackTrace();   
+        }
+        
+        parentDomNode.appendChild(annotationElement); 
+    }
     
     /*
      * Get name of a facet given it's kind.
