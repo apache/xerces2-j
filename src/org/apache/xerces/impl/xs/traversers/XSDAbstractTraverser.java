@@ -776,7 +776,8 @@ abstract class XSDAbstractTraverser {
         // minOccurs and maxOccurs must be one.
         if (processingAllEl) {
             if (max != 1) {
-                reportSchemaError("cos-all-limited.2", new Object[]{new Integer(max),
+                reportSchemaError("cos-all-limited.2", new Object[]{
+                        (max == -1) ? SchemaSymbols.ATTVAL_UNBOUNDED : Integer.toString(max),
                         ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;
                 if (min > 1)
