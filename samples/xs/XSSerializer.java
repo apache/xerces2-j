@@ -68,8 +68,6 @@ import org.xml.sax.InputSource;
  * XSModel serialization utility.
  * This utility serializes the Xerces XSModel into lexical, XSD syntax.
  * 
- * This is a work in progress.
- * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
@@ -367,13 +365,22 @@ public class XSSerializer {
                 idConsDomNode.setAttributeNS(null, "refer", idReferStr);  
              }
              
+             // add annotation to an ID constraint
+             XSAnnotationImpl idConsAnnotation = (XSAnnotationImpl) 
+                                                   idCons.getAnnotations().item(0);
+             if (idConsAnnotation != null) {
+                addAnnotationToSchemaComponent(document, 
+                                               idConsDomNode, 
+                                               idConsAnnotation);
+             }
+             
              Selector idSelector = idCons.getSelector();
              String selectorXPathStr = idSelector.getXPath().toString();
              Element selectorDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                               XSD_LANGUAGE_PREFIX
                                                               + "selector");
              selectorDomNode.setAttributeNS(null, "xpath", selectorXPathStr);
-             idConsDomNode.appendChild(selectorDomNode);
+             idConsDomNode.appendChild(selectorDomNode);             
              
              for (int fieldIdx = 0; fieldIdx < idCons.getFieldCount(); fieldIdx++) {
                 Field field = idCons.getFieldAt(fieldIdx);
@@ -1257,9 +1264,9 @@ public class XSSerializer {
         DocumentBuilderFactory annotationDbf = DocumentBuilderFactory.newInstance();
         Element annotationElement = null;
         try {
-          DocumentBuilder annotationDb = annotationDbf.newDocumentBuilder();
-          Document annotationDom = annotationDb.parse(annotationInputSrc);
-          annotationElement = (Element) document.importNode
+           DocumentBuilder annotationDb = annotationDbf.newDocumentBuilder();
+           Document annotationDom = annotationDb.parse(annotationInputSrc);
+           annotationElement = (Element) document.importNode
                                  (annotationDom.getDocumentElement(), true);
         }
         catch(Exception ex) {
