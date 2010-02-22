@@ -4720,7 +4720,7 @@ public class XMLSchemaValidator
             if (fGlobalMapStack.isEmpty()) {
                 return; // must be an invalid doc!
             }
-            Hashtable oldMap = (Hashtable) fGlobalMapStack.pop();
+            HashMap oldMap = (HashMap) fGlobalMapStack.pop();
             // return if there is no element
             if (oldMap == null) {
                 return;
