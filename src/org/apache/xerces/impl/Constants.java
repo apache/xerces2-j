@@ -283,6 +283,9 @@ public final class Constants {
     /** Tolerate duplicates feature ("internal/tolerate-duplicates"). */
     public static final String TOLERATE_DUPLICATES_FEATURE = "internal/tolerate-duplicates";
     
+    /** String interned feature ("internal/strings-interned"). */
+    public static final String STRINGS_INTERNED_FEATURE = "internal/strings-interned";
+    
     /** XInclude processing feature ("xinclude"). */
     public static final String XINCLUDE_FEATURE = "xinclude";
     
@@ -525,6 +528,7 @@ public final class Constants {
             UNPARSED_ENTITY_CHECKING_FEATURE,
             NAMESPACE_GROWTH_FEATURE,
             TOLERATE_DUPLICATES_FEATURE,
+            STRINGS_INTERNED_FEATURE,
     };
     
     /** Xerces properties. */
