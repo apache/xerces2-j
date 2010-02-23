@@ -99,8 +99,12 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
     
     /** Feature identifier: string interning. */
-    protected static final String STRING_INTERNING =
+    private static final String STRING_INTERNING =
         Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE;
+    
+    /** Feature identifier: strings interned. */
+    private static final String STRINGS_INTERNED =
+        Constants.XERCES_FEATURE_PREFIX + Constants.STRINGS_INTERNED_FEATURE;
     
     // property identifiers
     
@@ -238,6 +242,9 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "FeatureNameNull", null));
         }
+        if (STRINGS_INTERNED.equals(name)) {
+            return fStringsInternalized;
+        }
         try {
             return fComponentManager.getFeature(name);
         }
@@ -261,6 +268,10 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         if (name == null) {
             throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "FeatureNameNull", null));
+        }
+        if (STRINGS_INTERNED.equals(name)) {
+            fStringsInternalized = value;
+            return;
         }
         try {
             fComponentManager.setFeature(name, value);
