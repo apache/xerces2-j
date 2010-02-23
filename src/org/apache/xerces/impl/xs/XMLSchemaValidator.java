@@ -20,7 +20,6 @@ package org.apache.xerces.impl.xs;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -2484,7 +2483,7 @@ public class XMLSchemaValidator
        Object assertObject = null;
             
        if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-          // if elements's governing type is a "complex type"
+          // if element's governing type is a "complex type"
           XSObjectListImpl assertions = new XSObjectListImpl();                
           XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
           
@@ -2554,7 +2553,7 @@ public class XMLSchemaValidator
           }
         }
         else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-            // if elements's governing type is a "simple type"
+            // if element's governing type is a "simple type"
             XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
             XSObjectList facets = simpleTypeDef.getMultiValueFacets();
             for (int i = 0; i < facets.getLength(); i++) {
