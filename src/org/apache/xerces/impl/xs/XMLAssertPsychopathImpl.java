@@ -65,7 +65,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     XSModel fSchema = null;
     AbstractPsychoPathImpl abstrPsychopathImpl = null;
 
-    // a factory Document object to construct DOM tree nodes
+    // the DOM root of assertions tree
     Document assertDocument = null;
 
     // an element to track construction of assertion DOM tree. This object

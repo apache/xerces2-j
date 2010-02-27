@@ -94,7 +94,7 @@ public class AbstractPsychoPathImpl {
     private Document domDoc = null;
     
     /*
-     * Initialize the PsychoPath XPath 2 dynamic context
+     * Initialize the PsychoPath XPath 2 dynamic context.
      */
     protected DynamicContext initDynamicContext(XSModel schema,
                                                 Document document,
@@ -103,7 +103,7 @@ public class AbstractPsychoPathImpl {
         fDynamicContext = new DefaultDynamicContext(schema, document);        
         
         // populate the PsychoPath XPath 2.0 static context, with namespace
-        // bindings derived from the XSD Schema document
+        // bindings derived from the XSD Schema document.
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport)
                                     psychoPathParams.get("XPATH2_NS_CONTEXT");
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
@@ -121,7 +121,7 @@ public class AbstractPsychoPathImpl {
     } //initDynamicContext
     
     /*
-     * Evaluate XPath expression with PsychoPath engine
+     * Evaluate XPath expression with PsychoPath engine.
      */
     protected boolean evaluatePsychoPathExpr(XPath xp,
                                  String xPathDefaultNamespace,
@@ -172,7 +172,7 @@ public class AbstractPsychoPathImpl {
     } //evaluatePsychoPathExpr
     
     /*
-     * Compile the XPath string, and return the compiled XPath expression
+     * Compile the XPath string, and return the compiled XPath expression.
      */
     protected XPath compileXPathStr(String xpathStr,
                                     XSAssertImpl assertImpl,
