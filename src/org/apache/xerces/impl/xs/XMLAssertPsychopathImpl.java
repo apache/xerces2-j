@@ -83,7 +83,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // itself.
     XMLSchemaValidator validator = null;
     
-    // parameters to pass to PsychoPath engine (like, namespace bindings) 
+    // parameters to pass to PsychoPath engine (like, the namespace bindings) 
     Map assertParams = null;
 
     /*
@@ -114,7 +114,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     /*
      * (non-Javadoc)
-     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#startElement(org.apache.xerces.xni.QName, org.apache.xerces.xni.XMLAttributes, org.apache.xerces.xni.Augmentations)
+     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#startElement
+     *      (org.apache.xerces.xni.QName, org.apache.xerces.xni.XMLAttributes, 
+     *       org.apache.xerces.xni.Augmentations)
      */
     public void startElement(QName element, XMLAttributes attributes,
                                               Augmentations augs) {
@@ -159,7 +161,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     /*
      * (non-Javadoc)
-     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#endElement(org.apache.xerces.xni.QName, org.apache.xerces.xni.Augmentations)
+     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#endElement(org.apache.xerces.xni.QName, 
+     *      org.apache.xerces.xni.Augmentations)
      */
     public void endElement(QName element, Augmentations augs) throws Exception {
         if (currentAssertDomNode != null) {
@@ -190,7 +193,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     }
 
     /*
-     * Method to evaluate all assertions for the element tree
+     * Method to evaluate all assertions for the element tree.
      */
     private void processAllAssertionsOnElement(
                                     QName element,
@@ -262,7 +265,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     /*
      * (non-Javadoc)
-     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#characters(org.apache.xerces.xni.XMLString)
+     * @see org.apache.xerces.xni.parser.XMLAssertAdapter#characters
+     *      (org.apache.xerces.xni.XMLString)
      */
     public void characters(XMLString text) {
         // add a child text node to the assertions, DOM tree
@@ -273,7 +277,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     }
 
     /*
-     * Method to evaluate an assertion for the element
+     * Method to evaluate an assertion for the element.
      */
     private void evaluateAssertion(QName element,
                                    XSAssertImpl assertImpl,
@@ -321,7 +325,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     }
     
     /*
-     * Method to report error messages
+     * Method to report error messages.
      */
     private void reportError(String key, QName element,
                              XSAssertImpl assertImpl) {
@@ -347,7 +351,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                typeString } );
     }
     
-    // assign value to the XPath2 "dynamic context" variable, $value
+    /*
+     * Assign value to the XPath2 "dynamic context" variable, $value.
+     */
     private void setValueOf$value(String value, XSTypeDefinition attrType) {
         String xsdTypeName = "";
         
