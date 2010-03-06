@@ -82,8 +82,7 @@ public class XSSerializer {
     /*
      * "Main method"
      * 
-     * An entry point to test this utility. e.g, command line:
-     * java XSSerializer -xsd11 schema.xsd
+     * An entry point to test this utility.
      * 
      * The XSModel could be synthesized by any means (for example, by direct
      * API calls to Xerces Schema API, methods) -- in which case, the method
@@ -91,11 +90,9 @@ public class XSSerializer {
      */
     public static void main(String[] args) {
        
-        if (args.length == 0 || args.length > 2) {
-         System.err.println("Usage:");
-         System.err.println("java XSSerializer [-xsd11] schema.xsd");
-         System.err.println("-xsd11        Turn on XSD 1.1 support");
-         System.exit(-1);
+       if (args.length == 0 || args.length > 2) {
+          printUsage();
+          System.exit(-1);
        }
        
        XMLSchemaLoader xsLoader = new XMLSchemaLoader();
@@ -120,6 +117,12 @@ public class XSSerializer {
        catch(Exception ex) {
          ex.printStackTrace();   
        }       
+    }
+
+    private static void printUsage() {
+        System.err.println("Usage:");
+        System.err.println("java xs.XSSerializer [-xsd11] schema.xsd");
+        System.err.println("-xsd11        Turn on XSD 1.1 support");
     }
 
     /*
