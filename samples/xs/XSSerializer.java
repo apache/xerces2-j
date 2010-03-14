@@ -325,11 +325,64 @@ public class XSSerializer {
             }
          }
          
+         // add "abstract" attribute to xs:element component, if applicable
+         if (elemDecl.getAbstract() == true) {
+            elemDeclDomNode.setAttributeNS(null, "abstract", "true");   
+         }
+         
+         // add "block" attribute to xs:element component, if applicable
+         String blockVal = getElementBlockAttrValue(elemDecl);
+         if (!blockVal.equals("")) {
+            elemDeclDomNode.setAttributeNS(null, "block", blockVal);   
+         }
+         
+         // add "nillable" attribute to xs:element component, if applicable
+         if (elemDecl.getNillable() == true) {
+            elemDeclDomNode.setAttributeNS(null, "nillable", "true");  
+         }
+         
+         // add identity constraint definitions to an 'element declaration'
          addIDConstraintsToElementDecl(document, elemDecl, elemDeclDomNode);
          
          parentDomNode.appendChild(elemDeclDomNode);
          
     } // end of, addElementDeclToSchemaComponent
+
+    // construct value of the, "block" attribute for an element declaration
+    private String getElementBlockAttrValue(XSElementDecl elemDecl) {
+        String blockVal = "";
+        
+        boolean blockExt = false;
+        boolean blockRestr = false;
+        boolean blockSubst = false;        
+        if (elemDecl.isDisallowedSubstitution(XSConstants.DERIVATION_EXTENSION) == true) {
+            blockExt = true;
+        }
+        if (elemDecl.isDisallowedSubstitution(XSConstants.DERIVATION_RESTRICTION) == true) {
+            blockRestr = true;
+        }
+        if (elemDecl.isDisallowedSubstitution(XSConstants.DERIVATION_SUBSTITUTION) == true) {
+            blockSubst = true;
+        }
+
+        if ((blockExt == true) && (blockRestr == true) && (blockSubst == true)) {
+            blockVal = "#all";   
+        }
+        else {
+            if (blockExt == true) {
+                blockVal = blockVal + "extension";  
+            }
+            if (blockRestr == true) {
+                blockVal = blockVal + " restriction";  
+            }
+            if (blockSubst == true) {
+                blockVal = blockVal + " substitution";  
+            }
+        }
+
+        return blockVal;
+         
+    } // end of, getElementBlockValue
 
     /*
      * Add identity constraints to element declaration.
