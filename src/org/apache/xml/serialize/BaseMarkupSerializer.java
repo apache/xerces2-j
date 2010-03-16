@@ -330,6 +330,9 @@ public abstract class BaseMarkupSerializer
         return true;
     }
 
+    protected void cleanup() {
+        fCurrentNode = null;
+    }
 
     protected void prepare()
         throws IOException
@@ -402,6 +405,7 @@ public abstract class BaseMarkupSerializer
         reset();
         prepare();
         serializeNode( elem );
+        cleanup();
         _printer.flush();
         if ( _printer.getException() != null )
             throw _printer.getException();
@@ -423,6 +427,7 @@ public abstract class BaseMarkupSerializer
         reset();
         prepare();
         serializeNode( frag );
+        cleanup();
         _printer.flush();
         if ( _printer.getException() != null )
             throw _printer.getException();
@@ -445,6 +450,7 @@ public abstract class BaseMarkupSerializer
         prepare();
         serializeNode( doc );
         serializePreRoot();
+        cleanup();
         _printer.flush();
         if ( _printer.getException() != null )
             throw _printer.getException();

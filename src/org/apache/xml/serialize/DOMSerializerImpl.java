@@ -1047,7 +1047,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             break;
         }        
         }
-               
+        fLocator.fRelatedNode = null;
     }
     
     private String _getXmlVersion(Node node) {
