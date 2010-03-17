@@ -223,6 +223,7 @@ public class SoftReferenceSymbolTable extends SymbolTable {
                         newTable[index].prev = e;
                     }
                     e.next = newTable[index];
+                    e.prev = null;
                     newTable[index] = e;
                 }
                 else {
