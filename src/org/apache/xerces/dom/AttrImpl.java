@@ -138,8 +138,6 @@ public class AttrImpl
     // REVISIT: we are losing the type information in DOM during serialization
     transient Object type;
 
-    protected static TextImpl textNode = null;
-
     //
     // Constructors
     //
@@ -347,6 +345,8 @@ public class AttrImpl
         
         Element ownerElement = getOwnerElement();
         String oldvalue = "";
+        TextImpl textNode = null;
+        
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -361,13 +361,7 @@ public class AttrImpl
                     oldvalue = (String) value;
                     // create an actual text node as our child so
                     // that we can use it in the event
-                    if (textNode == null) {
-                        textNode = (TextImpl)
-                            ownerDocument.createTextNode((String) value);
-                    }
-                    else {
-                        textNode.data = (String) value;
-                    }
+                    textNode = (TextImpl) ownerDocument.createTextNode((String) value);
                     value = textNode;
                     textNode.isFirstChild(true);
                     textNode.previousSibling = textNode;
@@ -412,9 +406,16 @@ public class AttrImpl
         // since we need to combine the remove and insert.
     	isSpecified(true);
         if (ownerDocument.getMutationEvents()) {
-            // if there are any event handlers create a real node
-            internalInsertBefore(ownerDocument.createTextNode(newvalue),
-                                 null, true);
+            // if there are any event handlers create a real node or
+            // reuse the one we synthesized for the remove notifications
+            // if it exists.
+            if (textNode == null) {
+                textNode = (TextImpl) ownerDocument.createTextNode(newvalue);
+            } 
+            else {
+                textNode.data = newvalue;
+            }
+            internalInsertBefore(textNode, null, true);
             hasStringValue(false);
             // notify document
             ownerDocument.modifiedAttrValue(this, oldvalue);
