@@ -49,7 +49,7 @@ final class ObjectFactory {
     private static final String DEFAULT_PROPERTIES_FILENAME = "xerces.properties";
 
     /** Set to true for debugging */
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = isDebugEnabled();
 
     /**
      * Default columns per line.
@@ -253,11 +253,22 @@ final class ObjectFactory {
     //
     // Private static methods
     //
+    
+    /** Returns true if debug has been enabled. */
+    private static boolean isDebugEnabled() {
+        try {
+            String val = SecuritySupport.getSystemProperty("xerces.debug");
+            // Allow simply setting the prop to turn on debug
+            return (val != null && (!"false".equals(val)));
+        } 
+        catch (SecurityException se) {}
+        return false;
+    } // isDebugEnabled()
 
     /** Prints a message to standard error if debugging is enabled. */
     private static void debugPrintln(String msg) {
         if (DEBUG) {
-            System.err.println("JAXP: " + msg);
+            System.err.println("XERCES: " + msg);
         }
     } // debugPrintln(String)
 
