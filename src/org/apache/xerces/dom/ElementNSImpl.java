@@ -185,37 +185,6 @@ public class ElementNSImpl
         reconcileDefaultAttributes();
     }
 
-    /**
-     * NON-DOM: resets this node and sets specified values for the node
-     *
-     * @param ownerDocument
-     * @param namespaceURI
-     * @param qualifiedName
-     * @param localName
-     */
-    protected void setValues (CoreDocumentImpl ownerDocument,
-                            String namespaceURI, String qualifiedName,
-                            String localName){
-
-        // remove children first
-        firstChild = null;
-        previousSibling = null;
-        nextSibling = null;
-        fNodeListCache = null;
-
-        // set owner document
-        attributes = null;
-        super.flags = 0;
-        setOwnerDocument(ownerDocument);
-
-        // synchronizeData will initialize attributes
-        needsSyncData(true);
-        super.name = qualifiedName;
-        this.localName = localName;
-        this.namespaceURI = namespaceURI;
-
-    }
-
     //
     // Node methods
     //

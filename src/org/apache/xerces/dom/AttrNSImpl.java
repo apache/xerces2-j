@@ -143,30 +143,6 @@ public class AttrNSImpl
         setName(namespaceURI, qualifiedName);
     }
 
-    /**
-     * NON-DOM: resets this node and sets specified values for the node
-     * 
-     * @param ownerDocument
-     * @param namespaceURI
-     * @param qualifiedName
-     * @param localName
-     */
-    public void setValues (CoreDocumentImpl ownerDocument, 
-                         String namespaceURI, 
-                         String qualifiedName,
-                         String localName){
-
-        AttrImpl.textNode = null;
-        super.flags = 0;
-        isSpecified(true);
-        hasStringValue(true);
-        super.setOwnerDocument(ownerDocument);
-        this.localName = localName;
-        this.namespaceURI = namespaceURI;
-        super.name = qualifiedName;
-        super.value = null;
-    }
-
     //
     // DOM2: Namespace methods
     //
