@@ -32,6 +32,7 @@ import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
@@ -1002,9 +1003,15 @@ public class XSSerializer {
                                                     baseType.getName());   
             }
             complexContentDomNode.appendChild(complexContentDerivationNode);
-         }
+        }
         
         XSParticle particle = complexTypeDecl.getParticle();
+        if (derivationMethod == XSConstants.DERIVATION_EXTENSION) {
+            XSTerm particleTerm = particle.getTerm();
+            XSModelGroupImpl modelGroup = (XSModelGroupImpl) particleTerm;
+            particle = modelGroup.fParticles[1]; 
+        }
+        
         if (particle != null) {
             processParticleFromComplexType(document, 
                                            complexContentDerivationNode,
