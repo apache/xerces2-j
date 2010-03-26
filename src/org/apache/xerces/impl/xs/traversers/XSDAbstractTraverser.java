@@ -88,7 +88,7 @@ abstract class XSDAbstractTraverser {
     protected XSAttributeChecker    fAttrChecker = null;
     protected boolean               fValidateAnnotations = false;
     
-    // a vector holding all the asserts up in the type hierarchy
+    // a vector to store all the assertions up in the type hierarchy
     private Vector baseAsserts = new Vector();
     
     // used to validate default/fixed attribute values
@@ -286,7 +286,7 @@ abstract class XSDAbstractTraverser {
     }
     
     /*
-     * Method to find all assertions up in the type hierarchy
+     * Finding all assertions up in the type hierarchy
      */
     private void getAssertsFromBaseTypes(XSSimpleType baseValidator) {
         XSObjectList multiValFacetsOfBaseType = baseValidator.getMultiValueFacets();
@@ -483,7 +483,7 @@ abstract class XSDAbstractTraverser {
                         childNode = DOMUtil.getNextSiblingElement(childNode);
                         
                         if (childNode != null) {
-                         // it's an error to have something after the annotation, in 'assert'
+                         // it's an error to have something after the annotation, in an assertion
                           reportSchemaError("s4s-elt-invalid-content.1", new Object[]{DOMUtil.getLocalName(content), 
                                     DOMUtil.getLocalName(childNode)}, childNode);
                         }
@@ -707,7 +707,7 @@ abstract class XSDAbstractTraverser {
             content = DOMUtil.getNextSiblingElement(content);
         }
         
-        // retrieve all assert definitions from all base types all the way up in the
+        // retrieve all assert definitions, from all base types all the way up in the
         // type hierarchy. sets a global variable, 'baseAsserts' with all the base 
         // asserts.
         if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
@@ -719,6 +719,7 @@ abstract class XSDAbstractTraverser {
                     assertData = new Vector();  
                 }
                 assertData.addAll(baseAsserts);
+                baseAsserts.clear();  // clear vector baseAsserts
             }
         }
         
