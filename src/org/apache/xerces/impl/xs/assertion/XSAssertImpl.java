@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.assertion;
 
 import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSAssert;
 import org.apache.xerces.xs.XSConstants;
@@ -202,17 +203,17 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     /*
      * Tests if two assert components are equal
      */
-    public boolean equals(XSAssertImpl assertComponent) {
+    public boolean equals(XSAssertImpl pAssertion) {
       boolean returnVal = false;
-        
-      String typeNameP = assertComponent.getTypeDefinition().getName();
-      String xpathStrP = assertComponent.getTest().getXPath().toString();
-      String typeNameThis = this.fTypeDefinition.getName();
-      String xpathStrThis = this.getTest().getXPath().toString();
-        
+      
+      String xpathStr = pAssertion.getTest().getXPath().toString();
+      String currXpathStr = this.getTest().getXPath().toString();        
+      
       // if type and the xpath string are same, the asserts are equal
-      if (typeNameThis.equals(typeNameP) && xpathStrThis.equals(xpathStrP)) {
-        returnVal = true;  
+      if (XSTypeHelper.schemaTypesIdentical(pAssertion.getTypeDefinition(),
+                                            fTypeDefinition) && 
+                                            currXpathStr.equals(xpathStr)) {
+         returnVal = true;  
       }
         
       return returnVal;

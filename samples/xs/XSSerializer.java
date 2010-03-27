@@ -38,6 +38,7 @@ import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.identity.KeyRef;
 import org.apache.xerces.impl.xs.identity.Selector;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -1060,9 +1061,9 @@ public class XSSerializer {
                                                   attrUse.getAttrDeclaration();
            XSComplexTypeDefinition enclosingCTDefn = attrDecl.
                                                   getEnclosingCTDefinition();
-           boolean complexTypesIdentical = complexTypesIdentical(
-                                                           complexTypeDecl,
-                                                           enclosingCTDefn);
+           boolean complexTypesIdentical = XSTypeHelper.schemaTypesIdentical(
+                                                            complexTypeDecl,
+                                                            enclosingCTDefn);
            // do not add attributes, from the base type. they will be
            // serialized as part of the base type serialization.
            if (complexTypesIdentical) {
@@ -1072,31 +1073,7 @@ public class XSSerializer {
            }
         }
         
-    } // end of, addAttributesToComplexType
-
-    /*
-     * Checks if the two complex type components are identical.
-     */
-    private boolean complexTypesIdentical(XSComplexTypeDefinition 
-                                            complexTypeDefn1,
-                                          XSComplexTypeDefinition 
-                                            complexTypeDefn2) {
-        boolean complexTypesIdentical = false;
-        
-        String ct1Ns = complexTypeDefn1.getNamespace();
-        String ct1Name = complexTypeDefn1.getName();        
-        boolean nsEqual = false;           
-        if ((ct1Ns != null && ct1Ns.equals(complexTypeDefn2.getNamespace())) ||
-                  (ct1Ns == null && complexTypeDefn2.getNamespace() == null)) {
-           nsEqual = true;   
-        }
-        if (nsEqual == true && ct1Name.equals(complexTypeDefn2.getName())) {
-           complexTypesIdentical = true;   
-        }
-        
-        return complexTypesIdentical;
-        
-    } // end of, complexTypesIdentical
+    } // end of, addAttributesToComplexType    
 
     /*
      * Processing a "particle" from a complex type.
