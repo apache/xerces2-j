@@ -1007,9 +1007,14 @@ public class XSSerializer {
         
         XSParticle particle = complexTypeDecl.getParticle();
         if (derivationMethod == XSConstants.DERIVATION_EXTENSION) {
-            XSTerm particleTerm = particle.getTerm();
-            XSModelGroupImpl modelGroup = (XSModelGroupImpl) particleTerm;
-            particle = modelGroup.fParticles[1]; 
+            XSTerm particleTerm = null;
+            if (particle != null) {
+              particleTerm = particle.getTerm();
+              XSModelGroupImpl modelGroup = (XSModelGroupImpl) particleTerm;
+              if (modelGroup.fParticles.length == 2) {
+                 particle = modelGroup.fParticles[1];  
+              }
+            }             
         }
         
         if (particle != null) {
@@ -1032,8 +1037,9 @@ public class XSSerializer {
                                             XSComplexTypeDecl complexTypeDecl,
                                             Element parentDomNode)
                                             throws DOMException {
-        // iterate all attributes on the Complex type.
-        // all attributes on a complex type (from all of xs:attribute & xs:attributeGroup
+        
+        // iterate all attributes on the Complex type. all attributes on a 
+        // complex type (from all of xs:attribute & xs:attributeGroup 
         // declarations) are expanded, into an XSObjectList list.  
         XSObjectList attributeUses = complexTypeDecl.getAttributeUses();
         for (int attrUsesIdx = 0; attrUsesIdx < attributeUses.getLength(); attrUsesIdx++) {
@@ -1050,12 +1056,47 @@ public class XSSerializer {
            String requiredVal = (attrUse.getRequired() == true) ? 
                                  "required" : "optional"; 
            
-           XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
-           addAttributeToSchemaComponent(document, parentDomNode, 
-                                         attrDecl, constraintName, 
-                                         constraintVal, requiredVal);          
+           XSAttributeDecl attrDecl = (XSAttributeDecl) 
+                                                  attrUse.getAttrDeclaration();
+           XSComplexTypeDefinition enclosingCTDefn = attrDecl.
+                                                  getEnclosingCTDefinition();
+           boolean complexTypesIdentical = complexTypesIdentical(
+                                                           complexTypeDecl,
+                                                           enclosingCTDefn);
+           // do not add attributes, from the base type. they will be
+           // serialized as part of the base type serialization.
+           if (complexTypesIdentical) {
+              addAttributeToSchemaComponent(document, parentDomNode, 
+                                            attrDecl, constraintName, 
+                                            constraintVal, requiredVal); 
+           }
         }
-    }
+        
+    } // end of, addAttributesToComplexType
+
+    /*
+     * Checks if the two complex type components are identical.
+     */
+    private boolean complexTypesIdentical(XSComplexTypeDefinition 
+                                            complexTypeDefn1,
+                                          XSComplexTypeDefinition 
+                                            complexTypeDefn2) {
+        boolean complexTypesIdentical = false;
+        
+        String ct1Ns = complexTypeDefn1.getNamespace();
+        String ct1Name = complexTypeDefn1.getName();        
+        boolean nsEqual = false;           
+        if ((ct1Ns != null && ct1Ns.equals(complexTypeDefn2.getNamespace())) ||
+                  (ct1Ns == null && complexTypeDefn2.getNamespace() == null)) {
+           nsEqual = true;   
+        }
+        if (nsEqual == true && ct1Name.equals(complexTypeDefn2.getName())) {
+           complexTypesIdentical = true;   
+        }
+        
+        return complexTypesIdentical;
+        
+    } // end of, complexTypesIdentical
 
     /*
      * Processing a "particle" from a complex type.
