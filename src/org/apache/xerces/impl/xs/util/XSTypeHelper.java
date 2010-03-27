@@ -23,7 +23,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * Utility methods related to schema types.
  * 
  * @author Mukul Gandhi, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class XSTypeHelper {
     
