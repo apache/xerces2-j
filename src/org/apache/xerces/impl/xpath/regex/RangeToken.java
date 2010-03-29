@@ -477,8 +477,10 @@ final class RangeToken extends Token implements java.io.Serializable {
 
     void dumpRanges() {
         System.err.print("RANGE: ");
-        if (this.ranges == null)
+        if (this.ranges == null) {
             System.err.println(" NULL");
+            return;
+        }
         for (int i = 0;  i < this.ranges.length;  i += 2) {
             System.err.print("["+this.ranges[i]+","+this.ranges[i+1]+"] ");
         }
