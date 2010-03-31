@@ -1702,6 +1702,14 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             fFractionDigits = fBase.fFractionDigits;
             fractionDigitsAnnotation = fBase.fractionDigitsAnnotation;
         }
+        
+        // inherit assertion. added for XML Schema 1.1
+        if (((fBase.fFacetsDefined & FACET_ASSERT) != 0)
+                && !((fFacetsDefined & FACET_ASSERT) != 0)) {
+            fFacetsDefined |= FACET_ASSERT;
+            fAssertion = fBase.fAssertion; 
+        }
+       
         //inherit tokeytype
         if ((fPatternType == SPECIAL_PATTERN_NONE ) && (fBase.fPatternType != SPECIAL_PATTERN_NONE)) {
             fPatternType = fBase.fPatternType ;
