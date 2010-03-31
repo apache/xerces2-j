@@ -33,6 +33,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLAssertAdapter;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSObjectList;
@@ -365,9 +366,18 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
           // is "simple type" value of an element
           PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl)
                                                  currentAssertDomNode;
-       
-          xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.
-                                               getTypeDefinition()); 
+          XSTypeDefinition typeDef = currentAssertPSVINode.getTypeDefinition();
+          if (typeDef instanceof XSComplexTypeDefinition) {
+             XSComplexTypeDefinition cmplxTypeDef = (XSComplexTypeDefinition)
+                                                                       typeDef;
+             if (cmplxTypeDef.getSimpleType() != null) {
+                xsdTypeName = getXSDtypeOf$Value(cmplxTypeDef.getSimpleType());   
+             }
+          }
+          else {
+             xsdTypeName = getXSDtypeOf$Value(currentAssertPSVINode.
+                                               getTypeDefinition());
+          }
         }
         
         Object psychoPathType = abstrPsychopathImpl.getPsychoPathTypeForXSDType
