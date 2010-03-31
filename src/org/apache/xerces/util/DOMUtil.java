@@ -119,7 +119,7 @@ public class DOMUtil {
             default: {
                 throw new IllegalArgumentException("can't copy node type, "+
                         type+" ("+
-                        node.getNodeName()+')');
+                        place.getNodeName()+')');
             }
             }
             dest.appendChild(node);
