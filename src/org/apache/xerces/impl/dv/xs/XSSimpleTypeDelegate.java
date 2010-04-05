@@ -48,6 +48,10 @@ public class XSSimpleTypeDelegate
         }
         this.type = type;
     }
+    
+    public XSSimpleType getWrappedXSSimpleType() {
+        return type;
+    }
 
     public XSObjectList getAnnotations() {
         return type.getAnnotations();
