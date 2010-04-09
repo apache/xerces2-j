@@ -708,7 +708,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                         reader = spf.newSAXParser().getXMLReader();
                         // If this is a Xerces SAX parser, set the security manager if there is one
                         if (reader instanceof org.apache.xerces.parsers.SAXParser) {
-                            SecurityManager securityManager = (SecurityManager) fComponentManager.getProperty(SECURITY_MANAGER);
+                            Object securityManager = fComponentManager.getProperty(SECURITY_MANAGER);
                             if (securityManager != null) {
                                 try {
                                     reader.setProperty(SECURITY_MANAGER, securityManager);
