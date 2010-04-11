@@ -303,12 +303,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             
             if (!result) {
                // assertion evaluation is false
-                if (assertImpl.getAttrName() == null) {
-                   reportError("cvc-assertion.3.13.4.1", element, assertImpl);
-                }
-                else {
-                   reportError("cvc-assertion.3.13.4.1", element, assertImpl); 
-                }
+               reportError("cvc-assertion.3.13.4.1", element, assertImpl);
             }
         }
         catch (DynamicError ex) {
@@ -347,9 +342,19 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                               assertImpl.getAttrName()+ ")";    
         }
         
-        validator.reportSchemaError(key, new Object[] { elemErrorAnnotation,
+        String message = assertImpl.getMessage();
+        if (message != null) {
+           if (!message.endsWith(".")) {
+              message = message + ".";    
+           }           
+           validator.reportSchemaError("cvc-assertion.failure", 
+                                       new Object[] { message } );    
+        }
+        else {
+           validator.reportSchemaError(key, new Object[] { elemErrorAnnotation,
                                assertImpl.getTest().getXPath().toString(),
                                typeString } );
+        }
     }
     
     /*

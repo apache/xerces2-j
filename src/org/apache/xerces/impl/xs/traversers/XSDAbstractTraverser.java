@@ -515,6 +515,12 @@ abstract class XSDAbstractTraverser {
                     assertImpl.setTest(testExpr);
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
                     assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);
+                    String assertMessage = content.getAttributeNS(
+                                                SchemaSymbols.URI_XERCES_EXTENSIONS,
+                                                SchemaSymbols.ATT_ASSERT_MESSAGE);
+                    if (!"".equals(assertMessage.trim())) {
+                       assertImpl.setMessage(assertMessage.trim());
+                    }
                     
                     if (assertData == null) {
                        assertData = new Vector();

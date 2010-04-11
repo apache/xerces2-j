@@ -1354,8 +1354,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
     /*
-     * Method to find all assertions up in the type hierarchy, and add them to
-     * the list of assertions to be processed.
+     * Find all assertions up in the type hierarchy, and add them to the list
+     * of assertions to be processed.
      */
     private void addAssertsFromBaseTypes(XSTypeDefinition baseValidator) {        
         if (baseValidator != null) {
@@ -1627,7 +1627,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
 
         Object[] attrValues = fAttrChecker.checkAttributes(assertElement,
-                false, schemaDoc);
+                                                           false, schemaDoc);
         String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
         String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
         if (xpathDefaultNamespace == null) {
@@ -1671,7 +1671,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
             
-            // create an assertion object
+            // create an assertion object            
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT,
                                                     annotations,
                                                     fSchemaHandler);
@@ -1680,7 +1680,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             assertImpl.setTest(testExpr);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
             assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);
-            
+            String assertMessage = assertElement.getAttributeNS(
+                                          SchemaSymbols.URI_XERCES_EXTENSIONS, 
+                                          SchemaSymbols.ATT_ASSERT_MESSAGE);
+            if (!"".equals(assertMessage.trim())) {
+               assertImpl.setMessage(assertMessage.trim());
+            }
+
             // add assertion object, to the list of assertions to be processed
             addAssertion(assertImpl);
 

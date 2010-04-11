@@ -70,6 +70,9 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     
     // XSDHandler object, passed on from the traversers 
     protected XSDHandler fSchemaHandler = null;
+    
+    // user-defined message, to display, during assertion failures
+    protected String message = null;
 
     /** Constructor */
     public XSAssertImpl(XSTypeDefinition type,
@@ -217,5 +220,17 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
       }
         
       return returnVal;
+    }
+
+    /*
+     * Set error message, for assertions failures
+     */
+    public void setMessage(String message) {
+       this.message = message;    
+    }
+    
+    // Get the error message string 
+    public String getMessage() {
+       return message;   
     }
 }

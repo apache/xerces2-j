@@ -47,6 +47,9 @@ public final class SchemaSymbols {
 
     // schema version namespace
     public static final String URI_SCHEMAVERSION = "http://www.w3.org/2007/XMLSchema-versioning".intern();
+    
+    // xerces extensions namespace
+    public static final String URI_XERCES_EXTENSIONS = "http://xerces.apache.org".intern();
 
     // all possible schema element names
     public static final String ELT_ALL                    = "all".intern();
@@ -147,6 +150,7 @@ public final class SchemaSymbols {
     public static final String ATT_MINVERSION             = "minVersion".intern();
     public static final String ATT_MAXVERSION             = "maxVersion".intern();
     public static final String ATT_INHERITABLE            = "inheritable".intern();
+    public static final String ATT_ASSERT_MESSAGE         = "message".intern();
 
     // all possible schema attribute values
     public static final String ATTVAL_TWOPOUNDANY            = "##any";
