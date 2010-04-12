@@ -2212,6 +2212,13 @@ public class XSDHandler {
                     try {
                         parser.setFeature(NAMESPACE_PREFIXES, true);
                         namespacePrefixes = true;
+                        // If this is a Xerces SAX parser set the security manager if there is one
+                        if (parser instanceof SAXParser) {
+                            Object securityManager = fSchemaParser.getProperty(SECURITY_MANAGER);
+                            if (securityManager != null) {
+                                parser.setProperty(SECURITY_MANAGER, securityManager);
+                            }
+                        }
                     }
                     catch (SAXException se) {}
                 }
