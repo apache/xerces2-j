@@ -346,7 +346,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         if (message != null) {
            if (!message.endsWith(".")) {
               message = message + ".";    
-           }           
+           }
+           if (key.equals("cvc-assertion.4.3.15.3")) {
+              message = "Assertion failure (undefined context). " + message;   
+           }
+           else {
+              message = "Assertion failure. " + message; 
+           }
            validator.reportSchemaError("cvc-assertion.failure", 
                                        new Object[] { message } );    
         }
