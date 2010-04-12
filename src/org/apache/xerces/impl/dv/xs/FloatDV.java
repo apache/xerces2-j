@@ -19,6 +19,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper.TypeValidatorHelper1_1;
 import org.apache.xerces.xs.datatypes.XSFloat;
 
 /**
@@ -35,8 +36,8 @@ public class FloatDV extends TypeValidator {
 
     //convert a String to Float form, we have to take care of cases specified in spec like INF, -INF and NaN
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        try{
-            return new XFloat(content);
+        try {
+            return new XFloat(content, context.getTypeValidatorHelper() instanceof TypeValidatorHelper1_1);
         } catch (NumberFormatException ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "float"});
         }
@@ -59,11 +60,11 @@ public class FloatDV extends TypeValidator {
     private static final class XFloat implements XSFloat {
 
         private final float value;
-        public XFloat(String s) throws NumberFormatException {
+        public XFloat(String s, boolean isSchema11) throws NumberFormatException {
             if (DoubleDV.isPossibleFP(s)) {
                 value = Float.parseFloat(s);
             }
-            else if ( s.equals("INF") ) {
+            else if ( s.equals("INF") || (isSchema11 && s.equals("+INF"))) {
                 value = Float.POSITIVE_INFINITY;
             }
             else if ( s.equals("-INF") ) {

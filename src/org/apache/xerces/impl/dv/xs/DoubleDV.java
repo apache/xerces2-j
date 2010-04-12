@@ -19,6 +19,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper.TypeValidatorHelper1_1;
 import org.apache.xerces.xs.datatypes.XSDouble;
 
 /**
@@ -35,8 +36,8 @@ public class DoubleDV extends TypeValidator {
 
     //convert a String to Double form, we have to take care of cases specified in spec like INF, -INF and NaN
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        try{
-            return new XDouble(content);
+        try {
+            return new XDouble(content, context.getTypeValidatorHelper() instanceof TypeValidatorHelper1_1);
         } catch (NumberFormatException ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "double"});
         }
@@ -75,11 +76,11 @@ public class DoubleDV extends TypeValidator {
 
     private static final class XDouble implements XSDouble {
         private final double value;
-        public XDouble(String s) throws NumberFormatException {
+        public XDouble(String s, boolean isSchema11) throws NumberFormatException {
             if (isPossibleFP(s)) {
                 value = Double.parseDouble(s);
             }
-            else if ( s.equals("INF") ) {
+            else if ( s.equals("INF") || (isSchema11 && s.equals("+INF"))) {
                 value = Double.POSITIVE_INFINITY;
             }
             else if ( s.equals("-INF") ) {
