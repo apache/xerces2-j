@@ -83,6 +83,10 @@ final class StreamValidatorHelper implements ValidatorHelper {
     private static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
     
+    /** Property identifier: security manager. */
+    private static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
     //
     // Data
     //
@@ -130,6 +134,7 @@ final class StreamValidatorHelper implements ValidatorHelper {
             else if (fComponentManager.getFeature(PARSER_SETTINGS)) {
                 config.setProperty(ENTITY_RESOLVER, fComponentManager.getProperty(ENTITY_RESOLVER));
                 config.setProperty(ERROR_HANDLER, fComponentManager.getProperty(ERROR_HANDLER));
+                config.setProperty(SECURITY_MANAGER, fComponentManager.getProperty(SECURITY_MANAGER));
             }
             
             // prepare for parse
@@ -212,6 +217,7 @@ final class StreamValidatorHelper implements ValidatorHelper {
         }
         config.setProperty(SYMBOL_TABLE, fComponentManager.getProperty(SYMBOL_TABLE));
         config.setProperty(VALIDATION_MANAGER, fComponentManager.getProperty(VALIDATION_MANAGER));
+        config.setProperty(SECURITY_MANAGER, fComponentManager.getProperty(SECURITY_MANAGER));
         config.setDocumentHandler(fSchemaValidator);
         config.setDTDHandler(null);
         config.setDTDContentModelHandler(null);
