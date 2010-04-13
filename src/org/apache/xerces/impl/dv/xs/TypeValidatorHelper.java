@@ -54,8 +54,8 @@ public abstract class TypeValidatorHelper {
 
     private static int FACETS_GROUP12 = FACETS_GROUP6 | XSSimpleTypeDecl.FACET_ASSERT;
     
-    private static int FACETS_GROUP13 = FACETS_GROUP11 | XSSimpleTypeDecl.FACET_MAXSCALE |
-        XSSimpleTypeDecl.FACET_MINSCALE;
+    private static int FACETS_GROUP13 = FACETS_GROUP4 | XSSimpleTypeDecl.FACET_TOTALDIGITS |
+        XSSimpleTypeDecl.FACET_ASSERT | XSSimpleTypeDecl.FACET_MAXSCALE | XSSimpleTypeDecl.FACET_MINSCALE;
 
     // Static data
     private static final TypeValidatorHelper fHelper1_0 = new TypeValidatorHelper1_0();
