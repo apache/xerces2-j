@@ -91,6 +91,33 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         return null;
     }
 
+    public String addAttributeUse(XSAttributeUseImpl attrUse, boolean allowMultipleIds) {
+
+        // if this attribute use is prohibited, then don't check whether it's
+        // of type ID
+        //
+        // XML Schema 1.1 allows multiple attributes of type ID, so no need to set
+        // fIDAttrName
+        if (attrUse.fUse != SchemaSymbols.USE_PROHIBITED && !allowMultipleIds) {
+            if (attrUse.fAttrDecl.fType.isIDType()) {
+                // if there is already an attribute use of type ID,
+                // return its name (and don't add it to the list, to avoid
+                // interruption to instance validation.
+                if (fIDAttrName == null)
+                    fIDAttrName = attrUse.fAttrDecl.fName;
+                else
+                    return fIDAttrName;
+            }
+        }
+
+        if (fAttrUseNum == fAttributeUses.length) {
+            fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
+        }
+        fAttributeUses[fAttrUseNum++] = attrUse;
+
+        return null;
+    }
+
     public void replaceAttributeUse(XSAttributeUse oldUse, XSAttributeUseImpl newUse) {
         for (int i=0; i<fAttrUseNum; i++) {
             if (fAttributeUses[i] == oldUse) {

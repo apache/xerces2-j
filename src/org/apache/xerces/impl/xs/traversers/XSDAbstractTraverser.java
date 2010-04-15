@@ -795,6 +795,8 @@ abstract class XSDAbstractTraverser {
                         enclosingParent);
                 if (tempAttrUse == null) continue;
                 if (tempAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                    // Revisit: not passing schema version information, since we do not check for
+                    //          attributes of type id when the attribute use is prohibited.
                     attrGrp.addAttributeUse(tempAttrUse);
                     continue;
                 }
@@ -802,9 +804,9 @@ abstract class XSDAbstractTraverser {
                         tempAttrUse.fAttrDecl.getNamespace(),
                         tempAttrUse.fAttrDecl.getName());
                 if (otherUse==null) {
-                    String idName = attrGrp.addAttributeUse(tempAttrUse);
-                    // Only applies to XML Schema 1.0
-                    if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
+                    String idName = attrGrp.addAttributeUse(tempAttrUse, fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1);
+                    // For XML Schema 1.1, we return null
+                    if (idName != null) {
                         String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "ag-props-correct.3" : "ct-props-correct.5";
                         String name = enclosingParent.getName();
                         reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName(), idName}, child);
@@ -827,6 +829,8 @@ abstract class XSDAbstractTraverser {
                 for (int i=0; i<attrCount; i++) {
                     oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
                     if (oneAttrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                        // Revisit: not passing schema version information, since we do not check for
+                        //          attributes of type id when the attribute use is prohibited.
                         attrGrp.addAttributeUse(oneAttrUse);
                         continue;
                     }
@@ -834,9 +838,9 @@ abstract class XSDAbstractTraverser {
                             oneAttrUse.fAttrDecl.getNamespace(),
                             oneAttrUse.fAttrDecl.getName());
                     if (otherUse==null) {
-                        String idName = attrGrp.addAttributeUse(oneAttrUse);
-                        // Only applies to XML Schema 1.0
-                        if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1 && idName != null) {
+                        String idName = attrGrp.addAttributeUse(oneAttrUse, fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1);
+                        // For XML Schema 1.1, we return null
+                        if (idName != null) {
                             String code = (enclosingParent instanceof XSAttributeGroupDecl) ? "ag-props-correct.3" : "ct-props-correct.5";
                             String name = enclosingParent.getName();
                             reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName(), idName}, child);
