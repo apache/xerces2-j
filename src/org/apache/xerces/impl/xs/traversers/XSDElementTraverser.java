@@ -299,7 +299,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             
             if (targetNsAtt!=null) {
                 // XML Schema 1.1, set the target namespace to be the value of the targetNamespace attribute if one is defined
-                element.fTargetNamespace = fSymbolTable.addSymbol(targetNsAtt);
+                targetNsAtt = fSymbolTable.addSymbol(targetNsAtt);
+                element.fTargetNamespace = targetNsAtt;
             } else if (formAtt != null) {
                 if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                     element.fTargetNamespace = schemaDoc.fTargetNamespace;
