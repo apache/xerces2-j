@@ -280,13 +280,16 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             scope = XSAttributeDecl.SCOPE_GLOBAL;
         }
         else {
+            // For XML 1.0, we only store information about enclosing complex types
+            // For XML 1.1, we store information about enclosing complex types or attribute groups
             if (enclosingParent != null) {
-                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                if (enclosingParent instanceof XSComplexTypeDecl) {
+                    enclCT = (XSComplexTypeDecl) enclosingParent;
                     enclParent = enclosingParent;
                     scope = XSAttributeDecl.SCOPE_LOCAL;
                 }
-                else if (enclosingParent instanceof XSComplexTypeDecl) {
-                    enclCT = (XSComplexTypeDecl) enclosingParent;
+                else if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    enclParent = enclosingParent;
                     scope = XSAttributeDecl.SCOPE_LOCAL;
                 }
             }
