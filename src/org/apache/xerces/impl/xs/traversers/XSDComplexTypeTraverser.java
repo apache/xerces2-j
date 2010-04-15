@@ -775,7 +775,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                             traverseAsserts(node, schemaDoc, grammar,
                                     fComplexTypeDecl);
                         } else {
-                            // a non assert element after attributes is an error
+                            // either XML Schema 1.0 or a non assert element
                             fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
                             fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
                             throw new ComplexTypeRecoverableError(
@@ -1615,8 +1615,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
     private boolean isAssert(Element e) {
-        String elementName = DOMUtil.getLocalName(e);
-        return elementName.equals(SchemaSymbols.ELT_ASSERT);
+        return (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && DOMUtil.getLocalName(e).equals(SchemaSymbols.ELT_ASSERT));
     }
 
     /*
