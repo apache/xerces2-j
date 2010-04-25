@@ -736,26 +736,6 @@ public class XMLAttributesImpl
     } // getURI(int,QName)
 
     // Implementation methods
-    public void setSchemaId(int attrIndex, boolean schemaId) {
-        fAttributes[attrIndex].schemaId = schemaId;
-    }
-    public boolean getSchemaId(int index) {
-        if (index < 0 || index >= fLength) {
-            return false;
-        }
-        return fAttributes[index].schemaId;
-    }
-    public boolean getSchemaId(String qname) {
-        int index = getIndex(qname);
-        return index != -1 ? fAttributes[index].schemaId : false; 
-    } // getType(String):String
-    public boolean getSchemaId(String uri, String localName) {
-        if (!fNamespaces) {
-            return false;
-        }
-        int index = getIndex(uri, localName);
-        return index != -1 ? fAttributes[index].schemaId : false;
-    } // getType(String,String):String
     
     /**
      * Look up the index of an attribute by XML 1.0 qualified name.
@@ -1060,9 +1040,6 @@ public class XMLAttributesImpl
 
         /** Specified. */
         public boolean specified;
-
-        /** Schema ID type. */
-        public boolean schemaId;
         
         /** 
          * Augmentations information for this attribute.

@@ -3076,17 +3076,9 @@ public class XMLSchemaValidator
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
             // store the normalized value
-            if (fNormalizeData)
+            if (fNormalizeData) {
                 attributes.setValue(index, fValidatedInfo.normalizedValue);
-            if (attributes instanceof XMLAttributesImpl) {
-                XMLAttributesImpl attrs = (XMLAttributesImpl) attributes;
-                boolean schemaId =
-                    fValidatedInfo.memberType != null
-                        ? fValidatedInfo.memberType.isIDType()
-                        : attDV.isIDType();
-                attrs.setSchemaId(index, schemaId);
             }
-
             // PSVI: element notation
             if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC
                 && attDV.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
@@ -3235,12 +3227,6 @@ public class XMLSchemaValidator
                     XMLAttributesImpl attrs = (XMLAttributesImpl) attributes;
                     attrIndex = attrs.getLength();
                     attrs.addAttributeNS(attName, "CDATA", normalized);
-                    boolean schemaId =
-                        defaultValue != null
-                            && defaultValue.memberType != null
-                                ? defaultValue.memberType.isIDType()
-                                : currDecl.fType.isIDType();
-                    attrs.setSchemaId(attrIndex, schemaId);
                 }
                 else {
                     attrIndex = attributes.addAttribute(attName, "CDATA", normalized);
