@@ -2130,7 +2130,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             return v;
 
         } else { // (fVariety == VARIETY_UNION)
-            for(int i = 0 ; i < fMemberTypes.length; i++) {
+            final Object _content = (fMemberTypes.length > 1 && content != null) ? content.toString() : content;
+            for (int i = 0; i < fMemberTypes.length; i++) {
                 try {
                     // we can't call fMemberType[i].validate(), otherwise checkExtraRules()
                     // will be called twice: once in fMemberType[i].validate, once in
@@ -2138,7 +2139,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     // so we take two steps to get the actual value:
                     // 1. fMemberType[i].getActualValue()
                     // 2. fMemberType[i].chekcFacets()
-                    Object aValue = fMemberTypes[i].getActualValue(content, context, validatedInfo, true);
+                    Object aValue = fMemberTypes[i].getActualValue(_content, context, validatedInfo, true);
                     if (context.needFacetChecking() &&
                             (fMemberTypes[i].fFacetsDefined != 0 && fMemberTypes[i].fFacetsDefined != FACET_WHITESPACE)) {
                         fMemberTypes[i].checkFacets(validatedInfo);
