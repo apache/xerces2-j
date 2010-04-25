@@ -17,6 +17,11 @@
 
 package org.apache.xerces.impl.xs;
 
+/**
+ * @xerces.internal
+ * 
+ * @version $Id$
+ */
 final class FilePathToURI {
 
     // which ASCII characters need to be escaped
