@@ -51,7 +51,7 @@ class YearMonthDurationDV extends DurationDV {
         if ( date.year<0 || date.month<0) {
             sign = -1;
         }
-        return factory.newDuration(sign == 1, 
+        return datatypeFactory.newDuration(sign == 1, 
                 date.year != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.year):null, 
                 date.month != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.month):null, 
                 null,

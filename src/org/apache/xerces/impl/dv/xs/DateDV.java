@@ -83,7 +83,7 @@ public class DateDV extends DateTimeDV {
     }
     
     protected XMLGregorianCalendar getXMLGregorianCalendar(DateTimeData date) {
-        return factory.newXMLGregorianCalendar(date.unNormYear, date.unNormMonth, 
+        return datatypeFactory.newXMLGregorianCalendar(date.unNormYear, date.unNormMonth, 
                 date.unNormDay, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, 
                 DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, 
                 date.hasTimeZone() ? (date.timezoneHr * 60 + date.timezoneMin) : DatatypeConstants.FIELD_UNDEFINED);

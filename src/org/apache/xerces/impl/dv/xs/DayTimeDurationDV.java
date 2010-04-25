@@ -51,7 +51,7 @@ class DayTimeDurationDV extends DurationDV {
         if (date.day<0 || date.hour<0 || date.minute<0 || date.second<0) {
             sign = -1;
         }
-        return factory.newDuration(sign == 1, null, null, 
+        return datatypeFactory.newDuration(sign == 1, null, null, 
                 date.day != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.day):null, 
                 date.hour != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.hour):null, 
                 date.minute != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.minute):null, 

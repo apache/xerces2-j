@@ -60,7 +60,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	protected final static int MONTH=01;
 	protected final static int DAY = 01;
     
-    protected final DatatypeFactory factory = new DatatypeFactoryImpl();
+    protected static final DatatypeFactory datatypeFactory = new DatatypeFactoryImpl();
 	
 	public short getAllowedFacets(){
 		return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );

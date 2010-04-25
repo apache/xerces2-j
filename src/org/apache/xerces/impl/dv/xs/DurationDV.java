@@ -376,7 +376,7 @@ public class DurationDV extends AbstractDateTimeDV {
                 || date.hour<0 || date.minute<0 || date.second<0) {
             sign = -1;
         }
-        return factory.newDuration(sign == 1, 
+        return datatypeFactory.newDuration(sign == 1, 
                 date.year != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.year):null, 
                 date.month != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.month):null, 
                 date.day != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.day):null, 

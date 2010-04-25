@@ -85,7 +85,7 @@ public class DateTimeDV extends AbstractDateTimeDV {
     }
     
     protected XMLGregorianCalendar getXMLGregorianCalendar(DateTimeData date) {
-        return factory.newXMLGregorianCalendar(BigInteger.valueOf(date.unNormYear), date.unNormMonth, 
+        return datatypeFactory.newXMLGregorianCalendar(BigInteger.valueOf(date.unNormYear), date.unNormMonth, 
                 date.unNormDay, date.unNormHour, date.unNormMinute, 
                 (int)date.unNormSecond, date.unNormSecond != 0 ? getFractionalSecondsAsBigDecimal(date) : null, 
                 date.hasTimeZone() ? (date.timezoneHr * 60 + date.timezoneMin) : DatatypeConstants.FIELD_UNDEFINED);
