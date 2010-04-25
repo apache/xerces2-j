@@ -60,7 +60,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	protected final static int MONTH=01;
 	protected final static int DAY = 01;
     
-    protected final DatatypeFactory factory = new DatatypeFactoryImpl();
+    protected static final DatatypeFactory datatypeFactory = new DatatypeFactoryImpl();
 	
 	
 	// distinguishes between identity and equality for date/time values
