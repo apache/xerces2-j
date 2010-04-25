@@ -17,7 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
-class FilePathToURI {
+final class FilePathToURI {
 
     // which ASCII characters need to be escaped
     private static boolean gNeedEscaping[] = new boolean[128];
@@ -48,6 +48,8 @@ class FilePathToURI {
             gAfterEscaping2[ch] = gHexChs[ch & 0xf];
         }
     }
+    
+    private FilePathToURI() {}
 
     // To escape a file path to a URI, by using %HH to represent
     // special ASCII characters: 0x00~0x1F, 0x7F, ' ', '<', '>', '#', '%'
