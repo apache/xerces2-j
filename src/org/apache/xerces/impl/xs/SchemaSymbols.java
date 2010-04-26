@@ -163,6 +163,7 @@ public final class SchemaSymbols {
     public static final String ATTVAL_POUNDALL               = "#all";
     public static final String ATTVAL_FALSE_0                = "0";
     public static final String ATTVAL_TRUE_1                 = "1";
+    public static final String ATTVAL_ANYATOMICTYPE          = "anyAtomicType";    
     public static final String ATTVAL_ANYSIMPLETYPE          = "anySimpleType";
     public static final String ATTVAL_ANYTYPE                = "anyType";
     public static final String ATTVAL_ANYURI                 = "anyURI";

@@ -491,7 +491,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
 
         // if it's a complex type, or if its restriction of anySimpleType
-        if (baseType == SchemaGrammar.fAnySimpleType &&
+        // or anyAtomicType (XML Schema 1.1)
+        if ((baseType == SchemaGrammar.fAnySimpleType || baseType == SchemaGrammar.fAnyAtomicType) &&
             baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
             // if the base type is anySimpleType and the current type is
             // a S4S built-in type, return null. (not an error).

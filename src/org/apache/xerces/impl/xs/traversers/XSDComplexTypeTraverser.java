@@ -718,6 +718,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 baseValidator = dv;
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
             }
+            // anySimpleType or anyAtomicType are not allowed as base type
+            else if (baseValidator == SchemaGrammar.fAnySimpleType || baseValidator == SchemaGrammar.fAnyAtomicType) {
+                fAttrChecker.returnAttrArray(simpleContentAttrValues, schemaDoc);
+                fAttrChecker.returnAttrArray(derivationTypeAttrValues, schemaDoc);
+                throw new ComplexTypeRecoverableError("cos-st-restricts.1.1",
+                        new Object[]{baseValidator.getName(), genAnonTypeName(simpleContentElement)}, simpleContentElement);
+            } 
             
             // this only happens when restricting a mixed/emptiable CT
             // but there is no <simpleType>, which is required

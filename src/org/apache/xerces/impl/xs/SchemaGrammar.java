@@ -1367,6 +1367,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     private final static BuiltinSchemaGrammar SG_Schema11NS = new BuiltinSchemaGrammar(GRAMMAR_XS, Constants.SCHEMA_VERSION_1_1);
 
     public final static XSSimpleType fAnySimpleType = (XSSimpleType)SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+    public final static XSSimpleType fAnyAtomicType = (XSSimpleType)SG_Schema11NS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYATOMICTYPE);
 
     // the grammars to hold components of the schema-instance namespace
     public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI, Constants.SCHEMA_VERSION_1_0);
