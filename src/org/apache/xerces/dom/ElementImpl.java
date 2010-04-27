@@ -232,19 +232,7 @@ public class ElementImpl
         // containing the element
 
         // ownerNode serves as a parent or as document
-        String baseURI = (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null;
-        // base URI of parent element is not null
-        if (baseURI != null) {
-            try {
-                // return valid absolute base URI
-                return new URI(baseURI).toString();
-            }
-            catch (org.apache.xerces.util.URI.MalformedURIException e) {
-                // REVISIT: what should happen in this case?
-                return null;
-            }
-        }
-        return null;
+        return (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null;
     } //getBaseURI
     
     /**
