@@ -954,18 +954,15 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                         wellformed = CoreDocumentImpl.isXMLName(node.getNodeName() , xml11Version);
                     }
                     if (!wellformed){
-                            if (!wellformed){
-                                if (fErrorHandler != null) {
-                                    String msg = DOMMessageFormatter.formatMessage(
-                                        DOMMessageFormatter.DOM_DOMAIN, 
-                                        "wf-invalid-character-in-node-name", 
-                                        new Object[]{"Element", node.getNodeName()});
-                                        DOMNormalizer.reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, 
-                                        "wf-invalid-character-in-node-name");
-                                }
-                        
-                            }                       
-                    }
+                        if (fErrorHandler != null) {
+                            String msg = DOMMessageFormatter.formatMessage(
+                                    DOMMessageFormatter.DOM_DOMAIN, 
+                                    "wf-invalid-character-in-node-name", 
+                                    new Object[]{"Element", node.getNodeName()});
+                            DOMNormalizer.reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, 
+                            "wf-invalid-character-in-node-name");
+                        }                        
+                    }                       
                 }
                 
                 NamedNodeMap attributes = (node.hasAttributes()) ? node.getAttributes() : null; 
