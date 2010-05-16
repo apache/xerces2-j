@@ -317,24 +317,26 @@ public class Counter
         System.err.print("[");
         System.err.print(type);
         System.err.print("] ");
-        if (ex== null) {
+        if (ex == null) {
             System.out.println("!!!");
         }
-        String systemId = ex.getSystemId();
-        if (systemId != null) {
-            int index = systemId.lastIndexOf('/');
-            if (index != -1)
-                systemId = systemId.substring(index + 1);
-            System.err.print(systemId);
+        else {
+            String systemId = ex.getSystemId();
+            if (systemId != null) {
+                int index = systemId.lastIndexOf('/');
+                if (index != -1)
+                    systemId = systemId.substring(index + 1);
+                System.err.print(systemId);
+            }
+            System.err.print(':');
+            System.err.print(ex.getLineNumber());
+            System.err.print(':');
+            System.err.print(ex.getColumnNumber());
+            System.err.print(": ");
+            System.err.print(ex.getMessage());
+            System.err.println();
+            System.err.flush();
         }
-        System.err.print(':');
-        System.err.print(ex.getLineNumber());
-        System.err.print(':');
-        System.err.print(ex.getColumnNumber());
-        System.err.print(": ");
-        System.err.print(ex.getMessage());
-        System.err.println();
-        System.err.flush();
 
     } // printError(String,SAXParseException)
 
