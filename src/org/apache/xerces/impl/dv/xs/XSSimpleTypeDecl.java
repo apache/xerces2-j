@@ -1675,14 +1675,14 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         
         //inherit maxScale
         if ((( fBase.fFacetsDefined & FACET_MAXSCALE) != 0) &&
-                !((fFacetsDefined & FACET_MAXSCALE) != 0) && !((fFacetsDefined & FACET_MAXSCALE) != 0)) {
+                !((fFacetsDefined & FACET_MAXSCALE) != 0)) {
             fFacetsDefined |= FACET_MAXSCALE;
             fMaxScale = fBase.fMaxScale;
             maxScaleAnnotation = fBase.maxScaleAnnotation;
         }
         //inherit minScale
         if ((( fBase.fFacetsDefined & FACET_MINSCALE) != 0) &&
-                !((fFacetsDefined & FACET_MINSCALE) != 0) && !((fFacetsDefined & FACET_MINSCALE) != 0)) {
+                !((fFacetsDefined & FACET_MINSCALE) != 0)) {
             fFacetsDefined |= FACET_MINSCALE;
             fMinScale = fBase.fMinScale;
             minScaleAnnotation = fBase.minScaleAnnotation;
