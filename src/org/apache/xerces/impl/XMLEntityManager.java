@@ -1006,7 +1006,8 @@ public class XMLEntityManager
                 }
             }
             // wrap this stream in RewindableInputStream
-            stream = new RewindableInputStream(stream);
+            RewindableInputStream rewindableStream = new RewindableInputStream(stream);
+            stream = rewindableStream;
 
             // perform auto-detect of encoding if necessary
             if (encoding == null) {
@@ -1014,7 +1015,7 @@ public class XMLEntityManager
                 final byte[] b4 = new byte[4];
                 int count = 0;
                 for (; count<4; count++ ) {
-                    b4[count] = (byte)stream.read();
+                    b4[count] = (byte)rewindableStream.readAndBuffer();
                 }
                 if (count == 4) {
                     EncodingInfo info = getEncodingInfo(b4, count);
@@ -1052,7 +1053,7 @@ public class XMLEntityManager
                     final int[] b3 = new int[3];
                     int count = 0;
                     for (; count < 3; ++count) {
-                        b3[count] = stream.read();
+                        b3[count] = rewindableStream.readAndBuffer();
                         if (b3[count] == -1)
                             break;
                     }
@@ -1073,7 +1074,7 @@ public class XMLEntityManager
                     final int[] b4 = new int[4];
                     int count = 0;
                     for (; count < 4; ++count) {
-                        b4[count] = stream.read();
+                        b4[count] = rewindableStream.readAndBuffer();
                         if (b4[count] == -1)
                             break;
                     }
@@ -1112,7 +1113,7 @@ public class XMLEntityManager
                     final int[] b4 = new int[4];
                     int count = 0;
                     for (; count < 4; ++count) {
-                        b4[count] = stream.read();
+                        b4[count] = rewindableStream.readAndBuffer();
                         if (b4[count] == -1)
                             break;
                     }
@@ -1137,7 +1138,7 @@ public class XMLEntityManager
                     final int[] b4 = new int[4];
                     int count = 0;
                     for (; count < 4; ++count) {
-                        b4[count] = stream.read();
+                        b4[count] = rewindableStream.readAndBuffer();
                         if (b4[count] == -1)
                             break;
                     }
@@ -3105,21 +3106,14 @@ public class XMLEntityManager
         public void rewind() {
             fOffset = fStartOffset;
         }
-
-        public int read() throws IOException {
-            int b = 0;
-            if (fOffset < fLength) {
-                return fData[fOffset++] & 0xff;
-            }
-            if (fOffset == fEndOffset) {
-                return -1;
-            }
+        
+        public int readAndBuffer() throws IOException {
             if (fOffset == fData.length) {
                 byte[] newData = new byte[fOffset << 1];
                 System.arraycopy(fData, 0, newData, 0, fOffset);
                 fData = newData;
             }
-            b = fInputStream.read();
+            final int b = fInputStream.read();
             if (b == -1) {
                 fEndOffset = fOffset;
                 return -1;
@@ -3129,18 +3123,31 @@ public class XMLEntityManager
             return b & 0xff;
         }
 
+        public int read() throws IOException {
+            if (fOffset < fLength) {
+                return fData[fOffset++] & 0xff;
+            }
+            if (fOffset == fEndOffset) {
+                return -1;
+            }
+            if (fCurrentEntity.mayReadChunks) {
+                return fInputStream.read();
+            }
+            return readAndBuffer();
+        }
+
         public int read(byte[] b, int off, int len) throws IOException {
-            int bytesLeft = fLength - fOffset;
+            final int bytesLeft = fLength - fOffset;
             if (bytesLeft == 0) {
                 if (fOffset == fEndOffset) {
                     return -1;
                 }
                 // better get some more for the voracious reader...
-                if(fCurrentEntity.mayReadChunks) {
+                if (fCurrentEntity.mayReadChunks) {
                     return fInputStream.read(b, off, len);
                 }
-                int returnedVal = read();
-                if(returnedVal == -1) {
+                int returnedVal = readAndBuffer();
+                if (returnedVal == -1) {
                     fEndOffset = fOffset;
                     return -1;
                 }
@@ -3197,7 +3204,7 @@ public class XMLEntityManager
         }
 
         public int available() throws IOException {
-            int bytesLeft = fLength - fOffset;
+            final int bytesLeft = fLength - fOffset;
             if (bytesLeft == 0) {
                 if (fOffset == fEndOffset) {
                     return -1;
