@@ -3561,6 +3561,19 @@ public class XMLSchemaValidator
             }
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSConstants.VC_NONE) {
+                
+                // Apply extra checking rules (ID/IDREF/ENTITY)
+                final XSSimpleType attDV = currDecl.fType;
+                final boolean facetChecking = fValidationState.needFacetChecking(); 
+                try {
+                    fValidationState.setFacetChecking(false);
+                    attDV.validate(fValidationState, defaultValue);
+                } 
+                catch (InvalidDatatypeValueException idve) {
+                    reportSchemaError(idve.getKey(), idve.getArgs());
+                }
+                fValidationState.setFacetChecking(facetChecking);
+                
                 attName =
                     new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
                 String normalized = (defaultValue != null) ? defaultValue.stringValue() : "";
