@@ -222,6 +222,130 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    are written for this case.
   </note>
  </s2>
+ <s2 title='Files in the Tools Package'>
+  <table>
+   <tr>
+    <td>ant*.jar</td>
+    <td>Jar files containing Apache Ant 1.7.1 for building Xerces-J</td>
+   </tr>
+   <tr>
+    <td>ant*.LICENSE.txt</td>
+    <td>License for Apache Ant 1.7.1</td>
+   </tr>
+   <tr>
+    <td>ant*.NOTICE.txt</td>
+    <td>NOTICE file for Apache Ant 1.7.1</td>
+   </tr>
+   <tr>
+    <td>junit.jar</td>
+    <td>Jar file containing JUnit 3.8.1</td>
+   </tr>
+   <tr>
+    <td>junit.LICENSE.html</td>
+    <td>License for JUnit 3.8.1</td>
+   </tr>
+   <tr>
+    <td>resolver.jar</td>
+    <td>Jar file containing the XML Commons Resolver. Currently
+    Resolver 1.2 is distributed with &ParserName;.</td>
+   </tr>
+   <tr>
+    <td>resolver.LICENSE.txt</td>
+    <td>License for the XML Commons Resolver</td>
+   </tr>
+   <tr>
+    <td>resolver.NOTICE.txt</td>
+    <td>NOTICE file for the XML Commons Resolver</td>
+   </tr>
+   <tr>
+    <td>serializer.jar</td>
+    <td>Jar file containing the Apache Xalan serializer. Currently
+    the serializer included in Xalan 2.7.1 is distributed with &ParserName;.</td>
+   </tr>
+   <tr>
+    <td>serializer.LICENSE.txt</td>
+    <td>License for the Apache Xalan serializer</td>
+   </tr>
+   <tr>
+    <td>serializer.NOTICE.txt</td>
+    <td>NOTICE file for the Apache Xalan serializer</td>
+   </tr>
+   <tr>
+    <td>stylebook-1.0-b2.jar</td>
+    <td>Jar file containing the Apache Stylebook for building the
+    Xerces-J documentation</td>
+   </tr>
+   <tr>
+    <td>stylebook-1.0-b2.LICENSE.txt</td>
+    <td>License for the Apache Stylebook</td>
+   </tr>
+   <tr>
+    <td>xalan.jar</td>
+    <td>Jar file containing Apache Xalan 2.7.1 (required by
+    the Apache Stylebook for building the Xerces-J documentation)</td>
+   </tr>
+   <tr>
+    <td>xalan.LICENSE.txt</td>
+    <td>License for Apache Xalan 2.7.1</td>
+   </tr>
+   <tr>
+    <td>xalan.NOTICE.txt</td>
+    <td>NOTICE file for Apache Xalan 2.7.1</td>
+   </tr>
+   <tr>
+    <td>xercesImpl.jar</td>
+    <td>Jar file containing Apache Xerces-J 2.9.1 (required by
+    Apache Ant for building Xerces-J and the Apache Stylebook
+    for building its documentation)</td>
+   </tr>
+   <tr>
+    <td>xercesImpl.LICENSE.txt</td>
+    <td>License for Apache Xerces-J 2.9.1</td>
+   </tr>
+   <tr>
+    <td>xercesImpl.NOTICE.txt</td>
+    <td>NOTICE file for Apache Xerces-J 2.9.1</td>
+   </tr>
+   <tr>
+    <td>xml-apis.jar</td>
+    <td>Jar file containing Apache XML Commons External 1.4.01
+    (required by Apache Ant for building Xerces-J)</td>
+   </tr>
+   <tr>
+    <td>xml-apis.LICENSE.txt</td>
+    <td>License for Apache XML Commons External 1.4.01</td>
+   </tr>
+   <tr>
+    <td>xml-apis.NOTICE.txt</td>
+    <td>NOTICE file for Apache XML Commons External 1.4.01</td>
+   </tr>
+   <tr>
+    <td>xml-commons-external-src.zip</td>
+    <td>Bundle containing the source of Apache XML Commons
+    External 1.4.01 (required for building the Javadoc)</td>
+   </tr>
+   <tr>
+    <td>xml-commons-external-src.LICENSE.txt</td>
+    <td>License for Apache XML Commons External 1.4.01</td>
+   </tr>
+   <tr>
+    <td>xml-commons-external-src.NOTICE.txt</td>
+    <td>NOTICE file for Apache XML Commons External 1.4.01</td>
+   </tr>
+   <tr>
+    <td>bin/</td>
+    <td>Contains scripts for Ant, a specialized Ant target for
+    building Xerces-J and a taglet for generating custom Javadoc
+    from <code>@xerces.internal</code> and <code>@xerces.experimental</code>
+    tags in the source code.</td>
+   </tr>
+  </table>
+  <note>
+   The xercesImpl.jar in the tools package is provided for building
+   Xerces-J through Ant. This jar will always be older than the 
+   current release of Xerces-J and is not intended for application use.
+  </note>
+ </s2>
  <s2 title='Changes in Xerces jar files'>
  <p>In order to accommodate the very common case in which Xerces is
  used with an XSLT processor such as Xalan, between Xerces 2.0.0 beta 3
