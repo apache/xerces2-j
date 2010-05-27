@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.xni.parser;
+package org.apache.xerces.impl.xs.assertion;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -28,6 +28,8 @@ import org.apache.xerces.xni.XMLString;
  * This interface communicates with the XMLSchemaValidator, and accepts information
  * required by the external XPath engine. If assertions evaluation returns 'true',
  * validation would proceed further.
+ * 
+ * @xerces.internal
  * 
  * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM

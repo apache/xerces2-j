@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.xni.parser;
+package org.apache.xerces.impl.xs.assertion;
 
 import java.util.Hashtable;
 
@@ -27,6 +27,8 @@ import org.apache.xerces.xni.XMLString;
 /**
  * A convenience implementation of the assertions interface. All compliant assertions
  * processors (using a specific XPath 2.0 engine), should extend this class.
+ * 
+ * @xerces.internal
  * 
  * @author: Mukul Gandhi, IBM
  * @version $Id$
