@@ -83,6 +83,22 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     private static final String IDENTITY_CONSTRAINT_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.IDC_CHECKING_FEATURE;
     
+    /** Feature identifier: disallow DOCTYPE declaration */
+    private static final String DISALLOW_DOCTYPE_DECL_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+    
+    /** Feature identifier: expose schema normalized value */
+    private static final String NORMALIZE_DATA =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+
+    /** Feature identifier: send element default value via characters() */
+    private static final String SCHEMA_ELEMENT_DEFAULT =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
+    
+    /** Feature identifier: augment PSVI */
+    private static final String SCHEMA_AUGMENT_PSVI =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
+    
     // property identifiers
 
     /** Property identifier: entity manager. */
@@ -226,6 +242,18 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
         
         // add all recognized features and properties and apply their defaults
+        final String [] recognizedFeatures = {
+                DISALLOW_DOCTYPE_DECL_FEATURE,
+                NORMALIZE_DATA,
+                SCHEMA_ELEMENT_DEFAULT,
+                SCHEMA_AUGMENT_PSVI
+        };
+        addRecognizedFeatures(recognizedFeatures);
+        fFeatures.put(DISALLOW_DOCTYPE_DECL_FEATURE, Boolean.FALSE);
+        fFeatures.put(NORMALIZE_DATA, Boolean.FALSE);
+        fFeatures.put(SCHEMA_ELEMENT_DEFAULT, Boolean.FALSE);
+        fFeatures.put(SCHEMA_AUGMENT_PSVI, Boolean.TRUE);
+        
         addRecognizedParamsAndSetDefaults(fEntityManager, grammarContainer);
         addRecognizedParamsAndSetDefaults(fErrorReporter, grammarContainer);
         addRecognizedParamsAndSetDefaults(fSchemaValidator, grammarContainer);
