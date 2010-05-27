@@ -222,7 +222,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    are written for this case.
   </note>
  </s2>
- <s2 title='Files in the Tools Package'>
+ <s2 title='Files in the Build Tools Package'>
   <table>
    <tr>
     <td>ant*.jar</td>
