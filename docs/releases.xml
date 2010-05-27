@@ -18,6 +18,135 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.10.0'>
+   <desc>
+    <p>
+     This release fixes several bugs which were present in Xerces-J 2.9.1.
+     It also includes support for many XML Schema 1.1 features, as well as
+     a few enhancements and performance improvements.
+    </p>
+   </desc>
+   <changes>
+    <add>
+     <note>
+      Added support for Element <jump href="http://www.w3.org/TR/ElementTraversal/">Traversal</jump>
+      API (org.w3c.dom.ElementTraversal).
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Added support for StAXSource as an input to SchemaFactory (JAXP 1.4) 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Added support for StAXSource/StAXResult as an input/output to the JAXP Validator (JAXP 1.4) 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Added support for StreamResult as an output to the JAXP Validator (JAXP 1.4) 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Added support for specifying the validation root (whether it be an element declaration
+      or a type definition).
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Added support for matching multi-digit back references (regular expressions). 
+     </note>
+     <submitter name='Khaled Noaman'/>
+    </add>
+    <add>
+     <note>
+      Added support for XML Schema 1.1 (refer to documentation for a list of features supported).
+     </note>
+     <submitter name='Khaled Noaman, Mukul Gandhi, Hiranya Jayathilaka, John Chan, Ken Cai'/>
+    </add>
+    <update>
+     <note>
+      Improved XML Schema API usability by using java.util.List, java.util.Map and utility methods. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Improved performance by eliminating the excessive calls to XMLSchemaValidator.findSchemaGrammar()
+      when handling local elements with no namespace. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Improved recovery from schema loading errors.
+     </note>
+     <submitter name='Sandy Gao'/>
+    </update>
+    <update>
+     <note>
+      Improved performance of ElementImpl.getBaseURI when the depth of the node to the document
+      root is longer
+     </note>
+     <submitter name='Ludger Bünger'/>
+    </update> 
+    <fix>
+     <note>
+      Fixed problems with regular expression matching where the parser would hang or cause a 
+      stack overflow exception.
+     </note>
+     <submitter name='Khaled Noaman'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a problem where the DOMParserImpl repeatedly overwrote text node child of an element
+      (rather than appending) when there are multiple text nodes in input.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed an infinite loop in XMLScanner which could allow allows remote attackers to cause a
+      denial of service.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in XSDateTime where getXMLGregorianCalendar() loses precision for fractional digits
+      and inserts timezones where there are none.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in DOM where static textNode on AttrImpl breaks thread-safety, mutations of independant
+      documents from within a mutation listener, and introduces potential memory leaks.
+     </note>
+     <submitter name='Ludger Bünger'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug SoftReferenceSymbolTable which was causing an infinite loop due to cyclical reference
+      in SREntry linked list.
+     </note>
+     <submitter name='Anli Shundi'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs and made various improvements.
+     </note>
+     <submitter name='Michael Glavassevich, Khaled Noaman, Ludger Bünger'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.9.1'>
    <desc>
     <p>
