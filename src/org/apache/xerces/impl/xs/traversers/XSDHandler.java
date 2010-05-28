@@ -583,7 +583,9 @@ public class XSDHandler {
             grammar = findGrammar(desc, fNamespaceGrowth);
             String schemaId = XMLEntityManager.expandSystemId(is.getSystemId(), is.getBaseSystemId(), false);
             if (grammar != null) {
-                if (!fNamespaceGrowth || grammar.getDocumentLocations().contains(schemaId)) {
+                // When namespace growth is enabled and a null location is provided we cannot tell
+                // whether we've loaded this schema document before so we must assume that we haven't.
+                if (!fNamespaceGrowth || (schemaId != null && grammar.getDocumentLocations().contains(schemaId))) {
                     return grammar; 
                 }
             }
