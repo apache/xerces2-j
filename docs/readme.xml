@@ -35,9 +35,12 @@
     </p>
     <p>
       Xerces2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>
-	fully conforming</jump> XML Schema processor. 
-      For more information, refer to the <link idref='xml-schema'>
-	XML Schema</link> page. 
+	  fully conforming</jump> XML Schema 1.0 processor. A partial experimental implementation
+	  of the XML Schema 1.1
+	  <jump href='http://www.w3.org/TR/2009/WD-xmlschema11-1-20091203/'>Structures</jump> and
+	  <jump href='http://www.w3.org/TR/2009/WD-xmlschema11-2-20091203/'>Datatypes</jump>
+	  Working Drafts (December 2009) is provided for evaluation. For more information, refer
+	  to the <link idref='xml-schema'>XML Schema</link> page.
     </p>
     <p>
       Xerces2 also provides a <link idref='dom3'>complete implementation</link> of the 
@@ -105,11 +108,19 @@
 	  and Range</jump> Recommendations
       </li>
       <li>
+    <jump href='http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/'>Element Traversal</jump>
+      First Edition Recommendation
+      </li>
+      <li>
 	<jump href='http://sax.sourceforge.net/'>Simple API for XML</jump> (SAX) 2.0.2 Core and Extensions
       </li>
       <li>
-	<jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
+	<jump href='http://www.jcp.org/en/jsr/summary?id=206'>Java APIs for 
 	  XML Processing</jump> (JAXP) 1.4
+      </li>
+      <li>
+    <jump href='http://www.jcp.org/en/jsr/summary?id=173'>Streaming API For XML</jump> (StAX) 1.0 
+    Event API (javax.xml.stream.events)
       </li>
       <li>
 	<jump href='http://www.w3.org/XML/Schema'>XML Schema</jump> 1.0
@@ -118,7 +129,13 @@
 	<jump href='http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/'>Datatypes</jump>
 	Second Edition Recommendations
       </li>
-      
+      <li>
+	<jump href='http://www.w3.org/XML/Schema'>XML Schema</jump> 1.1
+	<jump href='http://www.w3.org/TR/2009/WD-xmlschema11-1-20091203/'>Structures</jump>
+	and
+	<jump href='http://www.w3.org/TR/2009/WD-xmlschema11-2-20091203/'>Datatypes</jump>
+	Working Drafts (December 2009)
+      </li>      
     </ul>
   </s2>
   
@@ -133,9 +150,11 @@
   <s2 title='Changes from Previous Release'>
 
     <p>
-      The &ParserNameLong; &ParserVersion; fixes several bugs which were present 
-      in the previous release. It also includes a few minor enhancements and performance 
-      improvements.
+      The &ParserNameLong; &ParserVersion; introduces experimental support for XML Schema 1.1.
+      This release also contains an implementation of the parsing portion of JAXP 1.4, including
+      partial support for StAX 1.0 (javax.xml.stream.events only) and a complete implementation of
+      the DOM Element Traversal API. It fixes several bugs which were present in the previous release
+      and also includes a few other minor enhancements and performance improvements.
     </p>
     <p>
       For a more complete list of changes, refer to the 
