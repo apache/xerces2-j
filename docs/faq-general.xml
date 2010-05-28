@@ -108,7 +108,7 @@ Xerces 2.6.2 release. You can find more details about the rationale for this dec
 
 <p>
 If you want to achieve interoperability and avoid using deprecated APIs, you should not be using Xerces serialization code directly.
-Instead, the <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> Transformer API should be used to serialize HTML, XHTML, and SAX. The <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 Load and Save API (or JAXP Transformer API) should be used to serialize DOM.
+Instead, the <jump href="http://jcp.org/en/jsr/summary?id=206">JAXP</jump> Transformer API should be used to serialize HTML, XHTML, and SAX. The <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 Load and Save API (or JAXP Transformer API) should be used to serialize DOM.
 </p>
 
     <p>Using <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 you can serialize XML as follows:</p>
@@ -133,7 +133,7 @@ LSOutput output = impl.createLSOutput();
 output.setByteStream(System.out);
 writer.write(document, output);</source>
 
-    <p>Using <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> you can serialize HTML and XHTML as follows:</p>
+    <p>Using <jump href="http://jcp.org/en/jsr/summary?id=206">JAXP</jump> you can serialize HTML and XHTML as follows:</p>
 
 <source>
 // Create an "identity" transformer - copies input to output
