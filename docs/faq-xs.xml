@@ -82,7 +82,7 @@ v.validate(new StreamSource(args[0]));
   	   Xerces uses the <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
   	   </p>
   	   <p>
-  	   Xerces-J bundles a JDK 1.3 compliant PsychoPath XPath 2.0 JAR. Users must be aware that, the PsychoPath XPath 2.0 JAR, that's bundled 
+  	   Xerces-J bundles a JDK 1.3 compliant PsychoPath XPath 2.0 JAR. Users must be aware that, the PsychoPath XPath 2.0 JAR that's bundled 
   	   with Apache Xerces-J, has somewhat less XPath 2.0 language compliance for W3C XPath 2.0 language. For a better XPath 2.0 build, for using 
   	   with Xerces XML Schema 1.1 processing, users may choose to download the latest PsychoPath XPath 2.0 JAR from following locations:
   	   </p>
