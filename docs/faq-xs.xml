@@ -26,13 +26,23 @@
 	required to parse documents that use a schema.</p>
       <p>For XML Schema 1.1 validation, you'll need to use the JAXP
       validation API, using the XSD 1.1 Schema factory. Here's an example: </p>
-      <source>
+      <source>import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
+...
+
+StreamSource[] schemaDocuments = /* created by your application */;
+Source instanceDocument = /* created by your application */;
+
 SchemaFactory sf = SchemaFactory.newInstance(
     "http://www.w3.org/XML/XMLSchema/v1.1");
-Schema s = sf.newSchema(new StreamSource(args[1]));
+Schema s = sf.newSchema(schemaDocuments);
 Validator v = s.newValidator();
-v.validate(new StreamSource(args[0]));
-      </source>
+v.validate(instanceDocument);
+</source>
       <p>You can also refer to the JAXP sample, SourceValidator, where you
          can validate XML documents against 1.1 schemas by specifying the "-xsd11"
          flag when running the sample.</p>
