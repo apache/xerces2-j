@@ -27,9 +27,6 @@
       <p>For XML Schema 1.1 validation, you'll need to use the JAXP
       validation API, using the XSD 1.1 Schema factory. Here's an example: </p>
       <source>
-System.setProperty("
-javax.xml.validation.SchemaFactory:http://www.w3.org/XML/XMLSchema/v1.1",
-"org.apache.xerces.jaxp.validation.XMLSchema11Factory");
 SchemaFactory sf = SchemaFactory.newInstance(
     "http://www.w3.org/XML/XMLSchema/v1.1");
 Schema s = sf.newSchema(new StreamSource(args[1]));
@@ -37,7 +34,7 @@ Validator v = s.newValidator();
 v.validate(new StreamSource(args[0]));
       </source>
       <p>You can also refer to the JAXP sample, SourceValidator, where you
-         can validate xml documents against 1.1 schemas by specifying the "-xsd11"
+         can validate XML documents against 1.1 schemas by specifying the "-xsd11"
          flag when running the sample.</p>
       <p>Each document that uses XML Schema grammars must specify the location of the
 	grammars it uses by using an xsi:schemaLocation attribute if they use
