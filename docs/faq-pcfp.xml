@@ -118,7 +118,24 @@ DocumentBuilder db = dbf.newDocumentBuilder();
 
 ...
 </source>
-    
+   <p>
+    Changing the value of the schema language parameter passed to <code>SchemaFactory.newInstance()</code>
+    to <code>http://www.w3.org/XML/XMLSchema/v1.1</code> will create a processor which supports XML Schema 1.1.
+   </p>
+   <source>import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
+...
+
+StreamSource[] sources = /* created by your application */;
+
+SchemaFactory factory = 
+    SchemaFactory.newInstance("http://www.w3.org/XML/XMLSchema/v1.1");
+Schema schema = factory.newSchema(sources);
+
+...
+</source>  
    <p>
     Another option is to use the JAXP schema language property defined by JAXP 1.2. If the schema
     language property has been set to <code>http://www.w3.org/2001/XMLSchema</code>
