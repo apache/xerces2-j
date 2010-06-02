@@ -29,11 +29,13 @@ import org.w3c.dom.ElementTraversal;
 /**
  * This sample illustrates how to use the org.w3c.dom.ElementTraversal API.
  * 
+ * @author Michael Glavassevich, IBM
+ * 
  * @version $Id$
  */
 public class ElementPrinter {
     
-    public static void main (String [] argv) {
+    public static void main(String[] argv) {
         
         if (argv.length == 0) {
             printUsage();
