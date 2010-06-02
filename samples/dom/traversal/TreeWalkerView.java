@@ -56,9 +56,12 @@ import org.xml.sax.SAXParseException;
 
 import ui.DOMTreeFull;
 
-/** This class shows a DOM Document in a JTree, and presents controls
- *  which allow the user to create and view the progress of a TreeWalker
- *  in the DOM tree.
+/** 
+ * This class shows a DOM Document in a JTree, and presents controls
+ * which allow the user to create and view the progress of a TreeWalker
+ * in the DOM tree.
+ * 
+ * @version $Id$
  */
 public class TreeWalkerView 
     extends JFrame 

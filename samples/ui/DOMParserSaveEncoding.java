@@ -27,10 +27,9 @@ import org.apache.xerces.xni.XNIException;
  *  the Java Encoding of the XML document by overriding the startDocument method 
  *  and providing a way to capture the MIME encoding from the XML document which
  *  in turn is converted to the Java Encoding by the internal MIME2Java class.
- *   
+ *  
+ *  @version $Id$
  */
-
-
 public class DOMParserSaveEncoding extends DOMParser {
     String _mimeEncoding = "UTF-8";//Default  MIME so we check the file.encoding
     private void setMimeEncoding( String encoding ) {

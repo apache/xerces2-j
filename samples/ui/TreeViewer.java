@@ -16,13 +16,11 @@
  */
 package ui;
 
-/*
- *
+/**
  * command line invocation wrapper for TreeViewer
  *
- * @version
+ * @version $Id$
  */
-
 public class TreeViewer {
 
     public TreeViewer() {

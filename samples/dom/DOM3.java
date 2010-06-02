@@ -35,6 +35,8 @@ import org.w3c.dom.traversal.NodeFilter;
  * This sample program illustrates how to use DOM L3 
  * DOMBuilder, DOMBuilderFilter DOMWriter and other DOM L3 functionality
  * to preparse, revalidate and safe document.
+ * 
+ * @version $Id$
  */
 public class DOM3 implements DOMErrorHandler, LSParserFilter {
 

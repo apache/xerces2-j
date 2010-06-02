@@ -23,6 +23,8 @@ import org.xml.sax.Attributes;
  * An Attributes implementation that can perform more operations
  * than the attribute list helper supplied with the standard SAX2
  * distribution.
+ * 
+ * @version $Id$
  */
 public class AttributesImpl
     implements Attributes {

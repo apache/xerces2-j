@@ -16,7 +16,9 @@
  */
 package ui;
 
-
+/**
+ * @version $Id$
+ */
 public class DefaultImages {
 
     public static java.awt.Image createOpenFolderImage() {
