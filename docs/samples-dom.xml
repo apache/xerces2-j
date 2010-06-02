@@ -34,6 +34,7 @@
    <li><link anchor='GetElementsByTagName'>dom.GetElementsByTagName</link></li>
    <li><link anchor='Writer'>dom.Writer</link></li>
    <!-- <li><link anchor='ASBuilder'>dom.ASBuilder</link></li> -->
+   <li><link anchor='ElementPrinter'>dom.ElementPrinter</link></li>
    <li><link anchor='DOM3'>dom.DOM3</link></li>
    <li><link anchor='DOMAddLines'>dom.DOMAddLines</link></li>
   </ul>
@@ -357,6 +358,15 @@
    </table>
   </s3>
  </s2> -->
+
+ <anchor name='ElementPrinter'/>
+ <s2 title='Sample dom.ElementPrinter'>
+  <p>This sample program illustrates how to use the org.w3c.dom.ElementTraversal API.</p>
+
+  <s3 title='usage'>
+   <source>java dom.ElementPrinter uri</source>
+  </s3>
+ </s2>
 
  <anchor name='DOM3'/>
  <s2 title='Sample dom.DOM3'>
