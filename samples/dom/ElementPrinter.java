@@ -69,9 +69,9 @@ public class ElementPrinter {
             System.out.print("--> [");
             System.out.print(new QName(e.getNamespaceURI(), e.getLocalName()));
             System.out.println("], Child Element Count = " + et.getChildElementCount());
-            Element firstChild = et.getFirstElementChild();
-            if (firstChild != null) {
-                print(firstChild, depth + 1);
+            Element firstElementChild = et.getFirstElementChild();
+            if (firstElementChild != null) {
+                print(firstElementChild, depth + 1);
             }
             e = et.getNextElementSibling();
         }
