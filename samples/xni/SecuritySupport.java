@@ -31,6 +31,8 @@ import java.security.PrivilegedExceptionAction;
  * It is package private and therefore is not exposed as part of any API.
  * 
  * @xerces.internal
+ * 
+ * @version $Id$
  */
 final class SecuritySupport {
 
