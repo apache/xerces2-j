@@ -1772,13 +1772,13 @@ extends ParentNode implements Document  {
         // Return null if the source is null
         
         if (source == null) {
-        	return null;
+            return null;
         } 
         else if (source != null && source.getOwnerDocument() != null) {
 
             DOMImplementation thisImpl = this.getImplementation();
             DOMImplementation otherImpl = source.getOwnerDocument().getImplementation();
-            
+
             // when the source node comes from a different implementation.
             if (thisImpl != otherImpl) {
                 // Adopting from a deferred DOM to a non-deferred DOM
@@ -1795,7 +1795,12 @@ extends ParentNode implements Document  {
                     // Adopting between two dissimilar DOMs is not allowed
                     return null;  
                 }
-        	}
+            }
+            // Adopting from a deferred DOM into another deferred DOM
+            else if (otherImpl instanceof org.apache.xerces.dom.DeferredDOMImplementationImpl) {
+                // traverse the DOM and expand deferred nodes and then allow adoption
+                undeferChildren (node);
+            }
         }
         
         switch (node.getNodeType()) {
