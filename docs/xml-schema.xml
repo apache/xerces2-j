@@ -19,7 +19,7 @@
 <s1 title="XML Schema">
     <s2 title="Introduction">
         <p>This package contains an implementation of the W3C XML 
-        Schema Language, a recommendation of the Worldwide Web Consortium
+        Schema 1.0 Language, a recommendation of the Worldwide Web Consortium
         available in three parts:  
         <jump href="http://www.w3.org/TR/XMLSchema-0">XML Schema:  Primer</jump>  and
         <jump href="http://www.w3.org/TR/XMLSchema-1">XML Schema:  Structures</jump>  and
@@ -27,6 +27,12 @@
         We consider this implementation to be complete except for the
         limitations cited below.  The implementation has been
         extensively tested and known problem areas are set out below.
+        This package also contains a partial experimental implementation 
+        of the XML Schema 1.1
+        <jump href='http://www.w3.org/TR/2009/WD-xmlschema11-1-20091203/'>Structures</jump> and
+        <jump href='http://www.w3.org/TR/2009/WD-xmlschema11-2-20091203/'>Datatypes</jump>
+        Working Drafts (December 2009). The XML Schema 1.1 features supported by this
+        release are listed below.
         In this document we also discuss our interpretation of the
         specifications where it seems to us particularly likely that
         others might arrive at a different interpretation.
@@ -38,12 +44,51 @@
 <p>This section provides the following topics:</p>
 
 <ul>
+<li><jump href='#supported-schema-1.1-features'>Supported XML Schema 1.1 Features</jump></li>
 <li><jump href='#schema-limitations'>Limitations and known bugs</jump></li>
 <li><link idref='faq-xs'>How do I?</link> -- 
     the most frequently asked questions
     about XML Schema that include some sample code.</li>
 </ul>
 </s2>
+<anchor name="supported-schema-1.1-features"/>
+    <s2 title="Supported XML Schema 1.1 Features">
+        <ul>
+           <li>All Groups</li>
+           <ul>
+              <li>maxOccurs may now be >1</li>
+              <li>Wildcards are now allowed</li>
+              <li>Derivation by extension</li>
+           </ul>
+           <li>Assertions</li>
+           <li>Conditional Type Assignment</li>
+           <li>Open Content and Default Open Content</li>
+           <li>Default attribute group</li>
+           <li>Target namespace on local element/attribute declarations</li>
+           <li>Element declarations allowed in more than one substitution group</li>
+           <li>Wildcards</li>
+           <ul>
+              <li>not namespace</li>
+              <li>not QName</li>
+              <li>not #defined</li>
+              <li>not #definedSibling</li>
+              <li>Relaxation of UPA in the presence of wildcards</li>
+           </ul>
+           <li>Context property for local simple/complex type definitions</li>
+           <li>explicitTimezone facet and dateTimeStamp derived type</li>
+           <li>yearMonthDuration and dayTimeDuration derived types</li>
+           <li>precisionDecimal type</li>
+           <li>Union types not expanded</li>
+           <li>ID/IDREF</li>
+           <ul>
+              <li>Lists of ID</li>
+              <li>Unions involving ID</li>
+              <li>Multiple attributes of type ID</li>
+              <li>Default values of type IDREF</li>
+              <li>Default values for elements or attributes of type ID</li>
+           </ul>
+        </ul>
+    </s2>
 <anchor name='schema-limitations'/>
     <s2 title="Limitations">
         <ul>
