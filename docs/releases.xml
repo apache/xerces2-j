@@ -21,9 +21,13 @@
   <release version='&ParserName; 2.10.0'>
    <desc>
     <p>
-     This release fixes several bugs which were present in Xerces-J 2.9.1.
-     It also includes support for many XML Schema 1.1 features, as well as
-     a few enhancements and performance improvements.
+     This release introduces experimental support for the XML Schema 1.1
+     Structures and Datatypes (December 2009) Working Drafts. It also
+     contains an implementation of the parser related portions of JAXP 1.4,
+     including partial support for StAX 1.0 (javax.xml.stream.events only)
+     and a complete implementation of the DOM Element Traversal API. It
+     contains fixes for several bugs which were present in &ParserName; 2.9.1,
+     as well as a few other enhancements and performance improvements.
     </p>
    </desc>
    <changes>
