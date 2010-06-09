@@ -41,8 +41,14 @@ public class XSTypeHelper {
                   (type1Ns == null && typeDefn2.getNamespace() == null)) {
            nsEqual = true;   
         }
-        if (nsEqual == true && type1Name.equals(typeDefn2.getName())) {
-           typesIdentical = true;   
+        
+        if (nsEqual == true) {
+           if ((type1Name == null && typeDefn2.getName() == null) ||
+               (type1Name != null && type1Name.equals(typeDefn2.getName()))
+               && (schemaTypesIdentical(typeDefn1.getBaseType(),
+                                        typeDefn2.getBaseType()))) {
+               typesIdentical = true;   
+           }
         }
         
         return typesIdentical;
