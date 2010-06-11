@@ -576,6 +576,8 @@ Authors:
     <copy file="LICENSE-SAX.html" tofile="${distsrc.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
+    <copy file="LICENSE.cupv10k-runtime.txt" tofile="${distsrc.dir}/LICENSE.cupv10k-runtime.txt"/>
+    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
@@ -672,6 +674,8 @@ Authors:
     <copy file="LICENSE-SAX.html" tofile="${distbin.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distbin.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
+    <copy file="LICENSE.cupv10k-runtime.txt" tofile="${distsrc.dir}/LICENSE.cupv10k-runtime.txt"/>
+    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html"/>
     <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
 
     <copy file="${build.dir}/${jar.samples}" tofile="${distbin.dir}/${jar.samples}"/>
