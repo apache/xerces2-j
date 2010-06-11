@@ -15,3 +15,13 @@
      - voluntary contributions made by Paul Eng on behalf of the 
        Apache Software Foundation that were originally developed at iClick, Inc.,
        software copyright (c) 1999.
+       
+   This product includes/uses the PsychoPath XPath 2.0 Processor 
+   (org.eclipse.wst.xml.xpath2.processor_1.0.0.jar) developed at
+   The Eclipse Foundation (http://www.eclipse.org) and made available under
+   the Eclipse Public License v1.0.
+       
+   This product includes/uses the CUP Parser Generator (cupv10k-runtime.jar)
+   maintained at (http://www2.cs.tum.edu/projects/cup/)
+   Copyright 1996-1999 by Scott Hudson, Frank Flannery, C. Scott Ananian
+   
