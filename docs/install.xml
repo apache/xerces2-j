@@ -45,6 +45,14 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>NOTICE file for &ParserName;</td>
    </tr>
    <tr>
+    <td>LICENSE.cupv10k-runtime.txt</td>
+    <td>License for the CUP Parser Generator</td>
+   </tr>
+   <tr>
+    <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html</td>
+    <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
+   </tr>
+   <tr>
     <td>LICENSE.resolver.txt</td>
     <td>License for the XML Commons Resolver</td>
    </tr>
@@ -75,6 +83,14 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>Readme.html</td>
     <td>Web page redirect to docs/html/index.html</td>
+   </tr>
+   <tr>
+    <td>cupv10k-runtime.jar</td>
+    <td>Jar file containing the CUP Parser Generator Runtime</td>
+   </tr>
+   <tr>
+    <td>org.eclipse.wst.xml.xpath2.processor_1.0.0.jar</td>
+    <td>Jar file containing the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
     <td>resolver.jar</td>
@@ -142,6 +158,14 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>NOTICE</td>
     <td>NOTICE file for &ParserName;</td>
+   </tr>
+   <tr>
+    <td>LICENSE.cupv10k-runtime.txt</td>
+    <td>License for the CUP Parser Generator</td>
+   </tr>
+   <tr>
+    <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html</td>
+    <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
     <td>LICENSE.resolver.txt</td>
@@ -237,12 +261,28 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>NOTICE file for Apache Ant 1.7.1</td>
    </tr>
    <tr>
+    <td>cupv10k-runtime.jar</td>
+    <td>Jar file containing the CUP Parser Generator Runtime</td>
+   </tr>
+   <tr>
+    <td>cupv10k-runtime.LICENSE.txt</td>
+    <td>License for the CUP Parser Generator</td>
+   </tr>
+   <tr>
     <td>junit.jar</td>
     <td>Jar file containing JUnit 3.8.1</td>
    </tr>
    <tr>
     <td>junit.LICENSE.html</td>
     <td>License for JUnit 3.8.1</td>
+   </tr>
+   <tr>
+    <td>org.eclipse.wst.xml.xpath2.processor_1.0.0.jar</td>
+    <td>Jar file containing the Eclipse PsychoPath XPath 2.0 Processor</td>
+   </tr>
+   <tr>
+    <td>org.eclipse.wst.xml.xpath2.processor_1.0.0.LICENSE.html</td>
+    <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
     <td>resolver.jar</td>
