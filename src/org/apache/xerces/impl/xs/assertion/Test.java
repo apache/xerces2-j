@@ -18,7 +18,6 @@
 package org.apache.xerces.impl.xs.assertion;
 
 import org.apache.xerces.impl.xpath.XPath20Assert;
-import org.apache.xerces.xs.XSAssert;
 
 /**
  * Representation of XML Schema 1.1 assertion "test" attribute.

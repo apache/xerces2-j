@@ -21,7 +21,6 @@ import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.NamespaceSupport;
-import org.apache.xerces.xs.XSAssert;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;

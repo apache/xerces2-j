@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.xs;
+package org.apache.xerces.impl.xs.assertion;
 
-import org.apache.xerces.impl.xs.assertion.Test;
+import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * This interface represents the XML Schema 1.1 assertion component. Assertion
  * components were first introduced in the XML Schema structures 1.1
  * specification, as a means of constraining the existence and values of 
  * related elements and attributes.
+ * 
+ * @xerces.internal
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
