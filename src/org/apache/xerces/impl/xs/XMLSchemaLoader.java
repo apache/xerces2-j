@@ -50,6 +50,7 @@ import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -684,7 +685,7 @@ XSLoader, DOMConfiguration {
                 XSAttributeDecl attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
                 // validation the string value to get the list of URI's
                 attrDecl.fType.validate(sl, null, null);
-                if (!tokenizeSchemaLocationStr(sl, locations)) {
+                if (!tokenizeSchemaLocationStr(sl, locations, null)) {
                     // report warning (odd number of items)
                     er.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                             "SchemaLocation",
@@ -727,7 +728,7 @@ XSLoader, DOMConfiguration {
     // @param schemaStr     The schemaLocation string to tokenize
     // @param locations     Hashtable mapping namespaces to LocationArray objects holding lists of locaitons
     // @return true if no problems; false if string could not be tokenized
-    public static boolean tokenizeSchemaLocationStr(String schemaStr, Hashtable locations) {
+    public static boolean tokenizeSchemaLocationStr(String schemaStr, Hashtable locations, String base) {
         if (schemaStr!= null) {
             StringTokenizer t = new StringTokenizer(schemaStr, " \n\t\r");
             String namespace, location;
@@ -741,6 +742,12 @@ XSLoader, DOMConfiguration {
                 if(la == null) {
                     la = new LocationArray();
                     locations.put(namespace, la);
+                }
+                if (base != null) {
+                    try {
+                        location = XMLEntityManager.expandSystemId(location, base, false);
+                    } catch (MalformedURIException e) {
+                    }
                 }
                 la.addLocation(location);
             }

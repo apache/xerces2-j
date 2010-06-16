@@ -2015,16 +2015,17 @@ public class XMLSchemaValidator
         }
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
-        // parse them to get the grammars
-
-        String sLocation =
-            attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_SCHEMALOCATION);
-        String nsLocation =
-            attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
-        //store the location hints..  we need to do it so that we can defer the loading of grammar until
-        //there is a reference to a component from that namespace. To provide location hints to the
-        //application for a namespace
-        storeLocations(sLocation, nsLocation);
+        // parse them to get the grammars. But only do this if the grammar can grow.
+        if (!fUseGrammarPoolOnly) {
+            String sLocation =
+                attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_SCHEMALOCATION);
+            String nsLocation =
+                attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
+            //store the location hints..  we need to do it so that we can defer the loading of grammar until
+            //there is a reference to a component from that namespace. To provide location hints to the
+            //application for a namespace
+            storeLocations(sLocation, nsLocation);
+        }
 
         // if we are in the content of "skip", then just skip this element
         // REVISIT:  is this the correct behaviour for ID constraints?  -NG
@@ -2899,7 +2900,7 @@ public class XMLSchemaValidator
 
     void storeLocations(String sLocation, String nsLocation) {
         if (sLocation != null) {
-            if (!XMLSchemaLoader.tokenizeSchemaLocationStr(sLocation, fLocationPairs)) {
+            if (!XMLSchemaLoader.tokenizeSchemaLocationStr(sLocation, fLocationPairs, fLocator == null ? null : fLocator.getExpandedSystemId())) {
                 // error!
                 fXSIErrorReporter.reportError(
                     XSMessageFormatter.SCHEMA_DOMAIN,
@@ -2914,6 +2915,12 @@ public class XMLSchemaValidator
             if (la == null) {
                 la = new XMLSchemaLoader.LocationArray();
                 fLocationPairs.put(XMLSymbols.EMPTY_STRING, la);
+            }
+            if (fLocator != null) {
+                try {
+                    nsLocation = XMLEntityManager.expandSystemId(nsLocation, fLocator.getExpandedSystemId(), false);
+                } catch (MalformedURIException e) {
+                }
             }
             la.addLocation(nsLocation);
         }
@@ -3053,13 +3060,8 @@ public class XMLSchemaValidator
         int counter = 0;
 
         for (int i=0; i<length; i++) {
-            try {
-                String id = XMLEntityManager.expandSystemId(locations[i], desc.getBaseSystemId(), false);
-                if (!docLocations.contains(id)) {
-                    hints[counter++] = locations[i];
-                }
-            }
-            catch (MalformedURIException e) {
+            if (!docLocations.contains(locations[i])) {
+                hints[counter++] = locations[i];
             }
         }
 
