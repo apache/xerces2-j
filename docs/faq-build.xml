@@ -31,7 +31,7 @@
   <a>
    <p>
     To build &ParserName; you need the Java Development
-    Kit (JDK) version 1.2 (or higher) installed on your machine.
+    Kit (JDK) version 1.3 (or higher) installed on your machine.
     The actual build is performed by the Ant program which is
     written in Java and is a subproject of the Apache
     <jump href='http://ant.apache.org/'>Ant</jump>
