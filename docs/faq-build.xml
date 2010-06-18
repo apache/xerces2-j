@@ -39,7 +39,7 @@
     all of the tools you need (including Ant) are contained
     in the <ref>&ParserName;-tools.&parserversion;.zip</ref>
     file, packaged separately. Go to the &ParserName; 
-    <jump href='http://xerces.apache.org/xerces2-j/download.cgi'>download</jump>
+    <jump href='http://xerces.apache.org/mirrors.cgi'>download</jump>
     page to download the tools package and then extract it in the
     same location as the source package.
    </p>
