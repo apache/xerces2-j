@@ -37,7 +37,7 @@ import org.apache.xerces.stax.ImmutableLocation;
  *
  * @version $Id$
  */
-public abstract class XMLEventImpl implements XMLEvent {
+abstract class XMLEventImpl implements XMLEvent {
 
     /**
      * Constant representing the type of this event. 

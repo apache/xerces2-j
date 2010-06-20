@@ -34,7 +34,7 @@ import javax.xml.stream.events.Namespace;
  * 
  * @version $Id$
  */
-public abstract class ElementImpl extends XMLEventImpl {
+abstract class ElementImpl extends XMLEventImpl {
     
     /**
      * The qualified name of the element that is being closed.
