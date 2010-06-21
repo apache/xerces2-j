@@ -613,10 +613,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     try {
                         minVer = new BigDecimal(attributes.getValue(i));                    
                     }
-                    catch (NumberFormatException ife) {
+                    catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                 "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName, ife.getMessage()},
+                                new Object[] {element.localpart, attrLocalName, nfe.getMessage()},
                                 XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
@@ -624,10 +624,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     try {
                         maxVer = new BigDecimal(attributes.getValue(i));                        
                     }
-                    catch (NumberFormatException ife) {
+                    catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                 "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName, ife.getMessage()},
+                                new Object[] {element.localpart, attrLocalName, nfe.getMessage()},
                                 XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
