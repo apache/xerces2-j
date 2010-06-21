@@ -18,10 +18,10 @@
 package org.apache.xerces.impl.xs.opti;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.xs.DecimalDV;
 import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -314,15 +314,18 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
-
+        
         if (fPerformConditionalInclusion) {
             if (fIgnoreDepth > -1) {
                 return;
             }
 
             if (fDepth > -1) {
-                checkSupportedVersion(element, attributes);
+                boolean ignoreElement = checkSupportedVersion(element, attributes);
                 if (fIgnoreDepth > -1) {
+                    if (ignoreElement) {
+                       fIgnoreDepth--;   
+                    }
                     return;
                 }
             }
@@ -386,7 +389,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         } 
         else {
             schemaDOM.endAnnotationElement(element);
-        } 
+        }
+
     }
     
     
@@ -593,39 +597,37 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fSupportedVersion = version;
     }
     
-    private void checkSupportedVersion(QName element, XMLAttributes attributes) {
+    private boolean checkSupportedVersion(QName element, XMLAttributes attributes) {
+        
+        boolean ignoreElement = false;
+        
+        BigDecimal minVer = null;
+        BigDecimal maxVer = null;
+        
         final int length = attributes.getLength();
         for (int i = 0; i < length; ++i) {
             String uri = attributes.getURI(i);
-            if (uri != null && uri == SchemaSymbols.URI_SCHEMAVERSION) {
+            if (uri != null && SchemaSymbols.URI_SCHEMAVERSION.equals(uri)) {
                 String attrLocalName = attributes.getLocalName(i);
-                if (attrLocalName == SchemaSymbols.ATT_MINVERSION) {
+                if (SchemaSymbols.ATT_MINVERSION.equals(attrLocalName)) {
                     try {
-                        XSDecimal minVer = (XSDecimal) fDecimalDV.getActualValue(attributes.getValue(i), null);
-                        if (fDecimalDV.compare(minVer, fSupportedVersion) == 1) {
-                            fIgnoreDepth++;
-                            return;
-                        }
+                        minVer = new BigDecimal(attributes.getValue(i));                    
                     }
-                    catch (InvalidDatatypeValueException ide) {
+                    catch (NumberFormatException ife) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                 "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName, ide.getMessage()},
+                                new Object[] {element.localpart, attrLocalName, ife.getMessage()},
                                 XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
-                else if (attrLocalName == SchemaSymbols.ATT_MAXVERSION) {
+                else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
                     try {
-                        XSDecimal maxVer = (XSDecimal) fDecimalDV.getActualValue(attributes.getValue(i), null);
-                        if (fDecimalDV.compare(maxVer, fSupportedVersion) == -1) {
-                            fIgnoreDepth++;
-                            return;
-                        }
+                        maxVer = new BigDecimal(attributes.getValue(i));                        
                     }
-                    catch (InvalidDatatypeValueException ide) {
+                    catch (NumberFormatException ife) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                 "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName, ide.getMessage()},
+                                new Object[] {element.localpart, attrLocalName, ife.getMessage()},
                                 XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
@@ -634,7 +636,37 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
             }
         }
-    }    
+        
+        // as per XML Schema 1.1 spec, the condition vc:minVersion <= V < vc:maxVersion
+        // needs to be true for a schema component to be included in a validation
+        // episode (ref, http://www.w3.org/TR/xmlschema11-1/#cip). here value of "V" is 
+        // an instance variable fSupportedVersion.        
+        if (minVer != null && maxVer != null) {
+           // if both vc:minVersion & vc:maxVersion attributes are present on a schema component
+           if (!(minVer.compareTo(fSupportedVersion.getBigDecimal()) <= 0 &&
+              maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
+               fIgnoreDepth++;
+               ignoreElement = true;   
+           }
+        }
+        else if (minVer != null && maxVer == null) {
+          // only vc:minVersion attribute is present
+          if (!(minVer.compareTo(fSupportedVersion.getBigDecimal()) <= 0)) {
+              fIgnoreDepth++;
+              ignoreElement = true; 
+          }
+        }
+        else if (minVer == null && maxVer != null) {
+          // only vc:maxVersion attribute is present
+          if (!(maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
+              fIgnoreDepth++;
+              ignoreElement = true;  
+          }
+        }
+        
+        return ignoreElement;
+        
+    } //checkSupportedVersion    
 
     /**
      * A simple boolean based stack.
