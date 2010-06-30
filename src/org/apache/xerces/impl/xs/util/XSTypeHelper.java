@@ -34,21 +34,28 @@ public class XSTypeHelper {
                                                XSTypeDefinition typeDefn2) {
         boolean typesIdentical = false;
         
-        String type1Ns = typeDefn1.getNamespace();
-        String type1Name = typeDefn1.getName();        
-        boolean nsEqual = false;           
-        if ((type1Ns != null && type1Ns.equals(typeDefn2.getNamespace())) ||
-                  (type1Ns == null && typeDefn2.getNamespace() == null)) {
-           nsEqual = true;   
+        if ("anyType".equals(typeDefn1.getName()) && 
+            "anyType".equals(typeDefn2.getName())) {
+            typesIdentical = true;  
         }
         
-        if (nsEqual == true) {
-           if ((type1Name == null && typeDefn2.getName() == null) ||
-               (type1Name != null && type1Name.equals(typeDefn2.getName()))
-               && (schemaTypesIdentical(typeDefn1.getBaseType(),
-                                        typeDefn2.getBaseType()))) {
-               typesIdentical = true;   
-           }
+        if (!typesIdentical) {
+            String type1Ns = typeDefn1.getNamespace();
+            String type1Name = typeDefn1.getName();        
+            boolean nsEqual = false;           
+            if ((type1Ns != null && type1Ns.equals(typeDefn2.getNamespace())) ||
+                    (type1Ns == null && typeDefn2.getNamespace() == null)) {
+                nsEqual = true;   
+            }
+
+            if (nsEqual == true) {
+                if ((type1Name == null && typeDefn2.getName() == null) ||
+                        (type1Name != null && type1Name.equals(typeDefn2.getName()))
+                        && (schemaTypesIdentical(typeDefn1.getBaseType(),
+                                typeDefn2.getBaseType()))) {
+                    typesIdentical = true;   
+                }
+            }
         }
         
         return typesIdentical;
