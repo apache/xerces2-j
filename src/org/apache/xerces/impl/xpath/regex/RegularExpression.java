@@ -1190,16 +1190,12 @@ public class RegularExpression implements java.io.Serializable {
                     {
                         // Saves current position to avoid zero-width repeats.
                         final int id = op.getData();
-                        int previousOffset = con.offsets[id];
-                        if (previousOffset == offset) {
+                        if (con.closureContexts[id].contains(offset)) {
                             returned = true;
                             break;
                         }
-                        con.offsets[id] = offset;
-                        if (offset < previousOffset) {
-                            op = op.next;
-                            break;
-                        }
+                        
+                        con.closureContexts[id].addOffset(offset);
                     }
                     // fall through
 
@@ -1329,9 +1325,6 @@ public class RegularExpression implements java.io.Serializable {
 
                 switch (op.type) {
                 case Op.CLOSURE:
-                    con.offsets[op.getData()] = offset;
-                    // fall through - same behavior as Op.Question
-
                 case Op.QUESTION:
                     if (retValue < 0) {
                         op = op.next;
@@ -1978,13 +1971,49 @@ public class RegularExpression implements java.io.Serializable {
         }
     }
 
+    static final class ClosureContext {
+        
+        int[] offsets = new int[4];
+        int currentIndex = 0;
+        
+        boolean contains(int offset) {
+            for (int i=0; i<currentIndex;++i) {
+                if (offsets[i] == offset) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        void reset() {
+            currentIndex = 0;
+        }
+
+        void addOffset(int offset) {
+            // We do not check for duplicates, caller is responsible for that
+            if (currentIndex == offsets.length) {
+                offsets = expandOffsets();
+            }
+            offsets[currentIndex++] = offset;
+        }
+        
+        private int[] expandOffsets() {
+            final int len = offsets.length;
+            final int newLen = len << 1;
+            int[] newOffsets = new int[newLen];
+            
+            System.arraycopy(offsets, 0, newOffsets, 0, currentIndex);
+            return newOffsets;
+        }
+    }
+    
     static final class Context {
         int start;
         int limit;
         int length;
         Match match;
         boolean inuse = false;
-        int[] offsets;
+        ClosureContext[] closureContexts;
         
         private StringTarget stringTarget; 
         private CharArrayTarget charArrayTarget;
@@ -1999,9 +2028,17 @@ public class RegularExpression implements java.io.Serializable {
             this.length = this.limit-this.start;
             setInUse(true);
             this.match = null;
-            if (this.offsets == null || this.offsets.length != nofclosures)
-                this.offsets = new int[nofclosures];
-            for (int i = 0;  i < nofclosures;  i ++)  this.offsets[i] = -1;
+            if (this.closureContexts == null || this.closureContexts.length != nofclosures) {
+                this.closureContexts = new ClosureContext[nofclosures];
+            }
+            for (int i = 0;  i < nofclosures;  i ++)  {
+                if (this.closureContexts[i] == null) {
+                    this.closureContexts[i] = new ClosureContext();
+                }
+                else {
+                    this.closureContexts[i].reset();
+                }
+            }
         }
 
         void reset(CharacterIterator target, int start, int limit, int nofclosures) {
