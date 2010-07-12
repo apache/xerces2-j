@@ -294,13 +294,13 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             
             attributes.removeAllAttributes();
             String schemaPrefix = fNamespaceContext.getPrefix(SchemaSymbols.URI_SCHEMAFORSCHEMA);
-            QName annQName = new QName(schemaPrefix, SchemaSymbols.ELT_ANNOTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_ANNOTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-            schemaDOM.startAnnotation(annQName, attributes, fNamespaceContext);
-            QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-            schemaDOM.startAnnotationElement(elemQName, attributes);
+            final String annRawName = (schemaPrefix.length() == 0) ? SchemaSymbols.ELT_ANNOTATION : (schemaPrefix + ':' + SchemaSymbols.ELT_ANNOTATION);
+            schemaDOM.startAnnotation(annRawName, attributes, fNamespaceContext);
+            final String elemRawName = (schemaPrefix.length() == 0) ? SchemaSymbols.ELT_DOCUMENTATION : (schemaPrefix + ':' + SchemaSymbols.ELT_DOCUMENTATION);
+            schemaDOM.startAnnotationElement(elemRawName, attributes);
             schemaDOM.charactersRaw("SYNTHETIC_ANNOTATION");     
-            schemaDOM.endSyntheticAnnotationElement(elemQName, false);
-            schemaDOM.endSyntheticAnnotationElement(annQName, true);
+            schemaDOM.endSyntheticAnnotationElement(elemRawName, false);
+            schemaDOM.endSyntheticAnnotationElement(annRawName, true);
             
             schemaDOM.endElement();
             
@@ -377,13 +377,13 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 boolean sawann = fSawAnnotation.pop();
                 if (value && !sawann) {
                     String schemaPrefix = fNamespaceContext.getPrefix(SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    QName annQName = new QName(schemaPrefix, SchemaSymbols.ELT_ANNOTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_ANNOTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    schemaDOM.startAnnotation(annQName, fEmptyAttr, fNamespaceContext);
-                    QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    schemaDOM.startAnnotationElement(elemQName, fEmptyAttr);
+                    final String annRawName = (schemaPrefix.length() == 0) ? SchemaSymbols.ELT_ANNOTATION : (schemaPrefix + ':' + SchemaSymbols.ELT_ANNOTATION);
+                    schemaDOM.startAnnotation(annRawName, fEmptyAttr, fNamespaceContext);
+                    final String elemRawName = (schemaPrefix.length() == 0) ? SchemaSymbols.ELT_DOCUMENTATION : (schemaPrefix + ':' + SchemaSymbols.ELT_DOCUMENTATION);
+                    schemaDOM.startAnnotationElement(elemRawName, fEmptyAttr);
                     schemaDOM.charactersRaw("SYNTHETIC_ANNOTATION");     
-                    schemaDOM.endSyntheticAnnotationElement(elemQName, false);
-                    schemaDOM.endSyntheticAnnotationElement(annQName, true);
+                    schemaDOM.endSyntheticAnnotationElement(elemRawName, false);
+                    schemaDOM.endSyntheticAnnotationElement(annRawName, true);
                 }
             }
             schemaDOM.endElement();
