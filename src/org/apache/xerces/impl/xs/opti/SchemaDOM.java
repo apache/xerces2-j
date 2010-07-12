@@ -213,12 +213,20 @@ public class SchemaDOM extends DefaultDocument {
     }
     
     void endAnnotationElement(QName elemName) {
-        fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
+        endAnnotationElement(elemName.rawname);
+    }
+    
+    void endAnnotationElement(String elemRawName) {
+        fAnnotationBuffer.append("</").append(elemRawName).append(">");
     }
     
     void endSyntheticAnnotationElement(QName elemName, boolean complete) {
+        endSyntheticAnnotationElement(elemName.rawname, complete);
+    }
+    
+    void endSyntheticAnnotationElement(String elemRawName, boolean complete) {
         if(complete) {
-            fAnnotationBuffer.append("\n</").append(elemName.rawname).append(">");
+            fAnnotationBuffer.append("\n</").append(elemRawName).append(">");
             // note that this is always called after endElement on <annotation>'s
             // child and before endElement on annotation.
             // hence, we must make this the child of the current
@@ -229,7 +237,7 @@ public class SchemaDOM extends DefaultDocument {
             // these things
             fAnnotationBuffer = null;
         } else      //capturing character calls
-            fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
+            fAnnotationBuffer.append("</").append(elemRawName).append(">");
     }
     
     void startAnnotationCDATA() {
@@ -338,8 +346,12 @@ public class SchemaDOM extends DefaultDocument {
     // commence the serialization of an annotation
     void startAnnotation(QName elemName, XMLAttributes attributes,
             NamespaceContext namespaceContext) {
+        startAnnotation(elemName.rawname, attributes, namespaceContext);
+    }
+    void startAnnotation(String elemRawName, XMLAttributes attributes,
+            NamespaceContext namespaceContext) {
         if(fAnnotationBuffer == null) fAnnotationBuffer = new StringBuffer(256);
-        fAnnotationBuffer.append("<").append(elemName.rawname).append(" ");
+        fAnnotationBuffer.append("<").append(elemRawName).append(" ");
         
         // attributes are a bit of a pain.  To get this right, we have to keep track
         // of the namespaces we've seen declared, then examine the namespace context
@@ -380,7 +392,10 @@ public class SchemaDOM extends DefaultDocument {
         fAnnotationBuffer.append(">\n");
     }
     void startAnnotationElement(QName elemName, XMLAttributes attributes) {
-        fAnnotationBuffer.append("<").append(elemName.rawname);
+        startAnnotationElement(elemName.rawname, attributes);
+    }
+    void startAnnotationElement(String elemRawName, XMLAttributes attributes) {
+        fAnnotationBuffer.append("<").append(elemRawName);
         for(int i=0; i<attributes.getLength(); i++) {
             String aValue = attributes.getValue(i);
             fAnnotationBuffer.append(" ").append(attributes.getQName(i)).append("=\"").append(processAttValue(aValue)).append("\"");
