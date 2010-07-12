@@ -52,7 +52,7 @@ public class SchemaDOM extends DefaultDocument {
     boolean inCDATA;
     
     // for annotation support:
-    StringBuffer fAnnotationBuffer = null;
+    private StringBuffer fAnnotationBuffer = null;
     
     public SchemaDOM() {
         reset();
@@ -165,38 +165,44 @@ public class SchemaDOM extends DefaultDocument {
     }
     
     // note that this will only be called within appinfo/documentation
-    void characters(XMLString text ) {
+    void characters(XMLString text) {
         
         // escape characters if necessary
-        if (!inCDATA) {   
-            for (int i = text.offset; i < text.offset+text.length; ++i ) {
+        if (!inCDATA) {
+            final StringBuffer annotationBuffer = fAnnotationBuffer;
+            for (int i = text.offset; i < text.offset+text.length; ++i) {
                 char ch = text.ch[i];
                 if (ch == '&') {
-                    fAnnotationBuffer.append("&amp;");
+                    annotationBuffer.append("&amp;");
                 } 
                 else if (ch == '<') {
-                    fAnnotationBuffer.append("&lt;");
+                    annotationBuffer.append("&lt;");
                 }
                 // character sequence "]]>" cannot appear in content, 
                 // therefore we should escape '>'.
                 else if (ch == '>') {
-                    fAnnotationBuffer.append("&gt;");
+                    annotationBuffer.append("&gt;");
                 }
                 // If CR is part of the document's content, it
                 // must not be printed as a literal otherwise
                 // it would be normalized to LF when the document
                 // is reparsed.
                 else if (ch == '\r') {
-                    fAnnotationBuffer.append("&#xD;");
+                    annotationBuffer.append("&#xD;");
                 }
                 else {
-                    fAnnotationBuffer.append(ch);
+                    annotationBuffer.append(ch);
                 }
             }
         }
         else {
             fAnnotationBuffer.append(text.ch, text.offset, text.length);
         }
+    }
+    
+    // note that this will only be called within appinfo/documentation
+    void charactersRaw(String text) {
+        fAnnotationBuffer.append(text);
     }
     
     void endAnnotation(QName elemName, ElementImpl annotation) {
