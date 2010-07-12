@@ -345,7 +345,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             schemaDOM.startAnnotation(annQName, attributes, fNamespaceContext);
             QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
             schemaDOM.startAnnotationElement(elemQName, attributes);
-            schemaDOM.characters(new XMLString("SYNTHETIC_ANNOTATION".toCharArray(), 0, 20 ));     
+            schemaDOM.charactersRaw("SYNTHETIC_ANNOTATION");     
             schemaDOM.endSyntheticAnnotationElement(elemQName, false);
             schemaDOM.endSyntheticAnnotationElement(annQName, true);
             
@@ -430,7 +430,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                         schemaDOM.startAnnotation(annQName, fEmptyAttr, fNamespaceContext);
                         QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
                         schemaDOM.startAnnotationElement(elemQName, fEmptyAttr);
-                        schemaDOM.characters(new XMLString("SYNTHETIC_ANNOTATION".toCharArray(), 0, 20 ));     
+                        schemaDOM.charactersRaw("SYNTHETIC_ANNOTATION");     
                         schemaDOM.endSyntheticAnnotationElement(elemQName, false);
                         schemaDOM.endSyntheticAnnotationElement(annQName, true);
                     }
