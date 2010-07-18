@@ -918,7 +918,7 @@ public abstract class AbstractSAXParser
             // SAX2 extension
             if (fDeclHandler != null) {
                 // used as a key to detect duplicate attribute definitions.
-                String elemAttr = new StringBuffer(elementName).append("<").append(attributeName).toString();
+                String elemAttr = new StringBuffer(elementName).append('<').append(attributeName).toString();
                 if(fDeclaredAttrs.get(elemAttr) != null) {
                     // we aren't permitted to return duplicate attribute definitions
                     return;
@@ -933,7 +933,7 @@ public abstract class AbstractSAXParser
                       str.append(" (");
                     }
                     else {
-                      str.append("(");
+                      str.append('(');
                     }
                     for (int i = 0; i < enumeration.length; i++) {
                         str.append(enumeration[i]);

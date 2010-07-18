@@ -1802,7 +1802,7 @@ public class XMLDTDValidator
                 buffer.append('(');
                 for (int i=0; i<attrDecl.simpleType.enumeration.length ; i++) {
                     if (i > 0) {
-                        buffer.append("|");
+                        buffer.append('|');
                     }
                     buffer.append(attrDecl.simpleType.enumeration[i]);
                 }

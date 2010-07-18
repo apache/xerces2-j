@@ -504,7 +504,7 @@ public class XSWildcardDecl implements XSWildcard {
                 }
                 break;
             }
-            buffer.append("]");
+            buffer.append(']');
             fDescription = buffer.toString();
         }
 

@@ -765,7 +765,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			else if (value < 100)
 				message.append("00");
 			else if (value < 1000)
-				message.append("0");
+				message.append('0');
 			message.append(value);
 		}
 		else if (nch == 2) {

@@ -1469,7 +1469,7 @@ public class XMLDTDScannerImpl
             if(fNamespaces && fEntityScanner.peekChar() == ':') {
                 fEntityScanner.scanChar();
                 XMLStringBuffer colonName = new XMLStringBuffer(name);
-                colonName.append(":");
+                colonName.append(':');
                 String str = fEntityScanner.scanName();
                 if (str != null)
                     colonName.append(str);
@@ -1720,7 +1720,7 @@ public class XMLDTDScannerImpl
             if(fNamespaces && fEntityScanner.peekChar() == ':') {
                 fEntityScanner.scanChar();
                 XMLStringBuffer colonName = new XMLStringBuffer(name);
-                colonName.append(":");
+                colonName.append(':');
                 colonName.append(fEntityScanner.scanName());
                 reportFatalError("ColonNotLegalWithNS", new Object[] {colonName.toString()});
                 skipSeparator(true, !scanningInternalSubset());

@@ -205,7 +205,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         String contentType[] = {"EMPTY", "SIMPLE", "ELEMENT", "MIXED"};
         String derivedBy[] = {"EMPTY", "EXTENSION", "RESTRICTION"};
 
-        str.append("Complex type name='").append(fTargetNamespace).append(",").append(getTypeName()).append("', ");
+        str.append("Complex type name='").append(fTargetNamespace).append(',').append(getTypeName()).append("', ");
         if (fBaseType != null) {
             str.append(" base type name='").append(fBaseType.getName()).append("', ");
         }

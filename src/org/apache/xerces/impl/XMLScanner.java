@@ -663,7 +663,7 @@ public abstract class XMLScanner
                 if(fNamespaces && fEntityScanner.peekChar() == ':') { 
                     fEntityScanner.scanChar();
                     XMLStringBuffer colonName = new XMLStringBuffer(target);
-                    colonName.append(":");
+                    colonName.append(':');
                     String str = fEntityScanner.scanName();
                     if (str != null)
                         colonName.append(str);
