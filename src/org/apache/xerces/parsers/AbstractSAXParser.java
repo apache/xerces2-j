@@ -262,7 +262,11 @@ public abstract class AbstractSAXParser
                 if (locator != null) {
                     fDocumentHandler.setDocumentLocator(new LocatorProxy(locator));
                 }
-                fDocumentHandler.startDocument();
+                // The application may have set the DocumentHandler to null
+                // within setDocumentLocator() so we need to check again.
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.startDocument();
+                }
             }
 
             // SAX2
@@ -270,7 +274,11 @@ public abstract class AbstractSAXParser
                 if (locator != null) {
                     fContentHandler.setDocumentLocator(new LocatorProxy(locator));
                 }
-                fContentHandler.startDocument();
+                // The application may have set the ContentHandler to null
+                // within setDocumentLocator() so we need to check again.
+                if (fContentHandler != null) {
+                    fContentHandler.startDocument();
+                }  
             }
         }
         catch (SAXException e) {
