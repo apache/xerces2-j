@@ -258,7 +258,7 @@ public class XSNamedMapImpl extends AbstractMap implements XSNamedMap {
     }
     
     /** An entry in the XSNamedMap. **/
-    private final class XSNamedMapEntry implements Map.Entry {
+    private static final class XSNamedMapEntry implements Map.Entry {
         private final QName key;
         private final XSObject value;
         public XSNamedMapEntry(QName key, XSObject value) {
