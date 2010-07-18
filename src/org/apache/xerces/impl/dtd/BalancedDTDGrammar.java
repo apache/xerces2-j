@@ -230,7 +230,7 @@ final class BalancedDTDGrammar extends DTDGrammar {
         if (begin == end) {
             return fGroupIndexStack[fDepth][begin];
         }
-        int middle = (begin + end) / 2;
+        final int middle = (begin + end) >>> 1;
         return addContentSpecNode(fOpStack[fDepth], 
                 addContentSpecNodes(begin, middle), 
                 addContentSpecNodes(middle + 1, end));

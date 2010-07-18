@@ -1884,7 +1884,7 @@ public class DeferredDocumentImpl
         while (start <= end) {
 
             // is this the one we're looking for?
-            int middle = (start + end) / 2;
+            int middle = (start + end) >>> 1;
             int value  = values[middle];
             if (DEBUG_IDS) {
                 System.out.print("  value: "+value+", target: "+target+" // ");
