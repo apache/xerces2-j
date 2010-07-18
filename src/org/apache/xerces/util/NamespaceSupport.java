@@ -320,7 +320,7 @@ public class NamespaceSupport implements NamespaceContext {
             StringBuffer buf = new StringBuffer();
             for (int i=0;i<size;i++){
                 buf.append(prefixes[i]);
-                buf.append(" ");
+                buf.append(' ');
             }
                 
             return buf.toString(); 

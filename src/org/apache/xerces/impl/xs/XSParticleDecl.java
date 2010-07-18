@@ -132,12 +132,12 @@ public class XSParticleDecl implements XSParticle {
             appendParticle(buffer);
             if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
                   fMinOccurs == 1 && fMaxOccurs == 1)) {
-                buffer.append("{").append(fMinOccurs);
+                buffer.append('{').append(fMinOccurs);
                 if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                     buffer.append("-UNBOUNDED");
                 else if (fMinOccurs != fMaxOccurs)
-                    buffer.append("-").append(fMaxOccurs);
-                buffer.append("}");
+                    buffer.append('-').append(fMaxOccurs);
+                buffer.append('}');
             }
             fDescription = buffer.toString();
         }

@@ -211,10 +211,10 @@ public class XSWildcardDecl implements XSWildcard {
                     buffer.append(", ");
                     buffer.append(SchemaSymbols.ATTVAL_TWOPOUNDDEFINEDSIBLING);
                 }
-                buffer.append(")");
+                buffer.append(')');
             }
 
-            buffer.append("]");
+            buffer.append(']');
             fDescription = buffer.toString();
         }
 
