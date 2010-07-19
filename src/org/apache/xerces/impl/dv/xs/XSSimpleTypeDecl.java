@@ -327,9 +327,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fVariety = VARIETY_ATOMIC;
         fValidationDV = validateDV;
         fFacetsDefined = FACET_WHITESPACE;
-        if (validateDV == DV_STRING) {
+        if (validateDV == DV_ANYSIMPLETYPE ||
+            validateDV == DV_ANYATOMICTYPE ||
+            validateDV == DV_STRING) {
             fWhiteSpace = WS_PRESERVE;
-        } else {
+        } 
+        else {
             fWhiteSpace = WS_COLLAPSE;
             fFixedFacet = FACET_WHITESPACE;
         }
