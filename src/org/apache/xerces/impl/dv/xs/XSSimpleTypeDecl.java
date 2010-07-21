@@ -2127,12 +2127,19 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * @return  True if the facet is defined, false otherwise.
      */
     public boolean isDefinedFacet(short facetName) {
-        if ((fFacetsDefined & facetName) != 0)
+        if (fValidationDV == DV_ANYSIMPLETYPE ||
+            fValidationDV == DV_ANYATOMICTYPE) {
+            return false;
+        }
+        if ((fFacetsDefined & facetName) != 0) {
             return true;
-        if (fPatternType != SPECIAL_PATTERN_NONE)
+        }
+        if (fPatternType != SPECIAL_PATTERN_NONE) {
             return facetName == FACET_PATTERN;
-        if (fValidationDV == DV_INTEGER)
+        }
+        if (fValidationDV == DV_INTEGER) {
             return facetName == FACET_PATTERN || facetName == FACET_FRACTIONDIGITS;
+        }
         return false;
     }
 
@@ -2141,10 +2148,16 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * combination of FACET_XXX constants of all defined facets.
      */
     public short getDefinedFacets() {
-        if (fPatternType != SPECIAL_PATTERN_NONE)
+        if (fValidationDV == DV_ANYSIMPLETYPE ||
+            fValidationDV == DV_ANYATOMICTYPE) {
+            return FACET_NONE;
+        }
+        if (fPatternType != SPECIAL_PATTERN_NONE) {
             return (short)(fFacetsDefined | FACET_PATTERN);
-        if (fValidationDV == DV_INTEGER)
+        }
+        if (fValidationDV == DV_INTEGER) {
             return (short)(fFacetsDefined | FACET_PATTERN | FACET_FRACTIONDIGITS);
+        }
         return fFacetsDefined;
     }
 
@@ -2192,6 +2205,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             case FACET_MAXLENGTH:
                 return (fMaxLength == -1)?null:Integer.toString(fMaxLength);
             case FACET_WHITESPACE:
+                if (fValidationDV == DV_ANYSIMPLETYPE ||
+                    fValidationDV == DV_ANYATOMICTYPE) {
+                    return null;
+                }
                 return WS_FACET_STRING[fWhiteSpace];
             case FACET_MAXINCLUSIVE:
                 return (fMaxInclusive == null)?null:fMaxInclusive.toString();
@@ -3011,7 +3028,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
             XSFacetImpl[] facets = new XSFacetImpl[10];
             int count = 0;
-            if ((fFacetsDefined & FACET_WHITESPACE) != 0) {
+            if ((fFacetsDefined & FACET_WHITESPACE) != 0 &&
+                fValidationDV != DV_ANYSIMPLETYPE &&
+                fValidationDV != DV_ANYATOMICTYPE) {
                 facets[count] =
                     new XSFacetImpl(
                             FACET_WHITESPACE,
@@ -3110,7 +3129,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                             minInclusiveAnnotation);
                 count++;
             }
-            fFacets = new XSObjectListImpl(facets, count);
+            fFacets = (count > 0) ? new XSObjectListImpl(facets, count) : XSObjectListImpl.EMPTY_LIST;
         }
         return (fFacets != null) ? fFacets : XSObjectListImpl.EMPTY_LIST;
     }
