@@ -780,7 +780,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                                typeOrFacetRawValue.indexOf(':') + 1);
               String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, 
                                                    typeOrFacetRawValue.indexOf(':'));
-              typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix);
+              typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix.intern());
            }
            else {
                typeOrFacetLocalName = typeOrFacetRawValue;    
