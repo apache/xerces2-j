@@ -34,7 +34,7 @@ import org.apache.xerces.xni.QName;
  * 
  * @author Mukul Gandhi, IBM
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class SchemaVersioningHelper {
     
