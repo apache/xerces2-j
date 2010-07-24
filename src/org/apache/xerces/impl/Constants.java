@@ -485,6 +485,12 @@ public final class Constants {
     public final static short SCHEMA_VERSION_1_0_EXTENDED = 2;
     public final static short SCHEMA_VERSION_1_1 = 4;
     
+    // Constants to support XML Schema 1.1 conditional inclusion functionality
+    public final static short IS_TYPE = 0;
+    public final static short IS_FACET = 1;
+    public final static short TYPE_AND_FACET_AVAILABILITY = 2;
+    public final static short TYPE_AND_FACET_UNAVAILABILITY = 3;
+    
     // private
     
     /** SAX features. */

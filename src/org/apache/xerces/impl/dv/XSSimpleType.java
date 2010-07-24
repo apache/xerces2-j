@@ -60,7 +60,7 @@ public interface XSSimpleType extends XSSimpleTypeDefinition {
     public static final short ET_PROHIBITED = 2;  
     
     /**
-     * Constant defined for the primitive built-in simple tpyes.
+     * Constant defined for the primitive built-in simple types.
      * see <a href='http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes'>
      * XML Schema Part 2: Datatypes </a>
      */
@@ -76,7 +76,7 @@ public interface XSSimpleType extends XSSimpleTypeDefinition {
     public static final short PRIMITIVE_DOUBLE        = 5;
     /** "duration" type */
     public static final short PRIMITIVE_DURATION      = 6;
-    /** "dataTime" type */
+    /** "dateTime" type */
     public static final short PRIMITIVE_DATETIME      = 7;
     /** "time" type */
     public static final short PRIMITIVE_TIME          = 8;

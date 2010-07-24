@@ -189,7 +189,7 @@ public class NamespaceSupport implements NamespaceContext {
         
         // find prefix in current context
         for (int i = fNamespaceSize; i > 0; i -= 2) {
-            if (fNamespace[i - 2] == prefix) {
+            if (prefix.equals(fNamespace[i - 2])) {
                 return fNamespace[i - 1];
             }
         }
@@ -207,8 +207,8 @@ public class NamespaceSupport implements NamespaceContext {
 
         // find uri in current context
         for (int i = fNamespaceSize; i > 0; i -= 2) {
-            if (fNamespace[i - 1] == uri) {
-                if (getURI(fNamespace[i - 2]) == uri)
+            if (uri.equals(fNamespace[i - 1])) {
+                if (uri.equals(getURI(fNamespace[i - 2])))
                     return fNamespace[i - 2];
             }
         }

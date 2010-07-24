@@ -17,13 +17,14 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import java.util.Iterator;
+import java.util.List;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.dv.xs.DecimalDV;
-import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLAttributesImpl;
@@ -106,10 +107,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     private XMLAttributes fEmptyAttr = new XMLAttributesImpl();
 
     // fields for conditional inclusion
-    private final TypeValidator fDecimalDV = new DecimalDV();
     private XSDecimal fSupportedVersion;
     private int fIgnoreDepth = -1;
     private boolean fPerformConditionalInclusion = true; //REVISIT: use feature
+    private SchemaVersioningHelper schemaVersioningHelper = new SchemaVersioningHelper(); 
     
     //
     // XMLDocumentHandler methods
@@ -249,9 +250,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 return;
             }
 
-            // check for version mismatch if any (does not apply to <schema> element)
+            // perform conditional exclusion checks for schema versioning
+            // namespace (does not apply to <schema> element).
             if (fDepth > 0) {
-                checkSupportedVersion(element, attributes);
+                checkVersionControlAttributes(element, attributes);
                 if (fIgnoreDepth > -1) {
                     return;
                 }
@@ -321,7 +323,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             }
 
             if (fDepth > -1) {
-                boolean ignoreElement = checkSupportedVersion(element, attributes);
+                // perform conditional exclusion checks for schema versioning
+                // namespace.
+                boolean ignoreElement = checkVersionControlAttributes(element, attributes);
                 if (fIgnoreDepth > -1) {
                     if (ignoreElement) {
                        fIgnoreDepth--;   
@@ -597,21 +601,38 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fSupportedVersion = version;
     }
     
-    private boolean checkSupportedVersion(QName element, XMLAttributes attributes) {
+    /*
+     *  Method to check if any attributes of schema versioning namespace should
+     *  cause exclusion of a schema component along with it's descendant
+     *  instructions.
+     *  
+     *  ref: http://www.w3.org/TR/xmlschema11-1/#cip
+     */
+    private boolean checkVersionControlAttributes(QName element, XMLAttributes attributes) {             
         
-        boolean ignoreElement = false;
-        
+        boolean ignoreSchemaComponent = false;
+
+        // variables holding schema versioning attribute values
         BigDecimal minVer = null;
         BigDecimal maxVer = null;
+        List typeAvailableList = null;
+        List typeUnavailableList = null;
+        List facetAvailableList = null;
+        List facetUnavailableList = null;
         
+        // iterate all attributes of an element, and get values of schema versioning attributes
         final int length = attributes.getLength();
-        for (int i = 0; i < length; ++i) {
-            String uri = attributes.getURI(i);
+        
+        for (int attrIdx = 0; attrIdx < length; ++attrIdx) {
+            String uri = attributes.getURI(attrIdx);
+            
             if (uri != null && SchemaSymbols.URI_SCHEMAVERSION.equals(uri)) {
-                String attrLocalName = attributes.getLocalName(i);
+                String attrLocalName = attributes.getLocalName(attrIdx);
+                String attrValue = attributes.getValue(attrIdx);
+                
                 if (SchemaSymbols.ATT_MINVERSION.equals(attrLocalName)) {
                     try {
-                        minVer = new BigDecimal(attributes.getValue(i));                    
+                        minVer = new BigDecimal(attrValue);                    
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
@@ -622,7 +643,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
                 else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
                     try {
-                        maxVer = new BigDecimal(attributes.getValue(i));                        
+                        maxVer = new BigDecimal(attrValue);                        
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
@@ -631,42 +652,208 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                 XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
-                else { //REVISIT: report error
-
+                else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
+                   typeAvailableList = tokenizeString(attrValue, "\\s");
+                }
+                else if (SchemaSymbols.ATT_TYPEUNAVAILABLE.equals(attrLocalName)) {
+                    typeUnavailableList = tokenizeString(attrValue, "\\s");
+                }
+                else if (SchemaSymbols.ATT_FACETAVAILABLE.equals(attrLocalName)) {
+                    facetAvailableList = tokenizeString(attrValue, "\\s");
+                }
+                else if (SchemaSymbols.ATT_FACETUNAVAILABLE.equals(attrLocalName)) {
+                    facetUnavailableList = tokenizeString(attrValue, "\\s");
+                }
+                else {
+                    // throw warning. This is optional as per the spec,
+                    // but highly recommended. TO DO ...
                 }
             }
+            
+        } // end attributes iteration
+                             
+        // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable,
+        // vc:typeUnavailable, vc:facetAvailable & vc:facetUnavailable.
+        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? 
+                                                  false : 
+                                                  schemaVersionAllowsExclude(minVer, maxVer);
+        boolean typeAvlAllowsIgnore = (typeAvailableList == null) ? false : 
+                                             typeAndFacetAvailableAllowsExclude(
+                                                         typeAvailableList,
+                                                         Constants.IS_TYPE,
+                                                         Constants.TYPE_AND_FACET_AVAILABILITY);
+        boolean typeUnAvlAllowsIgnore = (typeUnavailableList == null) ? false :
+                                             typeAndFacetAvailableAllowsExclude(
+                                                         typeUnavailableList,
+                                                         Constants.IS_TYPE,
+                                                         Constants.TYPE_AND_FACET_UNAVAILABILITY);
+        boolean facetAvlAllowsIgnore = (facetAvailableList == null) ? false : 
+                                             typeAndFacetAvailableAllowsExclude(
+                                                         facetAvailableList,
+                                                         Constants.IS_FACET,
+                                                         Constants.TYPE_AND_FACET_AVAILABILITY);
+        boolean facetUnavlAllowsIgnore = (facetUnavailableList == null) ? false :
+                                             typeAndFacetAvailableAllowsExclude(
+                                                         facetUnavailableList,
+                                                         Constants.IS_FACET,
+                                                         Constants.TYPE_AND_FACET_UNAVAILABILITY);
+        
+        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnAvlAllowsIgnore | 
+            facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
+            ignoreSchemaComponent =  true;  
+        }
+        else {
+            ignoreSchemaComponent = false; 
         }
         
-        // as per XML Schema 1.1 spec, the condition vc:minVersion <= V < vc:maxVersion
-        // needs to be true for a schema component to be included in a validation
-        // episode (ref, http://www.w3.org/TR/xmlschema11-1/#cip). here value of "V" is 
-        // an instance variable fSupportedVersion.        
+        return ignoreSchemaComponent;
+        
+    } //checkSupportedVersion
+    
+    
+    /* 
+     * Method to determine whether a schema component and it's descendant
+     * instructions should be excluded from schema processing, depending
+     * on the values of vc:minVersion & vc:maxVersion attributes from schema
+     * versioning namespace. 
+    */
+    public boolean schemaVersionAllowsExclude(BigDecimal minVer,
+                                              BigDecimal maxVer) {
+        
+        boolean minMaxSchemaVerAllowsIgnore = false;
+        
+        // The condition vc:minVersion <= V < vc:maxVersion needs to be true
+        // for a schema component to be included in a validation episode.
+        // Here value of "V" is an instance variable fSupportedVersion.
+        
         if (minVer != null && maxVer != null) {
            // if both vc:minVersion & vc:maxVersion attributes are present on a schema component
            if (!(minVer.compareTo(fSupportedVersion.getBigDecimal()) <= 0 &&
               maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
                fIgnoreDepth++;
-               ignoreElement = true;   
+               minMaxSchemaVerAllowsIgnore = true;   
            }
         }
         else if (minVer != null && maxVer == null) {
           // only vc:minVersion attribute is present
           if (!(minVer.compareTo(fSupportedVersion.getBigDecimal()) <= 0)) {
               fIgnoreDepth++;
-              ignoreElement = true; 
+              minMaxSchemaVerAllowsIgnore = true; 
           }
         }
         else if (minVer == null && maxVer != null) {
           // only vc:maxVersion attribute is present
           if (!(maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
               fIgnoreDepth++;
-              ignoreElement = true;  
+              minMaxSchemaVerAllowsIgnore = true;  
           }
         }
         
-        return ignoreElement;
+        return minMaxSchemaVerAllowsIgnore;
         
-    } //checkSupportedVersion    
+    } // schemaVersionAllowsExclude
+    
+
+    /* 
+     * Method to determine whether a schema component and it's descendant
+     * instructions should be excluded from schema processing, depending
+     * on values of vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable
+     * and vc:facetUnavailable attributes from schema versioning namespace. 
+    */
+    private boolean typeAndFacetAvailableAllowsExclude(
+                                               List typeOrFacetList,
+                                               short typeOrFacet,
+                                               short availaibilityUnavlCheck) {
+        
+        // either of the following boolean values should be returned from this
+        // method, depending on whether availability or unavailability check is
+        // asked for.
+        boolean typeOrFacetAvlAllowsIgnore = false;        
+        boolean typeOrFacetUnavlAllowsIgnore = true;
+        
+        for (Iterator iter = typeOrFacetList.iterator(); iter.hasNext(); ) {
+           String typeOrFacetRawValue = (String) iter.next();
+           String typeOrFacetLocalName = null;
+           String typeOrFacetUri = null;
+           if (typeOrFacetRawValue.indexOf(':') != -1) {              
+              typeOrFacetLocalName = typeOrFacetRawValue.substring(
+                                               typeOrFacetRawValue.indexOf(':') + 1);
+              String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, 
+                                                   typeOrFacetRawValue.indexOf(':'));
+              typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix);
+           }
+           else {
+               typeOrFacetLocalName = typeOrFacetRawValue;    
+           }
+           
+           if (typeOrFacet == Constants.IS_TYPE) {
+              // check for availability of schema types
+              if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
+                        !schemaVersioningHelper.isTypeSupported(typeOrFacetLocalName,
+                                                                typeOrFacetUri)) {
+                  fIgnoreDepth++;
+                  typeOrFacetAvlAllowsIgnore = true;
+                  break;             
+              }
+              else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && 
+                         !schemaVersioningHelper.isTypeSupported(typeOrFacetLocalName,
+                                                                 typeOrFacetUri)) {
+                  typeOrFacetUnavlAllowsIgnore = false;
+                  break;
+              }
+           } 
+           else if (typeOrFacet == Constants.IS_FACET) {
+               // check for availability of schema facets
+               if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
+                         !schemaVersioningHelper.isFacetSupported(typeOrFacetLocalName,
+                                                                  typeOrFacetUri)) {
+                   fIgnoreDepth++;
+                   typeOrFacetAvlAllowsIgnore = true;
+                   break;             
+               }
+               else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && 
+                          !schemaVersioningHelper.isFacetSupported(typeOrFacetLocalName,
+                                                                   typeOrFacetUri)) {
+                   typeOrFacetUnavlAllowsIgnore = false;
+                   break;
+               }
+            }
+        }
+        
+        if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY) {
+           if (typeOrFacetAvlAllowsIgnore) {
+              fIgnoreDepth++;   
+           }           
+           return typeOrFacetAvlAllowsIgnore;
+        }
+        else {
+           if (typeOrFacetUnavlAllowsIgnore) {
+              fIgnoreDepth++;   
+           }
+           return typeOrFacetUnavlAllowsIgnore;    
+        }
+        
+    } // typeAndFacetAvailableAllowsExclude
+
+    
+    /*
+     * Method to tokenize a string value given a delimeter, and return a List
+     * containing the string tokens. 
+     */
+    private List tokenizeString(String strValue, String delim) {
+        List tokenizedList = new ArrayList();
+        
+        String[] strSplitValue = strValue.split(delim);
+        
+        for (int strIdx = 0; strIdx < strSplitValue.length; strIdx++) {
+           if (!(strSplitValue[strIdx].trim()).equals("")) {
+              tokenizedList.add(strSplitValue[strIdx].trim());   
+           }
+        }
+        
+        return tokenizedList;
+        
+    } // tokenizeString
 
     /**
      * A simple boolean based stack.

@@ -149,6 +149,10 @@ public final class SchemaSymbols {
     public static final String ATT_XPATH_DEFAULT_NS       = "xpathDefaultNamespace".intern();    
     public static final String ATT_MINVERSION             = "minVersion".intern();
     public static final String ATT_MAXVERSION             = "maxVersion".intern();
+    public static final String ATT_TYPEAVAILABLE          = "typeAvailable".intern();
+    public static final String ATT_TYPEUNAVAILABLE        = "typeUnavailable".intern();
+    public static final String ATT_FACETAVAILABLE         = "facetAvailable".intern();
+    public static final String ATT_FACETUNAVAILABLE       = "facetUnavailable".intern();
     public static final String ATT_INHERITABLE            = "inheritable".intern();
     public static final String ATT_ASSERT_MESSAGE         = "message".intern();
 
