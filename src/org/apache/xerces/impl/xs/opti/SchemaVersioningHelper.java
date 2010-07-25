@@ -38,7 +38,7 @@ import org.apache.xerces.xni.QName;
  */
 public class SchemaVersioningHelper {
     
-    // list variables holding 'natively supported' XML Schema types and facets
+    // list variables holding 'natively supported' XML Schema 1.1 types and facets
     // by Xerces-J XML Schema 1.1 engine.    
     List typesSupported = null;
     List facetsSupported = null;
@@ -58,6 +58,8 @@ public class SchemaVersioningHelper {
     
     // initializing the supported XML Schema types
     private void initSupportedTypes() {
+        
+        typesSupported.add(new QName(null, "anyType", "anyType", Constants.NS_XMLSCHEMA));
         typesSupported.add(new QName(null, "anySimpleType", "anySimpleType", Constants.NS_XMLSCHEMA));
         typesSupported.add(new QName(null, "anyAtomicType", "anyAtomicType", Constants.NS_XMLSCHEMA));
         typesSupported.add(new QName(null, "string", "string", Constants.NS_XMLSCHEMA));
@@ -108,11 +110,13 @@ public class SchemaVersioningHelper {
         typesSupported.add(new QName(null, "yearMonthDuration", "yearMonthDuration", Constants.NS_XMLSCHEMA));
         typesSupported.add(new QName(null, "dayTimeDuration", "dayTimeDuration", Constants.NS_XMLSCHEMA));
         typesSupported.add(new QName(null, "dateTimeStamp", "dateTimeStamp", Constants.NS_XMLSCHEMA));
-    }
+        
+    } // initSupportedTypes
     
     
     // initializing the supported XML Schema facets
     private void initSupportedFacets() {
+        
         facetsSupported.add(new QName(null, "length", "length", Constants.NS_XMLSCHEMA));        
         facetsSupported.add(new QName(null, "minLength", "minLength", Constants.NS_XMLSCHEMA));
         facetsSupported.add(new QName(null, "maxLength", "maxLength", Constants.NS_XMLSCHEMA));
@@ -128,11 +132,12 @@ public class SchemaVersioningHelper {
         facetsSupported.add(new QName(null, "maxScale", "maxScale", Constants.NS_XMLSCHEMA));
         facetsSupported.add(new QName(null, "minScale", "minScale", Constants.NS_XMLSCHEMA));
         facetsSupported.add(new QName(null, "assertion", "assertion", Constants.NS_XMLSCHEMA));        
-        facetsSupported.add(new QName(null, "explicitTimezone", "explicitTimezone", Constants.NS_XMLSCHEMA));               
-    }
+        facetsSupported.add(new QName(null, "explicitTimezone", "explicitTimezone", Constants.NS_XMLSCHEMA));
+        
+    } // initSupportedFacets
     
     
-    // checks if the schema type specified by method arguments (the QName
+    // Method to check if the schema type specified by method arguments (the QName
     // components of the schema type) is supported by Xerces-J natively.
     public boolean isTypeSupported(String localName, String uri) {
        boolean typeSupported = false;
@@ -151,7 +156,7 @@ public class SchemaVersioningHelper {
     } // isTypeSupported 
     
     
-    // checks if the schema facet specified by method arguments (the QName
+    // Method to check if the schema facet specified by method arguments (the QName
     // components of a schema facet) is supported by Xerces-J natively.
     public boolean isFacetSupported(String localName, String uri) {
         boolean facetSupported = false;
