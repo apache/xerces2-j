@@ -236,6 +236,10 @@ public final class SchemaSymbols {
     public static final String ATTVAL_UNSIGNEDSHORT          = "unsignedShort";
     public static final String ATTVAL_YEAR                   = "gYear";
     public static final String ATTVAL_YEARMONTH              = "gYearMonth";
+    public static final String ATTVAL_PRECISIONDECIMAL       = "precisionDecimal";
+    public static final String ATTVAL_YEARMONTHDURATION      = "yearMonthDuration";
+    public static final String ATTVAL_DAYTIMEDURATION        = "dayTimeDuration";
+    public static final String ATTVAL_DATETIMESTAMP          = "dateTimeStamp";
 
     // form qualified/unqualified
     public static final short FORM_UNQUALIFIED = 0;
