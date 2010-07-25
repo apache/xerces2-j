@@ -601,6 +601,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fSupportedVersion = version;
     }
     
+    
     /*
      *  Method to check if any attributes of schema versioning namespace should
      *  cause exclusion of a schema component along with it's descendant
@@ -665,8 +666,12 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     facetUnavailableList = tokenizeString(attrValue, "\\s");
                 }
                 else {
-                    // throw warning. This is optional as per the spec,
-                    // but highly recommended. TO DO ...
+                    // report a warning
+                    fErrorReporter.reportError(fLocator, 
+                            XSMessageFormatter.SCHEMA_DOMAIN,
+                            "src-cip.1",
+                            new Object[]{ attrLocalName },
+                            XMLErrorReporter.SEVERITY_WARNING);
                 }
             }
             
