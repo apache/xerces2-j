@@ -39,7 +39,7 @@ import org.apache.xerces.xni.QName;
  */
 public class SchemaVersioningHelper {
     
-    // list variables holding 'natively supported' XML Schema 1.1 types and facets
+    // list variables holding 'natively supported' XML Schema types and facets
     // by Xerces-J XML Schema 1.1 engine.    
     List typesSupported = null;
     List facetsSupported = null;
