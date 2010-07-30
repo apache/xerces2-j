@@ -68,7 +68,8 @@ Authors:
     <property name='jar.dv' value='xercesDV.jar'/>
     <property name='jar.resolver' value='resolver.jar'/>
     <property name='jar.serializer' value='serializer.jar'/>
-    <property name='jar.psychopath' value='org.eclipse.wst.xml.xpath2.processor_1.0.0.jar'/>
+    <property name='jar.psychopath' value='org.eclipse.wst.xml.xpath2.processor_1.1.0.jar'/>
+	<property name='jar.icu' value='icu4j.jar'/>
     <property name='jar.cup' value='cupv10k-runtime.jar'/>
     <property name='jar.junit' value='junit.jar'/>
     <property name='jar.ant' value='ant.jar'/>
@@ -291,7 +292,7 @@ Authors:
            destdir="${build.dest}"
            source="${javac.source}"
            target="${javac.target}"
-           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${tools.dir}/${jar.psychopath}:${tools.dir}/${jar.cup}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${tools.dir}/${jar.psychopath}:${tools.dir}/${jar.cup}:${tools.dir}/${jar.icu}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
@@ -610,7 +611,7 @@ Authors:
         <fileset
             dir="${tools.dir}"  
             includes="**/*.txt, **/*.html, **/*.bat, **/*.jar, **/*.zip, **/*.opt"
-            excludes="**/CVS*, **/.#*, **/*.class, **/icu4j*"
+            excludes="**/CVS*, **/.#*, **/*.class"
         />
     </copy>
 
@@ -961,6 +962,8 @@ Authors:
     <copy file="${tools.dir}/${jar.psychopath}" tofile="${build.dir}/${jar.psychopath}"/>
     <!-- include the Java Cup Runtime -->
     <copy file="${tools.dir}/${jar.cup}" tofile="${build.dir}/${jar.cup}"/>
+	<!-- include the ICU Runtime -->
+    <copy file="${tools.dir}/${jar.icu}" tofile="${build.dir}/${jar.icu}"/>
   </target>
 
   <!-- =================================================================== -->
