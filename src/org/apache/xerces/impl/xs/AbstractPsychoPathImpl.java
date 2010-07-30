@@ -44,7 +44,6 @@ import org.eclipse.wst.xml.xpath2.processor.function.XSCtrLibrary;
 import org.eclipse.wst.xml.xpath2.processor.internal.Focus;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.ElementType;
-import org.eclipse.wst.xml.xpath2.processor.internal.types.SchemaTypeValueFactory;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.XSBoolean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -168,20 +167,6 @@ public class AbstractPsychoPathImpl {
     
     
     /*
-     * Get psychopath xpath2 typed value, corresponding to the XSD language
-     * type.
-     * 
-     * @param xsdTypeName a XSD built in type name, like "string", "date" etc.
-     * @param value a "string value", that need to be converted to, the
-     *        psychopath xpath2 XSD typed value.  
-     */
-    protected Object getPsychoPathTypeForXSDType(String xsdTypeName,
-                                                 String value) {
-        return SchemaTypeValueFactory.newSchemaTypeValue(xsdTypeName, value);
-    }
-    
-    
-    /*
      * Method to report error messages
      */
     private void reportError(String key, XSAssertImpl assertImpl,
@@ -203,4 +188,4 @@ public class AbstractPsychoPathImpl {
         
     } //reportError
     
-} //AbstractPsychoPathImpl
+} // class AbstractPsychoPathImpl

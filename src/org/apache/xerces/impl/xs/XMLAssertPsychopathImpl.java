@@ -43,6 +43,7 @@ import org.eclipse.wst.xml.xpath2.processor.DynamicError;
 import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyAtomicType;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.SchemaTypeValueFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -87,8 +88,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // parameters to pass to PsychoPath engine (like, the namespace bindings) 
     Map assertParams = null;
 
+    
     /*
-     * The class constructor
+     * Class constructor
      */
     public XMLAssertPsychopathImpl(Map assertParams) {
         // initializing the class variables.        
@@ -99,6 +101,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         this.assertListStack = new Stack();
         this.assertParams = assertParams;  
     }
+    
 
     /*
      * Initialize the PsychoPath XPath processor
@@ -112,6 +115,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                     assertDocument,
                                                     assertParams);
     }
+    
 
     /*
      * (non-Javadoc)
@@ -121,6 +125,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     public void startElement(QName element, XMLAttributes attributes,
                                               Augmentations augs) {
+        
         if (currentAssertDomNode == null) {
            currentAssertDomNode = new PSVIElementNSImpl((CoreDocumentImpl)
                                 assertDocument, element.uri, element.rawname);
@@ -158,7 +163,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             assertRootStack.push(currentAssertDomNode);
             assertListStack.push(assertion);
         }
-    }
+        
+    } // startElement
+    
 
     /*
      * (non-Javadoc)
@@ -166,6 +173,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      *      org.apache.xerces.xni.Augmentations)
      */
     public void endElement(QName element, Augmentations augs) throws Exception {
+        
         if (currentAssertDomNode != null) {
             // set PSVI information on the element
             ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(
@@ -191,7 +199,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                        getParentNode();
             }
         }
-    }
+        
+    } // endElement
+    
 
     /*
      * Method to evaluate all assertions for the element tree.
@@ -200,7 +210,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                     QName element,
                                     Object assertions)
                                     throws Exception {
-         // initialize the XPath engine
+         
+        // initialize the XPath engine
          initXPathProcessor();
          
          // determine value of variable, $value
@@ -262,7 +273,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                 evaluateAssertion(element, assertImpl, value, false);
             }
          }
-    }
+         
+    } // processAllAssertionsOnElement
+    
 
     /*
      * (non-Javadoc)
@@ -276,6 +289,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                    String(text.ch, text.offset, text.length)));
         }
     }
+    
 
     /*
      * Method to evaluate an assertion for the element.
@@ -284,6 +298,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                    XSAssertImpl assertImpl,
                                    String value,
                                    boolean xPathContextExists) {
+        
         try {  
             XPath xp = assertImpl.getCompiledXPath();
             
@@ -318,14 +333,17 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         catch (StaticError ex) {
             reportError("cvc-assertion.3.13.4.1", element, assertImpl);
         }
-    }
+        
+    } // evaluateAssertion
+    
     
     /*
      * Method to report error messages.
      */
     private void reportError(String key, QName element,
                              XSAssertImpl assertImpl) {
-        XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
+        
+        XSTypeDefinition typeDef = assertImpl.getTypeDefinition();        
         String typeString = "";
         
         if (typeDef != null) {
@@ -361,12 +379,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                assertImpl.getTest().getXPath().toString(),
                                typeString } );
         }
-    }
+        
+    } // reportError
+    
     
     /*
      * Assign value to the XPath2 "dynamic context" variable, $value.
      */
     private void setValueOf$value(String value, XSTypeDefinition attrType) {
+        
         String xsdTypeName = "";
         
         if (attrType != null) {
@@ -391,12 +412,14 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
           }
         }
         
-        Object psychoPathType = abstrPsychopathImpl.getPsychoPathTypeForXSDType
-                                                         (xsdTypeName, value);       
+        Object psychoPathType = SchemaTypeValueFactory.newSchemaTypeValue(xsdTypeName, value);
+        
         fDynamicContext.set_variable(
                new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                        "value"), (AnyAtomicType) psychoPathType);
-    }
+        
+    } // setValueOf$value
+    
     
     /*
        Find the built in XSD type for XPath2 variable, $value. This function
@@ -404,11 +427,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
        types, to find the needed built-in type.
     */
     private String getXSDtypeOf$Value(XSTypeDefinition elementType) {
-      if (Constants.NS_XMLSCHEMA.equals(elementType.getNamespace())) {
+      if (Constants.NS_XMLSCHEMA.equals(elementType.getNamespace())) {        
         return elementType.getName();    
       }
       else {
         return getXSDtypeOf$Value(elementType.getBaseType()); 
       }
     }
-}
+    
+} // class XMLAssertPsychopathImpl
