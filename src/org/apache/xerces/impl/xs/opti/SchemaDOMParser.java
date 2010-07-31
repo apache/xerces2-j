@@ -243,7 +243,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fDepth++;
 
         // conditional inclusion
-        // We ignore descendants if parent is being ignored (mismatch of version supported)
+        // We ignore descendants if parent is being ignored
         if (fPerformConditionalInclusion) {
             if (fIgnoreDepth > -1) {
                 fIgnoreDepth++;
@@ -687,7 +687,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                                          typeAvailableList,
                                                          Constants.IS_TYPE,
                                                          Constants.TYPE_AND_FACET_AVAILABILITY);
-        boolean typeUnAvlAllowsIgnore = (typeUnavailableList == null) ? false :
+        boolean typeUnavlAllowsIgnore = (typeUnavailableList == null) ? false :
                                              typeAndFacetAvailableAllowsExclude(
                                                          typeUnavailableList,
                                                          Constants.IS_TYPE,
@@ -703,7 +703,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                                          Constants.IS_FACET,
                                                          Constants.TYPE_AND_FACET_UNAVAILABILITY);
         
-        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnAvlAllowsIgnore | 
+        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore | 
             facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
             ignoreSchemaComponent =  true;  
         }
@@ -770,13 +770,14 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                                short typeOrFacet,
                                                short availaibilityUnavlCheck) {
         
-        // either of the following boolean values should be returned from this
+        // either of the following boolean values would be returned from this
         // method, depending on whether availability or unavailability check is
         // asked for.
         boolean typeOrFacetAvlAllowsIgnore = false;        
         boolean typeOrFacetUnavlAllowsIgnore = true;
         
-        for (Iterator iter = typeOrFacetList.iterator(); iter.hasNext(); ) {
+        // iterate all the items of type/facet list
+        for (Iterator iter = typeOrFacetList.iterator(); iter.hasNext(); ) {           
            String typeOrFacetRawValue = (String) iter.next();
            String typeOrFacetLocalName = null;
            String typeOrFacetUri = null;
@@ -822,8 +823,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                    typeOrFacetUnavlAllowsIgnore = false;
                    break;
                }
-            }
-        }
+           }
+           
+        } // end of list iteration
         
         if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY) {
            if (typeOrFacetAvlAllowsIgnore) {
@@ -859,6 +861,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         return tokenizedList;
         
     } // tokenizeString
+    
 
     /**
      * A simple boolean based stack.
