@@ -20,12 +20,13 @@ package org.apache.xerces.impl.xs.util;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * Utility methods related to schema types.
+ * Class defining utility/helper methods related to schema types.
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
 public class XSTypeHelper {
+    
     
     /*
      * Checks if the two schema type components are identical.
@@ -34,31 +35,49 @@ public class XSTypeHelper {
                                                XSTypeDefinition typeDefn2) {
         boolean typesIdentical = false;
         
-        if ("anyType".equals(typeDefn1.getName()) && 
-            "anyType".equals(typeDefn2.getName())) {
+        String type1Name = typeDefn1.getName();
+        String type2Name = typeDefn2.getName();
+        
+        if ("anyType".equals(type1Name) && 
+            "anyType".equals(type2Name)) {
             typesIdentical = true;  
         }
         
-        if (!typesIdentical) {
-            String type1Ns = typeDefn1.getNamespace();
-            String type1Name = typeDefn1.getName();        
-            boolean nsEqual = false;           
-            if ((type1Ns != null && type1Ns.equals(typeDefn2.getNamespace())) ||
-                    (type1Ns == null && typeDefn2.getNamespace() == null)) {
-                nsEqual = true;   
-            }
-
-            if (nsEqual == true) {
-                if ((type1Name == null && typeDefn2.getName() == null) ||
-                        (type1Name != null && type1Name.equals(typeDefn2.getName()))
-                        && (schemaTypesIdentical(typeDefn1.getBaseType(),
-                                typeDefn2.getBaseType()))) {
-                    typesIdentical = true;   
+        if (!typesIdentical) {                        
+            if (uriEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
+                // if targetNamespace of types are same, then check for 
+                // equality of type names and of the base type.
+                if ((type1Name == null && type2Name == null) ||
+                    (type1Name != null && type1Name.equals(type2Name))
+                          && (schemaTypesIdentical(typeDefn1.getBaseType(),
+                                                   typeDefn2.getBaseType()))) {
+                     typesIdentical = true;   
                 }
             }
         }
         
         return typesIdentical;
         
-    } // end of, schemaTypesIdentical
+    } // schemaTypesIdentical
+    
+    
+    /*
+     * Check if two URI values are equal.
+     */
+    public static boolean uriEqual(String uri1, String uri2) {
+        
+        boolean uriEqual = false;
+        
+        if ((uri1 != null && uri2 == null) ||
+            (uri1 == null && uri2 != null)) {
+           uriEqual = false;
+        } else if ((uri1 == null && uri2 == null) ||
+                    uri1.equals(uri2)) {
+           uriEqual = true;   
+        } 
+        
+        return uriEqual;
+        
+    } // uriEqual
+    
 }

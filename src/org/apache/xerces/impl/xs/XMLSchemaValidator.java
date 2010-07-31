@@ -59,6 +59,7 @@ import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XCMValidatorHelper;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -2201,8 +2202,8 @@ public class XMLSchemaValidator
             boolean typeSelected = false;
             XSTypeAlternativeImpl[] alternatives = fCurrentElemDecl.getTypeAlternatives();
             if (alternatives != null) {              
-                // construct a list of attributes, needed for CTA processing.
-                // This method call, adds inherited attributes as well, to the list
+                // construct a list of attributes needed for CTA processing.
+                // This method call adds inherited attributes as well, to the list
                 // of attributes.
                 XMLAttributes ctaAttributes = getAttributesForCTA(attributes);
                 
@@ -2600,7 +2601,7 @@ public class XMLSchemaValidator
         
         // inheritable attribute processing
         
-        // modify the Vector list, 'fInheritableAttrList' and pop the stack,
+        // modify the Vector list 'fInheritableAttrList' and pop the stack,
         // 'fInhrAttrCountStack', to reflect inheritable attributes processing. 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
            if (fInhrAttrCountStack.size() > 0) {
@@ -4979,7 +4980,8 @@ public class XMLSchemaValidator
      * A class representing an inheritable attribute. This is used as an
      * intermediate storage, for inheritable attribute information.
      */
-    class InheritableAttribute {
+    class InheritableAttribute {       
+       
        String localName = "";
        String prefix = "";
        String uri = "";
@@ -5017,6 +5019,7 @@ public class XMLSchemaValidator
        public String getType() {
           return type; 
        }
+       
     } // class, InheritableAttribute
     
     
@@ -5035,14 +5038,14 @@ public class XMLSchemaValidator
           for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
              String attrName = attributes.getLocalName(attrIndx);
              String attrUri = attributes.getURI(attrIndx);            
-             // iterate all the attributes declarations, of the complex type,
+             // iterate all the attribute declarations of a complex type,
              // for the current element.
              for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
                 XSAttributeUseImpl attrUseImpl = (XSAttributeUseImpl) attributeUses.get(attrUsesIndx);
                 XSAttributeDeclaration attrDecl = attrUseImpl.getAttrDeclaration();              
                 // the current element, has an inheritable attribute
                 if (attrName.equals(attrDecl.getName()) &&
-                      uriEqual(attrUri, attrDecl.getNamespace()) &&    
+                        XSTypeHelper.uriEqual(attrUri, attrDecl.getNamespace()) &&    
                       attrUseImpl.getInheritable()) {                   
                     InheritableAttribute inhrAttr = new InheritableAttribute(
                                             attributes.getLocalName(attrIndx),
@@ -5076,7 +5079,7 @@ public class XMLSchemaValidator
       // attributes only from the nearest ancestor, are added to the list
       for (int elemIndx = fInheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
          InheritableAttribute inhAttr = (InheritableAttribute) fInheritableAttrList.elementAt(elemIndx);
-         // if an inheritable attribute doesn't already exist, in the attributes
+         // if an inheritable attribute doesn't already exist in the attributes
          // list, add it to the list.
          if (!attributeExists(ctaAttributes, inhAttr)) {
             String rawName = "".equals(inhAttr.getPrefix()) ? inhAttr.getLocalName() : 
@@ -5101,31 +5104,14 @@ public class XMLSchemaValidator
           String localName = attributes.getLocalName(attrIndx);
           String uri = attributes.getURI(attrIndx);          
           if (localName.equals(inhAttr.getLocalName()) &&
-              uriEqual(uri, inhAttr.getUri())) {              
+                XSTypeHelper.uriEqual(uri, inhAttr.getUri())) {              
              attrExists = true;
              break;
           }
       }
       
       return attrExists;
+      
     } // attributeExists
-    
-    
-    /*
-     * Check if two URI values are equal
-     */
-    private boolean uriEqual(String a, String b) {
-        boolean nsEqual = false;
-        
-        if ((a != null && b == null) ||
-            (a == null && b != null)) {
-           nsEqual = false;
-        } else if ((a == null && b == null) ||
-                    a.equals(b)) {
-           nsEqual = true;   
-        } 
-        
-        return nsEqual;
-    } // uriEqual
     
 } // class SchemaValidator
