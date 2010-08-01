@@ -37,7 +37,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * 
  * @author Hiranya Jayathilaka, University of Moratuwa
  * @author Mukul Gandhi IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class XSDTypeAlternativeValidator {
     
