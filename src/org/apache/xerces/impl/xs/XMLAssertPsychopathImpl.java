@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
@@ -74,11 +75,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // changes as per the XNI document events.
     Element currentAssertDomNode = null;
 
-    // a stack holding the DOM root for assertions evaluation
+    // a stack holding the DOM roots for assertions evaluation
     Stack assertRootStack = null;
 
     // a stack parallel to 'assertRootStack' storing all assertions for a
-    // single assert tree.
+    // single XDM tree.
     Stack assertListStack = null;
 
     // XMLSchemaValidator reference. set from the XMLSchemaValidator object
@@ -92,14 +93,14 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Class constructor
      */
-    public XMLAssertPsychopathImpl(Map assertParams) {
+    public XMLAssertPsychopathImpl(Map assertParams) {        
         // initializing the class variables.        
-        // we use the PSVI enabled DOM implementation, so as to have typed
+        // we use a PSVI enabled DOM implementation, to be able to have typed
         // XDM nodes.
         this.assertDocument = new PSVIDocumentImpl();        
         this.assertRootStack = new Stack();
         this.assertListStack = new Stack();
-        this.assertParams = assertParams;  
+        this.assertParams = assertParams;        
     }
     
 
@@ -107,6 +108,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * Initialize the PsychoPath XPath processor
      */
     private void initXPathProcessor() throws Exception {
+        
         validator = (XMLSchemaValidator) getProperty
                         ("http://apache.org/xml/properties/assert/validator");        
         abstrPsychopathImpl = new AbstractPsychoPathImpl();
@@ -156,12 +158,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             currentAssertDomNode.setAttributeNode(attrNode);
         }
 
-        Object assertion = augs.getItem("ASSERT");
-        // if we have assertion applicable to this element, store the element
-        // reference and the assertions on it, on the runtime stacks
-        if (assertion != null) {
+        List assertionList = (List) augs.getItem("ASSERT");
+        // if we have assertions applicable to this element, store the element
+        // reference and the assertions on it, on the runtime stacks.
+        if (assertionList != null) {
             assertRootStack.push(currentAssertDomNode);
-            assertListStack.push(assertion);
+            assertListStack.push(assertionList);
         }
         
     } // startElement
@@ -189,7 +191,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  // pop the stack, to go one level up
                  assertRootStack.pop();
                  // get assertions, and go one level up
-                 Object assertions = assertListStack.pop(); 
+                 List assertions = (List) assertListStack.pop(); 
                  
                  processAllAssertionsOnElement(element, assertions);
             }
@@ -208,10 +210,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     private void processAllAssertionsOnElement(
                                     QName element,
-                                    Object assertions)
+                                    List assertions)
                                     throws Exception {
          
-        // initialize the XPath engine
+         // initialize the XPath engine
          initXPathProcessor();
          
          // determine value of variable, $value
@@ -235,7 +237,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
          // evaluate assertions
          if (assertions instanceof XSObjectList) {
-            // assertions from a complex type definition
+            // assertions from a complex type definition             
             if (value != null) {
               // complex type with simple content
               setValueOf$value(value, null);
@@ -283,11 +285,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      *      (org.apache.xerces.xni.XMLString)
      */
     public void characters(XMLString text) {
+        
         // add a child text node to the assertions, DOM tree
         if (currentAssertDomNode != null) {
             currentAssertDomNode.appendChild(assertDocument.createTextNode(new 
                                    String(text.ch, text.offset, text.length)));
         }
+        
     }
     
 

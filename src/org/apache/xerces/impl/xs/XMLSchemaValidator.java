@@ -43,9 +43,6 @@ import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
-import org.apache.xerces.impl.xs.assertion.XMLAssertHandler;
-import org.apache.xerces.impl.xs.assertion.XSAssert;
-import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.FieldActivator;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
@@ -90,11 +87,8 @@ import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
-import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
-import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -415,9 +409,6 @@ public class XMLSchemaValidator
      * While parsing a document, keep the location of the document.
      */
     private XMLLocator fLocator;
-
-    // assertion processor object reference
-    private XMLAssertHandler fAssertionProcessor = null;
     
     // a Vector list storing inheritable attributes
     private Vector fInheritableAttrList = new Vector();
@@ -838,37 +829,6 @@ public class XMLSchemaValidator
         }
 
     } // startElement(QName,XMLAttributes, Augmentations)
-
-    
-    /*
-     * Method initializing the assertions processor. 
-     * 
-     * @param assertParams Parameters that are passed, to the assertions processor
-     */
-    private void initializeAssertProcessor(Map assertParams) {
-        String assertProcessorProp = System
-                .getProperty("org.apache.xerces.assertProcessor");
-        
-        if (assertProcessorProp == null || assertProcessorProp.equals("")) {
-            // if assertion processor is not specified via a system
-            // property, default to the Psychopath processor
-            fAssertionProcessor = new XMLAssertPsychopathImpl(assertParams);
-        } else {
-            try {
-                Class assertClass = ClassLoader.getSystemClassLoader()
-                        .loadClass(assertProcessorProp);
-                fAssertionProcessor = (XMLAssertHandler) assertClass.newInstance();
-            } catch (ClassNotFoundException ex) {
-                throw new XNIException(ex.getMessage(), ex);
-            } catch (InstantiationException ex) {
-                throw new XNIException(ex.getMessage(), ex);
-            } catch (IllegalAccessException ex) {
-                throw new XNIException(ex.getMessage(), ex);
-            }
-        }
-        
-        fAssertionProcessor.setProperty("http://apache.org/xml/properties/assert/validator", this);
-    }
     
 
     /**
@@ -1394,6 +1354,9 @@ public class XMLSchemaValidator
 
     /** Cache of value stores for identity constraint fields. */
     protected ValueStoreCache fValueStoreCache = new ValueStoreCache();
+    
+    // assertion validator subcomponent
+    private XSDAssertionValidator assertionValidator = null;
 
     //
     // Constructors
@@ -1405,7 +1368,7 @@ public class XMLSchemaValidator
         fState4ApplyDefault.setFacetChecking(false);
         fSchemaVersion = fSchemaLoader.getSchemaVersion();
         fXSConstraints = fSchemaLoader.getXSConstraints();
-
+        assertionValidator = new XSDAssertionValidator(this); 
     } // <init>()
 
     /*
@@ -1863,9 +1826,9 @@ public class XMLSchemaValidator
             }
         }
         
-        // invoke the assertions processor method
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && fAssertionProcessor != null) {
-            fAssertionProcessor.characters(text);
+        // delegate to assertions validator subcomponent
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            assertionValidator.characterDataHandler(text);
         }
 
         return text;
@@ -2467,125 +2430,14 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNil = fNil;
         }
         
-        // process assertions
+        // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-           addAssertsForEvaluation(element, attributes);
+            assertionValidator.handleStartElement(element, attributes);
         }
 
         return augs;
 
     } // handleStartElement(QName,XMLAttributes,boolean)
-    
-
-    /** Add assertions for processing */
-    private void addAssertsForEvaluation(QName element,
-                                XMLAttributes attributes) {
-        
-       XSTypeDefinition typeDef = fCurrentPSVI.getTypeDefinition();
-       Object assertObject = null;
-            
-       if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-          // if element's governing type is a "complex type"
-          XSObjectListImpl assertions = new XSObjectListImpl();                
-          XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) typeDef;
-          
-          XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
-          if (complexTypeAsserts.getLength() > 0) {
-            for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
-               assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
-            }
-          }
-          
-          // add assertion facets, from "complexType -> simpleContent -> restriction"
-          XSSimpleTypeDefinition simpleTypeDef = complexTypeDef.getSimpleType();
-          if (simpleTypeDef != null) {
-            XSObjectList complexTypeFacets = simpleTypeDef.getMultiValueFacets();
-            for (int i = 0; i < complexTypeFacets.getLength(); i++) {
-              XSMultiValueFacet facet = (XSMultiValueFacet) complexTypeFacets.item(i);
-              if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                 Vector simpleContentAsserts = facet.getAsserts();
-                 for (int simpleAssertIdx = 0; simpleAssertIdx < 
-                              simpleContentAsserts.size(); simpleAssertIdx++) {
-                    XSAssert simpleContentAssert = (XSAssert)
-                                         simpleContentAsserts.get(simpleAssertIdx);
-                    assertions.addXSObject(simpleContentAssert);
-                 }
-              }
-            }
-          }
-
-          // there could be assertions, to be evaluated on attributes. add these
-          // assertions to the list of assertions to be processed.
-          for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
-              Augmentations attrAugs = attributes.getAugmentations(attrIndx);
-              AttributePSVImpl attrPSVI = (AttributePSVImpl)attrAugs.getItem
-                                                 (Constants.ATTRIBUTE_PSVI);
-              XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition)attrPSVI.
-                                                        getTypeDefinition();
-              if (attrType != null) {
-                 XSObjectList facets = attrType.getMultiValueFacets();              
-                 for (int i = 0; i < facets.getLength(); i++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                       Vector attrAsserts = facet.getAsserts();
-                       for (int j = 0; j < attrAsserts.size(); j++) {
-                         XSAssertImpl attrAssert = (XSAssertImpl) attrAsserts.elementAt(j);
-                         attrAssert.setAttrName(attributes.getLocalName(attrIndx));
-                         attrAssert.setAttrValue(attributes.getValue(attrIndx));
-                         assertions.addXSObject(attrAssert);    
-                       }                        
-                       break;
-                    }
-                 }
-              }
-          }
-              
-          if (assertions.size() > 0) {
-              assertObject = assertions;             
-              // instantiate the assertions processor
-              if (fAssertionProcessor == null) {
-                // construct parameter values for the assertion processor
-                Map assertProcessorParams = new HashMap();
-                assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                                     ((XSAssertImpl)assertions.get(0)).
-                                     getXPath2NamespaceContext());
-                // initialize the assertions processor
-                initializeAssertProcessor(assertProcessorParams);
-              }
-          }
-        }
-        else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-            // if element's governing type is a "simple type"
-            XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) typeDef;
-            XSObjectList facets = simpleTypeDef.getMultiValueFacets();
-            for (int i = 0; i < facets.getLength(); i++) {
-              XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-              if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                assertObject = facet.getAsserts();
-                // instantiate the assertions processor
-                if (fAssertionProcessor == null) {
-                   // construct parameter values for the assertion processor
-                   Map assertProcessorParams = new HashMap();
-                   assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                                     ((XSAssertImpl)facet.getAsserts().get(0)).
-                                     getXPath2NamespaceContext());
-                   // initialize the assertions processor
-                   initializeAssertProcessor(assertProcessorParams);
-                }
-                break;
-              }
-            }
-         }
-               
-         // invoke the assertions processor method
-         if (fAssertionProcessor != null) {
-            // construct the augmentations object, for assertions
-            AugmentationsImpl assertAugs = new AugmentationsImpl();
-            assertAugs.putItem("ASSERT", assertObject);
-            fAssertionProcessor.startElement(element, attributes, assertAugs);
-         }
-         
-    } // addAssertsForEvaluation
     
 
     /**
@@ -2719,24 +2571,11 @@ public class XMLSchemaValidator
             fValueStoreCache.endElement();
         }
         
-        // invoke the assertions processor method
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && fAssertionProcessor != null) {
-           try {
-             // create the ElementPSVImpl object, for assertions
-             ElementPSVImpl assertPSVI = new ElementPSVImpl();
-             assertPSVI.fDeclaration = fCurrentElemDecl;
-             assertPSVI.fTypeDecl = fCurrentType;
-             assertPSVI.fNotation = fNotation;
-             assertPSVI.fGrammars = fGrammarBucket.getGrammars();
-                
-             // construct the augmentations object for assertions.
-             // store assertPSVI into the augmentations
-             AugmentationsImpl assertAugs = new AugmentationsImpl();
-             assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);                
-             fAssertionProcessor.endElement(element, assertAugs);
-           } catch (Exception ex) {
-               throw new XNIException(ex.getMessage(), ex);
-           }
+        // delegate to assertions validator subcomponent
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            assertionValidator.handleEndElement(element, fCurrentElemDecl, 
+                                                fCurrentType, fNotation, 
+                                                fGrammarBucket);
         }
 
         // Check if we should modify the xsi:type ignore depth
