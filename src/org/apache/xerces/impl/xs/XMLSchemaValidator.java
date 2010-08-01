@@ -1347,7 +1347,7 @@ public class XMLSchemaValidator
     // assertion validator subcomponent
     private XSDAssertionValidator fAssertionValidator = null;
     
-    // type-alternative validator subcomponent
+    // 'type alternative' validator subcomponent
     private XSDTypeAlternativeValidator fTypeAlternativeValidator = null;
 
     //
