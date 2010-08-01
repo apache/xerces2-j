@@ -46,7 +46,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * 
  * @author Mukul Gandhi IBM
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class XSDAssertionValidator {
     
