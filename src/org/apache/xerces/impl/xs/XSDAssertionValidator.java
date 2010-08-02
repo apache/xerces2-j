@@ -50,7 +50,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  */
 public class XSDAssertionValidator {
     
-    // XMLSchemaValidator instance that behaves as context for the present 
+    // XMLSchemaValidator instance that exists as context for the present 
     // assertion validator subcomponent. Passed into the constructor of 
     // this object.
     XMLSchemaValidator xmlSchemaValidator = null;
