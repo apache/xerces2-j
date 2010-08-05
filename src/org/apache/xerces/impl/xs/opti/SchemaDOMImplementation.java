@@ -23,6 +23,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 final class SchemaDOMImplementation implements DOMImplementation {
