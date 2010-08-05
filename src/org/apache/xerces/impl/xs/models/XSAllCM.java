@@ -23,6 +23,7 @@ import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSElementDeclHelper;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -113,7 +114,7 @@ public class XSAllCM implements XSCMValidator {
      * @param currentState  Current state
      * @return an element decl object
      */
-    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler, XCMValidatorHelper xcmHelper) {
+    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper) {
 
         // error state
         if (currentState[0] < 0) {

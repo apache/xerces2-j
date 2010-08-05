@@ -22,6 +22,7 @@ import java.util.Vector;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.xs.XSElementDeclHelper;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xni.QName;
@@ -91,7 +92,7 @@ public class XSEmptyCM implements XSCMValidator {
      * @param subGroupHandler the substitution group handler
      * @return element index corresponding to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler, XCMValidatorHelper xcmHelper){
+    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper){
 
         // error state
         if (currentState[0] < 0) {
@@ -100,7 +101,7 @@ public class XSEmptyCM implements XSCMValidator {
         }
 
         if (fOpenContent != null) {
-            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, xcmHelper)) {
+            if (allowExpandedName(fOpenContent.fWildcard, elementName, subGroupHandler, eDeclHelper)) {
                 return fOpenContent;
             }
         }
@@ -169,9 +170,9 @@ public class XSEmptyCM implements XSCMValidator {
     private boolean allowExpandedName(XSWildcardDecl wildcard,
             QName curElem,
             SubstitutionGroupHandler subGroupHandler,
-            XCMValidatorHelper xcmHelper) {
+            XSElementDeclHelper eDeclHelper) {
         if (wildcard.allowQName(curElem)) {
-            if (wildcard.fDisallowedDefined && xcmHelper.getGlobalElementDecl(curElem) != null) {
+            if (wildcard.fDisallowedDefined && eDeclHelper.getGlobalElementDecl(curElem) != null) {
                 return false;
             }
             return true;

@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.impl.xs.models;
+package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -25,7 +24,7 @@ import org.apache.xerces.xni.QName;
  * 
  * @version $Id$
  */
-public interface XCMValidatorHelper {
+public interface XSElementDeclHelper {
 
     public XSElementDecl getGlobalElementDecl(QName element);
 }

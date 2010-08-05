@@ -22,6 +22,7 @@ import java.util.Vector;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.xs.XSElementDeclHelper;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -57,11 +58,11 @@ public interface XSCMValidator {
      *
      * @param elementName
      * @param state  Current state
-     * @param xcmHelper A helper that allows inquiry of global element declarations
+     * @param eDeclHelper A helper that allows inquiry of global element declarations
      * @return element decl or wildcard decl that
      *         corresponds to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, int[] state, SubstitutionGroupHandler subGroupHandler, XCMValidatorHelper xcmHelper);
+    public Object oneTransition (QName elementName, int[] state, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper);
 
 
     /**

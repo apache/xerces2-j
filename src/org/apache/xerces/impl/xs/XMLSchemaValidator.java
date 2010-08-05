@@ -51,7 +51,6 @@ import org.apache.xerces.impl.xs.identity.ValueStore;
 import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
-import org.apache.xerces.impl.xs.models.XCMValidatorHelper;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
@@ -113,7 +112,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLSchemaValidator
-    implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler, XCMValidatorHelper {
+    implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler, XSElementDeclHelper {
 
     //
     // Constants
@@ -1699,7 +1698,7 @@ public class XMLSchemaValidator
         matcher.startDocumentFragment();
     }
 
-    // Implements XCMValidatorHelper interface
+    // Implements XSElementDeclHelper interface
     public XSElementDecl getGlobalElementDecl(QName element) {
         final SchemaGrammar sGrammar =
             findSchemaGrammar(
