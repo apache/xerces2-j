@@ -51,6 +51,7 @@ import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -93,7 +94,7 @@ import org.xml.sax.InputSource;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
+public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent, XSElementDeclHelper,
 // XML Component API 
 XSLoader, DOMConfiguration {
     
@@ -326,8 +327,8 @@ XSLoader, DOMConfiguration {
             grammarBucket = new XSGrammarBucket();
         }
         fGrammarBucket = grammarBucket;
-        if(sHandler == null) {
-            sHandler = new SubstitutionGroupHandler(fGrammarBucket);
+        if (sHandler == null) {
+            sHandler = new SubstitutionGroupHandler(this);
         }
         fSubGroupHandler = sHandler;
         
@@ -1404,6 +1405,15 @@ XSLoader, DOMConfiguration {
         }
         
         return xis;
+    }
+	
+    // Implements XSElementDeclHelper interface
+    public XSElementDecl getGlobalElementDecl(QName element) {
+        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
+        if (sGrammar != null) {
+            return sGrammar.getGlobalElementDecl(element.localpart);
+        }
+        return null;
     }
     
 } // XMLGrammarLoader

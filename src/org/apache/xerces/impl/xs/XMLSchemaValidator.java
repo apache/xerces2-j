@@ -109,7 +109,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * @version $Id$
  */
 public class XMLSchemaValidator
-    implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler {
+    implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler, XSElementDeclHelper {
 
     //
     // Constants
@@ -1162,7 +1162,7 @@ public class XMLSchemaValidator
 
     /** Schema grammar resolver. */
     private final XSGrammarBucket fGrammarBucket = new XSGrammarBucket();
-    private final SubstitutionGroupHandler fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
+    private final SubstitutionGroupHandler fSubGroupHandler = new SubstitutionGroupHandler(this);
 
     /** the DV usd to convert xsi:type to a QName */
     // REVISIT: in new simple type design, make things in DVs static,
@@ -1645,6 +1645,21 @@ public class XMLSchemaValidator
         XPathMatcher matcher = selector.createMatcher(activator, fElementDepth);
         fMatcherStack.addMatcher(matcher);
         matcher.startDocumentFragment();
+    }
+
+    // Implements XSElementDeclHelper interface
+    public XSElementDecl getGlobalElementDecl(QName element) {
+        final SchemaGrammar sGrammar =
+            findSchemaGrammar(
+                XSDDescription.CONTEXT_ELEMENT,
+                element.uri,
+                null,
+                element,
+                null);
+        if (sGrammar != null) {
+            return sGrammar.getGlobalElementDecl(element.localpart);
+        }
+        return null;
     }
 
     //
