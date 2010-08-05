@@ -1188,7 +1188,7 @@ public class XMLSchemaValidator
 
     /** Schema grammar resolver. */
     private final XSGrammarBucket fGrammarBucket = new XSGrammarBucket();
-    private final SubstitutionGroupHandler fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
+    private final SubstitutionGroupHandler fSubGroupHandler = new SubstitutionGroupHandler(this);
 
     /** the DV usd to convert xsi:type to a QName */
     // REVISIT: in new simple type design, make things in DVs static,

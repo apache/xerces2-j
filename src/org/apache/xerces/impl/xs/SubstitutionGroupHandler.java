@@ -39,14 +39,14 @@ public class SubstitutionGroupHandler {
 
     private static final XSElementDecl[] EMPTY_GROUP = new XSElementDecl[0];
 
-    // grammar resolver
-    XSGrammarBucket fGrammarBucket;
+    // global element declaration resolver
+    private final XSElementDeclHelper fXSElementDeclHelper;
 
     /**
      * Default constructor
      */
-    public SubstitutionGroupHandler(XSGrammarBucket grammarBucket) {
-        fGrammarBucket = grammarBucket;
+    public SubstitutionGroupHandler(XSElementDeclHelper elementDeclHelper) {
+        fXSElementDeclHelper = elementDeclHelper;
     }
 
     // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
@@ -68,14 +68,8 @@ public class SubstitutionGroupHandler {
             return null;
         }
 
-        // get grammar of the element
-        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
-        if (sGrammar == null) {
-            return null;
-        }
-
         // get the decl for the element
-        XSElementDecl eDecl = sGrammar.getGlobalElementDecl(element.localpart);
+        XSElementDecl eDecl = fXSElementDeclHelper.getGlobalElementDecl(element);
         if (eDecl == null) {
             return null;
         }
