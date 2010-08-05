@@ -26,6 +26,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -97,7 +98,7 @@ public class SchemaDOM extends DefaultDocument {
         // set the attributes
         Attr[] attrs = new Attr[attributes.getLength()];
         for (int i=0; i<attributes.getLength(); i++) {
-            attrs[i] = new AttrImpl(null, 
+            attrs[i] = new AttrImpl(node, 
                     attributes.getPrefix(i), 
                     attributes.getLocalName(i), 
                     attributes.getQName(i), 
@@ -341,6 +342,10 @@ public class SchemaDOM extends DefaultDocument {
     public Element getDocumentElement() {
         // this returns a parent node, known to be an ElementImpl
         return (ElementImpl)relations[0][1];
+    }
+    
+    public DOMImplementation getImplementation() {
+        return SchemaDOMImplementation.getDOMImplementation();
     }
     
     // commence the serialization of an annotation
