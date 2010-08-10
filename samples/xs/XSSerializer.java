@@ -1061,9 +1061,10 @@ public class XSSerializer {
                                                   attrUse.getAttrDeclaration();
            XSComplexTypeDefinition enclosingCTDefn = attrDecl.
                                                   getEnclosingCTDefinition();
-           boolean complexTypesIdentical = XSTypeHelper.schemaTypesIdentical(
-                                                            complexTypeDecl,
-                                                            enclosingCTDefn);
+           boolean complexTypesIdentical = (enclosingCTDefn == null) ? false : 
+                                                XSTypeHelper.schemaTypesIdentical(
+                                                                complexTypeDecl,
+                                                                enclosingCTDefn);
            // do not add attributes, from the base type. they will be
            // serialized as part of the base type serialization.
            if (complexTypesIdentical) {
