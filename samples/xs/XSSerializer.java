@@ -25,6 +25,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
@@ -75,12 +76,13 @@ import org.xml.sax.InputSource;
  */
 public class XSSerializer {
     
-    private static final String XSD_LANGUAGE_URI = "http://www.w3.org/2001/XMLSchema";
-    private static final String XSD_LANGUAGE_PREFIX = "xs:";
-    private static final String XML_SCHEMA_VERSION =
-                                   Constants.XERCES_PROPERTY_PREFIX + 
-                                   Constants.XML_SCHEMA_VERSION_PROPERTY;
+    private static final String XSD_LANGUAGE_URI = SchemaSymbols.URI_SCHEMAFORSCHEMA;    
+    private static final String XML_SCHEMA_VERSION = 
+                                        Constants.XERCES_PROPERTY_PREFIX + 
+                                        Constants.XML_SCHEMA_VERSION_PROPERTY;
+    private static String XSD_LANGUAGE_PREFIX = "xs:";
   
+    
     /*
      * "Main method"
      * 
@@ -92,45 +94,76 @@ public class XSSerializer {
      */
     public static void main(String[] args) {
        
-       if (args.length == 0 || args.length > 2) {
+       if (args.length == 0 || args.length > 5) {
           printUsage();
           System.exit(-1);
        }
        
-       XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+       // the last command line argument must be a schema URI
+       String schemaUri = args[args.length - 1];
        
-       String schemaUri = "";
-       if (args.length == 1) {
-          schemaUri = args[0];    
-       }
-       else {
-          schemaUri = args[1];
-          if (args[0].equals("-xsd11")) {
-              xsLoader.setProperty(XML_SCHEMA_VERSION,
-                        Constants.W3C_XML_SCHEMA11_NS_URI);  
+       // iterate other command line arguments
+       String schemaVersion = null;
+       String schemaPrefix = null;
+       for (int argIndx = 0; argIndx < args.length - 1; argIndx += 2) {
+          if (args[argIndx].equals("-version")) {
+             schemaVersion = args[argIndx + 1];     
+          }
+          else if (args[argIndx].equals("-prefix")) {
+             if (argIndx + 1 < args.length - 1) {
+                schemaPrefix = args[argIndx + 1];
+             }
           }
        }
        
-       XSModel xsModel = xsLoader.loadURI(schemaUri);       
+       XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+       if ("1.1".equals(schemaVersion)) {
+           xsLoader.setProperty(XML_SCHEMA_VERSION, 
+                                Constants.W3C_XML_SCHEMA11_NS_URI);    
+       }
+       else if (schemaVersion != null && !"1.0".equals(schemaVersion)) {
+           printUsage();
+           System.exit(-1);    
+       }
+       
+       if (schemaPrefix != null) {
+           XSD_LANGUAGE_PREFIX = schemaPrefix + ":";    
+       }
+       
+       // construct the XSModel object from a schema document       
+       XSModel xsModel = xsLoader.loadURI(schemaUri);
+       
        try {
-          XSSerializer xsSerializer = new XSSerializer();
-          xsSerializer.serialize(xsModel);
+           // instantiate the serializer and invoke serialization method
+           XSSerializer xsSerializer = new XSSerializer();
+           xsSerializer.serialize(xsModel);
        }
        catch(Exception ex) {
-         ex.printStackTrace();   
-       }       
-    }
+          ex.printStackTrace();   
+       }
+       
+    } // main
 
+    
+    /*
+     * Print a diagnostic message, explaining how to invoke this sample.
+     */
     private static void printUsage() {
+        
         System.err.println("Usage:");
-        System.err.println("java xs.XSSerializer [-xsd11] schema.xsd");
-        System.err.println("-xsd11        Turn on XSD 1.1 support");
-    }
+        System.err.println("java xs.XSSerializer [options] schema.xsd");
+        System.err.println("\nOptions:");
+        System.err.println("-version [1.0|1.1]      XSD language level (default level is 1.0)");
+        System.err.println("-prefix  <prefix>       XSD language URI prefix (for e.g 'xs' or 'xsd'), for the serialized output");
+        
+    } // printUsage
 
+    
     /*
      * Serialize an XML Schema, XSModel object to the standard output.
      */
     public void serialize(XSModel xsModel) throws Exception {       
+       
         //get DOM after conversion, from XSModel
        Document xsdDocument = transformXSModelToDOM(xsModel);
      
@@ -142,13 +175,16 @@ public class XSSerializer {
        LSOutput output = impl.createLSOutput();
        output.setEncoding("UTF-8");
        output.setByteStream(System.out);
-       writer.write(xsdDocument, output);     
-    }
+       writer.write(xsdDocument, output);
+       
+    } // serialize
   
+    
     /*
      * Transform an XML Schema, XSModel object into DOM document.
      */
     public Document transformXSModelToDOM(XSModel xsModel) throws Exception {
+       
        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
        DocumentBuilder dBuilder = dbf.newDocumentBuilder();
        Document document = dBuilder.newDocument();
@@ -190,7 +226,9 @@ public class XSSerializer {
        processGlobalGroupDecl(globalGroupDecls, document, schemaDeclDomNode);
 
        return document;
-    } // end of, transformXSModelToDOM
+       
+    } // transformXSModelToDOM
+    
     
     /*
      * Process global attribute group declarations.
@@ -198,6 +236,7 @@ public class XSSerializer {
     private void processGlobalAttrGroupDecl(XSNamedMap globalAttrGpDecls,
                                             Document document, 
                                             Element schemaDeclDomNode) {
+        
         // iterating global attribute group declarations in the Schema
         for (int attrGpIdx = 0; attrGpIdx < globalAttrGpDecls.size(); attrGpIdx++) {
             XSAttributeGroupDecl attrGpDecl = (XSAttributeGroupDecl) 
@@ -246,8 +285,9 @@ public class XSSerializer {
             schemaDeclDomNode.appendChild(attrGpDomNode);
         }  
         
-    } // end of, processGlobalAttrGroupDecl
+    } // processGlobalAttrGroupDecl
 
+    
     /*
      * Process global element declarations.
      */
@@ -255,14 +295,17 @@ public class XSSerializer {
                                          Document document,
                                          Element schemaDeclDomNode)
                                          throws DOMException {
+      
       // iterating global element declarations in the Schema
       for (int elemIdx = 0; elemIdx < globalElemDecls.size(); elemIdx++) {
          XSElementDecl elemDecl = (XSElementDecl) globalElemDecls.item(elemIdx);
          addElementDeclToSchemaComponent(document, schemaDeclDomNode,
                                          elemDecl, null, null, true);
       }
-    } // end of, processGolabElementDecl
+      
+    } // processGolabElementDecl
 
+    
     /*
      * Adding an element declaration to Schema component.
      */
@@ -273,6 +316,7 @@ public class XSSerializer {
                                              String maxOccurs,
                                              boolean isGlobal)
                                              throws DOMException {
+         
          String elemName = elemDecl.getName();         
          Element elemDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                         XSD_LANGUAGE_PREFIX
@@ -348,10 +392,12 @@ public class XSSerializer {
          
          parentDomNode.appendChild(elemDeclDomNode);
          
-    } // end of, addElementDeclToSchemaComponent
+    } // addElementDeclToSchemaComponent
 
+    
     // construct value of the, "block" attribute for an element declaration
     private String getElementBlockAttrValue(XSElementDecl elemDecl) {
+        
         String blockVal = "";
         
         boolean blockExt = false;
@@ -384,8 +430,9 @@ public class XSSerializer {
 
         return blockVal;
          
-    } // end of, getElementBlockValue
+    } // getElementBlockAttrValue
 
+    
     /*
      * Add identity constraints to element declaration.
      */
@@ -393,6 +440,7 @@ public class XSSerializer {
                                                XSElementDecl elemDecl, 
                                                Element elemDeclDomNode)
                                                throws DOMException {
+         
          XSNamedMap idConstraintsMap = elemDecl.getIdentityConstraints();
          
          // iterate all identity constraints on an element declaration
@@ -452,8 +500,10 @@ public class XSSerializer {
              
              elemDeclDomNode.appendChild(idConsDomNode);             
          }
-    } // end of, addIDConstraintsToElementDecl
+         
+    } // addIDConstraintsToElementDecl
 
+    
     /*
      * Process global complex type declarations.
      */
@@ -461,6 +511,7 @@ public class XSSerializer {
                                               Document document,
                                               Element schemaDeclDomNode)
                                               throws DOMException {
+        
         // iterating global complex types in the Schema
         // leaving out built-in Schema type, "anyType" from iteration        
         for (int ctIdx = 0; ctIdx < globalComplexTypeDecls.size() - 1; ctIdx++) {
@@ -475,7 +526,8 @@ public class XSSerializer {
            
            // add annotation to complex type
            XSAnnotationImpl complexTypeAnnot = (XSAnnotationImpl) 
-                                                 complexTypeDecl.getAnnotations().item(0);
+                                                 complexTypeDecl.
+                                                     getAnnotations().item(0);
            if (complexTypeAnnot != null) {
               addAnnotationToSchemaComponent(document, 
                                              complxTypeDomNode, 
@@ -486,8 +538,10 @@ public class XSSerializer {
                                     schemaDeclDomNode,
                                     complexTypeDecl,
                                     complxTypeDomNode);
-       }        
-    } // end of, processGlobalComplexTypeDecl
+       }
+        
+    } // processGlobalComplexTypeDecl
+    
     
     /*
      * Process global simple type declarations.
@@ -496,6 +550,7 @@ public class XSSerializer {
                                              Document document,
                                              Element schemaDeclDomNode)
                                              throws DOMException {
+        
         // iterating global simple types in the Schema
         for (int stIdx = 0; stIdx < globalSimpleTypeDecls.size(); stIdx++) {
             XSSimpleTypeDecl simpleTypeDecl = (XSSimpleTypeDecl)
@@ -508,8 +563,10 @@ public class XSSerializer {
                                           simpleTypeDecl, stName);
             }
         }
-    } // end of, processGlobalSimpleTypeDecl
+        
+    } // processGlobalSimpleTypeDecl
 
+    
     /*
      * Processing Simple Type contents.
      */
@@ -518,6 +575,7 @@ public class XSSerializer {
                                            XSSimpleTypeDecl simpleTypeDecl,
                                            String stName)
                                            throws DOMException {
+        
         Element simpleTypeDomNode = document.createElementNS(
                                                XSD_LANGUAGE_URI,
                                                XSD_LANGUAGE_PREFIX +
@@ -557,8 +615,10 @@ public class XSSerializer {
            XSObjectList unionMemberTypes = simpleTypeDecl.getMemberTypes();           
            addUnionDeclToSimpleType(document, simpleTypeDomNode, unionMemberTypes);
         }
-    } // end of, processSimpleTypeContents
+        
+    } // processSimpleTypeContents
 
+    
     /*
      * Add children to "xs:restriction" for simple contents.
      */
@@ -568,6 +628,7 @@ public class XSSerializer {
                                                Element restrictionDomNode, 
                                                XSTypeDefinition baseType)
                                                throws DOMException {
+        
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.
                          equals(baseType.getNamespace())) {
             restrictionDomNode.setAttributeNS(null, "base", 
@@ -637,8 +698,9 @@ public class XSSerializer {
         
         parentDomNode.appendChild(restrictionDomNode);
         
-    } // end of, addRestrictionToSimpleContent
+    } // addRestrictionToSimpleContent
 
+    
     /*
      * Process global attribute declarations.
      */
@@ -646,6 +708,7 @@ public class XSSerializer {
                                        Document document,
                                        Element schemaDeclDomNode)
                                        throws DOMException {
+        
         // iterating global attribute declarations in the Schema             
         for (int attrIdx = 0; attrIdx < globalAttrDecls.size(); attrIdx++) {
            XSAttributeDecl attrDecl = (XSAttributeDecl)
@@ -662,7 +725,9 @@ public class XSSerializer {
                                          attrDecl, constraintName, 
                                          constraintVal, null);
         }
-    } // end of, processGlobalAttrDecl
+        
+    } // processGlobalAttrDecl
+    
     
     /*
      * Process global group declarations.
@@ -670,6 +735,7 @@ public class XSSerializer {
     private void processGlobalGroupDecl(XSNamedMap globalGroupDecls,
                                         Document document,
                                         Element schemaDeclDomNode) {
+        
         // iterating global group declarations in the Schema             
         for (int groupIdx = 0; groupIdx < globalGroupDecls.size(); groupIdx++) {
            XSGroupDecl groupDecl = (XSGroupDecl)
@@ -678,8 +744,9 @@ public class XSSerializer {
                                           groupDecl, true);
         }   
         
-    } // end of, processGlobalGroupDecl
+    } // processGlobalGroupDecl
 
+    
     /*
      * Add xs:group child to a Schema component.
      */
@@ -687,6 +754,7 @@ public class XSSerializer {
                                                 Element parentDomNode, 
                                                 XSGroupDecl groupDecl,
                                                 boolean isGlobal) {
+        
         Element groupDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                             XSD_LANGUAGE_PREFIX
                                                             + "group");
@@ -715,14 +783,12 @@ public class XSSerializer {
                                               modelGroup, "1", "1");
             }
         }
-        else {
-          // TO DO ...   
-        }
         
         parentDomNode.appendChild(groupDeclDomNode);
         
-    } // end of, addGroupToSchemaComponent 
+    } // addGroupChildToSchemaComponent 
 
+    
     /*
      * Add attribute declaration to a Schema component (like xs:schema, 
      * xs:complexType etc).
@@ -734,6 +800,7 @@ public class XSSerializer {
                                                String constraintVal,
                                                String requiredVal)
                                                throws DOMException {
+        
         String attrName = attrDecl.getName();            
         Element attrDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                               XSD_LANGUAGE_PREFIX
@@ -778,9 +845,11 @@ public class XSSerializer {
                                      attrDeclDomNode,
                                      simpleTypeDecl, 
                                      simpleTypeDecl.getName());              
-         }           
-    } // end of, addAttributeToSchemaComponent
+         }
+        
+    } // addAttributeToSchemaComponent
 
+    
     /*
      * Processing an "anonymous" complex type declaration, on an element.
      */
@@ -807,8 +876,9 @@ public class XSSerializer {
                                 complexTypeDecl,
                                 complexTypeDomNode);
        
-    } // end of, processAnonComplexTypeOnElement
+    } // processAnonComplexTypeOnElement
 
+    
     /*
      * Add child content to complex type declaration.
      */
@@ -902,7 +972,8 @@ public class XSSerializer {
             }
         }
                    
-    } // end of, addChildrenToComplexType
+    } // addChildrenToComplexType
+    
     
     /*
      * Add xs:simpleContent as child of xs:complexType.
@@ -910,6 +981,7 @@ public class XSSerializer {
     private void addSimpleContentToComplexType(Document document,
                                                Element complexTypeDomNode,
                                                XSComplexTypeDecl complexTypeDecl) {
+        
         Element simpleContentDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                             XSD_LANGUAGE_PREFIX +
                                                             "simpleContent");
@@ -965,7 +1037,8 @@ public class XSSerializer {
         
         complexTypeDomNode.appendChild(simpleContentDomNode);
         
-    } // end of, addSimpleContentToComplexType 
+    } // addSimpleContentToComplexType 
+    
     
     /*
      * Add xs:complexContent as child of xs:complexType.
@@ -974,6 +1047,7 @@ public class XSSerializer {
                                        Element complexTypeDomNode,
                                        XSComplexTypeDecl complexTypeDecl,
                                        short derivationMethod) {
+        
         Element complexContentDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                              XSD_LANGUAGE_PREFIX +
                                                              "complexContent");
@@ -1029,8 +1103,9 @@ public class XSSerializer {
         
         complexTypeDomNode.appendChild(complexContentDomNode);
         
-    } // end of, addComplexContentToComplexType
+    } // addComplexContentToComplexType
 
+    
     /*
      * Add attributes to the complex type.
      */
@@ -1074,8 +1149,9 @@ public class XSSerializer {
            }
         }
         
-    } // end of, addAttributesToComplexType    
+    } // addAttributesToComplexType    
 
+    
     /*
      * Processing a "particle" from a complex type.
      */
@@ -1083,6 +1159,7 @@ public class XSSerializer {
                                                 Element parentDomNode,
                                                 XSParticle particle)
                                                 throws DOMException {
+        
         XSTerm particleTerm = particle.getTerm();
         
         if (particleTerm instanceof XSModelGroup) {
@@ -1109,8 +1186,9 @@ public class XSSerializer {
             }
         }        
         
-    } // end of, processParticleFromComplexType
+    } // processParticleFromComplexType
 
+    
     /*
      * Adding a "sequence" or "choice" compositor on a complex type.
      */
@@ -1180,7 +1258,8 @@ public class XSSerializer {
         
         parentDomNode.appendChild(compositorDomNode);
         
-    } // end of, addCompositorOnComplexType
+    } // addCompositorOnSchemaComponent
+    
     
     /*
      * Processing an "all" declaration on a complex type.
@@ -1233,15 +1312,17 @@ public class XSSerializer {
         
         complxTypeDomNode.appendChild(allDeclDomNode);
         
-    } // end of, addAllCompositorOnComplexType 
+    } // addAllCompositorOnComplexType 
+    
     
     /*
-     * Adding wild card to a Schema component.
+     * Adding wild-card to a Schema component.
      */
     private void addWildcardToSchemaComponent(Document document,
                                               Element parentNode,
                                               XSWildcardDecl wildCardDecl,
                                               String wildCardType) {
+        
         Element wildCardDomNode = document.createElementNS(XSD_LANGUAGE_URI,
                                                          XSD_LANGUAGE_PREFIX
                                                          + wildCardType);
@@ -1253,7 +1334,8 @@ public class XSSerializer {
         }
         parentNode.appendChild(wildCardDomNode);        
         
-    } // end of, addWildcardToSchemaComponent
+    } // addWildcardToSchemaComponent
+    
     
     /*
      * Add xs:list as child of xs:simpleType
@@ -1261,6 +1343,7 @@ public class XSSerializer {
     private void addListDeclToSimpleType(Document document,
                                          Element simpleTypeDomNode,
                                          XSSimpleTypeDefinition listType) {
+        
         Element listDomNode = document.createElementNS(
                                          XSD_LANGUAGE_URI,
                                          XSD_LANGUAGE_PREFIX 
@@ -1285,7 +1368,9 @@ public class XSSerializer {
                                       simpleTypeDeclOfList.getName());
           }
         }
-    } // end of, addListDeclToSimpleType
+        
+    } // addListDeclToSimpleType
+    
     
     /*
      * Add xs:union as child of xs:simpleType.
@@ -1293,6 +1378,7 @@ public class XSSerializer {
     private void addUnionDeclToSimpleType(Document document,
                                           Element simpleTypeDomNode,
                                           XSObjectList unionMemberTypes) {        
+        
         Element unionDomNode = document.createElementNS(
                                          XSD_LANGUAGE_URI,
                                          XSD_LANGUAGE_PREFIX 
@@ -1331,7 +1417,9 @@ public class XSSerializer {
                                         "memberTypes",
                                         memberTypesStr);   
         }
-    } // end of, addUnionDeclToSimpleType
+        
+    } // addUnionDeclToSimpleType
+    
     
     /*
      * Add annotation to a schema component.
@@ -1340,6 +1428,7 @@ public class XSSerializer {
                                                 Element parentDomNode,
                                                 XSAnnotationImpl annotation) 
                                                 throws DOMException {
+        
         String annotString = annotation.getAnnotationString();
         StringReader annotationReader = new StringReader(annotString);
         InputSource annotationInputSrc = new InputSource(annotationReader);
@@ -1355,13 +1444,16 @@ public class XSSerializer {
           ex.printStackTrace();   
         }
         
-        parentDomNode.appendChild(annotationElement); 
-    }
+        parentDomNode.appendChild(annotationElement);
+        
+    } // addAnnotationToSchemaComponent
+    
     
     /*
      * Get name of a facet given it's kind.
      */
     private String getFacetName(short facetKind) {
+      
       if (facetKind == XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) {
          return "minExclusive";
       }
@@ -1395,26 +1487,32 @@ public class XSSerializer {
       
       // unreach
       return null;
-    } // end of, getFacetName 
+      
+    } // getFacetName 
+    
     
     /*
      * Given an XSD particle, get it's minOccurs value as a String.
      */
     private String getMinOccursVal(XSParticle particle) {
-       String minOccursStr = null;
+       
+        String minOccursStr = null;
        
        int minOccurs = particle.getMinOccurs();        
        if (minOccurs != 1) {
           minOccursStr = String.valueOf(minOccurs);   
        } 
 
-       return minOccursStr; 
-    } // end of, getMinOccursVal 
+       return minOccursStr;
+       
+    } // getMinOccursVal
+    
     
     /*
      * Given an XSD particle, get it's maxOccurs value as a String.
      */
     private String getMaxOccursVal(XSParticle particle) {
+       
        String maxOccursStr = null;  
        
        int maxOccurs = particle.getMaxOccurs();
@@ -1427,7 +1525,8 @@ public class XSSerializer {
           }
        }
 
-       return maxOccursStr; 
-    } // end of, getMaxOccursVal 
+       return maxOccursStr;
+       
+    } // getMaxOccursVal 
     
 }
