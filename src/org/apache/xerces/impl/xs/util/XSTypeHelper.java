@@ -38,9 +38,11 @@ public class XSTypeHelper {
         String type1Name = typeDefn1.getName();
         String type2Name = typeDefn2.getName();
         
-        if ("anyType".equals(type1Name) && 
-            "anyType".equals(type2Name)) {
-            typesIdentical = true;  
+        if (("anyType".equals(type1Name) && 
+            "anyType".equals(type2Name)) ||
+            ("anySimpleType".equals(type1Name) && 
+            "anySimpleType".equals(type2Name))) {
+               typesIdentical = true;  
         }
         
         if (!typesIdentical) {                        
