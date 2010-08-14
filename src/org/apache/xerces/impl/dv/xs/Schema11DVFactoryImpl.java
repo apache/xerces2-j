@@ -17,8 +17,10 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.xs.XSConstants;
 
 /**
  * A special factory to create/return built-in schema DVs and create user-defined DVs
@@ -47,6 +49,9 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         final String ERROR             = "error";
         final String DATETIMESTAMP     = "dateTimeStamp"; 
         final String DATETIME          = "dateTime";
+        final String ENTITIES          = "ENTITIES";
+        final String NMTOKENS          = "NMTOKENS";
+        final String IDREFS            = "IDREFS";
         
     	createBuiltInTypes(fBuiltInTypes, XSSimpleTypeDecl.fAnyAtomicType);
 
@@ -55,6 +60,26 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         
         // add error
         fBuiltInTypes.put(ERROR, XSSimpleTypeDecl.fError);
+
+        // In XML Schema 1.1, ENTITIES, NMTOKENS, IDREFS have anyAtomicType
+        // as the base type
+        final XSFacets facets = new XSFacets();
+        facets.minLength = 1;
+
+        // add ENTITIES
+        final XSSimpleTypeDecl entitiesDV = new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, ENTITIES, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        entitiesDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        fBuiltInTypes.put(ENTITIES, entitiesDV);
+
+        // add NMTOKENS
+        final XSSimpleTypeDecl nmtokensDV = new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, NMTOKENS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        nmtokensDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        fBuiltInTypes.put(NMTOKENS, nmtokensDV);
+
+        // add IDREFS
+        final XSSimpleTypeDecl idrefsDV = new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, IDREFS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        fBuiltInTypes.put(IDREFS, idrefsDV);
 
         // add 2 duration types
         XSSimpleTypeDecl durationDV = (XSSimpleTypeDecl)fBuiltInTypes.get(DURATION);

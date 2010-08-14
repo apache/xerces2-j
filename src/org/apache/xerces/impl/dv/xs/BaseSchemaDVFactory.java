@@ -220,31 +220,31 @@ public abstract class BaseSchemaDVFactory extends SchemaDVFactory {
         XSSimpleTypeDecl idrefDV = new XSSimpleTypeDecl(ncnameDV,  IDREF , XSSimpleTypeDecl.DV_IDREF, XSSimpleType.ORDERED_FALSE, false, false, false, true, XSConstants.IDREF_DT);
         builtInTypes.put(IDREF, idrefDV);
 
-        facets.minLength = 1;
+        /*facets.minLength = 1;
         XSSimpleTypeDecl tempDV = new XSSimpleTypeDecl(null, URI_SCHEMAFORSCHEMA, (short)0, idrefDV, true, null);
         XSSimpleTypeDecl idrefsDV = new XSSimpleTypeDecl(tempDV, IDREFS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
-        builtInTypes.put(IDREFS, idrefsDV);
+        builtInTypes.put(IDREFS, idrefsDV);*/
 
         XSSimpleTypeDecl entityDV = new XSSimpleTypeDecl(ncnameDV, ENTITY , XSSimpleTypeDecl.DV_ENTITY, XSSimpleType.ORDERED_FALSE, false, false, false, true, XSConstants.ENTITY_DT);
         builtInTypes.put(ENTITY, entityDV);
 
-        facets.minLength = 1;
+        /*facets.minLength = 1;
         tempDV = new XSSimpleTypeDecl(null, URI_SCHEMAFORSCHEMA, (short)0, entityDV, true, null);
         XSSimpleTypeDecl entitiesDV = new XSSimpleTypeDecl(tempDV, ENTITIES, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         entitiesDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
-        builtInTypes.put(ENTITIES, entitiesDV);
+        builtInTypes.put(ENTITIES, entitiesDV);*/
 
         facets.whiteSpace  = XSSimpleType.WS_COLLAPSE;
         XSSimpleTypeDecl nmtokenDV = new XSSimpleTypeDecl(tokenDV, NMTOKEN, URI_SCHEMAFORSCHEMA, (short)0, false, null, XSConstants.NMTOKEN_DT);
         nmtokenDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_PATTERN_NMTOKEN);
         builtInTypes.put(NMTOKEN, nmtokenDV);
 
-        facets.minLength = 1;
+        /*facets.minLength = 1;
         tempDV = new XSSimpleTypeDecl(null, URI_SCHEMAFORSCHEMA, (short)0, nmtokenDV, true, null);
         XSSimpleTypeDecl nmtokensDV = new XSSimpleTypeDecl(tempDV, NMTOKENS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         nmtokensDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
-        builtInTypes.put(NMTOKENS, nmtokensDV);
+        builtInTypes.put(NMTOKENS, nmtokensDV);*/
     } //createBuiltInTypes()
 
     /**

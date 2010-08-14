@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.util.SymbolHash;
 
@@ -40,8 +41,39 @@ public class SchemaDVFactoryImpl extends BaseSchemaDVFactory {
 
     // create all built-in types
     static void createBuiltInTypes() {
+        final String ENTITIES = "ENTITIES";
+        final String ENTITY   = "ENTITY";
+        final String NMTOKENS = "NMTOKENS";
+        final String NMTOKEN  = "NMTOKEN";
+        final String IDREFS   = "IDREFS";
+        final String IDREF    = "IDREF";
+        
         createBuiltInTypes(fBuiltInTypes, XSSimpleTypeDecl.fAnySimpleType);
         
+        XSFacets facets = new XSFacets();
+        facets.minLength = 1;
+
+        // add ENTITIES
+        final XSSimpleTypeDecl entityDV = (XSSimpleTypeDecl)fBuiltInTypes.get(ENTITY);
+        XSSimpleTypeDecl tempDV = new XSSimpleTypeDecl(null, URI_SCHEMAFORSCHEMA, (short)0, entityDV, true, null);
+        final XSSimpleTypeDecl entitiesDV = new XSSimpleTypeDecl(tempDV, ENTITIES, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        entitiesDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        fBuiltInTypes.put(ENTITIES, entitiesDV);
+
+        // add NMTOKENS
+        final XSSimpleTypeDecl nmtokenDV = (XSSimpleTypeDecl)fBuiltInTypes.get(NMTOKEN);
+        tempDV = new XSSimpleTypeDecl(null, URI_SCHEMAFORSCHEMA, (short)0, nmtokenDV, true, null);
+        final XSSimpleTypeDecl nmtokensDV = new XSSimpleTypeDecl(tempDV, NMTOKENS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        nmtokensDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        fBuiltInTypes.put(NMTOKENS, nmtokensDV);
+        
+        // add IDREFS
+        final XSSimpleTypeDecl idrefDV = (XSSimpleTypeDecl)fBuiltInTypes.get(IDREF);
+        tempDV = new XSSimpleTypeDecl(null, URI_SCHEMAFORSCHEMA, (short)0, idrefDV, true, null);
+        final XSSimpleTypeDecl idrefsDV = new XSSimpleTypeDecl(tempDV, IDREFS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        fBuiltInTypes.put(IDREFS, idrefsDV);
+
         // TODO: move specific 1.0 DV implementation from base
     } //createBuiltInTypes()
 
