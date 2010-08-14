@@ -50,8 +50,11 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         final String DATETIMESTAMP     = "dateTimeStamp"; 
         final String DATETIME          = "dateTime";
         final String ENTITIES          = "ENTITIES";
+        final String ENTITY            = "ENTITY";
         final String NMTOKENS          = "NMTOKENS";
+        final String NMTOKEN           = "NMTOKEN";
         final String IDREFS            = "IDREFS";
+        final String IDREF             = "IDREF";
         
     	createBuiltInTypes(fBuiltInTypes, XSSimpleTypeDecl.fAnyAtomicType);
 
@@ -67,17 +70,20 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         facets.minLength = 1;
 
         // add ENTITIES
-        final XSSimpleTypeDecl entitiesDV = new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, ENTITIES, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        final XSSimpleTypeDecl entityDV = (XSSimpleTypeDecl)fBuiltInTypes.get(ENTITY);
+        final XSSimpleTypeDecl entitiesDV = new XSSimpleTypeDecl(ENTITIES, URI_SCHEMAFORSCHEMA, (short)0, entityDV, false, null);
         entitiesDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
         fBuiltInTypes.put(ENTITIES, entitiesDV);
 
         // add NMTOKENS
-        final XSSimpleTypeDecl nmtokensDV = new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, NMTOKENS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        final XSSimpleTypeDecl nmtokenDV = (XSSimpleTypeDecl)fBuiltInTypes.get(NMTOKEN);
+        final XSSimpleTypeDecl nmtokensDV = new XSSimpleTypeDecl(NMTOKENS, URI_SCHEMAFORSCHEMA, (short)0, nmtokenDV, false, null);
         nmtokensDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
         fBuiltInTypes.put(NMTOKENS, nmtokensDV);
 
         // add IDREFS
-        final XSSimpleTypeDecl idrefsDV = new XSSimpleTypeDecl(XSSimpleTypeDecl.fAnyAtomicType, IDREFS, URI_SCHEMAFORSCHEMA, (short)0, false, null);
+        final XSSimpleTypeDecl idrefDV = (XSSimpleTypeDecl)fBuiltInTypes.get(IDREF);
+        final XSSimpleTypeDecl idrefsDV = new XSSimpleTypeDecl(IDREFS, URI_SCHEMAFORSCHEMA, (short)0, idrefDV, false, null);
         idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
         fBuiltInTypes.put(IDREFS, idrefsDV);
 
