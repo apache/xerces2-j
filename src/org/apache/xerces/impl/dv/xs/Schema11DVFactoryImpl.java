@@ -20,7 +20,6 @@ package org.apache.xerces.impl.dv.xs;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.xs.XSConstants;
 
 /**
  * A special factory to create/return built-in schema DVs and create user-defined DVs
@@ -64,7 +63,7 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         // add error
         fBuiltInTypes.put(ERROR, XSSimpleTypeDecl.fError);
 
-        // In XML Schema 1.1, ENTITIES, NMTOKENS, IDREFS have anyAtomicType
+        // In XML Schema 1.1, ENTITIES, NMTOKENS, IDREFS have anySimpleType
         // as the base type
         final XSFacets facets = new XSFacets();
         facets.minLength = 1;
