@@ -145,10 +145,15 @@ public class Test extends AbstractPsychoPathImpl {
          result = evaluatePsychoPathExpr(fXPathPsychoPath,
                                 fTypeAlternative.fXPathDefaultNamespace,
                                 elem);
-       } catch (StaticError ex) {
+       } 
+       catch (StaticError ex) {
            result = false; 
-       } catch(DynamicError ex) {
+       } 
+       catch(DynamicError ex) {
            result = false;
+       }
+       catch(Exception ex) {
+           result = false;  
        }
        
        return result;

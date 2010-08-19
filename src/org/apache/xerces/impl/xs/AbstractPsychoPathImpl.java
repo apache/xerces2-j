@@ -98,7 +98,8 @@ public class AbstractPsychoPathImpl {
     protected boolean evaluatePsychoPathExpr(XPath xp,
                                  String xPathDefaultNamespace,
                                  Element contextNode)
-                                 throws StaticError, DynamicError {
+                                 throws StaticError, DynamicError,
+                                        Exception {
         
         StaticChecker sc = new StaticNameResolver(fDynamicContext);
         sc.check(xp);

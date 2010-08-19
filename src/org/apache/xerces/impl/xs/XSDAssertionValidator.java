@@ -220,27 +220,56 @@ public class XSDAssertionValidator {
         else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
             // if element's governing type is a "simple type"
             XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) 
-                                                                typeDef;
-            XSObjectList facets = simpleTypeDef.getMultiValueFacets();
-            for (int i = 0; i < facets.getLength(); i++) {
-               XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-               if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                  assertionList = facet.getAsserts();
+                                                                typeDef;                     
+            
+            XSObjectListImpl facets = (XSObjectListImpl) simpleTypeDef.
+                                                   getMultiValueFacets();
+            
+            if (facets.getLength() == 0 && simpleTypeDef.getItemType() != 
+                                                              null) {
+                // facets for list -> simpleType
+                facets = (XSObjectListImpl) simpleTypeDef.getItemType().
+                                                getMultiValueFacets();    
+            }
+            else {
+                // facets for union -> simpleType*
+                XSObjectList memberTypes = simpleTypeDef.getMemberTypes();
+                for (int memberTypeIdx = 0; memberTypeIdx < 
+                                  memberTypes.getLength(); memberTypeIdx++) {
+                    XSObjectList memberTypeFacets = ((XSSimpleTypeDefinition) 
+                                             memberTypes.item(memberTypeIdx)).
+                                                        getMultiValueFacets();
+                    for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < 
+                           memberTypeFacets.getLength(); memberTypeFacetIdx++) {
+                         facets.addXSObject(memberTypeFacets.item
+                                              (memberTypeFacetIdx));
+                    }
+                }
+            }
+            
+            // iterate 'multi value' facets and get assertions from them
+            for (int facetIdx = 0; facetIdx < facets.getLength(); 
+                                                   facetIdx++) {
+               XSMultiValueFacet facet = (XSMultiValueFacet) facets.
+                                                        item(facetIdx);
+               if (facet.getFacetKind() == XSSimpleTypeDefinition.
+                                                          FACET_ASSERT) {
+                  if (assertionList == null) {
+                      assertionList = new Vector();   
+                  }
+                  assertionList.addAll(facet.getAsserts());
                   // instantiate the assertions processor
                   if (fAssertionProcessor == null) {
-                     // construct parameter values for the assertion processor
-                     Map assertProcessorParams = new HashMap();
-                     assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                                       ((XSAssertImpl)facet.getAsserts().get(0)).
-                                         getXPath2NamespaceContext());
-                     // initialize the assertions processor
-                     initializeAssertProcessor(assertProcessorParams);
-                  }
-                  
-                  break;
-                  
+                      // construct parameter values for the assertion processor
+                      Map assertProcessorParams = new HashMap();
+                      assertProcessorParams.put("XPATH2_NS_CONTEXT",
+                                      ((XSAssertImpl)facet.getAsserts().get(0)).
+                                      getXPath2NamespaceContext());
+                      // initialize the assertions processor
+                      initializeAssertProcessor(assertProcessorParams);
+                  }                  
                }
-            }
+            }            
          }
                
          return assertionList;
