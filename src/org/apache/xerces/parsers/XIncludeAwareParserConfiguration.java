@@ -55,7 +55,7 @@ public class XIncludeAwareParserConfiguration extends XML11Configuration {
     protected static final String XINCLUDE_FEATURE = 
         Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FEATURE;
     
-    /** Property identifier: error reporter. */
+    /** Property identifier: XInclude handler. */
     protected static final String XINCLUDE_HANDLER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XINCLUDE_HANDLER_PROPERTY;
     
