@@ -20,7 +20,7 @@ package org.apache.xerces.impl.scd;
 /**
  * This class represents an Axis of a Step
  * @author Ishan Jayawardena udeshike@gmail.com
- * @version $Id: $
+ * @version $Id$
  */
 final class Axis {
     private Axis() {}

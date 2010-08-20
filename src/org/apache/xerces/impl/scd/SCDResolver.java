@@ -59,7 +59,7 @@ import org.apache.xerces.xs.XSWildcard;
  *    produce expected results<br>
  * 8. the fundamental facets are not supported (but the constraining facets are supported).<br>
  * @author Ishan Jayawardena <udeshike@gmail.com>
- * @version $Id: $
+ * @version $Id$
  */
 public class SCDResolver {
     private XSModel xsModel;

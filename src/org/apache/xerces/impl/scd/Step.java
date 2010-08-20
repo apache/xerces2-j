@@ -22,7 +22,7 @@ import org.apache.xerces.xni.QName;
 /**
  * This class represents a step in an SCP/SCD string.
  * @author Ishan Jayawardena udeshike@gmail.com
- * @version $Id: $
+ * @version $Id$
  */
 class Step {
     private short axis;

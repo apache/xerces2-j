@@ -19,7 +19,7 @@ package org.apache.xerces.impl.scd;
 
 /**
  * @author Ishan Jayawardena udeshike@gmail.com
- * @version $Id: $
+ * @version $Id$
  */
 public class SCDException extends Exception {
 

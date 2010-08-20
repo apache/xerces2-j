@@ -29,7 +29,7 @@ import org.apache.xerces.util.XML11Char;
 /**
  * This class handles the parsing of relative/incomplete SCDs/SCPs
  * @author Ishan Jayawardena udeshike@gmail.com
- * @version $Id: $
+ * @version $Id$
  */
 class SCDParser {
     private List steps;
