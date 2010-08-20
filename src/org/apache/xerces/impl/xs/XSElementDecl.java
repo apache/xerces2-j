@@ -359,8 +359,8 @@ public class XSElementDecl implements XSElementDeclaration {
      * {substitution group affiliation} Optional. A top-level element
      * definition.
      */
-    public XSElementDeclaration[] getSubstitutionGroupAffiliation() {
-        return fSubGroup;
+    public XSElementDeclaration getSubstitutionGroupAffiliation() {
+        return fSubGroup != null && fSubGroup.length > 0 ? fSubGroup[0] : null;
     }
 
     /**

@@ -3131,7 +3131,7 @@ public class XSDHandler {
             addRelatedType(enclosingType, componentList, namespace, dependencies);
         }*/
 
-        final XSElementDeclaration[] subElemDecl = decl.getSubstitutionGroupAffiliation();
+        final XSElementDeclaration[] subElemDecl = ((XSElementDecl)decl).fSubGroup;
         if (subElemDecl != null) {
             for (int i=0; i<subElemDecl.length; i++) {
                 addRelatedElement(subElemDecl[i], componentList, namespace, dependencies);
