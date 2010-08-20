@@ -253,8 +253,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
              }
          }
          
-         if (!(textChildCount > 0 && (textChildCount ==
-                                      childList.getLength()))) {
+         if (textChildCount != childList.getLength()) {
             value = null;  
          }
 
@@ -263,7 +262,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // assertions from a complex type definition             
             if (value != null) {
                // complex type with simple content
-              setValueOf$value(value, null, null);
+               setValueOf$value(value, null, null);
             } else {
                // complex type with complex content                
                // $value should be, the XPath2 "empty sequence" ... TO DO 
