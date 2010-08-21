@@ -28,6 +28,7 @@ import org.apache.xerces.impl.xs.assertion.XSAssert;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -88,6 +89,26 @@ public class XSDAssertionValidator {
        
         // get list of assertions for processing
         List assertionList = getAssertsForEvaluation(element, attributes);
+        
+        // instantiate the assertions processor
+        if (assertionList != null && fAssertionProcessor == null) {
+            // construct parameter values for the assertion processor
+            NamespaceSupport xpathNamespaceContext = null;
+            if (assertionList instanceof XSObjectList) {
+                xpathNamespaceContext = ((XSAssertImpl)((XSObjectList)
+                         assertionList).get(0)).getXPath2NamespaceContext();    
+            }
+            else {
+                xpathNamespaceContext = ((XSAssertImpl)((Vector)
+                        assertionList).get(0)).getXPath2NamespaceContext();     
+            }
+            
+            Map assertProcessorParams = new HashMap();
+            assertProcessorParams.put("XPATH2_NS_CONTEXT", 
+                                      xpathNamespaceContext);
+            // initialize the assertions processor
+            initializeAssertProcessor(assertProcessorParams);
+        }
        
         // invoke the assertions processor method
         if (fAssertionProcessor != null) {
@@ -157,7 +178,8 @@ public class XSDAssertionValidator {
              }
           }
           
-          // add assertion facets, from "complexType -> simpleContent -> restriction"
+          // add assertion facets, from "complexType -> simpleContent -> 
+          // restriction".
           XSSimpleTypeDefinition simpleTypeDef = complexTypeDef.getSimpleType();
           if (simpleTypeDef != null) {
             XSObjectList complexTypeFacets = simpleTypeDef.getMultiValueFacets();
@@ -187,14 +209,18 @@ public class XSDAssertionValidator {
               if (attrType != null) {
                  XSObjectList facets = attrType.getMultiValueFacets();              
                  for (int i = 0; i < facets.getLength(); i++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
-                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) 
+                                                            facets.item(i);
+                    if (facet.getFacetKind() == XSSimpleTypeDefinition.
+                                                              FACET_ASSERT) {
                        Vector attrAsserts = facet.getAsserts();
                        for (int j = 0; j < attrAsserts.size(); j++) {
                          XSAssertImpl attrAssert = (XSAssertImpl) 
-                                                       attrAsserts.elementAt(j);
-                         attrAssert.setAttrName(attributes.getLocalName(attrIndx));
-                         attrAssert.setAttrValue(attributes.getValue(attrIndx));
+                                                     attrAsserts.elementAt(j);
+                         attrAssert.setAttrName(attributes.getLocalName
+                                                                 (attrIndx));
+                         attrAssert.setAttrValue(attributes.getValue
+                                                                 (attrIndx));
                          assertions.addXSObject(attrAssert);    
                        }                        
                        break;
@@ -205,16 +231,6 @@ public class XSDAssertionValidator {
               
           if (assertions.size() > 0) {
               assertionList = assertions;             
-              // instantiate the assertions processor
-              if (fAssertionProcessor == null) {
-                // construct parameter values for the assertion processor
-                Map assertProcessorParams = new HashMap();
-                assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                                     ((XSAssertImpl)assertions.get(0)).
-                                       getXPath2NamespaceContext());
-                // initialize the assertions processor
-                initializeAssertProcessor(assertProcessorParams);
-              }
           }
         }
         else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
@@ -256,18 +272,8 @@ public class XSDAssertionValidator {
                                                           FACET_ASSERT) {
                   if (assertionList == null) {
                       assertionList = new Vector();   
-                  }
-                  assertionList.addAll(facet.getAsserts());
-                  // instantiate the assertions processor
-                  if (fAssertionProcessor == null) {
-                      // construct parameter values for the assertion processor
-                      Map assertProcessorParams = new HashMap();
-                      assertProcessorParams.put("XPATH2_NS_CONTEXT",
-                                      ((XSAssertImpl)facet.getAsserts().get(0)).
-                                      getXPath2NamespaceContext());
-                      // initialize the assertions processor
-                      initializeAssertProcessor(assertProcessorParams);
                   }                  
+                  assertionList.addAll(facet.getAsserts());                  
                }
             }            
          }
