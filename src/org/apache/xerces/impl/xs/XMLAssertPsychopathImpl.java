@@ -351,7 +351,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                 if (isValidationFailedForUnion) {
                      // none of the member types of union (the assertions in
                      // them) can successfully validate an atomic value. this
-                     // results in a overall validation failure. report an
+                     // results in an overall validation failure. report an
                      // error message.
                      validator.reportSchemaError("cvc-assertion.union.3.13.4.1", 
                                   new Object[] { element.rawname, value } );   
@@ -405,10 +405,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                // value cannot be constructed by PsychoPath engine
                                // for a given string value (say a value '5' was 
                                // attempted to be formed as a typed value xs:date).
-                               // This is a known scenario. Exceptions may occur
-                               // due to other un-observed scenarios.
+                               // This is a known scenario for an exception here.
+                               // Exceptions may occur due to other un-observed
+                               // scenarios.
                                 
-                               // it's useful to throw warning ... TO DO
+                               // it's useful to report warning ... TO DO
                             }
                         }
                         if (assertsSucceeded == assertFacets.size()) {
