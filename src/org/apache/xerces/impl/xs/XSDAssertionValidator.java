@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.assertion.XMLAssertHandler;
 import org.apache.xerces.impl.xs.assertion.XSAssert;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
@@ -64,7 +65,7 @@ public class XSDAssertionValidator {
      * Class constructor
      */
     public XSDAssertionValidator(XMLSchemaValidator xmlSchemaValidator) {
-       this.xmlSchemaValidator = xmlSchemaValidator;   
+       this.xmlSchemaValidator = xmlSchemaValidator; 
     }
 
     
@@ -96,11 +97,12 @@ public class XSDAssertionValidator {
             NamespaceSupport xpathNamespaceContext = null;
             if (assertionList instanceof XSObjectList) {
                 xpathNamespaceContext = ((XSAssertImpl)((XSObjectList)
-                         assertionList).get(0)).getXPath2NamespaceContext();    
+                         assertionList).item(0)).getXPath2NamespaceContext();    
             }
             else {
-                xpathNamespaceContext = ((XSAssertImpl)((Vector)
-                        assertionList).get(0)).getXPath2NamespaceContext();     
+                Vector assertVector = (Vector) assertionList;
+                xpathNamespaceContext = ((XSAssertImpl)assertVector.
+                                   get(0)).getXPath2NamespaceContext();
             }
             
             Map assertProcessorParams = new HashMap();
@@ -129,7 +131,8 @@ public class XSDAssertionValidator {
                                  XSElementDecl elemDecl, 
                                  XSTypeDefinition typeDef, 
                                  XSNotationDecl notation,
-                                 XSGrammarBucket grammarBucket) {
+                                 XSGrammarBucket grammarBucket,
+                                 boolean atomicValueValid) {
         
         if (fAssertionProcessor != null) {
             try {
@@ -143,7 +146,9 @@ public class XSDAssertionValidator {
                 // construct the augmentations object for assertions.
                 // store assertPSVI into the augmentations
                 AugmentationsImpl assertAugs = new AugmentationsImpl();
-                assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);                
+                assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);
+                assertAugs.putItem("ATOMIC_VALUE_VALIDITY", Boolean.valueOf
+                                               (atomicValueValid));
                 fAssertionProcessor.endElement(element, assertAugs);
             } catch (Exception ex) {
                 throw new XNIException(ex.getMessage(), ex);
@@ -163,124 +168,172 @@ public class XSDAssertionValidator {
         
        XSTypeDefinition typeDef = xmlSchemaValidator.fCurrentPSVI.
                                                          getTypeDefinition();
+
        List assertionList = null;
             
        if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-          // if element's governing type is a "complex type"
-          XSObjectListImpl assertions = new XSObjectListImpl();                
-          XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) 
-                                                               typeDef;
+           // if element's governing type is a "complex type"
+           XSObjectListImpl assertions = new XSObjectListImpl();                
+           XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition) 
+                                                                typeDef;
           
-          XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
-          if (complexTypeAsserts.getLength() > 0) {
-             for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
-                assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
-             }
-          }
+           XSObjectList complexTypeAsserts = complexTypeDef.getAssertions();
+           if (complexTypeAsserts.getLength() > 0) {
+              for (int i = 0; i < complexTypeAsserts.getLength(); i++) {
+                 assertions.addXSObject((XSAssert)complexTypeAsserts.get(i));
+              }
+           }
           
-          // add assertion facets, from "complexType -> simpleContent -> 
-          // restriction".
-          XSSimpleTypeDefinition simpleTypeDef = complexTypeDef.getSimpleType();
-          if (simpleTypeDef != null) {
-            XSObjectList complexTypeFacets = simpleTypeDef.getMultiValueFacets();
-            for (int i = 0; i < complexTypeFacets.getLength(); i++) {
-              XSMultiValueFacet facet = (XSMultiValueFacet) 
-                                                  complexTypeFacets.item(i);
-              if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                 Vector simpleContentAsserts = facet.getAsserts();
-                 for (int simpleAssertIdx = 0; simpleAssertIdx < 
-                              simpleContentAsserts.size(); simpleAssertIdx++) {
-                    XSAssert simpleContentAssert = (XSAssert)
-                                      simpleContentAsserts.get(simpleAssertIdx);
-                    assertions.addXSObject(simpleContentAssert);
-                 }
-              }
-            }
-          }
-
-          // there could be assertions, to be evaluated on attributes. add these
-          // assertions to the list of assertions to be processed.
-          for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
-              Augmentations attrAugs = attributes.getAugmentations(attrIndx);
-              AttributePSVImpl attrPSVI = (AttributePSVImpl)attrAugs.getItem
-                                                 (Constants.ATTRIBUTE_PSVI);
-              XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition)attrPSVI.
-                                                        getTypeDefinition();
-              if (attrType != null) {
-                 XSObjectList facets = attrType.getMultiValueFacets();              
-                 for (int i = 0; i < facets.getLength(); i++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet) 
-                                                            facets.item(i);
-                    if (facet.getFacetKind() == XSSimpleTypeDefinition.
-                                                              FACET_ASSERT) {
-                       Vector attrAsserts = facet.getAsserts();
-                       for (int j = 0; j < attrAsserts.size(); j++) {
-                         XSAssertImpl attrAssert = (XSAssertImpl) 
-                                                     attrAsserts.elementAt(j);
-                         attrAssert.setAttrName(attributes.getLocalName
-                                                                 (attrIndx));
-                         attrAssert.setAttrValue(attributes.getValue
-                                                                 (attrIndx));
-                         assertions.addXSObject(attrAssert);    
-                       }                        
-                       break;
-                    }
-                 }
-              }
-          }
-              
-          if (assertions.size() > 0) {
-              assertionList = assertions;             
-          }
-        }
-        else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-            // if element's governing type is a "simple type"
-            XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) 
-                                                                typeDef;                     
-            
-            XSObjectListImpl facets = (XSObjectListImpl) simpleTypeDef.
-                                                   getMultiValueFacets();
-            
-            if (facets.getLength() == 0 && simpleTypeDef.getItemType() != 
-                                                              null) {
-                // facets for list -> simpleType
-                facets = (XSObjectListImpl) simpleTypeDef.getItemType().
-                                                getMultiValueFacets();    
-            }
-            else {
-                // facets for union -> simpleType*
-                XSObjectList memberTypes = simpleTypeDef.getMemberTypes();
-                for (int memberTypeIdx = 0; memberTypeIdx < 
-                                  memberTypes.getLength(); memberTypeIdx++) {
-                    XSObjectList memberTypeFacets = ((XSSimpleTypeDefinition) 
-                                             memberTypes.item(memberTypeIdx)).
-                                                        getMultiValueFacets();
-                    for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < 
-                           memberTypeFacets.getLength(); memberTypeFacetIdx++) {
-                         facets.addXSObject(memberTypeFacets.item
-                                              (memberTypeFacetIdx));
-                    }
+           // add assertion facets, from "complexType -> simpleContent -> 
+           // restriction".
+           XSSimpleTypeDefinition simpleTypeDef = complexTypeDef.getSimpleType();
+           if (simpleTypeDef != null) {
+               XSObjectList complexTypeFacets = simpleTypeDef.getMultiValueFacets();
+               for (int i = 0; i < complexTypeFacets.getLength(); i++) {
+                  XSMultiValueFacet facet = (XSMultiValueFacet) 
+                                                    complexTypeFacets.item(i);
+                  if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                      Vector simpleContentAsserts = facet.getAsserts();
+                      for (int simpleAssertIdx = 0; simpleAssertIdx < 
+                                   simpleContentAsserts.size(); simpleAssertIdx++) {
+                         XSAssert simpleContentAssert = (XSAssert)
+                                           simpleContentAsserts.get(simpleAssertIdx);
+                         assertions.addXSObject(simpleContentAssert);
+                      }
+                   }
                 }
             }
+
+            // there could be assertions, to be evaluated on attributes. add these
+            // assertions to the list of assertions to be processed.
+            for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
+                Augmentations attrAugs = attributes.getAugmentations(attrIndx);
+                AttributePSVImpl attrPSVI = (AttributePSVImpl)attrAugs.getItem
+                                                   (Constants.ATTRIBUTE_PSVI);
+                XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition)attrPSVI.
+                                                          getTypeDefinition();
+                if (attrType != null) {
+                    XSObjectList facets = attrType.getMultiValueFacets();              
+                    for (int i = 0; i < facets.getLength(); i++) {
+                        XSMultiValueFacet facet = (XSMultiValueFacet) 
+                                                              facets.item(i);
+                        if (facet.getFacetKind() == XSSimpleTypeDefinition.
+                                                               FACET_ASSERT) {
+                            Vector attrAsserts = facet.getAsserts();
+                            for (int j = 0; j < attrAsserts.size(); j++) {
+                                XSAssertImpl attrAssert = (XSAssertImpl) 
+                                                         attrAsserts.elementAt(j);
+                                attrAssert.setAttrName(attributes.getLocalName
+                                                                    (attrIndx));
+                                attrAssert.setAttrValue(attributes.getValue
+                                                                   (attrIndx));
+                                assertions.addXSObject(attrAssert);    
+                             }                       
+                             break;
+                         }
+                     }
+                  }
+              }
+              
+              if (assertions.size() > 0) {
+                 assertionList = assertions;             
+              }
+           }
+           else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+               // if element's governing type is a "simple type"
+               XSSimpleTypeDefinition simpleTypeDef = (XSSimpleTypeDefinition) 
+                                                                 typeDef;                     
             
-            // iterate 'multi value' facets and get assertions from them
-            for (int facetIdx = 0; facetIdx < facets.getLength(); 
-                                                   facetIdx++) {
-               XSMultiValueFacet facet = (XSMultiValueFacet) facets.
-                                                        item(facetIdx);
-               if (facet.getFacetKind() == XSSimpleTypeDefinition.
-                                                          FACET_ASSERT) {
-                  if (assertionList == null) {
-                      assertionList = new Vector();   
-                  }                  
-                  assertionList.addAll(facet.getAsserts());                  
+               XSObjectListImpl facets = (XSObjectListImpl) simpleTypeDef.
+                                                     getMultiValueFacets();
+            
+               if (facets.getLength() == 0 && simpleTypeDef.getItemType() != 
+                                                              null) {
+                   // facets for list -> simpleType
+                   facets = (XSObjectListImpl) simpleTypeDef.getItemType().
+                                                   getMultiValueFacets();    
                }
-            }            
-         }
+               else if (simpleTypeDef.getVariety() == XSSimpleType.
+                                                         VARIETY_UNION) {
+                   // assertions on a simpleType with variety union, are
+                   // handled in a special way.
+                   // NOTE: assertions on simpleType -> union are not 
+                   // accumulated here.
+                   // create a dummy assertions list (so that a non-null 
+                   // assertions context is pushed on to a run-time assertions 
+                   // stack).                
+                   XSAssertImpl assertImpl = getFirstAssertFromUnionMemberTypes(
+                                                simpleTypeDef.getMemberTypes());
+                   if (assertImpl != null) {
+                       // this is done to pass a correct schema NamespaceContext
+                       // for union assertions evaluation. since NamespaceContext
+                       // is available in an assertions object, therefore we
+                       // utilize the 1st assertions on a union for this need.
+                       
+                       // REVISIT: if we can store the schema namespace context
+                       // in a global store, then we can avoid storing it in
+                       // every assertions object.
+                       assertionList = new Vector();
+                       assertionList.add(assertImpl);
+                    }
+               }
+            
+               // iterate 'multi value' facets and get assertions from them
+               for (int facetIdx = 0; facetIdx < facets.getLength(); 
+                                                       facetIdx++) {
+                   XSMultiValueFacet facet = (XSMultiValueFacet) facets.
+                                                          item(facetIdx);
+                   if (facet.getFacetKind() == XSSimpleTypeDefinition.
+                                                           FACET_ASSERT) {
+                       if (assertionList == null) {
+                          assertionList = new Vector();   
+                       }                  
+                       assertionList.addAll(facet.getAsserts());                  
+                   }
+               }            
+          }
                
-         return assertionList;
+          return assertionList;
          
     } // getAssertsForEvaluation
+    
+    
+    /*
+     * Get the 1st assertion from the member types of union. Needed to get 
+     * an schema 'namespace context', which is available for example, in the
+     * 1st assertion in the assertions list.
+     */
+    private XSAssertImpl getFirstAssertFromUnionMemberTypes(XSObjectList 
+                                                             memberTypes) {
+        
+        XSAssertImpl assertImpl = null;
+        
+        for (int memberTypeIdx = 0; memberTypeIdx < memberTypes.getLength();
+                                                       memberTypeIdx++) {
+            XSSimpleTypeDefinition memType = (XSSimpleTypeDefinition) 
+                                                  memberTypes.item(memberTypeIdx);
+            if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.getNamespace())
+                                                                            ) {
+                XSObjectList memberTypeFacets = memType.getMultiValueFacets();
+                for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < 
+                                                   memberTypeFacets.getLength(); 
+                                                   memberTypeFacetIdx++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) memberTypeFacets.
+                                                       item(memberTypeFacetIdx);
+                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                        Vector assertFacets = facet.getAsserts();
+                        assertImpl = (XSAssertImpl) assertFacets.get(0);
+                        
+                        // return the 1st assertion that's found
+                        return assertImpl;
+                    }
+                 }
+             }
+         }
+        
+         return assertImpl;
+
+    } // getFirstAssertFromUnionMemberTypes
     
     
     /*

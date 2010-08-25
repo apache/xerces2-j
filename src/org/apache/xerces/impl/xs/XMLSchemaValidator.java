@@ -83,6 +83,7 @@ import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -1346,6 +1347,10 @@ public class XMLSchemaValidator
     // assertion validator subcomponent
     private XSDAssertionValidator fAssertionValidator = null;
     
+    // variable to track validity of simple content for union types.
+    // used for assertions processing.
+    private boolean fAtomicValueValid = true;
+    
     // 'type alternative' validator subcomponent
     private XSDTypeAlternativeValidator fTypeAlternativeValidator = null;
 
@@ -2540,7 +2545,9 @@ public class XMLSchemaValidator
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fAssertionValidator.handleEndElement(element, fCurrentElemDecl, 
                                                 fCurrentType, fNotation, 
-                                                fGrammarBucket);
+                                                fGrammarBucket,
+                                                fAtomicValueValid);
+            fAtomicValueValid = true;
         }
 
         // Check if we should modify the xsi:type ignore depth
@@ -3224,6 +3231,16 @@ public class XMLSchemaValidator
         Object actualValue = null;
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
+            
+            // additional check for assertions processing, for simple type 
+            // variety 'union'.
+            if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                if (isUnionValidationAssertCheck(attDV.getMemberTypes(), 
+                                                  attrValue, null)) {
+                    fAtomicValueValid = false; 
+                }
+            }
+            
             // store the normalized value
             if (fNormalizeData) {
                 attributes.setValue(index, fValidatedInfo.normalizedValue);
@@ -3246,6 +3263,7 @@ public class XMLSchemaValidator
             }
         } 
         catch (InvalidDatatypeValueException idve) {
+            fAtomicValueValid = false;
             reportSchemaError(idve.getKey(), idve.getArgs());
             reportSchemaError(
                 "cvc-attribute.3",
@@ -3375,8 +3393,18 @@ public class XMLSchemaValidator
                 try {
                     fValidationState.setFacetChecking(false);
                     attDV.validate(fValidationState, defaultValue);
+                    
+                    // additional check for assertions processing, for simple type 
+                    // variety 'union'.
+                    if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                        if (isUnionValidationAssertCheck(attDV.getMemberTypes(), 
+                                                         null, defaultValue)) {
+                            fAtomicValueValid = false; 
+                        }
+                    }
                 } 
                 catch (InvalidDatatypeValueException idve) {
+                    fAtomicValueValid = false;
                     reportSchemaError(idve.getKey(), idve.getArgs());
                 }
                 fValidationState.setFacetChecking(facetChecking);
@@ -3582,7 +3610,18 @@ public class XMLSchemaValidator
                         fValidationState.setNormalizationRequired(true);
                     }
                     retValue = dv.validate(textContent, fValidationState, fValidatedInfo);
+                    
+                    // additional check for assertions processing, for simple type 
+                    // variety 'union'.
+                    if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                        if (isUnionValidationAssertCheck(dv.getMemberTypes(), 
+                                                     String.valueOf(textContent), 
+                                                     null)) {
+                            fAtomicValueValid = false; 
+                        }
+                    }
                 } catch (InvalidDatatypeValueException e) {
+                    fAtomicValueValid = false;
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError(
                         "cvc-type.3.1.3",
@@ -3621,7 +3660,18 @@ public class XMLSchemaValidator
                         fValidationState.setNormalizationRequired(true);
                     }
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
+                    
+                    // additional check for assertions processing, for simple type 
+                    // variety 'union'.
+                    if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                        if (isUnionValidationAssertCheck(dv.getMemberTypes(), 
+                                                         String.valueOf(textContent), 
+                                                         null)) {
+                            fAtomicValueValid = false; 
+                        }
+                    }
                 } catch (InvalidDatatypeValueException e) {
+                    fAtomicValueValid = false;
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-complex-type.2.2", new Object[] { element.rawname });
                 }
@@ -4778,5 +4828,42 @@ public class XMLSchemaValidator
             }
         }
     }
+    
+    /*
+     * Determine if an atomic value is valid with respect to any of the 
+     * union's built-in schema types. 
+     */
+    private boolean isUnionValidationAssertCheck(XSObjectList memberTypes,
+                                                 String content,
+                                                 ValidatedInfo validatedInfo) {
+        
+        boolean isValid = false;
+        
+        for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
+                                                    memTypeIdx++) {
+            XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item
+                                                     (memTypeIdx);
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.
+                                                      getNamespace())) {
+                try {
+                   if (validatedInfo != null) {
+                       simpleTypeDv.validate(fValidationState, validatedInfo); 
+                   }
+                   else {                       
+                       simpleTypeDv.validate(content, fValidationState, 
+                                             fValidatedInfo);
+                   }
+                   isValid = true;
+                   break;
+                }
+                catch(InvalidDatatypeValueException idve) {
+                   isValid = false;  
+                }
+            }
+        }
+        
+        return isValid;
+        
+    } // isUnionValidationAssertCheck    
     
 } // class SchemaValidator

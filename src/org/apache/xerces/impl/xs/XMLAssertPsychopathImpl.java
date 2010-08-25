@@ -17,7 +17,6 @@
 
 package org.apache.xerces.impl.xs;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -193,9 +192,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             XSObjectList memberTypes = null;
             
             if (elemPSVI.getTypeDefinition().getTypeCategory() == 
-                                                     XSTypeDefinition.SIMPLE_TYPE) {
+                                                XSTypeDefinition.SIMPLE_TYPE) {
                 XSSimpleTypeDefinition simpleTypeDefn = (XSSimpleTypeDefinition) 
-                                                       elemPSVI.getTypeDefinition();
+                                                elemPSVI.getTypeDefinition();
                 itemType = simpleTypeDefn.getItemType();
                 if (itemType == null) {
                     memberTypes = simpleTypeDefn.getMemberTypes();    
@@ -212,14 +211,19 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  assertRootStack.pop();
                  // get assertions, and go one level up
                  List assertions = (List) assertListStack.pop(); 
-                 
-                 processAllAssertionsOnElement(element, itemType, 
+                 Boolean atomicValueValidity = (Boolean) augs.getItem
+                                                 ("ATOMIC_VALUE_VALIDITY");
+                 if (atomicValueValidity.booleanValue()) {
+                    // depending on simple content's validity status from
+                    // XMLSchemaValidator, process XML schema assertions.
+                    processAllAssertionsOnElement(element, itemType, 
                                                memberTypes, assertions);
+                 }
             }
 
             if (currentAssertDomNode.getParentNode() instanceof Element) {
-              currentAssertDomNode = (Element)currentAssertDomNode.
-                                                       getParentNode();
+                currentAssertDomNode = (Element)currentAssertDomNode.
+                                                        getParentNode();
             }
         }
         
@@ -287,7 +291,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                AssertionError assertError = evaluateAssertion(element,
                                                 assertImpl, value,
                                                 xpathContextExists,
-                                                false, false);
+                                                false);
                if (assertError != null) {
                    reportError(assertError);    
                }
@@ -296,85 +300,157 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
          else if (assertions instanceof Vector) {
             // assertions from a simple type definition           
             Vector assertList = (Vector) assertions;
-            List assertUnionErrorList = new ArrayList();
             
             for (int i = 0; i < assertList.size(); i++) {
                 XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
                 if (itemType != null) {
                    // evaluating assertions for simpleType -> list
+                    
+                   // tokenize the list value by the longest sequence of
+                   // white-spaces.
                    String[] values = value.split("\\s+");
+                   
+                   // evaluate assertion on all list items
                    for (int valIdx = 0; valIdx < values.length; valIdx++) {
                       setValueOf$value(values[valIdx], itemType, null);
                       AssertionError assertError = evaluateAssertion(element, 
-                                                                  assertImpl, 
-                                                                  values[valIdx], 
-                                                                  false,
-                                                                  true, false);
+                                                                assertImpl, 
+                                                                values[valIdx], 
+                                                                false,
+                                                                true);
                       if (assertError != null) {
                           reportError(assertError);    
                       }
                    }
                 }
-                else if (memberTypes.getLength() > 0) {
-                    // evaluating assertions for simpleType -> union
-                    boolean isValueSuccess = true;
-                    try {
-                       setValueOf$value(value, (XSSimpleTypeDefinition) 
-                                     assertImpl.getTypeDefinition(), 
-                                     null);
-                    }
-                    catch (Exception ex) {
-                        // there was some problem in constructing value of the
-                        // XPath2 context variable $value.
-                        isValueSuccess = false;
-                        AssertionError assertError = new AssertionError
-                                             ("cvc-assertion.3.13.4.1", 
-                                             element, assertImpl, value,
-                                             false, true);
-                        assertUnionErrorList.add(assertError);
-                    }
-                    
-                    if (isValueSuccess) {
-                        AssertionError assertError = evaluateAssertion(element, 
-                                                                assertImpl,
-                                                                value, 
-                                                                false,
-                                                                false, true);
-                        if (assertError != null) {
-                            assertUnionErrorList.add(assertError);    
-                        }  
-                    }
-                }
-                else {
+                else if (memberTypes != null && memberTypes.getLength() == 0) {
                     // evaluating assertions for simpleType -> restriction
                     setValueOf$value(value, null, null);
                     AssertionError assertError = evaluateAssertion(element, 
                                                                 assertImpl,
                                                                 value, 
                                                                 false,
-                                                                false, false);
+                                                                false);
                     if (assertError != null) {
                         reportError(assertError);    
                     }    
-                }
-            }  
-            
-            // if all of assertions in the schema component 'simpleType -> 
-            // union' have failed, then the overall schema validation should 
-            // fail, and all assertion failures should be reported.
-            if (memberTypes != null && assertUnionErrorList.size() == 
-                                         getAssertCountForSimpletypeUnion
-                                                          (memberTypes)) {
-               for (Iterator iter = assertUnionErrorList.iterator(); 
-                                                           iter.hasNext(); ) {
-                   AssertionError assertError = (AssertionError) iter.next();
-                   reportError(assertError);
-               }
+                }                
             }
             
+            // check for assertions on union member types.
+            // (there's a special handling for union types for assertions,
+            // since validation success on any one of the union member types,
+            // results in the overall validity of the value in the context)
+            if (memberTypes != null && memberTypes.getLength() > 0) {                 
+                 boolean isValidationFailedForUnion = 
+                                                  isValidationFailedForUnion
+                                                                 (memberTypes,
+                                                                  element,
+                                                                  value);
+            
+                if (isValidationFailedForUnion) {
+                     // none of the member types of union (the assertions in
+                     // them) can successfully validate an atomic value. this
+                     // results in a overall validation failure. report an
+                     // error message.
+                     validator.reportSchemaError("cvc-assertion.union.3.13.4.1", 
+                                  new Object[] { element.rawname, value } );   
+                }
+            }            
          }
          
     } // processAllAssertionsOnElement
+    
+    
+    /*
+     * Determine if validation should fail due to assertions evaluation for
+     * 'simpleType -> union' member types.
+     */
+    private boolean isValidationFailedForUnion(XSObjectList memberTypes, 
+                                              QName element, 
+                                              String value) {
+        
+        boolean validationFailedForUnion = true;
+        
+        for (int memberTypeIdx = 0; memberTypeIdx < memberTypes.getLength();
+                                                         memberTypeIdx++) {
+            XSSimpleTypeDefinition memType = (XSSimpleTypeDefinition) 
+                                           memberTypes.item(memberTypeIdx);
+            if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.
+                                                           getNamespace()) &&
+                                            simpleTypeHasAsserts(memType)) {
+                XSObjectList memberTypeFacets = memType.getMultiValueFacets();
+                for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < 
+                                                       memberTypeFacets.getLength(); 
+                                                       memberTypeFacetIdx++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) memberTypeFacets.
+                                                         item(memberTypeFacetIdx);
+                    if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                        Vector assertFacets = facet.getAsserts();
+                        int assertsSucceeded = 0;
+                        for (Iterator iter = assertFacets.iterator(); iter.hasNext(); ) {
+                            XSAssertImpl assertImpl = (XSAssertImpl) iter.next();
+                            try {
+                               setValueOf$value(value, memType, null);
+                               AssertionError assertError = evaluateAssertion(element, 
+                                                                           assertImpl,
+                                                                                value, 
+                                                                        false, false);
+                               if (assertError == null) {
+                                   assertsSucceeded++;  
+                               }
+                            }
+                            catch(Exception ex) {
+                               // An exception may occur if for example, a typed
+                               // value cannot be constructed by PsychoPath engine
+                               // for a given string value (say a value '5' was 
+                               // attempted to be formed as a typed value xs:date).
+                               // This is a known scenario. Exceptions may occur
+                               // due to other un-observed scenarios.
+                                
+                               // it's useful to throw warning ... TO DO
+                            }
+                        }
+                        if (assertsSucceeded == assertFacets.size()) {
+                            // all assertions on a 'union member type' have 
+                            // evaluated to 'true', therefore validation with
+                            // union has succeeded wrt assertions. return
+                            // a boolean value 'false' from this method.
+                            return false;  
+                        }
+                    }
+                }
+            }
+        }
+        
+        return validationFailedForUnion;
+        
+    } // isValidationFailedForUnion
+    
+    
+    /*
+     * Check if a simple type has assertion facets.
+     */
+    private boolean simpleTypeHasAsserts(XSSimpleTypeDefinition simpleType) {
+        
+        boolean hasAssertions = false;
+        
+        XSObjectList simpleTypeFacets = simpleType.getMultiValueFacets();
+        
+        for (int facetIdx = 0; facetIdx < simpleTypeFacets.getLength(); 
+                                                        facetIdx++) {
+            XSMultiValueFacet facet = (XSMultiValueFacet) simpleTypeFacets.
+                                                 item(facetIdx);
+            if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT && 
+                                            facet.getAsserts().size() > 0) {
+                hasAssertions = true;
+                break;
+            }
+        }
+        
+        return hasAssertions;
+
+    } // simpleTypeHasAsserts
     
 
     /*
@@ -400,8 +476,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                    XSAssertImpl assertImpl,
                                    String value,
                                    boolean xPathContextExists,
-                                   boolean isList,
-                                   boolean isUnion) {
+                                   boolean isList) {
         
         AssertionError assertionError = null;
         
@@ -425,32 +500,32 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             if (!result) {
                // assertion evaluation is false
                assertionError = new AssertionError("cvc-assertion.3.13.4.1", 
-                                                   element, assertImpl, value,
-                                                   isList, isUnion); 
+                                                   element, assertImpl, 
+                                                   value, isList); 
             }
         }
         catch (DynamicError ex) {
             if (ex.code().equals("XPDY0002")) {
                // ref: http://www.w3.org/TR/xpath20/#eval_context
                assertionError = new AssertionError("cvc-assertion.4.3.15.3", 
-                                                   element, assertImpl, value,
-                                                   isList, isUnion);
+                                                   element, assertImpl,
+                                                   value, isList);
             }
             else {
                assertionError = new AssertionError("cvc-assertion.3.13.4.1", 
-                                                   element, assertImpl, value,
-                                                   isList, isUnion);
+                                                   element, assertImpl,
+                                                   value, isList);
             }
         }
         catch (StaticError ex) {
             assertionError = new AssertionError("cvc-assertion.3.13.4.1", 
-                                                 element, assertImpl, value,
-                                                 isList, isUnion);
+                                                 element, assertImpl,
+                                                 value, isList);
         }
         catch(Exception ex) {
             assertionError = new AssertionError("cvc-assertion.3.13.4.1", 
-                                                element, assertImpl, value,
-                                                isList, isUnion);   
+                                                element, assertImpl,
+                                                value, isList);   
         }
         
         return assertionError;
@@ -525,35 +600,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Find count of number of assertions within a 'simpleType -> union' schema
-     * component.
-     */
-    private int getAssertCountForSimpletypeUnion(XSObjectList memberTypes) {
-       
-        int assertCount = 0;
-        
-        for (int memTypIdx = 0; memTypIdx < memberTypes.getLength(); 
-                                                    memTypIdx++) {
-            XSObjectList memberTypeFacets = ((XSSimpleTypeDefinition) 
-                                            memberTypes.item(memTypIdx)).
-                                            getMultiValueFacets();
-            for (int facetIdx = 0; facetIdx < memberTypeFacets.getLength(); 
-                                                           facetIdx++) {
-                XSMultiValueFacet facet = (XSMultiValueFacet) memberTypeFacets.
-                                                                item(facetIdx);
-                if (facet.getFacetKind() == XSSimpleTypeDefinition.
-                                                          FACET_ASSERT) {
-                    assertCount = assertCount + facet.getAsserts().size();    
-                }
-            }
-        }
-        
-        return assertCount;
-        
-    } // getAssertCountForSimpletypeUnion
-    
-    
-    /*
      * Method to report error messages.
      */
     private void reportError(AssertionError assertError) {
@@ -562,7 +608,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         QName element = assertError.getElement();
         XSAssertImpl assertImpl = assertError.getAssertion();
         boolean isList = assertError.isList();
-        boolean isUnion = assertError.isUnion();
         
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();        
         String typeString = "";
@@ -581,16 +626,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                               assertImpl.getAttrName()+ ")";    
         }                
         
-        String listUnionErrMessage = "";        
+        String listAssertErrMessage = "";        
         if (isList) {
-           listUnionErrMessage =  "Assertion failed for an xs:list member value '" + 
+           listAssertErrMessage =  "Assertion failed for an xs:list member value '" + 
                                                    assertError.getValue() + 
                                                    "'.";
-        }
-        else if (isUnion) {
-           listUnionErrMessage = "Assertion failed for an xs:union with data value '" + 
-                                                   assertError.getValue() + 
-                                                   "'.";     
         }
             
         String message = assertImpl.getMessage();
@@ -605,12 +645,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
               message = "Assertion failure. " + message; 
            }
            validator.reportSchemaError("cvc-assertion.failure", 
-                               new Object[] { message, listUnionErrMessage } );    
+                               new Object[] { message, listAssertErrMessage } );    
         }
         else {
            validator.reportSchemaError(key, new Object[] { elemErrorAnnotation,
                                assertImpl.getTest().getXPath().toString(),
-                               typeString, listUnionErrMessage} );
+                               typeString, listAssertErrMessage} );
         }
         
     } // reportError
@@ -628,20 +668,16 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         String value = null;
         // does this error concerns simpleType -> list
         boolean isList;
-        // does this error concerns simpleType -> union
-        boolean isUnion;
         
         // class constructor
         public AssertionError(String errorCode, QName element, 
                               XSAssertImpl assertImpl, String value,
-                              boolean isList,
-                              boolean isUnion) {
+                              boolean isList) {
            this.errorCode = errorCode;
            this.element = element;
            this.assertImpl = assertImpl;
            this.value = value;
            this.isList = isList;
-           this.isUnion = isUnion;
         }
         
         public String getErrorCode() {
@@ -662,10 +698,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         
         public boolean isList() {
            return isList;    
-        }
-        
-        public boolean isUnion() {
-           return isUnion;
         }
         
     } // class AssertionError
