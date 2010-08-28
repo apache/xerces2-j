@@ -511,7 +511,7 @@ abstract class XSDAbstractTraverser {
                                                            fSchemaHandler);
                     Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
                                            schemaDoc.fNamespaceSupport), assertImpl);                 
-                    assertImpl.setType(XSConstants.ASSERTION_FACET);
+                    assertImpl.setAssertKind(XSConstants.ASSERTION_FACET);
                     assertImpl.setTest(testExpr);
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
                     assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);

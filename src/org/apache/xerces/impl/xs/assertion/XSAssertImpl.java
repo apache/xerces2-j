@@ -37,7 +37,7 @@ import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
  */
 public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
 
-    protected short assertType = XSConstants.ASSERTION;
+    protected short assertKind = XSConstants.ASSERTION;
     
     /** The type definition associated with the assertion component */
     protected XSTypeDefinition fTypeDefinition;
@@ -72,6 +72,9 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     
     // user-defined message, to display, during assertion failures
     protected String message = null;
+    
+    // if assertion belongs to a simpleType, the type's variety
+    protected short fVariety = 0;
 
     /** Constructor */
     public XSAssertImpl(XSTypeDefinition type,
@@ -108,10 +111,14 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     }
     
     /**
-     * Sets the type of the object
+     * Sets the kind of assertion this is. This could be one of the following:
+     * -> an assertion from a complexType (XSConstants.ASSERTION)
+     * -> an assertion facet from a complexType -> simpleContent 
+     *                             (XSConstants.ASSERTION_FACET)
+     * -> an assertion facet from a simpleType (XSConstants.ASSERTION_FACET)
      */
-    public void setType(short assertType) {
-        this.assertType = assertType;
+    public void setAssertKind(short assertKind) {
+        this.assertKind = assertKind;
     }
     
     /**
@@ -149,6 +156,10 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
         return fTypeDefinition;
     }
     
+    public void setTypeDefinition(XSTypeDefinition typeDefn) {
+        fTypeDefinition = typeDefn;  
+    }
+    
     public String getXPathDefaultNamespace() {
         return fXPathDefaultNamespace;
     }
@@ -178,7 +189,7 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
      * Get the type of the object
      */
     public short getType() {
-        return assertType;
+        return assertKind;
     }
     
     /**
@@ -222,14 +233,32 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     }
 
     /*
-     * Set error message, for assertions failures
+     * Set error message, for assertions failures.
      */
     public void setMessage(String message) {
        this.message = message;    
     }
     
-    // Get the error message string 
+    /* 
+     * Get the error message string.
+     */
     public String getMessage() {
        return message;   
+    }
+
+    /*
+     * If the assertion belongs to a simpleType, set the variety
+     * of the type.
+     */
+    public void setVariety(short variety) {
+        fVariety = variety;  
+    }
+    
+    
+    /*
+     * Get the value of simpleType's variety.
+     */
+    public short getVariety() {
+       return fVariety;  
     }
 }
