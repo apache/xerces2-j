@@ -48,6 +48,7 @@ import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyAtomicType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.SchemaTypeValueFactory;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -92,6 +93,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // parameters to pass to PsychoPath engine (like, the namespace bindings) 
     Map fAssertParams = null;
     
+    // an instance variable to track the name of an attribute currently
+    // processed for assertions.
     String fAttrName = null;
 
     
@@ -236,179 +239,222 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Method to evaluate all of assertions for an element tree.
      */
-    private void processAllAssertionsOnElement(
-                                    QName element,
-                                    XSSimpleTypeDefinition itemType,
-                                    XSObjectList memberTypes,
-                                    List assertions)
+    private void processAllAssertionsOnElement(QName element,
+                                           XSSimpleTypeDefinition itemType,
+                                           XSObjectList memberTypes,
+                                           List assertions)
                                     throws Exception {
          
          // initialize the XPath engine
          initXPathProcessor();
          
          // determine value of variable, $value
-         String value = "";
-         NodeList childList = fCurrentAssertDomNode.getChildNodes();         
-         int textChildCount = 0;
-         // there could be adjacent text nodes. merge them to get the value.
-         for (int childNodeIndex = 0; childNodeIndex < childList.getLength();
-                                                       childNodeIndex++) {
-             Node node = childList.item(childNodeIndex);
-             if (node.getNodeType() == Node.TEXT_NODE) {
-                 textChildCount++;
-                 value = value + node.getNodeValue();
-             }
-         }
-         
-         if (textChildCount != childList.getLength()) {
-            value = null;  
-         }
+         String value = getValueOf$Value();
 
          // evaluate assertions
          if (assertions instanceof XSObjectList) {
-            // assertions from a complex type definition             
-            if (value != null) {
-               // complex type with simple content
-               setValueOf$value(value, null, null);
-            } else {
-               // complex type with complex content                
-               // $value should be, the XPath2 "empty sequence" ... TO DO 
-            }
-            XSObjectList assertList = (XSObjectList) assertions;
-            XSObjectList attrMemberTypes = null;
-            for (int i = 0; i < assertList.size(); i++) {
-                XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);               
-                boolean xpathContextExists = false;
-                if (assertImpl.getType() == XSConstants.ASSERTION) {
-                   // not an assertion facet
-                   xpathContextExists = true;   
-                }
-                // check if this is an assertion, from the attribute
-                if (assertImpl.getAttrName() != null) {
-                   value = assertImpl.getAttrValue();
-                   
-                   XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition) assertImpl.
-                                                                  getTypeDefinition();
-                   attrMemberTypes = attrType.getMemberTypes();
-                   if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
-                       // this assertion belongs to a type, that is an item type
-                       // of a simpleType -> list.
-                       // tokenize the list value by the longest sequence of
-                       // white-spaces.
-                       String[] values = value.split("\\s+");
-                       // evaluate assertion on all of list items
-                       for (int valIdx = 0; valIdx < values.length; valIdx++) {
-                           setValueOf$value(values[valIdx], attrType, null);
-                           AssertionError assertError = evaluateAssertion(element, 
-                                                                  assertImpl, 
-                                                                  values[valIdx], 
-                                                                  xpathContextExists,
-                                                                  true);
-                           if (assertError != null) {
-                               reportError(assertError);    
-                           }
-                        }
-                   }
-                   else if (assertImpl.getVariety() == XSSimpleTypeDefinition.
-                                                                  VARIETY_ATOMIC) {
-                       // evaluating assertions for simpleType -> restriction
-                       setValueOf$value(value, null, attrType);
-                       AssertionError assertError = evaluateAssertion(element,
-                                                         assertImpl, value,
-                                                         xpathContextExists,
-                                                         false);
-                       if (assertError != null) {
-                          reportError(assertError);    
-                       }
-                   }                
-                }
-                else {
-                    AssertionError assertError = evaluateAssertion(element,
-                                                         assertImpl, value,
-                                                        xpathContextExists,
-                                                                  false);
-                    if (assertError != null) {
-                        reportError(assertError);    
-                    }  
-                }
-            }
-            
-            // evaluate assertions on simpleType -> union on an attribute
-            if (attrMemberTypes != null && attrMemberTypes.getLength() > 0) {                
-                boolean isValidationFailedForUnion = 
-                                                 isValidationFailedForUnion
-                                                              (attrMemberTypes,
-                                                               element,
-                                                               value, true);
-           
-                if (isValidationFailedForUnion) {
-                    // none of the member types of union (the assertions in
-                    // them) can successfully validate an atomic value. this
-                    // results in an overall validation failure. report an
-                    // error message.
-                    fValidator.reportSchemaError("cvc-assertion.attr.union." +
-                    		                                    "3.13.4.1", 
-                                 new Object[] { element.rawname, fAttrName, 
-                                                                   value } );   
-                }
-                
-                fAttrName = null;
-            }
-            
+            // assertions from a "complex type" definition             
+            evaluateAssertionsFromComplexType(element, assertions, value);            
          }
          else if (assertions instanceof Vector) {
-            // assertions from a simple type definition           
-            Vector assertList = (Vector) assertions;
-            
-            for (int i = 0; i < assertList.size(); i++) {
-                XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
-                if (itemType != null) {
-                   // evaluating assertions for simpleType -> list.                    
-                   // tokenize the list value by the longest sequence of
-                   // white-spaces.
-                   String[] values = value.split("\\s+");                   
-                   // evaluate assertion on all of list items
-                   for (int valIdx = 0; valIdx < values.length; valIdx++) {
-                      setValueOf$value(values[valIdx], itemType, null);
-                      AssertionError assertError = evaluateAssertion(element, 
-                                                                  assertImpl, 
-                                                              values[valIdx], 
-                                                                   false,
-                                                                   true);
-                      if (assertError != null) {
-                          reportError(assertError);    
-                      }
-                   }
-                }
-                else if (memberTypes != null && memberTypes.getLength() == 0) {
-                    // evaluating assertions for simpleType -> restriction
-                    setValueOf$value(value, null, null);
-                    AssertionError assertError = evaluateAssertion(element, 
-                                                                assertImpl,
-                                                                value, 
-                                                                false,
-                                                                false);
-                    if (assertError != null) {
-                        reportError(assertError);    
-                    }    
-                }                
-            }
-
-            if (memberTypes != null && memberTypes.getLength() > 0) {                 
-                 boolean isValidationFailedForUnion = 
-                                                  isValidationFailedForUnion
-                                                                 (memberTypes,
-                                                                  element,
-                                                                  value, false);
-            
-                if (isValidationFailedForUnion) {
-                     fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", 
-                                  new Object[] { element.rawname, value } );   
-                }
-            }            
+            // assertions from a "simple type" definition
+            evaluateAssertionsFromSimpleType(element, itemType, memberTypes,
+                                             assertions, value);            
          }
          
     } // processAllAssertionsOnElement
+
+
+    /*
+     * Find value of XPath2 context variable $value.
+     */
+    private String getValueOf$Value() throws DOMException {
+        
+        String value = "";
+
+        NodeList childList = fCurrentAssertDomNode.getChildNodes();         
+        
+        int textChildCount = 0;
+        // there could be adjacent text nodes in a DOM tree. merge them to 
+        // get the value.
+        for (int childNodeIndex = 0; childNodeIndex < childList.getLength();
+                                                         childNodeIndex++) {
+            Node node = childList.item(childNodeIndex);
+            if (node.getNodeType() == Node.TEXT_NODE) {
+                textChildCount++;
+                value = value + node.getNodeValue();
+            }
+        }
+
+        if (textChildCount != childList.getLength()) {
+            value = null;  
+        }
+        
+        return value;
+        
+    } // getValueOf$Value
+
+
+    /*
+     * Evaluate assertions on a "complex type".
+     */
+    private void evaluateAssertionsFromComplexType(QName element, List 
+                                              assertions, String value) 
+                                                   throws Exception {
+        if (value != null) {
+            // complex type with simple content
+            setValueOf$value(value, null, null);
+        } else {
+            // complex type with complex content                
+            // $value should be, the XPath2 "empty sequence" ... TO DO
+        }
+        
+        XSObjectList assertList = (XSObjectList) assertions;
+        XSObjectList attrMemberTypes = null;        
+        for (int i = 0; i < assertList.size(); i++) {
+            XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);               
+            boolean xpathContextExists = false;
+            if (assertImpl.getType() == XSConstants.ASSERTION) {
+                // not an assertion facet
+                xpathContextExists = true;   
+            }
+            // check if this is an assertion, from the attribute
+            if (assertImpl.getAttrName() != null) {
+                value = assertImpl.getAttrValue();
+                XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition) 
+                                                assertImpl.getTypeDefinition();
+                attrMemberTypes = attrType.getMemberTypes();
+                if (assertImpl.getVariety() == XSSimpleTypeDefinition.
+                                                                VARIETY_LIST) {
+                    // this assertion belongs to a type, that is an item type
+                    // of a simpleType -> list.
+                    // tokenize the list value by the longest sequence of
+                    // white-spaces.
+                    String[] values = value.split("\\s+");
+                    // evaluate assertion on all of list items
+                    for (int valIdx = 0; valIdx < values.length; valIdx++) {
+                        setValueOf$value(values[valIdx], attrType, null);
+                        AssertionError assertError = evaluateAssertion(element, 
+                                                                    assertImpl, 
+                                                                values[valIdx], 
+                                                            xpathContextExists,
+                                                                        true);
+                        if (assertError != null) {
+                            reportAssertionsError(assertError);    
+                        }
+                    }
+                }
+                else if (assertImpl.getVariety() == XSSimpleTypeDefinition.
+                                                            VARIETY_ATOMIC) {
+                    // evaluating assertions for simpleType -> restriction
+                    setValueOf$value(value, null, attrType);
+                    AssertionError assertError = evaluateAssertion(element,
+                                                         assertImpl, value,
+                                                        xpathContextExists,
+                                                                   false);
+                    if (assertError != null) {
+                        reportAssertionsError(assertError);    
+                    }
+                }                
+            }
+            else {
+                AssertionError assertError = evaluateAssertion(element,
+                                                          assertImpl, value,
+                                                         xpathContextExists,
+                                                             false);
+                if (assertError != null) {
+                    reportAssertionsError(assertError);    
+                }  
+            }
+        }
+
+        // evaluate assertions on simpleType -> union on an attribute
+        if (attrMemberTypes != null && attrMemberTypes.getLength() > 0) {                
+            boolean isValidationFailedForUnion = isValidationFailedForUnion
+                                                            (attrMemberTypes,
+                                                             element,
+                                                             value, true);
+
+            if (isValidationFailedForUnion) {
+                // none of the member types of union (the assertions in
+                // them) can successfully validate an atomic value. this
+                // results in an overall validation failure. report an
+                // error message.
+                fValidator.reportSchemaError("cvc-assertion.attr.union." +
+                                                                 "3.13.4.1", 
+                                  new Object[] { element.rawname, fAttrName, 
+                                                                  value } );   
+            }
+
+            fAttrName = null;            
+        }
+        
+    } // evaluateAssertionsFromComplexType
+    
+    
+    /*
+     * Evaluate assertions on a "simple type".
+     */
+    private void evaluateAssertionsFromSimpleType(QName element,
+                                             XSSimpleTypeDefinition itemType,
+                                             XSObjectList memberTypes,
+                                             List assertions, String value) 
+                                                   throws Exception {
+        
+        // assertions from a simple type definition           
+        Vector assertList = (Vector) assertions;
+        
+        for (int i = 0; i < assertList.size(); i++) {
+            XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
+            if (itemType != null) {
+               // evaluating assertions for simpleType -> list.                    
+               // tokenize the list value by the longest sequence of
+               // white-spaces.
+               String[] values = value.split("\\s+");                   
+               // evaluate assertion on all of list items
+               for (int valIdx = 0; valIdx < values.length; valIdx++) {
+                  setValueOf$value(values[valIdx], itemType, null);
+                  AssertionError assertError = evaluateAssertion(element, 
+                                                              assertImpl, 
+                                                          values[valIdx], 
+                                                               false,
+                                                               true);
+                  if (assertError != null) {
+                      reportAssertionsError(assertError);    
+                  }
+               }
+            }
+            else if (memberTypes != null && memberTypes.getLength() == 0) {
+                // evaluating assertions for simpleType -> restriction
+                setValueOf$value(value, null, null);
+                AssertionError assertError = evaluateAssertion(element, 
+                                                            assertImpl,
+                                                            value, 
+                                                            false,
+                                                            false);
+                if (assertError != null) {
+                    reportAssertionsError(assertError);    
+                }    
+            }                
+        }
+
+        if (memberTypes != null && memberTypes.getLength() > 0) {
+             // evaluate assertions for simpleType -> union
+             boolean isValidationFailedForUnion = isValidationFailedForUnion
+                                                             (memberTypes,
+                                                              element,
+                                                              value, false);
+            // only 1 error message is reported for assertion failures on
+            // simpleType -> union, since it is hard (perhaps impossible?)
+            // to determine statically that what all assertions can cause 
+            // failure, when participating in an union.
+            if (isValidationFailedForUnion) {
+                 fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", 
+                              new Object[] { element.rawname, value } );   
+            }
+        }
+        
+    } // evaluateAssertionsFromSimpleType
     
     
     /*
@@ -426,6 +472,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                          memberTypeIdx++) {
             XSSimpleTypeDefinition memType = (XSSimpleTypeDefinition) 
                                            memberTypes.item(memberTypeIdx);
+            
+            // check for assertions on types in an non-schema namespace
             if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.
                                                            getNamespace()) &&
                                             simpleTypeHasAsserts(memType)) {
@@ -458,7 +506,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                // value cannot be constructed by PsychoPath engine
                                // for a given string value (say a value '5' was 
                                // attempted to be formed as a typed value xs:date).                               
-                               
                                // it's useful to report warning ... TO DO
                             }
                         }
@@ -585,13 +632,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Assign value to the XPath2 "dynamic context" variable, $value.
+     * Assign a typed value to the XPath2 "dynamic context" variable, $value.
      */
     private void setValueOf$value(String value, 
                                   XSSimpleTypeDefinition listOrUnionType, 
                                   XSTypeDefinition attrType) throws Exception {
         
-        // XML Schema type for variable $value
+        // XML Schema 1.1 type for variable $value
         String xsdTypeName = "";
         
         if (listOrUnionType != null) {
@@ -634,7 +681,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-       Find the built in XSD type for XPath2 variable, $value. This function
+       Find the built-in XSD type for XPath2 variable, $value. This function
        recursively searches the XSD type hierarchy navigating up the base
        types, to find the needed built-in type.
     */
@@ -651,9 +698,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Method to report error messages.
+     * Method to report assertions error messages.
      */
-    private void reportError(AssertionError assertError) {
+    private void reportAssertionsError(AssertionError assertError) {
         
         String key = assertError.getErrorCode();
         QName element = assertError.getElement();
@@ -704,7 +751,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                typeString, listAssertErrMessage} );
         }
         
-    } // reportError
+    } // reportAssertionsError
     
     
     /*
