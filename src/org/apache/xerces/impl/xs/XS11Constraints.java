@@ -18,9 +18,6 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.xs.models.CMBuilder;
-import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -36,7 +33,7 @@ import org.apache.xerces.xni.QName;
 class XS11Constraints extends XSConstraints {
 
     public XS11Constraints() {
-        super(SchemaGrammar.getXSAnyType(Constants.SCHEMA_VERSION_1_1));
+        super(SchemaGrammar.getXSAnyType(Constants.SCHEMA_VERSION_1_1), Constants.SCHEMA_VERSION_1_1);
     }
 
     public boolean overlapUPA(XSElementDecl element,
@@ -49,6 +46,8 @@ class XS11Constraints extends XSConstraints {
             XSWildcardDecl wildcard2) {
         // if the intersection of the two wildcards is not any and
     	// and the {namespaces} of such intersection is not the empty set
+        // TODO: is this correct? No overlap if the intersection is "any"?
+        // TODO: should this be different between 1.0 and 1.1?
         XSWildcardDecl intersect = performIntersectionWith(wildcard1, wildcard2, wildcard1.fProcessContents);
         if (intersect.fType != XSWildcardDecl.NSCONSTRAINT_ANY &&
                 intersect.fNamespaceList.length != 0) {
@@ -56,26 +55,6 @@ class XS11Constraints extends XSConstraints {
         }
 
         return false;
-    }
-
-    public boolean overlapUPA(XSElementDecl element1,
-            XSElementDecl element2,
-            SubstitutionGroupHandler sgHandler) {
-        return overlapUPA(element1, element2, sgHandler, Constants.SCHEMA_VERSION_1_1);
-    }
-    
-    public void checkElementDeclsConsistent(XSComplexTypeDecl type,
-            XSParticleDecl particle,
-            SymbolHash elemDeclHash,
-            SubstitutionGroupHandler sgHandler) throws XMLSchemaException {
-        checkElementDeclsConsistent(type, particle, elemDeclHash, sgHandler, Constants.SCHEMA_VERSION_1_1);
-    }
-    
-    public void fullSchemaChecking(XSGrammarBucket grammarBucket,
-            SubstitutionGroupHandler SGHandler,
-            CMBuilder cmBuilder,
-            XMLErrorReporter errorReporter) {
-        fullSchemaChecking(grammarBucket, SGHandler, cmBuilder, errorReporter, Constants.SCHEMA_VERSION_1_1);
     }
 
     /**
@@ -420,5 +399,12 @@ class XS11Constraints extends XSConstraints {
         }
 
         return found;
+    }
+
+    protected boolean particleValidRestriction(XSParticleDecl dParticle,
+            SubstitutionGroupHandler dSGHandler,
+            XSParticleDecl bParticle,
+            SubstitutionGroupHandler bSGHandler) {
+        return true;
     }
 }

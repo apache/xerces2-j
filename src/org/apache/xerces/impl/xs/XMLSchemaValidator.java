@@ -2465,8 +2465,7 @@ public class XMLSchemaValidator
                     fGrammarBucket,
                     fSubGroupHandler,
                     fCMBuilder,
-                    fXSIErrorReporter.fErrorReporter,
-                    fSchemaVersion);
+                    fXSIErrorReporter.fErrorReporter);
             }
 
             if (fAugPSVI)
