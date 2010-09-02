@@ -71,7 +71,7 @@ public class CMBuilder {
     }
 
     /**
-     * Get content model for the a given type
+     * Get content model for a given type
      *
      * @param typeDecl  get content model for which complex type
      * @return          a content model validator
@@ -85,13 +85,27 @@ public class CMBuilder {
             contentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
             return null;
         }
+        
+        return getContentModel((XSParticleDecl)typeDecl.getParticle(), (XSOpenContentDecl)typeDecl.getOpenContent(), forUPA);
+    }
+    
+    /**
+     * Get content model for a given particle
+     *
+     * @param particle     get content model for which particle
+     * @return             a content model validator
+     */
+    public XSCMValidator getContentModel(XSParticleDecl particle) {
+        return getContentModel(particle, null, false);
+    }
+    
+    private XSCMValidator getContentModel(XSParticleDecl particle,
+            XSOpenContentDecl openContent, boolean forUPA) {
 
-        XSParticleDecl particle = (XSParticleDecl)typeDecl.getParticle();
-
-        // if the content is element only or mixed, but no particle
-        // is defined, return the empty content model
-        if (particle == null)
+        // if there is no particle, return the empty content model
+        if (particle == null) {
             return fEmptyCM;
+        }
 
         // if the content model contains "all" model group,
         // we create an "all" content model, otherwise a DFA content model
@@ -102,11 +116,11 @@ public class CMBuilder {
                 cmValidator = createAllCM(particle);
             }
             else {
-                cmValidator = createAll11CM(particle, (XSOpenContentDecl) typeDecl.getOpenContent());
+                cmValidator = createAll11CM(particle, openContent);
             }
         }
         else {
-            cmValidator = createDFACM(particle, forUPA, (XSOpenContentDecl) typeDecl.getOpenContent());
+            cmValidator = createDFACM(particle, forUPA, openContent);
         }
 
         //now we are throught building content model and have passed sucessfully of the nodecount check
@@ -116,12 +130,11 @@ public class CMBuilder {
         // if the validator returned is null, it means there is nothing in
         // the content model, so we return the empty content model.
         if (cmValidator == null) {
-            XSOpenContentDecl oc = (XSOpenContentDecl)typeDecl.getOpenContent();
-            if (oc == null) {
+            if (openContent == null) {
                 cmValidator = fEmptyCM;
             }
             else {
-                cmValidator = new XSEmptyCM(oc);
+                cmValidator = new XSEmptyCM(openContent);
             }
         }
 
@@ -153,13 +166,8 @@ public class CMBuilder {
         XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
         // create an all content model. the parameter indicates whether
         // the <all> itself is optional
-        XS11AllCM allContent = new XS11AllCM(particle.fMinOccurs == 0, group.fParticleCount, openContent);
-        for (int i = 0; i < group.fParticleCount; i++) {
-            // add the element/wildcard decl to the all content model
-            XSParticleDecl groupParticle = group.fParticles[i];
-            allContent.addElement(groupParticle.fValue, groupParticle.fType,
-                group.fParticles[i].fMinOccurs, group.fParticles[i].fMaxOccurs);
-        }
+        XS11AllCM allContent = new XS11AllCM(particle.fMinOccurs == 0,
+                group.fParticleCount, group.fParticles, openContent);
         return allContent;
     }
 

@@ -61,9 +61,6 @@ public class XSDFACM
     /** Set to true to debug content model validation. */
     private static final boolean DEBUG_VALIDATE_CONTENT = false;
 
-    // open content - suffix mode
-    private static final short STATE_SUFFIX = 1;
-
     //
     // Data
     //
@@ -75,21 +72,9 @@ public class XSDFACM
      * actual validation.  Note tat since either XSElementDecl or XSParticleDecl object
      * can live here, we've got to use an Object.
      */
-    private Object fElemMap[] = null;
-
-    /**
-     * This is a map of whether the element map contains information
-     * related to ANY models.
-     */
-    private int fElemMapType[] = null;
-
-    /**
-     * id of the unique input symbol
-     */
-    private int fElemMapId[] = null;
-    
-    /** The element map size. */
-    private int fElemMapSize = 0;
+    private XSElementDecl fElements[];
+    private XSWildcardDecl fWildcards[];
+    private int fNumElements, fNumTotal;
 
     /**
      * This is an array of booleans, one per state (there are
@@ -153,14 +138,14 @@ public class XSDFACM
     private short fSchemaVersion;
 
     /**
-     * Array containing occurence information for looping states 
+     * Array containing occurrence information for looping states 
      * which use counters to check minOccurs/maxOccurs.
      */
     private Occurence [] fCountingStates = null;
     static final class Occurence {
         final int minOccurs;
         final int maxOccurs;
-        final int elemIndex;
+        int elemIndex;
         public Occurence (XSCMRepeatingLeaf leaf, int elemIndex) {
             minOccurs = leaf.getMinOccurs();
             maxOccurs = leaf.getMaxOccurs();
@@ -270,6 +255,13 @@ public class XSDFACM
      * @exception RuntimeException thrown on error
      */
     public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper) {
+        Object ret = oneTransition1(curElem, state, subGroupHandler, eDeclHelper);
+        if (fOpenContent != null && ret == fOpenContent.fWildcard) {
+            ret = fOpenContent;
+        }
+        return ret;            
+    }
+    private Object oneTransition1(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper) {
         int curState = state[0];
 
         if(curState == XSCMValidator.FIRST_ERROR || curState == XSCMValidator.SUBSEQUENT_ERROR) {
@@ -281,72 +273,37 @@ public class XSDFACM
 
             return findMatchingDecl(curElem, subGroupHandler);
         }
-        // apply open content - suffix mode 
-        else if (state[3] == STATE_SUFFIX) {
-            if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, eDeclHelper)) {//if (fOpenContent.fWildcard.allowQName(curElem)) {
-                return fOpenContent;
-            }
-
-            state[1] = curState;
-            state[0] = XSCMValidator.FIRST_ERROR;
-            return findMatchingDecl(curElem, subGroupHandler);
-        }
 
         int nextState = 0;
         int elemIndex = 0;
         Object matchingDecl = null;
-        boolean toMatchElementDecl = false;
 
-        for (; elemIndex < fElemMapSize; elemIndex++) {
+        for (; elemIndex < fNumElements; elemIndex++) {
             nextState = fTransTable[curState][elemIndex];
             if (nextState == -1)
                 continue;
-            int type = fElemMapType[elemIndex] ;
-            if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
-                if (matchingDecl != null) {
-                    break;
-                }
+            matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, fElements[elemIndex], fSchemaVersion);
+            if (matchingDecl != null) {
+                break;
             }
-            else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
+        }
+        if (matchingDecl == null) {
+            for (; elemIndex < fNumTotal; elemIndex++) {
+                nextState = fTransTable[curState][elemIndex];
+                if (nextState == -1)
+                    continue;
+
                 // XML Schema 1.0
                 if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
-                    if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
-                        matchingDecl = fElemMap[elemIndex];
+                    if (fWildcards[elemIndex].allowNamespace(curElem.uri)) {
+                        matchingDecl = fWildcards[elemIndex];
                         break;
                     }
                 }
                 // XML Schema 1.1
-                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, eDeclHelper)) {
-                    matchingDecl = fElemMap[elemIndex];
-                    // Element has precedence over a wildcard
-                    // if no occurences or we reached minOccurs, keep looking for
-                    // and element declaration
-                    if (fCountingStates == null || fCountingStates[curState] == null || state[2] == fCountingStates[curState].minOccurs) {
-                        toMatchElementDecl = true;
-                    }
+                else if (allowExpandedName(fWildcards[elemIndex], curElem, subGroupHandler, eDeclHelper)) {
+                    matchingDecl = fWildcards[elemIndex];
                     break;
-                }
-            }
-        }
-
-        // XML Schema 1.1
-        // We matched against a wildcard, but need to also check
-        // if we can find a matching element declaration
-        if (toMatchElementDecl) {
-            int newIndex = elemIndex;
-            int newState = 0;
-            Object newMatchingDecl = null;
-            while (++newIndex < fElemMapSize) {
-                newState = fTransTable[curState][newIndex];
-                if (newState != -1 && fElemMapType[newIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[newIndex], fSchemaVersion);
-                    if (newMatchingDecl != null) {
-                        elemIndex = newIndex;
-                        matchingDecl = newMatchingDecl;
-                        nextState = newState;
-                        break;
-                    }
                 }
             }
         }
@@ -354,12 +311,6 @@ public class XSDFACM
         // if we still can't find a match, set the state to first_error
         // and return null
         if (matchingDecl == null) {
-            // XML Schema 1.1
-            // Validate against Open Content
-            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, eDeclHelper)) {
-                return fOpenContent;
-            }
-
             state[1] = state[0];
             state[0] = XSCMValidator.FIRST_ERROR;
             return findMatchingDecl(curElem, subGroupHandler);
@@ -432,18 +383,15 @@ public class XSDFACM
     Object findMatchingDecl(QName curElem, SubstitutionGroupHandler subGroupHandler) {
         Object matchingDecl = null;
 
-        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-            int type = fElemMapType[elemIndex] ;
-            if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
-                if (matchingDecl != null) {
-                    return matchingDecl;
-                }
+        for (int elemIndex = 0; elemIndex < fNumElements; elemIndex++) {
+            matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, fElements[elemIndex], fSchemaVersion);
+            if (matchingDecl != null) {
+                return matchingDecl;
             }
-            else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if (((XSWildcardDecl)fElemMap[elemIndex]).allowQName(curElem)) {
-                    return fElemMap[elemIndex];
-                }
+        }
+        for (int elemIndex = fNumElements; elemIndex < fNumTotal; elemIndex++) {
+            if (fWildcards[elemIndex].allowQName(curElem)) {
+                return fWildcards[elemIndex];
             }
         }
 
@@ -455,69 +403,36 @@ public class XSDFACM
         int curState = state[0];
         int nextState = 0;
         Object matchingDecl = null;
-        boolean toMatchElementDecl = false;
         
-        while (++elemIndex < fElemMapSize) {
+        for (; elemIndex < fNumElements; elemIndex++) {
             nextState = fTransTable[curState][elemIndex];
             if (nextState == -1)
                 continue;
-            int type = fElemMapType[elemIndex] ;
-            if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
-                if (matchingDecl != null) {
-                    break;
-                }
+            matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, fElements[elemIndex], fSchemaVersion);
+            if (matchingDecl != null) {
+                break;
             }
-            else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
+        }
+        if (matchingDecl == null) {
+            for (; elemIndex < fNumTotal; elemIndex++) {
                 // XML Schema 1.0
                 if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
-                    if (((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
-                        matchingDecl = fElemMap[elemIndex];
+                    if (fWildcards[elemIndex].allowNamespace(curElem.uri)) {
+                        matchingDecl = fWildcards[elemIndex];
                         break;
                     }
                 }
                 // XML Schema 1.1
-                else if (allowExpandedName((XSWildcardDecl)fElemMap[elemIndex], curElem, subGroupHandler, eDeclHelper)) {
-                    matchingDecl = fElemMap[elemIndex];
-                    // Element has precedence over a wildcard
-                    // if no occurences or we reached minOccurs, keep looking for
-                    // and element declaration
-                    if (fCountingStates == null || fCountingStates[curState] == null || state[2] == fCountingStates[curState].minOccurs) {
-                        toMatchElementDecl = true;
-                    }
+                else if (allowExpandedName(fWildcards[elemIndex], curElem, subGroupHandler, eDeclHelper)) {
+                    matchingDecl = fWildcards[elemIndex];
                     break;
                 }
             }
         }
         
-        // XML Schema 1.1
-        // We matched against a wildcard, but need to also check
-        // if we can find a matching element declaration
-        if (toMatchElementDecl) {
-            int newState = 0;
-            Object newMatchingDecl = null;
-            while (++elemIndex < fElemMapSize) {
-                newState = fTransTable[curState][elemIndex];
-                if (newState != -1 && fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                    newMatchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
-                    if (newMatchingDecl != null) {
-                        matchingDecl = newMatchingDecl;
-                        nextState = newState;
-                        break;
-                    }
-                }
-            }
-        }
-
         // if we still can't find a match, set the state to first_error
         // and return null
         if (matchingDecl == null) {
-            // XML Schema 1.1
-            // Validate against Open Content
-            if (fOpenContent != null && matchOpenContentModel(curElem, state, subGroupHandler, curState, eDeclHelper)) {
-                return fOpenContent;
-            }
-
             state[1] = state[0];
             state[0] = XSCMValidator.FIRST_ERROR;
             return findMatchingDecl(curElem, subGroupHandler);
@@ -536,13 +451,10 @@ public class XSDFACM
     XSElementDecl findMatchingElemDecl(QName curElem, SubstitutionGroupHandler subGroupHandler) {
         XSElementDecl matchingDecl = null;
 
-        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-            int type = fElemMapType[elemIndex] ;
-            if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex], fSchemaVersion);
-                if (matchingDecl != null) {
-                    return matchingDecl;
-                }
+        for (int elemIndex = 0; elemIndex < fNumElements; elemIndex++) {
+            matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, fElements[elemIndex], fSchemaVersion);
+            if (matchingDecl != null) {
+                return matchingDecl;
             }
         }
 
@@ -562,44 +474,20 @@ public class XSDFACM
         return false;
     }
     
-    boolean matchOpenContentModel(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler, int curState, XSElementDeclHelper eDeclHelper) {
-        // if suffix mode, we should have reached a final state
-        if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
-            if (fFinalStateFlags[curState]) {
-                if (fCountingStates != null) {
-                    Occurence o = fCountingStates[curState];
-                    if (o != null && state[2] < o.minOccurs) {
-                        return false;
-                    }
-                }
-                state[3] = STATE_SUFFIX;
-            }
-            else {
-                return false;
-            }
-        }
-        if (allowExpandedName(fOpenContent.fWildcard, curElem, subGroupHandler, eDeclHelper)) {
-            return true;
-        }
-
-        return false;
-    }
-
     // This method returns the start states of the content model.
     public int[] startContentModel() {
         // [0] : the current state
         // [1] : if [0] is an error state then the 
         //       last valid state before the error
         // [2] : occurence counter for counting states
-        // [3] : suffix state of open conten
-        return new int [4];
+        return new int [3];
     } // startContentModel():int[]
 
     // this method returns whether the last state was a valid final state
     public boolean endContentModel(int[] state) {
         final int curState = state[0];
         if (fFinalStateFlags[curState]) {
-            if (fCountingStates != null && state[3] != STATE_SUFFIX) {
+            if (fCountingStates != null) {
                 Occurence o = fCountingStates[curState];
                 if (o != null && state[2] < o.minOccurs) {
                     // not enough loops on the current state to be considered final.
@@ -720,11 +608,12 @@ public class XSDFACM
         //  input element. So we need to a zero based range of indexes that
         //  map to element types. This element map provides that mapping.
         //
-        fElemMap = new Object[fLeafCount];
-        fElemMapType = new int[fLeafCount];
-        fElemMapId = new int[fLeafCount];
-        fElemMapSize = 0;
+        Object[] fElemMap = new Object[fLeafCount];
+        int[] fElemMapType = new int[fLeafCount];
+        int[] fElemMapId = new int[fLeafCount];
+        int fElemMapSize = 0;
         Occurence [] elemOccurenceMap = null;
+        int numElem = 0;
         for (int outIndex = 0; outIndex < fLeafCount; outIndex++) {
             // optimization from Henry Zongaro:
             //fElemMap[outIndex] = new Object ();
@@ -749,6 +638,9 @@ public class XSDFACM
                 }
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapId[fElemMapSize] = id;
+                if (fElemMapType[fElemMapSize] == XSParticleDecl.PARTICLE_ELEMENT) {
+                    numElem++;
+                }
                 fElemMapSize++;
             }
         }
@@ -760,7 +652,48 @@ public class XSDFACM
                 System.err.println("interal error in DFA: last element is not EOC.");
         }
         fElemMapSize--;
+        numElem--;
 
+        fNumTotal = fElemMapSize;
+        if (fOpenContent != null) {
+            fNumTotal++;
+        }
+        
+        // Sort the element map so that elements appear before wildcards?
+        // this will simplify oneTransition(), because of weakened wc.
+        for (int ep=0, wp=fElemMapSize-1;;) {
+            while (ep <= wp && fElemMapType[ep] == XSParticleDecl.PARTICLE_ELEMENT) {
+                ep++;
+            }
+            while (wp >= ep && fElemMapType[wp] == XSParticleDecl.PARTICLE_WILDCARD) {
+                wp--;
+            }
+            if (ep < wp) {
+                Object t1 = fElemMap[ep];
+                fElemMap[ep] = fElemMap[wp];
+                fElemMap[wp] = t1;
+                int t2 = fElemMapId[ep];
+                fElemMapId[ep] = fElemMapId[wp];
+                fElemMapId[wp] = t2;
+                if (elemOccurenceMap != null) {
+                    Occurence t3 = elemOccurenceMap[ep];
+                    elemOccurenceMap[ep] = elemOccurenceMap[wp];
+                    elemOccurenceMap[wp] = t3;
+                    if (elemOccurenceMap[ep] != null) {
+                        elemOccurenceMap[ep].elemIndex = ep;
+                    }
+                    if (elemOccurenceMap[wp] != null) {
+                        elemOccurenceMap[wp].elemIndex = wp;
+                    }
+                }
+                ep++;
+                wp--;
+            }
+            else {
+                break;
+            }
+        }
+        
         /***
          * Optimization(Jan, 2001); We sort fLeafList according to
          * elemIndex which is *uniquely* associated to each leaf.
@@ -979,6 +912,8 @@ public class XSDFACM
             }
         }
 
+        fTransTableSize = curState;
+
         //
         //  And now we can say bye bye to the temp representation since we've
         //  built the DFA.
@@ -990,6 +925,43 @@ public class XSDFACM
         fFollowList = null;
         fLeafListType = null;
         fElemMapId = null;
+        
+        // If there is open content, massage the transition table
+        if (fOpenContent != null) {
+            fElemMap[fElemMapSize] = fOpenContent.fWildcard;
+            if (fOpenContent.fMode == XSOpenContentDecl.MODE_INTERLEAVE) {
+                for (int i = 0; i < fTransTableSize; i++) {
+                    fTransTable[i][fElemMapSize] = i;
+                }
+            }
+            else {
+                for (int i = 0; i < fTransTableSize; i++) {
+                    if (fFinalStateFlags[i]) {
+                        fTransTable[i][fElemMapSize] = fTransTableSize;
+                    }
+                }
+                // Seems that there is at least one empty spot.
+                fTransTable[fTransTableSize] = makeDefStateList();
+                fTransTable[fTransTableSize][fElemMapSize] = fTransTableSize;
+                fFinalStateFlags[fTransTableSize] = true;
+                fTransTableSize++;
+            }
+            fElemMapSize++;
+        }
+
+        fNumElements = numElem;
+        if (numElem > 0) {
+            fElements = new XSElementDecl[numElem];
+        }
+        if (fNumTotal > numElem) {
+            fWildcards = new XSWildcardDecl[fNumTotal];
+        }
+        for (int i = 0; i < numElem; i++) {
+            fElements[i] = (XSElementDecl)fElemMap[i];
+        }
+        for (int i = numElem; i < fNumTotal; i++) {
+            fWildcards[i] = (XSWildcardDecl)fElemMap[i];
+        }
     }
 
     /**
@@ -1153,8 +1125,8 @@ public class XSDFACM
      */
     private int[] makeDefStateList()
     {
-        int[] retArray = new int[fElemMapSize];
-        for (int index = 0; index < fElemMapSize; index++)
+        int[] retArray = new int[fNumTotal];
+        for (int index = 0; index < fNumTotal; index++)
             retArray[index] = -1;
         return retArray;
     }
@@ -1204,22 +1176,24 @@ public class XSDFACM
      * @return true if this content model contains other or list wildcard
      */
     public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler, XSConstraints xsConstraints) throws XMLSchemaException {
+        int elemSize = fOpenContent != null ? fNumTotal - 1 : fNumTotal;
         // Unique Particle Attribution
         // store the conflict results between any two elements in fElemMap
         // 0: not compared; -1: no conflict; 1: conflict
         // initialize the conflict table (all 0 initially)
-        byte conflictTable[][] = new byte[fElemMapSize][fElemMapSize];
+        byte conflictTable[][] = new byte[elemSize][elemSize];
 
         // for each state, check whether it has overlap transitions
-        for (int i = 0; i < fTransTable.length && fTransTable[i] != null; i++) {
-            for (int j = 0; j < fElemMapSize; j++) {
-                for (int k = j+1; k < fElemMapSize; k++) {
+        for (int i = 0; i < fTransTableSize; i++) {
+            for (int j = 0; j < elemSize; j++) {
+                for (int k = j+1; k < elemSize; k++) {
                     if (fTransTable[i][j] != -1 &&
                         fTransTable[i][k] != -1) {
                         if (conflictTable[j][k] == 0) {
                             if (xsConstraints.overlapUPA
-                                    (fElemMap[j], fElemMap[k],
-                                            subGroupHandler)) {
+                                    (j < fNumElements ? fElements[j] : fWildcards[j],
+                                     k < fNumElements ? fElements[k] : fWildcards[k],
+                                     subGroupHandler)) {
                                 if (fCountingStates != null) {
                                     Occurence o = fCountingStates[i];
                                     // If "i" is a counting state and exactly one of the transitions
@@ -1244,31 +1218,42 @@ public class XSDFACM
         }
 
         // report all errors
-        for (int i = 0; i < fElemMapSize; i++) {
-            for (int j = 0; j < fElemMapSize; j++) {
+        for (int i = 0; i < elemSize; i++) {
+            for (int j = 0; j < elemSize; j++) {
                 if (conflictTable[i][j] == 1) {
                     //errors.newError("cos-nonambig", new Object[]{fElemMap[i].toString(),
                     //                                             fElemMap[j].toString()});
                     // REVISIT: do we want to report all errors? or just one?
-                    throw new XMLSchemaException("cos-nonambig", new Object[]{fElemMap[i].toString(),
-                                                                              fElemMap[j].toString()});
+                    throw new XMLSchemaException("cos-nonambig", new Object[]{
+                            i < fNumElements ? fElements[i] : fWildcards[i],
+                            j < fNumElements ? fElements[j] : fWildcards[j]});
                 }
             }
         }
 
         // if there is a other or list wildcard, we need to check this CM
         // again, if this grammar is cached.
-        for (int i = 0; i < fElemMapSize; i++) {
-            if (fElemMapType[i] == XSParticleDecl.PARTICLE_WILDCARD) {
-                XSWildcardDecl wildcard = (XSWildcardDecl)fElemMap[i];
-                if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST ||
-                    wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
-                    return true;
-                }
+        for (int i = fNumElements; i < elemSize; i++) {
+            XSWildcardDecl wildcard = fWildcards[i];
+            if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST ||
+                wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
+                return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Check whether this content model is a valid restriction of the other one.
+     *
+     * @param base  the base content model
+     * @return      true if this content model is a valid restriction.
+     */
+    public boolean isValidRestriction(XSCMValidator base,
+            SubstitutionGroupHandler subGroupHandler,
+            XSElementDeclHelper eDeclHelper) {
+        return true;
     }
 
     /**
@@ -1281,6 +1266,8 @@ public class XSDFACM
      *               either XSWildcardDecl or XSElementDecl.
      */
     public Vector whatCanGoHere(int[] state) {
+        int elemSize = fOpenContent != null ? fNumTotal - 1 : fNumTotal;
+
         int curState = state[0];
         if (curState < 0)
             curState = state[1];
@@ -1289,7 +1276,7 @@ public class XSDFACM
         int count = state[2];
 
         Vector ret = new Vector();
-        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+        for (int elemIndex = 0; elemIndex < elemSize; elemIndex++) {
             int nextState = fTransTable[curState][elemIndex];
             if (nextState != -1) {
                 if (o != null) {
@@ -1308,7 +1295,7 @@ public class XSDFACM
                         continue;
                     }
                 }
-                ret.addElement(fElemMap[elemIndex]);
+                ret.addElement(elemIndex < fNumElements ? fElements[elemIndex] : fWildcards[elemIndex]);
             }  
         }
         return ret;
@@ -1334,11 +1321,43 @@ public class XSDFACM
     }
     
     public String getTermName(int termId) {
-        Object term = fElemMap[termId];
+        Object term = termId < fNumElements ? fElements[termId] : fWildcards[termId];
         return (term != null) ? term.toString() : null;
     }
         
     public boolean isCompactedForUPA() {
         return fIsCompactedForUPA;
     }
+    
+    private XSDFACM(XSOpenContentDecl openContent) {
+        fSchemaVersion = Constants.SCHEMA_VERSION_1_1;
+        fFinalStateFlags = new boolean[]{true};
+        fNumElements = 0;
+        fTransTable = new int[1][];
+        fTransTableSize = 1;
+        fIsCompactedForUPA = false;
+        if (openContent == null) {
+            fNumTotal = 0;
+            fTransTable[0] = new int[0];
+        }
+        else {
+            fWildcards = new XSWildcardDecl[]{openContent.fWildcard};
+            fNumTotal = 1;
+            fTransTable[0] = new int[]{0};
+            fOpenContent = openContent;
+        }
+    }
+    static XSDFACM EMPTY_DFA = null;
+    static XSDFACM createEmptyDFA(XSOpenContentDecl openContent) {
+        if (openContent == null) {
+            if (EMPTY_DFA == null) {
+                EMPTY_DFA = new XSDFACM(null);
+            }
+            return EMPTY_DFA;
+        }
+        else {
+            return new XSDFACM(openContent);
+        }
+    }
+    
 } // class DFAContentModel

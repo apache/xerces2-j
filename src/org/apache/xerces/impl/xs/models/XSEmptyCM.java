@@ -143,6 +143,23 @@ public class XSEmptyCM implements XSCMValidator {
     }
 
     /**
+     * Check whether this content model is a valid restriction of the other one.
+     *
+     * @param base  the base content model
+     * @return      true if this content model is a valid restriction.
+     */
+    public boolean isValidRestriction(XSCMValidator base,
+                                      SubstitutionGroupHandler subGroupHandler,
+                                      XSElementDeclHelper eDeclHelper) {
+        // Delegate to DFA
+        return XSDFACM.createEmptyDFA(fOpenContent).isValidRestriction(base, subGroupHandler, eDeclHelper);
+    }
+    
+    XSOpenContentDecl getOpenContent() {
+        return fOpenContent;   
+    }
+
+    /**
      * Check which elements are valid to appear at this point. This method also
      * works if the state is in error, in which case it returns what should
      * have been seen.

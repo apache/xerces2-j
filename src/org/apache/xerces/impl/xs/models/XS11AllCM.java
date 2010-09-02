@@ -52,12 +52,12 @@ public class XS11AllCM implements XSCMValidator {
     //
     // Data
     //
-    private boolean fHasOptionalContent = false;
+    private final boolean fHasOptionalContent;
 
-    private Object fAllDecls[];
-    private int fDeclsOccurs[];
-    private int fNumDecls = 0;
-    private int fNumElements = 0;
+    private final XSElementDecl fElements[];
+    private final XSWildcardDecl fWildcards[];
+    private final int fMinOccurs[], fMaxOccurs[];
+    private final int fNumElements, fNumTotal;
 
     private XSOpenContentDecl fOpenContent = null;
 
@@ -65,35 +65,60 @@ public class XS11AllCM implements XSCMValidator {
     // Constructors
     //
 
-    public XS11AllCM (boolean hasOptionalContent, int size, XSOpenContentDecl openContent) {
+    public XS11AllCM (boolean hasOptionalContent, int size, XSParticleDecl[] particles,
+            XSOpenContentDecl openContent) {
         fHasOptionalContent = hasOptionalContent;
-        fAllDecls = new Object[size];
-        fDeclsOccurs = new int[size << 1];
-        fOpenContent = openContent;
-    }
 
-    public void addElement(Object element, int elementType, int minOccurs, int maxOccurs) {
-        int occurenceStart;
-        if (elementType == XSParticleDecl.PARTICLE_ELEMENT) {
-            if (fNumDecls > fNumElements) {
-                for (int i = fNumDecls, j = i << 1; i > fNumElements; i--, j -= 2) {
-                    fAllDecls[i] = fAllDecls[i-1];
-                    fDeclsOccurs[j] = fDeclsOccurs[j - 2];
-                    fDeclsOccurs[j + 1] = fDeclsOccurs[j - 1];
-                }
+        // Index 0 is not used.
+        int numE = 1;
+        for (int i = 0; i < size; i++) {
+            if (particles[i].fType == XSParticleDecl.PARTICLE_ELEMENT) {
+                numE++;
             }
-            occurenceStart = fNumElements << 1;
-            fAllDecls[fNumElements] = element;
-            fNumElements++;
+        }
+        fNumElements = numE;
+        fNumTotal = size+1;
+        
+        if (numE > 1) {
+            fElements = new XSElementDecl[numE];
         }
         else {
-            occurenceStart = fNumDecls << 1;
-            fAllDecls[fNumDecls] = element;
+            fElements = null;
+        }
+        if (fNumTotal > numE) {
+            fWildcards = new XSWildcardDecl[fNumTotal];
+        }
+        else {
+            fWildcards = null;
+        }
+        if (fNumTotal > 1) {
+            fMinOccurs = new int[fNumTotal];
+            fMaxOccurs = new int[fNumTotal];
+        }
+        else {
+            fMinOccurs = null;
+            fMaxOccurs = null;
         }
 
-        fDeclsOccurs[occurenceStart] = minOccurs;
-        fDeclsOccurs[occurenceStart + 1] = maxOccurs;
-        fNumDecls++;
+        int numW = numE;
+        numE = 1;
+        for (int i = 0; i < size; i++) {
+            XSParticleDecl particle = particles[i];
+            if (particle.fType == XSParticleDecl.PARTICLE_ELEMENT) {
+                fElements[numE] = (XSElementDecl)particle.fValue;
+                fMinOccurs[numE] = particle.fMinOccurs;
+                fMaxOccurs[numE] = particle.fMaxOccurs;
+                numE++;
+            }
+            else {
+                fWildcards[numW] = (XSWildcardDecl)particle.fValue;
+                fMinOccurs[numW] = particle.fMinOccurs;
+                fMaxOccurs[numW] = particle.fMaxOccurs;
+                numW++;
+            }
+        }
+
+        fOpenContent = openContent;
     }
 
     //
@@ -108,8 +133,8 @@ public class XS11AllCM implements XSCMValidator {
      * @return Start state of the content model
      */
     public int[] startContentModel() {
-        int[] state = new int[fNumDecls + 1];
-        for (int i = 0; i <= fNumDecls; i++) {
+        int[] state = new int[fNumTotal];
+        for (int i = 0; i < fNumTotal; i++) {
             state[i] = STATE_START;
         }
         return state;
@@ -118,28 +143,25 @@ public class XS11AllCM implements XSCMValidator {
     // convinient method: when error occurs, to find a matching decl
     // from the candidate elements.
     Object findMatchingDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
-        Object matchingDecl = null;
+        Object matchingDecl = findMatchingElemDecl(elementName, subGroupHandler);
 
-        for (int i = 0; i < fNumElements; i++) {
-            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i], Constants.SCHEMA_VERSION_1_1);
-            if (matchingDecl != null)
-                return matchingDecl;
+        if (matchingDecl != null) {
+            return matchingDecl;
         }
 
-        for (int i = fNumElements; i < fNumDecls; i++) {
-            if (((XSWildcardDecl)fAllDecls[i]).allowQName(elementName)) {
-                matchingDecl = fAllDecls[i];
-                break;
+        for (int i = fNumElements; i < fNumTotal; i++) {
+            if (fWildcards[i].allowQName(elementName)) {
+                return fWildcards[i];
             }
         }
 
-        return matchingDecl;
+        return null;
     }
 
     // convinient method: to find a matching element decl 
     XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
-        for (int i = 0; i < fNumElements; i++) {
-            final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i], Constants.SCHEMA_VERSION_1_1);
+        for (int i = 1; i < fNumElements; i++) {
+            final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fElements[i], Constants.SCHEMA_VERSION_1_1);
             if (matchingDecl != null) {
                 return matchingDecl;
             }
@@ -193,28 +215,26 @@ public class XS11AllCM implements XSCMValidator {
         // seen child
         currentState[0] = STATE_CHILD;
 
-        for (int i = 0; i < fNumElements; i++) {
-            int declMaxOccurs  = (i << 1) + 1;
-            if (currentState[i + 1] == fDeclsOccurs[declMaxOccurs]) {
+        for (int i = 1; i < fNumElements; i++) {
+            if (currentState[i] == fMaxOccurs[i]) {
                 continue;
             }
-            Object matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, (XSElementDecl)fAllDecls[i], Constants.SCHEMA_VERSION_1_1);
+            Object matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fElements[i], Constants.SCHEMA_VERSION_1_1);
             if (matchingDecl != null) {
                 // found the decl, mark this element as "seen".
-                ++currentState[i + 1];
+                ++currentState[i];
                 return matchingDecl;
             }
         }
 
-        for (int i = fNumElements; i < fNumDecls; i++) {
-            int declMaxOccurs = (i << 1) + 1;
-            if (currentState[i + 1] == fDeclsOccurs[declMaxOccurs]) {
+        for (int i = fNumElements; i < fNumTotal; i++) {
+            if (currentState[i] == fMaxOccurs[i]) {
                 continue;
             }
-            if (allowExpandedName((XSWildcardDecl)fAllDecls[i], elementName, subGroupHandler, eDeclHelper)) {
+            if (allowExpandedName(fWildcards[i], elementName, subGroupHandler, eDeclHelper)) {
                 // found the decl, mark this element as "seen".
-                ++currentState[i + 1];
-                return fAllDecls[i];
+                ++currentState[i];
+                return fWildcards[i];
             }
         }
 
@@ -262,9 +282,9 @@ public class XS11AllCM implements XSCMValidator {
             return true;
         }
 
-        for (int i = 0; i < fNumDecls; i++) {
+        for (int i = 1; i < fNumTotal; i++) {
             // if one element is required, but not present, then error
-            if (currentState[i+1] < fDeclsOccurs[i << 1]) {
+            if (currentState[i] < fMinOccurs[i]) {
                 return false;
             }
         }
@@ -281,25 +301,37 @@ public class XS11AllCM implements XSCMValidator {
      */
     public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler, XSConstraints xsConstraints) throws XMLSchemaException {
         // check whether there is conflict between any two leaves
-        for (int i = 0; i < fNumElements; i++) {
+        for (int i = 1; i < fNumElements; i++) {
             for (int j = i+1; j < fNumElements; j++) {
-                if (xsConstraints.overlapUPA((XSElementDecl)fAllDecls[i], (XSElementDecl)fAllDecls[j], subGroupHandler)) {
+                if (xsConstraints.overlapUPA(fElements[i], fElements[j], subGroupHandler)) {
                     // REVISIT: do we want to report all errors? or just one?
-                    throw new XMLSchemaException("cos-nonambig", new Object[]{fAllDecls[i].toString(),
-                                                                              fAllDecls[j].toString()});
+                    throw new XMLSchemaException("cos-nonambig", new Object[]{fElements[i].toString(),
+                                                                              fElements[j].toString()});
                 }
             }
         }
-        for (int i = fNumElements; i < fNumDecls; i++) {
-            for (int j = i+1; j < fNumDecls; j++) {
-                if (xsConstraints.overlapUPA((XSWildcardDecl)fAllDecls[i], (XSWildcardDecl)fAllDecls[j])) {
+        for (int i = fNumElements; i < fNumTotal; i++) {
+            for (int j = i+1; j < fNumTotal; j++) {
+                if (xsConstraints.overlapUPA(fWildcards[i], fWildcards[j])) {
                     // REVISIT: do we want to report all errors? or just one?
-                    throw new XMLSchemaException("cos-nonambig", new Object[]{fAllDecls[i].toString(),
-                                                                              fAllDecls[j].toString()});
+                    throw new XMLSchemaException("cos-nonambig", new Object[]{fWildcards[i].toString(),
+                                                                              fWildcards[j].toString()});
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * Check whether this content model is a valid restriction of the other one.
+     *
+     * @param base  the base content model
+     * @return      true if this content model is a valid restriction.
+     */
+    public boolean isValidRestriction(XSCMValidator base,
+            SubstitutionGroupHandler subGroupHandler,
+            XSElementDeclHelper eDeclHelper) {
+        return true;
     }
 
     /**
@@ -315,19 +347,19 @@ public class XS11AllCM implements XSCMValidator {
         Vector ret = new Vector();
 
         // handle element declarations
-        for (int i = 0; i < fNumElements; i++) {
+        for (int i = 1; i < fNumElements; i++) {
             // we only try to look for a matching decl if we have not seen
             // this element yet or we have seen it less times than its maxOccurs.
-            if (state[i+1] == 0 || state[i+1] < fDeclsOccurs[(i << 1) + 1]) {
-                ret.addElement(fAllDecls[i]);
+            if (state[i] == STATE_START || state[i] < fMaxOccurs[i]) {
+                ret.addElement(fElements[i]);
             }
         }
 
         // only add wildcards if no element can be matched
         if (ret.size() == 0) {
-            for (int i = fNumElements; i < fNumDecls; i++) {
-                if (state[i+1] == 0 || state[i+1] < fDeclsOccurs[(i << 1) + 1]) {
-                    ret.addElement(fAllDecls[i]);
+            for (int i = fNumElements; i < fNumTotal; i++) {
+                if (state[i] == STATE_START || state[i] < fMaxOccurs[i]) {
+                    ret.addElement(fWildcards[i]);
                 }
             }
         }
@@ -354,9 +386,9 @@ public class XS11AllCM implements XSCMValidator {
     }
 
     private boolean isFinal(int[] currentState) {
-        for (int i = 0; i < fNumDecls; i++) {
+        for (int i = 1; i < fNumTotal; i++) {
             // if one element is required, but not present, then error
-            if (currentState[i+1] < fDeclsOccurs[i << 1]) {
+            if (currentState[i] < fMinOccurs[i]) {
                 return false;
             }
         }

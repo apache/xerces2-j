@@ -21,6 +21,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -346,6 +349,38 @@ class XS10Constraints extends XSConstraints {
 
     } // performIntersectionWith
 
+    protected void groupSubsumption(XSParticleDecl dParticle, XSParticleDecl bParticle,
+            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder, XMLErrorReporter errorReporter, String dName,
+            SimpleLocator locator) {
+        try {
+            particleValidRestriction(dParticle, SGHandler, bParticle, SGHandler);
+        } catch (XMLSchemaException e) {
+            String key = e.getKey();
+            reportSchemaError(errorReporter, locator,
+                    key,
+                    e.getArgs());
+            reportSchemaError(errorReporter, locator,
+                    "src-redefine.6.2.2",
+                    new Object[]{dName, key});
+        }
+    }
+    
+    protected void typeSubsumption(XSComplexTypeDecl dType, XSComplexTypeDecl bType,
+            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder, XMLErrorReporter errorReporter, SimpleLocator locator) {
+        try {
+            particleValidRestriction(dType.fParticle, SGHandler, bType.fParticle, SGHandler);
+        } catch (XMLSchemaException e) {
+            reportSchemaError(errorReporter, locator,
+                    e.getKey(),
+                    e.getArgs());
+            reportSchemaError(errorReporter, locator,
+                    "derivation-ok-restriction.5.4.2",
+                    new Object[]{dType.fName});
+        }
+    }
+    
     private static final Comparator ELEMENT_PARTICLE_COMPARATOR = new Comparator() {
 
         public int compare(Object o1, Object o2) {
@@ -387,7 +422,7 @@ class XS10Constraints extends XSConstraints {
     // in the bParticle.
     // With this information the checkRecurseLax function knows when is
     // to keep the order and when to ignore it.
-    protected boolean particleValidRestriction(XSParticleDecl dParticle,
+    private boolean particleValidRestriction(XSParticleDecl dParticle,
             SubstitutionGroupHandler dSGHandler,
             XSParticleDecl bParticle,
             SubstitutionGroupHandler bSGHandler)

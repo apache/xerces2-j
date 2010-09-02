@@ -18,6 +18,11 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.models.XSEmptyCM;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -401,10 +406,31 @@ class XS11Constraints extends XSConstraints {
         return found;
     }
 
-    protected boolean particleValidRestriction(XSParticleDecl dParticle,
-            SubstitutionGroupHandler dSGHandler,
-            XSParticleDecl bParticle,
-            SubstitutionGroupHandler bSGHandler) {
-        return true;
+    protected void groupSubsumption(XSParticleDecl dParticle, XSParticleDecl bParticle,
+            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder, XMLErrorReporter errorReporter, String dName,
+            SimpleLocator locator) {
+        // When we get here, particles are not null. Neither are content models.
+        XSCMValidator cmd = cmBuilder.getContentModel(dParticle);
+        XSCMValidator cmb = cmBuilder.getContentModel(bParticle);
+        if (!cmd.isValidRestriction(cmb, SGHandler, eDeclHelper)) {
+            reportSchemaError(errorReporter, locator,
+                    "src-redefine.6.2.2",
+                    new Object[]{dName, ""});
+        }
     }
+    
+    protected void typeSubsumption(XSComplexTypeDecl dType, XSComplexTypeDecl bType,
+            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder, XMLErrorReporter errorReporter, SimpleLocator locator) {
+        // When we get here, particles are not null. Neither are content models.
+        XSCMValidator cmd = dType.getContentModel(cmBuilder);
+        XSCMValidator cmb = bType.getContentModel(cmBuilder);
+        if (!cmd.isValidRestriction(cmb, SGHandler, eDeclHelper)) {
+            reportSchemaError(errorReporter, locator,
+                    "derivation-ok-restriction.5.4.2",
+                    new Object[]{dType.fName});
+        }
+    }
+    
 }

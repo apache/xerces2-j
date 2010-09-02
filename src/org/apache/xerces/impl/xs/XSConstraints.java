@@ -366,17 +366,9 @@ public abstract class XSConstraints {
                                 new Object[]{derivedGrp.fName, "rcase-Recurse.2"});
                     }
                 } else {
-                    try {
-                        particleValidRestriction(fakeDerived, SGHandler, fakeBase, SGHandler);
-                    } catch (XMLSchemaException e) {
-                        String key = e.getKey();
-                        reportSchemaError(errorReporter, rgLocators[i/2-1],
-                                key,
-                                e.getArgs());
-                        reportSchemaError(errorReporter, rgLocators[i/2-1],
-                                "src-redefine.6.2.2",
-                                new Object[]{derivedGrp.fName, key});
-                    }
+                    groupSubsumption(fakeDerived, fakeBase, grammarBucket,
+                            SGHandler, cmBuilder, errorReporter, derivedGrp.fName,
+                            rgLocators[i/2-1]);
                 }
             }
         }
@@ -430,8 +422,10 @@ public abstract class XSConstraints {
                         (types[j].fBaseType instanceof XSComplexTypeDecl)) {
 
                     XSParticleDecl derivedParticle=types[j].fParticle;
-                    XSParticleDecl baseParticle=
-                        ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle;
+                    XSComplexTypeDecl bType = (XSComplexTypeDecl)(types[j].fBaseType);
+                    XSParticleDecl baseParticle= bType.fParticle;
+                    // When there is open content, particle is never null.
+                    // Open contents are handled in typeSubsumption().
                     if (derivedParticle==null) {
                         if (baseParticle!=null && !baseParticle.emptiable()) {
                             reportSchemaError(errorReporter,ctLocators[j],
@@ -440,19 +434,8 @@ public abstract class XSConstraints {
                         }
                     }
                     else if (baseParticle!=null) {
-                        try {
-                            particleValidRestriction(types[j].fParticle,
-                                    SGHandler,
-                                    ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle,
-                                    SGHandler);
-                        } catch (XMLSchemaException e) {
-                            reportSchemaError(errorReporter, ctLocators[j],
-                                    e.getKey(),
-                                    e.getArgs());
-                            reportSchemaError(errorReporter, ctLocators[j],
-                                    "derivation-ok-restriction.5.4.2",
-                                    new Object[]{types[j].fName});
-                        }
+                        typeSubsumption(types[j], bType, grammarBucket,
+                                SGHandler, cmBuilder, errorReporter, ctLocators[j]);
                     }
                     else {
                         reportSchemaError(errorReporter, ctLocators[j],
@@ -732,9 +715,13 @@ public abstract class XSConstraints {
     public abstract boolean overlapUPA(XSWildcardDecl wildcard1,
             XSWildcardDecl wildcard2);
 
-    protected abstract boolean particleValidRestriction(XSParticleDecl dParticle,
-            SubstitutionGroupHandler dSGHandler,
-            XSParticleDecl bParticle,
-            SubstitutionGroupHandler bSGHandler)
-    throws XMLSchemaException;
+    protected abstract void groupSubsumption(XSParticleDecl dParticle, XSParticleDecl bParticle,
+            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder, XMLErrorReporter errorReporter, String dName,
+            SimpleLocator locator);
+    
+    protected abstract void typeSubsumption(XSComplexTypeDecl dType, XSComplexTypeDecl bType,
+            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            CMBuilder cmBuilder, XMLErrorReporter errorReporter, SimpleLocator locator);
+    
 } // class XSContraints

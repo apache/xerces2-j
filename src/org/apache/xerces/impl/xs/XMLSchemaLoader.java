@@ -1470,9 +1470,13 @@ XSLoader, DOMConfiguration {
 	
     // Implements XSElementDeclHelper interface
     public XSElementDecl getGlobalElementDecl(QName element) {
-        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
+        return getGlobalElementDecl(element.uri, element.localpart);
+    }
+
+    public XSElementDecl getGlobalElementDecl(String namespace, String name) {
+        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(namespace);
         if (sGrammar != null) {
-            return sGrammar.getGlobalElementDecl(element.localpart);
+            return sGrammar.getGlobalElementDecl(name);
         }
         return null;
     }
