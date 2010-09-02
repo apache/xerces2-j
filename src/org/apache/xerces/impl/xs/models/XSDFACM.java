@@ -1191,8 +1191,8 @@ public class XSDFACM
                         fTransTable[i][k] != -1) {
                         if (conflictTable[j][k] == 0) {
                             if (xsConstraints.overlapUPA
-                                    (j < fNumElements ? fElements[j] : fWildcards[j],
-                                     k < fNumElements ? fElements[k] : fWildcards[k],
+                                    (j < fNumElements ? (Object)fElements[j] : (Object)fWildcards[j],
+                                     k < fNumElements ? (Object)fElements[k] : (Object)fWildcards[k],
                                      subGroupHandler)) {
                                 if (fCountingStates != null) {
                                     Occurence o = fCountingStates[i];
@@ -1225,8 +1225,8 @@ public class XSDFACM
                     //                                             fElemMap[j].toString()});
                     // REVISIT: do we want to report all errors? or just one?
                     throw new XMLSchemaException("cos-nonambig", new Object[]{
-                            i < fNumElements ? fElements[i] : fWildcards[i],
-                            j < fNumElements ? fElements[j] : fWildcards[j]});
+                            i < fNumElements ? (Object)fElements[i] : (Object)fWildcards[i],
+                            j < fNumElements ? (Object)fElements[j] : (Object)fWildcards[j]});
                 }
             }
         }
@@ -1295,7 +1295,7 @@ public class XSDFACM
                         continue;
                     }
                 }
-                ret.addElement(elemIndex < fNumElements ? fElements[elemIndex] : fWildcards[elemIndex]);
+                ret.addElement(elemIndex < fNumElements ? (Object)fElements[elemIndex] : (Object)fWildcards[elemIndex]);
             }  
         }
         return ret;
@@ -1321,7 +1321,7 @@ public class XSDFACM
     }
     
     public String getTermName(int termId) {
-        Object term = termId < fNumElements ? fElements[termId] : fWildcards[termId];
+        Object term = termId < fNumElements ? (Object)fElements[termId] : (Object)fWildcards[termId];
         return (term != null) ? term.toString() : null;
     }
         
