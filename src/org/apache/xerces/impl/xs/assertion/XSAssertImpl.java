@@ -54,26 +54,31 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     /** Default XPath namespace */
     protected String fXPathDefaultNamespace = null;
       
-    /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
+    /** XPath 2.0 namespace context. Derived from XSDocumentInfo in Xerces
+        schema "component traversers".
+    */
     protected NamespaceSupport fXPath2NamespaceContext = null;
     
-    // a non null value of this object indicates, that this assertion is
-    // for an attribute, and value of this object would be the attribute's
-    // name.
+    // a non null value of this object indicates, that this assertion belongs
+    // to an attribute's schema type, and value of this object would be the
+    // attribute's name.
     protected String attrName = null;
     
-    // a non null value of this object indicates, that this assertion is
-    // for an attribute, and value of this object would be the attribute's
-    // value.
+    // a non null value of this object indicates, that this assertion belongs
+    // to an attribute's schema type, and value of this object would be the
+    // attribute's value.
     protected String attrValue = null;
     
-    // XSDHandler object, passed on from the traversers 
+    // XSDHandler object, passed on from the Xerces schema "component
+    // traversers". 
     protected XSDHandler fSchemaHandler = null;
     
-    // user-defined message, to display, during assertion failures
+    // user-defined message to provide to an user context, during assertion
+    // failures.
     protected String message = null;
     
-    // if assertion belongs to a simpleType, the type's variety
+    // representing the schema type's variety, if an assertion belongs to a
+    // schema simpleType.
     protected short fVariety = 0;
 
     /** Constructor */
@@ -112,10 +117,10 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     
     /**
      * Sets the kind of assertion this is. This could be one of the following:
-     * -> an assertion from a complexType (XSConstants.ASSERTION)
-     * -> an assertion facet from a complexType -> simpleContent 
-     *                             (XSConstants.ASSERTION_FACET)
-     * -> an assertion facet from a simpleType (XSConstants.ASSERTION_FACET)
+     * -> an assertion from a complexType      :   XSConstants.ASSERTION
+     * -> an assertion facet from a "complexType -> simpleContent" 
+     *                                         :   XSConstants.ASSERTION_FACET
+     * -> an assertion facet from a simpleType :   XSConstants.ASSERTION_FACET
      */
     public void setAssertKind(short assertKind) {
         this.assertKind = assertKind;
@@ -214,7 +219,9 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     }
     
     /*
-     * Tests if two assert components are equal
+     * Tests if two assertion components are equal. Xerces has a specific
+     * notion of assertions equality, as described by the algorithm in this
+     * method.
      */
     public boolean equals(XSAssertImpl pAssertion) {
       boolean returnVal = false;

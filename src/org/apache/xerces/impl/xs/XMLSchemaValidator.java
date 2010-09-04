@@ -1349,7 +1349,7 @@ public class XMLSchemaValidator
     
     // variable to track validity of simple content for union types.
     // used for assertions processing.
-    private boolean fAtomicValueValid = true;
+    private boolean fisAtomicValueValid = true;
     
     // 'type alternative' validator subcomponent
     private XSDTypeAlternativeValidator fTypeAlternativeValidator = null;
@@ -2558,8 +2558,8 @@ public class XMLSchemaValidator
             fAssertionValidator.handleEndElement(element, fCurrentElemDecl, 
                                                 fCurrentType, fNotation, 
                                                 fGrammarBucket,
-                                                fAtomicValueValid);
-            fAtomicValueValid = true;
+                                                fisAtomicValueValid);
+            fisAtomicValueValid = true;
         }
 
         // Check if we should modify the xsi:type ignore depth
@@ -3247,9 +3247,9 @@ public class XMLSchemaValidator
             // additional check for assertions processing, for simple type 
             // variety 'union'.
             if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                if (isUnionValidationAssertCheck(attDV.getMemberTypes(), 
+                if (isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
                                                   attrValue, null)) {
-                    fAtomicValueValid = false; 
+                    fisAtomicValueValid = false; 
                 }
             }
             
@@ -3275,7 +3275,7 @@ public class XMLSchemaValidator
             }
         } 
         catch (InvalidDatatypeValueException idve) {
-            fAtomicValueValid = false;
+            fisAtomicValueValid = false;
             reportSchemaError(idve.getKey(), idve.getArgs());
             reportSchemaError(
                 "cvc-attribute.3",
@@ -3409,14 +3409,14 @@ public class XMLSchemaValidator
                     // additional check for assertions processing, for simple type 
                     // variety 'union'.
                     if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (isUnionValidationAssertCheck(attDV.getMemberTypes(), 
+                        if (isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
                                                          null, defaultValue)) {
-                            fAtomicValueValid = false; 
+                            fisAtomicValueValid = false; 
                         }
                     }
                 } 
                 catch (InvalidDatatypeValueException idve) {
-                    fAtomicValueValid = false;
+                    fisAtomicValueValid = false;
                     reportSchemaError(idve.getKey(), idve.getArgs());
                 }
                 fValidationState.setFacetChecking(facetChecking);
@@ -3626,14 +3626,14 @@ public class XMLSchemaValidator
                     // additional check for assertions processing, for simple type 
                     // variety 'union'.
                     if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (isUnionValidationAssertCheck(dv.getMemberTypes(), 
+                        if (isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
                                                      String.valueOf(textContent), 
                                                      null)) {
-                            fAtomicValueValid = false; 
+                            fisAtomicValueValid = false; 
                         }
                     }
                 } catch (InvalidDatatypeValueException e) {
-                    fAtomicValueValid = false;
+                    fisAtomicValueValid = false;
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError(
                         "cvc-type.3.1.3",
@@ -3676,14 +3676,14 @@ public class XMLSchemaValidator
                     // additional check for assertions processing, for simple type 
                     // variety 'union'.
                     if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (isUnionValidationAssertCheck(dv.getMemberTypes(), 
+                        if (isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
                                                          String.valueOf(textContent), 
                                                          null)) {
-                            fAtomicValueValid = false; 
+                            fisAtomicValueValid = false; 
                         }
                     }
                 } catch (InvalidDatatypeValueException e) {
-                    fAtomicValueValid = false;
+                    fisAtomicValueValid = false;
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-complex-type.2.2", new Object[] { element.rawname });
                 }
@@ -4841,16 +4841,22 @@ public class XMLSchemaValidator
         }
     }
     
+    
     /*
      * Determine if an atomic value is valid with respect to any of the 
-     * union's built-in schema types. 
+     * union's built-in schema types. If this method returns 'true', then
+     * the value is valid with respect to an union schema component. 
      */
-    private boolean isUnionValidationAssertCheck(XSObjectList memberTypes,
-                                                 String content,
-                                                 ValidatedInfo validatedInfo) {
+    private boolean isAtomicValueValidForAnUnion(XSObjectList
+                                              memberTypes, String content,
+                                              ValidatedInfo validatedInfo) {
         
         boolean isValid = false;
         
+        // check the union member types in sequence, to check for validity of
+        // an 'atomic value'. the validity of 'atomic value' wrt to 1st type
+        // in this sequence, is sufficient to achieve the objective of this
+        // method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
                                                     memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item
@@ -4876,6 +4882,6 @@ public class XMLSchemaValidator
         
         return isValid;
         
-    } // isUnionValidationAssertCheck    
+    } // isAtomicValueValidForAnUnion    
     
 } // class SchemaValidator
