@@ -143,7 +143,7 @@ public class XSDAssertionValidator {
                 assertPSVI.fGrammars = grammarBucket.getGrammars();
 
                 // construct the augmentations object for assertions.
-                // store assertPSVI into the augmentations
+                // store assertPSVI into the augmentations.
                 AugmentationsImpl assertAugs = new AugmentationsImpl();
                 assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);
                 assertAugs.putItem("ATOMIC_VALUE_VALIDITY", Boolean.valueOf
@@ -171,7 +171,7 @@ public class XSDAssertionValidator {
        List assertionList = null;
             
        if (typeDef.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-           // if element's governing type is a "complex type"               
+           // if element's schema type is a "complex type"               
            XSObjectListImpl complexTypeAsserts = getAssertsFromComplexType(
                                                        typeDef, attributes);
            if (complexTypeAsserts.size() > 0) {
@@ -179,7 +179,7 @@ public class XSDAssertionValidator {
            }
        }
        else if (typeDef.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-           // if element's governing type is a "simple type"
+           // if element's schema type is a "simple type"
            assertionList = getAssertsFromSimpleType(typeDef);            
        }
                
@@ -262,7 +262,7 @@ public class XSDAssertionValidator {
                 // restriction.
                 XSObjectList facets = attrType.getMultiValueFacets();
 
-                // variety is 'unknown/absent' at the moment                    
+                // simpleType variety is 'unknown/absent' at the moment                    
                 short attrTypeVariety = XSSimpleTypeDefinition.VARIETY_ABSENT;
 
                 if (facets.getLength() == 0 && attrType.getItemType() != null) {
@@ -347,10 +347,6 @@ public class XSDAssertionValidator {
             // Special handling for assertions on simpleType -> union
             // cases. Adding an assertion here, for determining the
             // NamespaceContext.
-            // This particular assertion object is not actually evaluated.
-            // For union types, assertions are later again determined
-            // in XMLAssertPsychopathImpl, which are evaluated to determine
-            // validity of an XML instance.
             XSAssertImpl assertImpl = getFirstAssertFromUnionMemberTypes(
                                               simpleTypeDef.getMemberTypes());
             if (assertImpl != null) {

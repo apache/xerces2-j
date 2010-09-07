@@ -65,9 +65,9 @@ import org.w3c.dom.NodeList;
  * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
  * evaluation. This class interfaces with the PsychoPath XPath 2.0 engine.
  * 
- * This method constructs the PSVI enabled DOM trees for assertions evaluation,
+ * This class constructs the PSVI enabled DOM trees for assertions evaluation,
  * from XNI event calls. The DOM trees constructed in this class, are mapped
- * by the PsychoPath XPath2 engine to an XPath2 XDM representation.
+ * by the PsychoPath XPath 2.0 engine to an XPath 2.0 XDM representation.
  * XML Schema 1.1 assertions are evaluated on these tree instances, in a bottom
  * up fashion.
  * 
@@ -253,8 +253,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     /*
      * Method to evaluate all of assertions for an element tree. This is the
-     * root method, which drives entire assertions evaluation within Xerces XML
-     * Schema 1.1 implementation.
+     * root method, which evaluates all assertions within Xerces XML Schema 1.1
+     * implementation.
      */
     private void processAllAssertionsOnElement(QName element,
                                                XSSimpleTypeDefinition itemType,
@@ -331,7 +331,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // complex type with complex content            
             // notes: $value should be, the XPath2 "empty sequence" ... TO DO
             // user's are not expected to use XPath2 context variable $value
-            // for complex contents, so it's harmless to leave this
+            // for schema complex contents, so it's harmless to leave this
             // unimplemented as of now.
         }
         
@@ -472,7 +472,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // only 1 error message is reported for assertion failures on
             // simpleType -> union, since it is hard (perhaps impossible?)
             // to determine statically that what all assertions can cause 
-            // failure, when participating in an union.
+            // validation failure, when participating in an union.
             if (isValidationFailedForUnion) {
                  fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", 
                               new Object[] { element.rawname, value } );   
@@ -568,8 +568,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                         if (assertsSucceeded == assertFacets.size()) {
                             // all assertions on a 'union member type' have 
                             // evaluated to 'true', therefore validation with
-                            // union has succeeded wrt assertions. return
-                            // a boolean value 'false' from this method.
+                            // union has succeeded wrt assertions.
                             return false;  
                         }
                     }
@@ -688,7 +687,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Assign a "XSD typed value" to the XPath2 "dynamic context" variable,
+     * Assign a "schema typed value" to the XPath2 "dynamic context" variable,
      * $value.
      */
     private void setValueOf$value(String value, 
@@ -715,7 +714,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                   XSComplexTypeDefinition cmplxTypeDef = (XSComplexTypeDefinition)
                                                                        typeDef;
                   if (cmplxTypeDef.getSimpleType() != null) {
-                      xsdTypecode = getXSDTypeCodeOf$Value(cmplxTypeDef.getSimpleType());   
+                      xsdTypecode = getXSDTypeCodeOf$Value(cmplxTypeDef.
+                                                               getSimpleType());   
                   }
               }
               else {
@@ -742,12 +742,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
        Find the built-in "XML Schema" Xerces 'type code' for XPath2 variable,
        $value. This function recursively searches the XSD type hierarchy
        navigating up the base types, to find the needed built-in type.
-       
-       The value of typeCode is retrieved from PsychoPath XPath2 engine, which
-       returns a proper Xerces schema 'type code', or few of it's own crafted
-       type (for few of XML schema 1.1 types) code values, which are again passed
-       on to PsychoPath engine, to determine the right PsychoPath 'schema type'
-       object representation.
     */
     private short getXSDTypeCodeOf$Value(XSTypeDefinition elementType) {
             
@@ -832,7 +826,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Find the actual 'atomic type' of an 'list item' instance, if the
+     * Find the actual schema type of 'list item' instance, if the
      * 'item type' of list has variety union. 
      */
     private XSSimpleTypeDefinition getActualListItemTypeForVarietyUnion
@@ -841,9 +835,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
         XSSimpleTypeDefinition simpleTypeDefn = null;
         
-        // Inspecting the member types of union in order, to see that which
-        // schema type can successfully validate an atomic value first
-        // (and this will be the result for us, from this method).
+        // Inspecting the member types of union in sequence, to find that which
+        // schema type can successfully validate an atomic value first.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
                                                             memTypeIdx++) {
            XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item

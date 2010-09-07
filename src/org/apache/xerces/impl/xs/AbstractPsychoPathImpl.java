@@ -49,7 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class providing common services for XPath 2 evaluation, with
+ * A base class providing common services for XPath 2.0 evaluation, with
  * PsychoPath XPath 2.0 engine.
  * 
  * @xerces.internal
@@ -73,7 +73,7 @@ public class AbstractPsychoPathImpl {
         fDynamicContext = new DefaultDynamicContext(schema, document);        
         
         // populate the PsychoPath XPath 2.0 static context, with namespace
-        // bindings derived from the XSD Schema document.
+        // bindings derived from the XML Schema document.
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport)
                                     psychoPathParams.get("XPATH2_NS_CONTEXT");
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
@@ -96,10 +96,10 @@ public class AbstractPsychoPathImpl {
      * Evaluate XPath expression with PsychoPath engine.
      */
     protected boolean evaluatePsychoPathExpr(XPath xp,
-                                 String xPathDefaultNamespace,
-                                 Element contextNode)
-                                 throws StaticError, DynamicError,
-                                        Exception {
+                                             String xPathDefaultNamespace,
+                                             Element contextNode)
+                                          throws StaticError, DynamicError,
+                                          Exception {
         
         StaticChecker sc = new StaticNameResolver(fDynamicContext);
         sc.check(xp);
@@ -168,7 +168,7 @@ public class AbstractPsychoPathImpl {
     
     
     /*
-     * Method to report error messages
+     * Method to report error messages.
      */
     private void reportError(String key, XSAssertImpl assertImpl,
                                          XSDHandler fSchemaHandler) {
