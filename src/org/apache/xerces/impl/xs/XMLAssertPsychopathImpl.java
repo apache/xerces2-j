@@ -63,13 +63,13 @@ import org.w3c.dom.NodeList;
 
 /**
  * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
- * evaluation. This class interfaces with the "PsychoPath XPath 2.0" engine.
+ * evaluation. This class interfaces with the 'PsychoPath XPath 2.0' engine.
  * 
- * This class constructs Xerces PSVI enabled DOM trees for assertions
- * evaluation, from XNI event calls. The DOM trees constructed in this class,
- * are mapped by "PsychoPath XPath 2.0" engine to an XPath 2.0 XDM
- * representation. XML Schema 1.1 assertions are evaluated on these XPath tree
- * instances, in a bottom up fashion.
+ * This class constructs Xerces PSVI enabled DOM trees (for typed XDM instance
+ * support) for assertions evaluation, from XNI event calls. The DOM trees
+ * constructed in this class, are mapped by PsychoPath engine to an 'XPath 2'
+ * XDM representation. XML Schema assertions are evaluated on these XPath
+ * tree instances, in a bottom up fashion.
  * 
  * @xerces.internal
  * 
@@ -115,9 +115,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * Class constructor.
      */
     public XMLAssertPsychopathImpl(Map assertParams) {        
-        // initializing the class variables.        
-        // we use a PSVI enabled DOM implementation, to be able to have typed
-        // XDM nodes.
+        // initializing the class variables
         this.fAssertDocument = new PSVIDocumentImpl();        
         this.fAssertRootStack = new Stack();
         this.fAssertListStack = new Stack();
@@ -252,9 +250,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
 
     /*
-     * Method to evaluate all of assertions for an element tree. This is the
-     * root method, which evaluates all assertions within Xerces XML Schema 1.1
-     * implementation.
+     * Method to evaluate all of XML schema 1.1 assertions for an element tree.
+     * This is the root method, which evaluates all XML schema assertions, in
+     * a given XML instance validation episode.
      */
     private void processAllAssertionsOnElement(QName element,
                                                XSSimpleTypeDefinition itemType,
@@ -726,8 +724,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
         
         // determine the PsychoPath XML schema 'typed value', given the Xerces
-        // type code as an API method argument(few of the input type code
-        // constants are PsychoPath specific). 
+        // schema 'type code' as an API method argument(few of the input schema
+        // 'type code' constants are PsychoPath specific). 
         AnyType psychoPathType = SchemaTypeValueFactory.newSchemaTypeValue
                                                          (xsdTypecode, value);
         
@@ -739,16 +737,21 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-       Find the built-in "XML Schema" Xerces 'type code' for XPath2 variable,
-       $value. This function recursively searches the XSD type hierarchy
-       navigating up the base types, to find the needed built-in type.
+       Find the built-in Xerces schema 'type code' for XPath2 variable,
+       $value. This function recursively searches the XML schema type
+       hierarchy navigating up the base types, to find the needed built-in
+       type.
     */
     private short getXSDTypeCodeOf$Value(XSTypeDefinition elementType) {
             
       if (Constants.NS_XMLSCHEMA.equals(elementType.getNamespace())) {
          short typeCode = -100; // dummy initializer
          
-         boolean isxsd11Type = false;         
+         boolean isxsd11Type = false;
+         
+         // the below 'if else' clauses are written to process few special
+         // cases, handling few of schema types, within PsychoPath XPath
+         // engine.
          if ("dayTimeDuration".equals(elementType.getName())) {
              typeCode = PsychoPathTypeHelper.DAYTIMEDURATION_DT;
              isxsd11Type = true;
@@ -854,7 +857,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Determine if a "string value" is valid for a given simpleType
+     * Determine if a 'string value' is valid for a given simpleType
      * definition. Using Xerces 'XSSimpleType.validate' API for this need.
      */
     private boolean isValueValidForASimpleType(String value, XSSimpleType 
@@ -867,7 +870,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             ValidatedInfo validatedInfo = new ValidatedInfo();
             ValidationContext validationState = new ValidationState();
             
-            // attempt to validate the value with the simpleType
+            // attempt to validate the 'string value' with a simpleType
+            // instance.
             simplType.validate(value, validationState, validatedInfo);
         } 
         catch(InvalidDatatypeValueException ex){

@@ -49,8 +49,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class providing common services for XPath 2.0 expression evaluation,
- * with "PsychoPath XPath 2.0" engine.
+ * A base class providing common services for XPath expression evaluation,
+ * with 'PsychoPath XPath 2.0' engine.
  * 
  * @xerces.internal
  * 
@@ -64,7 +64,7 @@ public class AbstractPsychoPathImpl {
     
     
     /*
-     * Initialize the PsychoPath XPath 2 dynamic context.
+     * Initialize the 'PsychoPath XPath 2' dynamic context.
      */
     protected DynamicContext initDynamicContext(XSModel schema,
                                                 Document document,
@@ -72,7 +72,7 @@ public class AbstractPsychoPathImpl {
         
         fDynamicContext = new DefaultDynamicContext(schema, document);        
         
-        // populate the PsychoPath XPath 2.0 static context, with namespace
+        // populate the 'PsychoPath XPath 2' static context, with namespace
         // bindings derived from the XML Schema document.
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport)
                                     psychoPathParams.get("XPATH2_NS_CONTEXT");
