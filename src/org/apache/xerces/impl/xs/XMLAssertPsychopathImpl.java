@@ -63,13 +63,13 @@ import org.w3c.dom.NodeList;
 
 /**
  * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
- * evaluation. This class interfaces with the PsychoPath XPath 2.0 engine.
+ * evaluation. This class interfaces with the "PsychoPath XPath 2.0" engine.
  * 
- * This class constructs the PSVI enabled DOM trees for assertions evaluation,
- * from XNI event calls. The DOM trees constructed in this class, are mapped
- * by the PsychoPath XPath 2.0 engine to an XPath 2.0 XDM representation.
- * XML Schema 1.1 assertions are evaluated on these tree instances, in a bottom
- * up fashion.
+ * This class constructs Xerces PSVI enabled DOM trees for assertions
+ * evaluation, from XNI event calls. The DOM trees constructed in this class,
+ * are mapped by "PsychoPath XPath 2.0" engine to an XPath 2.0 XDM
+ * representation. XML Schema 1.1 assertions are evaluated on these XPath tree
+ * instances, in a bottom up fashion.
  * 
  * @xerces.internal
  * 
