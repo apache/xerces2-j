@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -294,7 +295,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         NodeList childList = fCurrentAssertDomNode.getChildNodes();         
         
         int textChildCount = 0;
-        int effectiveChildren = 0;
+        int effectiveChildCount = 0;
         
         // there could be adjacent text nodes in a DOM tree. merge them to 
         // get the value.
@@ -303,15 +304,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             Node node = childList.item(childNodeIndex);
             if (node.getNodeType() == Node.TEXT_NODE) {
                 textChildCount++;
-                effectiveChildren++;
+                effectiveChildCount++;
                 value = value + node.getNodeValue();
             }
             else if (node.getNodeType() == Node.ELEMENT_NODE) {
-                effectiveChildren++;  
+                effectiveChildCount++;  
             }
         }
 
-        if (textChildCount != effectiveChildren) {
+        if (textChildCount != effectiveChildCount) {
             // this means, that the DOM tree we are inspecting, has
             // mixed/complex content.
             value = null;  
@@ -332,11 +333,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // complex type with simple content
             setTypedValueFor$value(value, null, null);
         } else {
-            // complex type with complex content. $value is an empty sequence.
-            ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+            // complex type with complex content. assign an empty XPath2
+            // sequence to xpath context variable $value.
             fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
                                               processor.internal.types.QName(
-                                                        "value"), xpath2Seq);
+                                                                    "value"),
+                                    getXPath2ResultSequence(new ArrayList()));
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
@@ -723,11 +725,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
               }
               else if (typeDef instanceof XSComplexTypeDefinition && 
                       ((XSComplexTypeDefinition) typeDef).getSimpleType() == null) {
-                  // assign an empty XPath2 sequence to $value
-                  ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+                  // assign an empty XPath2 sequence to xpath context variable
+                  // $value.
                   fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
-                                                    processor.internal.types.QName(
-                                                              "value"), xpath2Seq); 
+                                                processor.internal.types.QName(
+                                                              "value"),
+                                          getXPath2ResultSequence(new ArrayList())); 
               }
               else {
                   xsdTypecode = getXercesXSDTypeCodeFor$Value(typeDef);
@@ -774,9 +777,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // tokens.
             String[] values = value.split("\\s+");
             
-            // construct an XPath2 sequence, for assigning to context variable,
-            // $value. the sequence has type annotation xs:anyAtomicType*.
-            ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+            // construct a list of atomic XDM items, to assign to XPath2
+            // context variable $value.
+            List xdmItemList = new ArrayList();
             if ((listItemType.getMemberTypes()).getLength() > 0) {
                // itemType of xs:list has variety 'union'. here list items may
                // have different types, which are determined below.
@@ -785,7 +788,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                          getActualListItemTypeForVarietyUnion
                                                (listItemType.getMemberTypes(), 
                                                               values[valIdx]);
-                   xpath2Seq.add(SchemaTypeValueFactory.newSchemaTypeValue
+                   xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue
                                                           (listItemTypeForUnion.
                                               getBuiltInKind(),values[valIdx]));
                }                                  
@@ -794,16 +797,17 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                // every list item has a same type (the itemType of
                // xs:list).
                for (int valIdx = 0; valIdx < values.length; valIdx++) {
-                   xpath2Seq.add(SchemaTypeValueFactory.newSchemaTypeValue
+                   xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue
                                                (listItemType.getBuiltInKind(), 
                                                              values[valIdx])); 
                }                                  
             }
 
-            // assign XPath2 sequence to variable $value
+            // assign an XPath2 sequence to xpath context variable $value
             fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
                                               processor.internal.types.QName(
-                                                        "value"), xpath2Seq);
+                                                                    "value"),
+                                        getXPath2ResultSequence(xdmItemList));
         }
         else if (complexTypeSimplContentType.getVariety() == 
                                         XSSimpleTypeDefinition.VARIETY_UNION) {
@@ -858,6 +862,23 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
       }
       
     } // getXercesXSDTypeCodeFor$Value
+    
+    
+    /*
+     * Construct an PsychoPath XPath2 'result sequence', given a list of XDM
+     * items as input.
+     */
+    private ResultSequence getXPath2ResultSequence(List xdmItems) {
+        
+        ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+        
+        for (Iterator iter = xdmItems.iterator(); iter.hasNext(); ) {
+            xpath2Seq.add((AnyType)iter.next()); 
+        }
+        
+        return xpath2Seq;
+        
+    } // getXPath2ResultSequence
     
     
     /*
