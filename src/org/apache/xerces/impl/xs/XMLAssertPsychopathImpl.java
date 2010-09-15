@@ -50,6 +50,8 @@ import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
 import org.eclipse.wst.xml.xpath2.processor.PsychoPathTypeHelper;
+import org.eclipse.wst.xml.xpath2.processor.ResultSequence;
+import org.eclipse.wst.xml.xpath2.processor.ResultSequenceFactory;
 import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyAtomicType;
@@ -63,13 +65,14 @@ import org.w3c.dom.NodeList;
 
 /**
  * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
- * evaluation. This class interfaces with the 'PsychoPath XPath 2.0' engine.
+ * evaluation. This class interfaces with the 'Eclipse/PsychoPath XPath 2.0'
+ * engine.
  * 
- * This class constructs Xerces PSVI enabled DOM trees (for typed XDM instance
- * support) for assertions evaluation, from XNI event calls. The DOM trees
- * constructed in this class, are mapped by PsychoPath engine to an 'XPath 2'
- * XDM representation. XML Schema assertions are evaluated on these XPath
- * tree instances, in a bottom up fashion.
+ * The class here constructs Xerces PSVI enabled DOM trees (for typed XDM
+ * instance support) for assertions evaluation, from XNI event calls. The DOM
+ * trees constructed in this class, are mapped by PsychoPath engine to an
+ * 'XPath 2.0' XDM representation. XML Schema assertions are evaluated on these
+ * XPath tree instances, in a bottom up fashion.
  * 
  * @xerces.internal
  * 
@@ -264,19 +267,18 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
          // initialize the XPath engine
          initXPathProcessor();
          
-         // determine value of variable, $value
+         // determine string value of variable, $value
          String value = getValueOf$Value();
 
          // evaluate assertions
          if (assertions instanceof XSObjectList) {
             // assertions from a "complex type" definition             
-            evaluateAssertionsFromAComplexType(element, assertions, value, 
-                                              elemPSVI);            
+            evaluateAssertionsFromAComplexType(element, assertions, value);            
          }
          else if (assertions instanceof Vector) {
             // assertions from a "simple type" definition
             evaluateAssertionsFromASimpleType(element, itemType, memberTypes,
-                                             assertions, value, elemPSVI);            
+                                              assertions, value);            
          }
          
     } // processAllAssertionsOnElement
@@ -292,6 +294,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         NodeList childList = fCurrentAssertDomNode.getChildNodes();         
         
         int textChildCount = 0;
+        int effectiveChildren = 0;
         
         // there could be adjacent text nodes in a DOM tree. merge them to 
         // get the value.
@@ -300,11 +303,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             Node node = childList.item(childNodeIndex);
             if (node.getNodeType() == Node.TEXT_NODE) {
                 textChildCount++;
+                effectiveChildren++;
                 value = value + node.getNodeValue();
+            }
+            else if (node.getNodeType() == Node.ELEMENT_NODE) {
+                effectiveChildren++;  
             }
         }
 
-        if (textChildCount != childList.getLength()) {
+        if (textChildCount != effectiveChildren) {
             // this means, that the DOM tree we are inspecting, has
             // mixed/complex content.
             value = null;  
@@ -319,18 +326,17 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * Evaluate assertions on a "complex type".
      */
     private void evaluateAssertionsFromAComplexType(QName element, List 
-                                                   assertions, String value,
-                                                   ElementPSVI elemPSVI) 
+                                                    assertions, String value) 
                                                    throws Exception {
         if (value != null) {
             // complex type with simple content
-            setValueOf$value(value, null, null);
+            setTypedValueFor$value(value, null, null);
         } else {
-            // complex type with complex content            
-            // notes: $value should be, the XPath2 "empty sequence" ... TO DO
-            // user's are not expected to use XPath2 context variable $value
-            // for schema complex contents, so it's harmless to leave this
-            // unimplemented as of now.
+            // complex type with complex content. $value is an empty sequence.
+            ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+            fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
+                                              processor.internal.types.QName(
+                                                        "value"), xpath2Seq);
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
@@ -372,7 +378,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                 else if (assertImpl.getVariety() == XSSimpleTypeDefinition.
                                                             VARIETY_ATOMIC) {
                     // evaluating assertions for simpleType -> restriction
-                    setValueOf$value(value, null, attrType);
+                    setTypedValueFor$value(value, null, attrType);
                     AssertionError assertError = evaluateAssertion(element,
                                                          assertImpl, value,
                                                          xpathContextExists,
@@ -423,8 +429,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     private void evaluateAssertionsFromASimpleType(QName element,
                                              XSSimpleTypeDefinition itemType,
                                              XSObjectList memberTypes,
-                                             List assertions, String value,
-                                             ElementPSVI elemPSVI)                                             
+                                             List assertions, String value)                                             
                                              throws Exception {
         
         // assertions from a simple type definition           
@@ -451,7 +456,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             }
             else if (memberTypes != null && memberTypes.getLength() == 0) {
                 // evaluating assertions for simpleType -> restriction
-                setValueOf$value(value, null, null);
+                setTypedValueFor$value(value, null, null);
                 AssertionError assertError = evaluateAssertion(element, 
                                                         assertImpl, value, 
                                                         false, false);
@@ -487,7 +492,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     private void setValueOf$valueForAListItem(XSSimpleTypeDefinition simpType,
                                               String value) 
-                                             throws Exception {
+                                              throws Exception {
         
         if ((simpType.getMemberTypes()).getLength() > 0) {
             // The list item's type has variety 'union'.
@@ -496,12 +501,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                      simpType.getMemberTypes(),
                                                      value);
             // set a schema 'typed value' to variable $value
-            setValueOf$value(value, actualListItemType,
+            setTypedValueFor$value(value, actualListItemType,
                                                  null);
         } 
         else {
            // The list item's type has variety 'atomic'.
-           setValueOf$value(value, simpType, null); 
+           setTypedValueFor$value(value, simpType, null); 
         }
         
     } // setSchemaTypeOn$valueForAListItem
@@ -526,11 +531,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // check for assertions on types in an non-schema namespace
             if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.
                                                            getNamespace()) &&
-                                            simpleTypeHasAsserts(memType)) {
+                                               simpleTypeHasAsserts(memType)) {
                 XSObjectList memberTypeFacets = memType.getMultiValueFacets();
                 for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < 
-                                              memberTypeFacets.getLength(); 
-                                              memberTypeFacetIdx++) {
+                                                  memberTypeFacets.getLength(); 
+                                                  memberTypeFacetIdx++) {
                     XSMultiValueFacet facet = (XSMultiValueFacet) 
                                    memberTypeFacets.item(memberTypeFacetIdx);
                     if (facet.getFacetKind() == XSSimpleTypeDefinition.
@@ -542,12 +547,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                             XSAssertImpl assertImpl = (XSAssertImpl) iter.
                                                                       next();
                             try {
-                               setValueOf$value(value, memType, null);
+                               setTypedValueFor$value(value, memType, null);
                                AssertionError assertError = evaluateAssertion(
-                                                                     element, 
-                                                                     assertImpl,
-                                                                     value, 
-                                                                     false, false);
+                                                                      element, 
+                                                                   assertImpl,
+                                                                        value, 
+                                                                 false, false);
                                if (assertError == null) {
                                    assertsSucceeded++;  
                                }
@@ -624,10 +629,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * Method to evaluate an assertion for the element.
      */
     private AssertionError evaluateAssertion(QName element,
-                                   XSAssertImpl assertImpl,
-                                   String value,
-                                   boolean xPathContextExists,
-                                   boolean isList) {
+                                             XSAssertImpl assertImpl,
+                                             String value,
+                                             boolean xPathContextExists,
+                                             boolean isList) {
         
         AssertionError assertionError = null;
         
@@ -685,64 +690,148 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Assign a "schema typed value" to the XPath2 "dynamic context" variable,
-     * $value.
+     * Find a "schema typed value" (of kind xs:anyAtomicType*) to assign to
+     * XPath2 context variable "$value".
      */
-    private void setValueOf$value(String value, 
-                                  XSSimpleTypeDefinition listOrUnionType, 
-                                  XSTypeDefinition attrType) throws Exception {
+    private void setTypedValueFor$value(String value, XSSimpleTypeDefinition 
+                                  listOrUnionType, XSTypeDefinition attrType)
+                                  throws Exception {
         
         // dummy short code initializer
         short xsdTypecode = -100;
         
         if (listOrUnionType != null) {
-            xsdTypecode = getXSDTypeCodeOf$Value(listOrUnionType);    
+            xsdTypecode = getXercesXSDTypeCodeFor$Value(listOrUnionType);
+            setValueOf$ValueForSTVarietyAtomic(value, xsdTypecode);
         }
         else {
            if (attrType != null) {
               // is value of an attribute
-               xsdTypecode = getXSDTypeCodeOf$Value(attrType);  
+              xsdTypecode = getXercesXSDTypeCodeFor$Value(attrType);
+              setValueOf$ValueForSTVarietyAtomic(value, xsdTypecode);
            }
            else {
               // is "simple type" value of an element
               PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl)
                                                    fCurrentAssertDomNode;
-              XSTypeDefinition typeDef = currentAssertPSVINode.getTypeDefinition();
-              if (typeDef instanceof XSComplexTypeDefinition) {
-                  XSComplexTypeDefinition cmplxTypeDef = (XSComplexTypeDefinition)
-                                                                       typeDef;
-                  if (cmplxTypeDef.getSimpleType() != null) {
-                      xsdTypecode = getXSDTypeCodeOf$Value(cmplxTypeDef.
-                                                               getSimpleType());   
-                  }
+              XSTypeDefinition typeDef = currentAssertPSVINode.
+                                                      getTypeDefinition();
+              if (typeDef instanceof XSComplexTypeDefinition && 
+                 ((XSComplexTypeDefinition) typeDef).getSimpleType() != null) {
+                  setValueOf$ValueForCTWithSimpleContent(value, 
+                                            (XSComplexTypeDefinition) typeDef);
+              }
+              else if (typeDef instanceof XSComplexTypeDefinition && 
+                      ((XSComplexTypeDefinition) typeDef).getSimpleType() == null) {
+                  // assign an empty XPath2 sequence to $value
+                  ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+                  fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
+                                                    processor.internal.types.QName(
+                                                              "value"), xpath2Seq); 
               }
               else {
-                  xsdTypecode = getXSDTypeCodeOf$Value(currentAssertPSVINode.
-                                               getTypeDefinition());
+                  xsdTypecode = getXercesXSDTypeCodeFor$Value(typeDef);
+                  setValueOf$ValueForSTVarietyAtomic(value, xsdTypecode);
               }
            }
         }
         
-        // determine the PsychoPath XML schema 'typed value', given the Xerces
-        // schema 'type code' as an API method argument(few of the input schema
-        // 'type code' constants are PsychoPath specific). 
-        AnyType psychoPathType = SchemaTypeValueFactory.newSchemaTypeValue
-                                                         (xsdTypecode, value);
-        
-        fDynamicContext.set_variable(
-               new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
-                       "value"), (AnyAtomicType) psychoPathType);
-        
-    } // setValueOf$value
+    } // setTypedValueFor$value
     
     
     /*
-       Find the built-in Xerces schema 'type code' for XPath2 variable,
-       $value. This function recursively searches the XML schema type
-       hierarchy navigating up the base types, to find the needed built-in
-       type.
+     * Set value of XPath2 context variable $value, when variety of it's
+     * schema type is simpleType -> 'atomic'.  
+     */
+    private void setValueOf$ValueForSTVarietyAtomic(String value, short 
+                                                              xsdTypecode) {
+        AnyType psychoPathType = SchemaTypeValueFactory.newSchemaTypeValue
+                                                         (xsdTypecode, value);
+        fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
+                                               processor.internal.types.QName(
+                                                     "value"), (AnyAtomicType) 
+                                                              psychoPathType);
+    } // setValueOf$ValueForSTVarietyAtomic
+
+
+    /*
+     * Set value of XPath2 context variable $value, if element has a complex
+     * type with simple content.
+     */
+    private void setValueOf$ValueForCTWithSimpleContent(String value, 
+                                            XSComplexTypeDefinition typeDef) {
+        
+        XSComplexTypeDefinition cmplxTypeDef = (XSComplexTypeDefinition) 
+                                                                      typeDef;
+        XSSimpleTypeDefinition complexTypeSimplContentType = cmplxTypeDef.
+                                                              getSimpleType();
+        if (complexTypeSimplContentType.getVariety() == XSSimpleTypeDefinition.
+                                                                VARIETY_LIST) {
+            // simple content type has variety xs:list
+            XSSimpleTypeDefinition listItemType = complexTypeSimplContentType.
+                                                                 getItemType();
+            // split the "string value" of list contents, into non white-space
+            // tokens.
+            String[] values = value.split("\\s+");
+            
+            // construct an XPath2 sequence, for assigning to context variable,
+            // $value. the sequence has type annotation xs:anyAtomicType*.
+            ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+            if ((listItemType.getMemberTypes()).getLength() > 0) {
+               // itemType of xs:list has variety 'union'. here list items may
+               // have different types, which are determined below.
+               for (int valIdx = 0; valIdx < values.length; valIdx++) {
+                   XSSimpleTypeDefinition listItemTypeForUnion = 
+                                         getActualListItemTypeForVarietyUnion
+                                               (listItemType.getMemberTypes(), 
+                                                              values[valIdx]);
+                   xpath2Seq.add(SchemaTypeValueFactory.newSchemaTypeValue
+                                                          (listItemTypeForUnion.
+                                              getBuiltInKind(),values[valIdx]));
+               }                                  
+            }
+            else {
+               // every list item has a same type (the itemType of
+               // xs:list).
+               for (int valIdx = 0; valIdx < values.length; valIdx++) {
+                   xpath2Seq.add(SchemaTypeValueFactory.newSchemaTypeValue
+                                               (listItemType.getBuiltInKind(), 
+                                                             values[valIdx])); 
+               }                                  
+            }
+
+            // assign XPath2 sequence to variable $value
+            fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
+                                              processor.internal.types.QName(
+                                                        "value"), xpath2Seq);
+        }
+        else if (complexTypeSimplContentType.getVariety() == 
+                                        XSSimpleTypeDefinition.VARIETY_UNION) {
+            // simple content type has variety xs:union
+            XSSimpleTypeDefinition simpleContentTypeForUnion = 
+                                           getActualListItemTypeForVarietyUnion
+                                 (complexTypeSimplContentType.getMemberTypes(),
+                                                                       value);
+            fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.
+                                      processor.internal.types.QName("value"), 
+                                    SchemaTypeValueFactory.newSchemaTypeValue
+                         (simpleContentTypeForUnion.getBuiltInKind(), value));
+        }
+        else {
+            // simple content type has variety atomic
+            setValueOf$ValueForSTVarietyAtomic(value, getXercesXSDTypeCodeFor$Value
+                                              (cmplxTypeDef.getSimpleType()));
+        }
+          
+    } // setValueOf$ValueForCTWithSimpleContent
+    
+    
+    /*
+       Find the built-in Xerces schema 'type code' for XPath2 variable, $value.
+       This function recursively searches the XML schema type hierarchy
+       navigating up the base types, to find the needed built-in type.
     */
-    private short getXSDTypeCodeOf$Value(XSTypeDefinition elementType) {
+    private short getXercesXSDTypeCodeFor$Value(XSTypeDefinition elementType) {
             
       if (Constants.NS_XMLSCHEMA.equals(elementType.getNamespace())) {
          short typeCode = -100; // dummy initializer
@@ -765,10 +854,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                             elementType).getBuiltInKind();    
       }
       else {
-         return getXSDTypeCodeOf$Value(elementType.getBaseType()); 
+         return getXercesXSDTypeCodeFor$Value(elementType.getBaseType()); 
       }
       
-    } // getXSDTypeCodeOf$Value
+    } // getXercesXSDTypeCodeFor$Value
     
     
     /*
@@ -838,7 +927,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
         XSSimpleTypeDefinition simpleTypeDefn = null;
         
-        // Inspecting the member types of union in sequence, to find that which
+        // Inspecting the member types of union in order, to find that which
         // schema type can successfully validate an atomic value first.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
                                                             memTypeIdx++) {
@@ -884,7 +973,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * An object to store assertion error details.
+     * Class to store 'assertion evaluation' error details.
      */
     class AssertionError {
         
