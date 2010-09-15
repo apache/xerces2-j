@@ -65,15 +65,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * An implementation of the XPath interface, for XML Schema 1.1 'assertions'
- * evaluation. This class interfaces with the 'Eclipse/PsychoPath XPath 2.0'
- * engine.
+ * Class implementing an XPath interface, for XML Schema 1.1 "assertions"
+ * evaluation. This class interfaces with the "Eclipse/PsychoPath XPath 2.0"
+ * engine for XPath expression evaluation, for XML Schema assertions.
  * 
- * The class here constructs Xerces PSVI enabled DOM trees (for typed XDM
- * instance support) for assertions evaluation, from XNI event calls. The DOM
- * trees constructed in this class, are mapped by PsychoPath engine to an
- * 'XPath 2.0' XDM representation. XML Schema assertions are evaluated on these
- * XPath tree instances, in a bottom up fashion.
+ * This class constructs Xerces PSVI enabled DOM trees -- "on which PsychoPath
+ * XPath engine operates" (for typed XDM instance support) from XNI event
+ * calls. XML Schema assertions are evaluated on these XPath tree instances,
+ * in a bottom up fashion.
  * 
  * @xerces.internal
  * 
@@ -107,11 +106,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // itself.
     XMLSchemaValidator fValidator = null;
     
-    // parameters to pass to PsychoPath engine (like, the namespace bindings) 
+    // parameters to pass to PsychoPath engine (like, the XML namespace
+    // bindings).
     Map fAssertParams = null;
     
     // an instance variable to track the name of an attribute currently
-    // processed for assertions.
+    // been processed for assertions.
     String fAttrName = null;
 
     
@@ -149,7 +149,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      *       org.apache.xerces.xni.Augmentations)
      */
     public void startElement(QName element, XMLAttributes attributes,
-                                              Augmentations augs) {
+                                            Augmentations augs) {
         
         if (fCurrentAssertDomNode == null) {
            fCurrentAssertDomNode = new PSVIElementNSImpl((CoreDocumentImpl)
@@ -225,7 +225,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             
             if (!fAssertRootStack.empty() && (fCurrentAssertDomNode == 
                                              fAssertRootStack.peek())) {               
-                 // get XSModel                
+                 // get XSModel instance                
                  fSchema =  ((PSVIElementNSImpl) fCurrentAssertDomNode).
                                                  getSchemaInformation();
                  
@@ -256,19 +256,19 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Method to evaluate all of XML schema 1.1 assertions for an element tree.
      * This is the root method, which evaluates all XML schema assertions, in
-     * a given XML instance validation episode.
+     * a single XML instance validation episode.
      */
     private void processAllAssertionsOnElement(QName element,
                                                XSSimpleTypeDefinition itemType,
                                                XSObjectList memberTypes,
                                                List assertions, 
                                                ElementPSVI elemPSVI)
-                                    throws Exception {
+                                               throws Exception {
          
          // initialize the XPath engine
          initXPathProcessor();
          
-         // determine string value of variable, $value
+         // determine "string value" of XPath2 context variable, $value
          String value = getValueOf$Value();
 
          // evaluate assertions
@@ -286,35 +286,37 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
 
     /*
-     * Determine value of XPath2 context variable $value.
+     * Determine "string value" of XPath2 context variable $value.
      */
     private String getValueOf$Value() throws DOMException {
         
-        String value = "";
-
-        NodeList childList = fCurrentAssertDomNode.getChildNodes();         
-        
-        int textChildCount = 0;
+        int textChildCount = 0;        
+        // we are only interested in text & element nodes. Store count of them
+        // in this variable.
         int effectiveChildCount = 0;
         
         // there could be adjacent text nodes in a DOM tree. merge them to 
         // get the value.
+        NodeList childList = fCurrentAssertDomNode.getChildNodes();
+        StringBuffer textValueContents = new StringBuffer();
         for (int childNodeIndex = 0; childNodeIndex < childList.getLength();
                                                          childNodeIndex++) {
             Node node = childList.item(childNodeIndex);
             if (node.getNodeType() == Node.TEXT_NODE) {
                 textChildCount++;
                 effectiveChildCount++;
-                value = value + node.getNodeValue();
+                textValueContents.append(node.getNodeValue());
             }
             else if (node.getNodeType() == Node.ELEMENT_NODE) {
                 effectiveChildCount++;  
             }
         }
+        
+        String value = textValueContents.toString(); 
 
         if (textChildCount != effectiveChildCount) {
-            // this means, that the DOM tree we are inspecting, has
-            // mixed/complex content.
+            // this means that the DOM tree we are inspecting, has
+            // "mixed/element only" content.
             value = null;  
         }
         
@@ -477,7 +479,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // only 1 error message is reported for assertion failures on
             // simpleType -> union, since it is hard (perhaps impossible?)
             // to determine statically that what all assertions can cause 
-            // validation failure, when participating in an union.
+            // validation failure, when participating in an XML schema union.
             if (isValidationFailedForUnion) {
                  fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", 
                               new Object[] { element.rawname, value } );   
@@ -565,7 +567,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                             catch(Exception ex) {
                                // An exception may occur if for example, a typed
                                // value cannot be constructed by PsychoPath engine
-                               // for a given string value (say a value '5' was 
+                               // for a given "string value" (say a value '5' was 
                                // attempted to be formed as a typed value xs:date).                               
                                // it's useful to report warning ... TO DO
                             }
@@ -628,7 +630,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
 
     /*
-     * Method to evaluate an assertion for the element.
+     * Method to evaluate an assertion instance for an XML element.
      */
     private AssertionError evaluateAssertion(QName element,
                                              XSAssertImpl assertImpl,
@@ -693,7 +695,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     /*
      * Find a "schema typed value" (of kind xs:anyAtomicType*) to assign to
-     * XPath2 context variable "$value".
+     * XPath2 context variable $value.
      */
     private void setTypedValueFor$value(String value, XSSimpleTypeDefinition 
                                   listOrUnionType, XSTypeDefinition attrType)
@@ -865,7 +867,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Construct an PsychoPath XPath2 'result sequence', given a list of XDM
+     * Construct an PsychoPath XPath2 "result sequence", given a list of XDM
      * items as input.
      */
     private ResultSequence getXPath2ResultSequence(List xdmItems) {
@@ -873,7 +875,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
         
         for (Iterator iter = xdmItems.iterator(); iter.hasNext(); ) {
-            xpath2Seq.add((AnyType)iter.next()); 
+            xpath2Seq.add((AnyType) iter.next()); 
         }
         
         return xpath2Seq;
@@ -939,8 +941,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Find the actual schema type of 'list item' instance, if the
-     * 'item type' of list has variety union. 
+     * Find the actual schema type of "list item" instance, if the
+     * "item type" of list has variety union. 
      */
     private XSSimpleTypeDefinition getActualListItemTypeForVarietyUnion
                                                     (XSObjectList memberTypes,
@@ -967,7 +969,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Determine if a 'string value' is valid for a given simpleType
+     * Determine if a "string value" is valid for a given simpleType
      * definition. Using Xerces 'XSSimpleType.validate' API for this need.
      */
     private boolean isValueValidForASimpleType(String value, XSSimpleType 
@@ -980,7 +982,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             ValidatedInfo validatedInfo = new ValidatedInfo();
             ValidationContext validationState = new ValidationState();
             
-            // attempt to validate the 'string value' with a simpleType
+            // attempt to validate the "string value" with a simpleType
             // instance.
             simplType.validate(value, validationState, validatedInfo);
         } 
@@ -994,7 +996,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Class to store 'assertion evaluation' error details.
+     * Class to store "assertion evaluation" error details.
      */
     class AssertionError {
         
