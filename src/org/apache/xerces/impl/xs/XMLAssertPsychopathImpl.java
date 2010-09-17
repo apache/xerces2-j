@@ -312,7 +312,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             }
         }
         
-        String value = textValueContents.toString(); 
+        String value = (textValueContents.toString()).trim(); 
 
         if (textChildCount != effectiveChildCount) {
             // this means that the DOM tree we are inspecting, has
