@@ -57,9 +57,9 @@ Authors:
     <property name='parser.Name' value='Xerces-J'/>
     <property name='parser.name' value='xerces-j'/>
     <property name='parser.shortname' value='xerces'/>
-    <property name='parser.Version' value='2.10.0-xml-schema-1.1-beta'/>
-    <property name='parser.version' value='2.10.0-xml-schema-1.1-beta'/>
-    <property name='parser_version' value='2_10_0-xml-schema-1.1-beta'/>
+    <property name='parser.Version' value='2.11.0-xml-schema-1.1-beta'/>
+    <property name='parser.version' value='2.11.0-xml-schema-1.1-beta'/>
+    <property name='parser_version' value='2_11_0-xml-schema-1.1-beta'/>
 
     <property name='deprecatedjar.parser' value='xerces.jar'/>
     <property name='jar.apis' value='xml-apis.jar'/>
