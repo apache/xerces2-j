@@ -43,6 +43,7 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
@@ -69,10 +70,10 @@ import org.w3c.dom.NodeList;
  * evaluation. This class interfaces with the "Eclipse/PsychoPath XPath 2.0"
  * engine for XPath expression evaluation, for XML Schema assertions.
  * 
- * This class constructs Xerces PSVI enabled DOM trees -- "on which PsychoPath
- * XPath engine operates" (for typed XDM instance support) from XNI event
- * calls. XML Schema assertions are evaluated on these XPath tree instances,
- * in a bottom up fashion.
+ * The class here constructs Xerces PSVI enabled DOM trees -- "on which
+ * PsychoPath XPath engine operates" (for typed XDM instance support) from
+ * XNI event calls. XML Schema assertions are evaluated on these XPath tree
+ * instances, in a bottom up fashion.
  * 
  * @xerces.internal
  * 
@@ -269,7 +270,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
          initXPathProcessor();
          
          // determine "string value" of XPath2 context variable, $value
-         String value = getValueOf$Value();
+         String value = getStringValueOf$Value(elemPSVI);
 
          // evaluate assertions
          if (assertions instanceof XSObjectList) {
@@ -288,7 +289,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Determine "string value" of XPath2 context variable $value.
      */
-    private String getValueOf$Value() throws DOMException {
+    private String getStringValueOf$Value(ElementPSVI pElemPSVI) throws 
+                                                          DOMException {
         
         int textChildCount = 0;        
         // we are only interested in text & element nodes. Store count of them
@@ -312,17 +314,36 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             }
         }
         
-        String value = (textValueContents.toString()).trim(); 
-
-        if (textChildCount != effectiveChildCount) {
-            // this means that the DOM tree we are inspecting, has
-            // "mixed/element only" content.
-            value = null;  
+        String value = "";
+        
+        if (textChildCount == effectiveChildCount) {
+            // The DOM tree we are inspecting has simple content. Therefore
+            // we can find the desired string value. 
+            XSElementDeclaration elemDecl = pElemPSVI.getElementDeclaration();
+            if ((elemDecl.getTypeDefinition()).derivedFrom(SchemaSymbols.
+                                                          URI_SCHEMAFORSCHEMA,
+                                                  SchemaSymbols.ATTVAL_STRING,
+                                        XSConstants.DERIVATION_RESTRICTION)) {
+                // if element's schema type is derived by restriction from
+                // xs:string, white-space normalization is not needed for the
+                // string value for context variable $value.
+                value = textValueContents.toString();  
+            }
+            else {
+                // white-space normalization is needed for the string value of
+                // $value in case of derivation from non xs:string atomic types.
+                value = (textValueContents.toString()).trim();
+            }    
+        }
+        else {
+            // The DOM tree we are inspecting, has "mixed/element only"
+            // content.
+            value = null; 
         }
         
         return value;
         
-    } // getValueOf$Value
+    } // getStringValueOf$Value
 
 
     /*
