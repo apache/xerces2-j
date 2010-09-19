@@ -68,7 +68,7 @@ import org.w3c.dom.NodeList;
 /**
  * Class implementing an XPath interface, for XML Schema 1.1 "assertions"
  * evaluation. This class interfaces with the "Eclipse/PsychoPath XPath 2.0"
- * engine for XPath expression evaluation, for XML Schema assertions.
+ * engine for XPath expression evaluations, for XML Schema assertions.
  * 
  * The class here constructs Xerces PSVI enabled DOM trees -- "on which
  * PsychoPath XPath engine operates" (for typed XDM instance support) from
@@ -944,10 +944,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
               message = message + ".";    
            }
            if (key.equals("cvc-assertion.4.3.15.3")) {
-              message = "Assertion failure (undefined context). " + message;   
+              message = "Assertion failed (undefined context) for schema type '"
+                         + typeString + "'. " + message;   
            }
            else {
-              message = "Assertion failure. " + message; 
+              message = "Assertion failed for schema type '" + typeString + "'. "
+                         + message; 
            }
            fValidator.reportSchemaError("cvc-assertion.failure", 
                                new Object[] { message, listAssertErrMessage } );    
