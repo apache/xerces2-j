@@ -167,10 +167,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         for (int attIndex = 0; attIndex < attributes.getLength(); attIndex++) {
             String attrUri = attributes.getURI(attIndex);
             String attQName = attributes.getQName(attIndex);
-            String attValue = attributes.getValue(attIndex);
+            String attrLocalName = attributes.getLocalName(attIndex);
+            String attValue = attributes.getValue(attIndex);             
             
             PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)
-                                          fAssertDocument, attrUri, attQName);
+                                            fAssertDocument, attrUri,
+                                            attQName, attrLocalName);
             attrNode.setNodeValue(attValue);
             
             // set PSVI information for the attribute
