@@ -83,6 +83,7 @@ Authors:
     <!-- changed made to synchronize with a patch from Sam Ruby (<rubys@apache.org>) to Xerces1
     <property name="build.compiler" value="classic"/> -->
     <property name="debug" value="off"/>
+    <property name="debuglevel" value="lines,source"/>
     <property name="optimize" value="on"/>
     <property name="deprecation" value="off"/>
   	
@@ -291,6 +292,7 @@ Authors:
            target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
            debug="${debug}"
+           debuglevel="${debuglevel}"
            deprecation="${deprecation}"
            optimize="${optimize}"
            includeAntRuntime="false"
@@ -358,6 +360,7 @@ Authors:
            target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
            debug="${debug}"
+           debuglevel="${debuglevel}"
            includeAntRuntime="false"
            includeJavaRuntime="true"/>
   </target>
@@ -377,6 +380,7 @@ Authors:
            target="${javac.target}"
            classpath="${tools.dir}/${jar.apis}:${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"
+           debuglevel="${debuglevel}"
            includeAntRuntime="false"
            includeJavaRuntime="true"/>
   </target>
@@ -998,6 +1002,7 @@ Authors:
            source="${javac.source}"
            target="${javac.target}"
            debug="${debug}"
+           debuglevel="${debuglevel}"
            deprecation="${deprecation}"
            optimize="${optimize}"
            includeAntRuntime="false"
@@ -1297,6 +1302,7 @@ Authors:
            target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
            debug="${debug}"
+           debuglevel="${debuglevel}"
            deprecation="${deprecation}"
            optimize="${optimize}"
            includeAntRuntime="false"
@@ -1447,6 +1453,7 @@ Authors:
                target="${javac.target}"
                classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
                debug="${debug}"
+               debuglevel="${debuglevel}"
                deprecation="${deprecation}"
                optimize="${optimize}"
                includeAntRuntime="false"
@@ -1520,6 +1527,7 @@ Authors:
            target="${javac.target}"
            classpath="${build.dir}/classes:${tools.dir}/${jar.ant}:${tools.dir}/${jar.ant.nodeps}"
            debug="${debug}"
+           debuglevel="${debuglevel}"
            deprecation="${deprecation}"
            optimize="${optimize}"
            includeAntRuntime="false"
