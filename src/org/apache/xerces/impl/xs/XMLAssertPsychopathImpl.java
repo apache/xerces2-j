@@ -64,6 +64,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * Class implementing an XPath interface, for XML Schema 1.1 "assertions"
@@ -114,6 +118,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // an instance variable to track the name of an attribute currently
     // been processed for assertions.
     String fAttrName = null;
+    
+    // an instance variable, used for optional debugging of assertion
+    // evaluations.
+    String fAssertDebug = null;
 
     
     /*
@@ -124,7 +132,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         this.fAssertDocument = new PSVIDocumentImpl();        
         this.fAssertRootStack = new Stack();
         this.fAssertListStack = new Stack();
-        this.fAssertParams = assertParams;        
+        this.fAssertParams = assertParams;
+        this.fAssertDebug = System.getProperty
+                                  ("org.apache.xerces.schema11.assertDebug");
     }
     
 
@@ -238,7 +248,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  List assertions = (List) fAssertListStack.pop(); 
                  Boolean atomicValueValidity = (Boolean) augs.getItem
                                                  ("ATOMIC_VALUE_VALIDITY");
-                 if (atomicValueValidity.booleanValue()) {
+                 if (atomicValueValidity.booleanValue()) {                    
+                    // an optional debugging call                    
+                    if ("true".equals(fAssertDebug)) {
+                       debugAsserts();
+                    }
+                    
                     // depending on simple content's validity status from
                     // XMLSchemaValidator, process XML schema assertions.
                     processAllAssertionsOnElement(element, itemType, 
@@ -254,6 +269,32 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
         
     } // endElement
+
+    
+    /*
+     * Debug assertion calls. For example, serialize assertion DOM trees. 
+     */
+    private void debugAsserts() {
+        
+        DOMImplementationRegistry registry = null;
+        try {
+            registry = DOMImplementationRegistry.newInstance();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        DOMImplementationLS impl =  (DOMImplementationLS) registry.
+                                                  getDOMImplementation("LS");
+        LSSerializer writer = impl.createLSSerializer();
+        writer.getDomConfig().setParameter("format-pretty-print", 
+                                                               Boolean.TRUE);                  
+        LSOutput output = impl.createLSOutput();
+        output.setEncoding("UTF-8");
+        output.setByteStream(System.out);
+        System.out.println("<- assert DOM Tree ->");
+        writer.write(fCurrentAssertDomNode, output);
+        System.out.println("<--->");
+        
+    } // debugAsserts
     
 
     /*
