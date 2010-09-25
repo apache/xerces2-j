@@ -250,7 +250,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                  ("ATOMIC_VALUE_VALIDITY");
                  if (atomicValueValidity.booleanValue()) {                    
                     // an optional debugging call                    
-                    if ("true".equals(fAssertDebug)) {
+                    if ("true".equals(fAssertDebug) && assertions.size() > 0) {
                        debugAsserts();
                     }
                     
