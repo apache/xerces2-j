@@ -27,6 +27,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
@@ -510,11 +511,13 @@ abstract class XSDAbstractTraverser {
                                                            annotations,
                                                            fSchemaHandler);
                     Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
-                                           schemaDoc.fNamespaceSupport), assertImpl);                 
+                                             new SchemaNamespaceSupport(schemaDoc.
+                                             fNamespaceSupport)), assertImpl);                 
                     assertImpl.setAssertKind(XSConstants.ASSERTION_FACET);
                     assertImpl.setTest(testExpr);
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
-                    assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);
+                    assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport
+                                                     (schemaDoc.fNamespaceSupport));
                     String assertMessage = content.getAttributeNS(
                                                 SchemaSymbols.URI_XERCES_EXTENSIONS,
                                                 SchemaSymbols.ATT_ASSERT_MESSAGE);

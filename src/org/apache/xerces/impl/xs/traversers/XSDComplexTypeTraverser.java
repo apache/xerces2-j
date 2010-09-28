@@ -25,6 +25,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
@@ -1358,54 +1359,68 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         }
     }
+    
 
     /*
-     * Find all assertions up in the type hierarchy, and add them to the list
+     * Find all assertions up in schema type hierarchy, and add them to the list
      * of assertions to be processed.
      */
-    private void addAssertsFromBaseTypes(XSTypeDefinition baseValidator) {        
-        if (baseValidator != null) {
-            if (baseValidator instanceof XSComplexTypeDefinition) {
-               XSObjectList assertList = ((XSComplexTypeDefinition) baseValidator)
+    private void addAssertsFromBaseTypes(XSTypeDefinition baseSchemaType) {
+        
+        if (baseSchemaType != null) {
+            if (baseSchemaType instanceof XSComplexTypeDefinition) {
+               // if schema type is a 'complex type'
+               XSObjectList assertList = ((XSComplexTypeDefinition) baseSchemaType)
                                                  .getAssertions();
-               for (int i = 0; i < assertList.size(); i++) {
+               for (int assertLstIdx = 0; assertLstIdx < assertList.size(); 
+                                                                 assertLstIdx++) {
                   // add assertion to the list, only if it's already not present
-                  if (!assertExists((XSAssertImpl) assertList.get(i))) {
-                    addAssertion((XSAssertImpl) assertList.get(i));
+                  if (!assertExists((XSAssertImpl) assertList.get(assertLstIdx))) {
+                     addAssertion((XSAssertImpl) assertList.get(assertLstIdx));
                   }
                }
             }
-            else if (baseValidator instanceof XSSimpleTypeDefinition) {
-                XSObjectList facets = ((XSSimpleTypeDefinition)baseValidator).getMultiValueFacets();
-                for (int i = 0; i < facets.getLength(); i++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(i);
+            else if (baseSchemaType instanceof XSSimpleTypeDefinition) {
+                // if schema type is a 'simple type'
+                XSObjectList facets = ((XSSimpleTypeDefinition) baseSchemaType).
+                                                             getMultiValueFacets();
+                for (int facetIdx = 0; facetIdx < facets.getLength(); facetIdx++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.
+                                                                     item(facetIdx);
                     if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
-                       Vector assertionFacets = facet.getAsserts();
-                       for (int j = 0; j < assertionFacets.size(); j++) {
-                          XSAssertImpl assertImpl = (XSAssertImpl) assertionFacets.get(j);
-                          addAssertion(assertImpl);
-                       }
-                       break;
+                        Vector assertionFacets = facet.getAsserts();
+                        for (int j = 0; j < assertionFacets.size(); j++) {
+                           XSAssertImpl assertImpl = (XSAssertImpl) 
+                                                            assertionFacets.get(j);
+                           addAssertion(assertImpl);
+                        }
+                       
+                        // among the facet list, there could be only one
+                        // assertion facet (which is multi-valued). break from
+                        // the loop.
+                        break;
+                       
                     }
                 }
             }
             
-            // invoke the method recursively. go up the type hierarchy.
-            XSTypeDefinition ancestorType = baseValidator.getBaseType();
-            if (ancestorType != null && 
-                           !(ancestorType.getName().equals("anyType") ||
-                                ancestorType.derivedFrom(Constants.NS_XMLSCHEMA,
-                                "anyAtomicType", XSConstants.DERIVATION_RESTRICTION))) {              
+            // invoke the method recursively (traverse up the type hierarchy)
+            XSTypeDefinition ancestorType = baseSchemaType.getBaseType();
+            if (ancestorType != null && !(ancestorType.getName().equals(
+                "anyType") || ancestorType.derivedFrom(Constants.NS_XMLSCHEMA,
+                "anyAtomicType", XSConstants.DERIVATION_RESTRICTION))) {              
                addAssertsFromBaseTypes(ancestorType);
             }
-        } 
-    } // end of method, getAssertsFromBaseTypes
+        }
+        
+    } // addAssertsFromBaseTypes
     
     
     /*
-     * Check if an assertion already exists in the buffer
+     * Check if an assertion already exists in the buffer.
      */
     private boolean assertExists(XSAssertImpl assertVal) {
+        
       boolean assertExists = false;      
       
       if (fAssertions != null) {
@@ -1418,7 +1433,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
       }
       
       return assertExists;
-    } // end of method, assertExists
+      
+    } // assertExists
     
 
     private void processComplexContent(Element complexContentChild,
@@ -1620,21 +1636,28 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             return false;
     }
 
+    /*
+     * Check if a schema instruction is an 'assert' instruction.
+     */
     private boolean isAssert(Element e) {
-        return (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && DOMUtil.getLocalName(e).equals(SchemaSymbols.ELT_ASSERT));
+        
+        return (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1
+                && DOMUtil.getLocalName(e).equals(SchemaSymbols.ELT_ASSERT));
+        
     }
 
     /*
-     * traversal support for XML Schema 1.1, 'assertions'
+     * Traversal support for XML Schema 1.1, 'assertions'.
      */
-    private void traverseAsserts(Element assertElement,
-            XSDocumentInfo schemaDoc, SchemaGrammar grammar,
-            XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
+    private void traverseAsserts(Element assertElement, XSDocumentInfo schemaDoc,
+                                 SchemaGrammar grammar, XSComplexTypeDecl 
+                                 enclosingCT) throws ComplexTypeRecoverableError {
 
         Object[] attrValues = fAttrChecker.checkAttributes(assertElement,
                                                            false, schemaDoc);
         String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
-        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.
+                                                           ATTIDX_XPATHDEFAULTNS];
         if (xpathDefaultNamespace == null) {
            xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;    
         }
@@ -1672,19 +1695,22 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 annotations = new XSObjectListImpl();
                 ((XSObjectListImpl) annotations).addXSObject(annotation);
             } else {
-                // if no annotations are present add an empty list to the assertion
+                // if no annotations are present assign an empty list, for
+                // annotations.
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
             
             // create an assertion object            
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT,
-                                                    annotations,
-                                                    fSchemaHandler);
+                                                       annotations,
+                                                       fSchemaHandler);
             Test testExpr = new Test(new XPath20Assert(test, fSymbolTable,
-                                      schemaDoc.fNamespaceSupport), assertImpl);
+                                     new SchemaNamespaceSupport(schemaDoc.
+                                     fNamespaceSupport)), assertImpl);
             assertImpl.setTest(testExpr);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
-            assertImpl.setXPath2NamespaceContext(schemaDoc.fNamespaceSupport);
+            assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport
+                                            (schemaDoc.fNamespaceSupport));
             String assertMessage = assertElement.getAttributeNS(
                                           SchemaSymbols.URI_XERCES_EXTENSIONS, 
                                           SchemaSymbols.ATT_ASSERT_MESSAGE);
@@ -1703,7 +1729,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     // none is found
                     traverseAsserts(sibling, schemaDoc, grammar, enclosingCT);
                 } else {
-                    // a non assert element after assert is an error
+                    // a non-assert element after assert is an error
                     fAttrChecker.returnAttrArray(attrValues, schemaDoc);
                     throw new ComplexTypeRecoverableError(
                             "s4s-elt-invalid-content.1", new Object[] { fName,
@@ -1711,13 +1737,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 }
             }
         } else {
-            // 'test' attribute is mandatory in assert element
+            // 'test' attribute is mandatory in an assert element
             reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil
                     .getLocalName(assertElement) }, assertElement);
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-    }
+        
+    } // traverseAsserts
 
     /*
      * Generate a name for an anonymous type
