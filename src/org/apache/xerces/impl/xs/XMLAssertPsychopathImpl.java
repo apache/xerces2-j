@@ -249,11 +249,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  Boolean atomicValueValidity = (Boolean) augs.getItem
                                                  ("ATOMIC_VALUE_VALIDITY");
                  if (atomicValueValidity.booleanValue()) {                    
-                    // an optional debugging call                    
-                    if ("true".equals(fAssertDebug) && assertions.size() > 0) {
-                       debugAsserts();
-                    }
-                    
                     // depending on simple content's validity status from
                     // XMLSchemaValidator, process XML schema assertions.
                     processAllAssertionsOnElement(element, itemType, 
@@ -269,32 +264,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
         
     } // endElement
-
-    
-    /*
-     * Debug assertion calls. For example, serialize assertion DOM trees. 
-     */
-    private void debugAsserts() {
-        
-        DOMImplementationRegistry registry = null;
-        try {
-            registry = DOMImplementationRegistry.newInstance();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        DOMImplementationLS impl =  (DOMImplementationLS) registry.
-                                                  getDOMImplementation("LS");
-        LSSerializer writer = impl.createLSSerializer();
-        writer.getDomConfig().setParameter("format-pretty-print", 
-                                                               Boolean.TRUE);                  
-        LSOutput output = impl.createLSOutput();
-        output.setEncoding("UTF-8");
-        output.setByteStream(System.out);
-        System.out.println("<- assert DOM Tree ->");
-        writer.write(fCurrentAssertDomNode, output);
-        System.out.println("<--->");
-        
-    } // debugAsserts
     
 
     /*
