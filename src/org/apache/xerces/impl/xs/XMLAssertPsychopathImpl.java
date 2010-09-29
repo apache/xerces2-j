@@ -64,10 +64,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
 
 /**
  * Class implementing an XPath interface, for XML Schema 1.1 "assertions"
@@ -118,10 +114,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // an instance variable to track the name of an attribute currently
     // been processed for assertions.
     String fAttrName = null;
-    
-    // an instance variable, used for optional debugging of assertion
-    // evaluations.
-    String fAssertDebug = null;
 
     
     /*
@@ -133,8 +125,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         this.fAssertRootStack = new Stack();
         this.fAssertListStack = new Stack();
         this.fAssertParams = assertParams;
-        this.fAssertDebug = System.getProperty
-                                  ("org.apache.xerces.schema11.assertDebug");
     }
     
 
@@ -606,7 +596,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                             }
                         }
                         if (assertsSucceeded == assertFacets.size()) {
-                            // all assertions on a 'union member type' have 
+                            // all assertions on a 'union' member type have 
                             // evaluated to 'true', therefore validation with
                             // union has succeeded wrt assertions.
                             return false;  
@@ -1004,8 +994,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
     
     /*
-     * Determine if a "string value" is valid for a given simpleType
-     * definition. Using Xerces 'XSSimpleType.validate' API for this need.
+     * Determine if a lexical "string value" conforms to a given schema
+     * simpleType definition. Using Xerces API 'XSSimpleType.validate'
+     * for this need.
      */
     private boolean isValueValidForASimpleType(String value, XSSimpleType 
                                                              simplType) {
