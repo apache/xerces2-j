@@ -110,7 +110,11 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     private XSDecimal fSupportedVersion;
     private int fIgnoreDepth = -1;
     private boolean fPerformConditionalInclusion = true; //REVISIT: use feature
-    private SchemaVersioningHelper schemaVersioningHelper = new SchemaVersioningHelper(); 
+    
+    // instance variable to support XML Schema 1.1 conditional include
+    // processing. 
+    private SchemaConditionalIncludeHelper schemaCondlInclHelper = new 
+                                              SchemaConditionalIncludeHelper(); 
     
     //
     // XMLDocumentHandler methods
@@ -325,7 +329,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             if (fDepth > -1) {
                 // perform conditional exclusion checks for schema versioning
                 // namespace.
-                boolean ignoreElement = checkVersionControlAttributes(element, attributes);
+                boolean ignoreElement = checkVersionControlAttributes(element,
+                                                                   attributes);
                 if (fIgnoreDepth > -1) {
                     if (ignoreElement) {
                        fIgnoreDepth--;   
@@ -603,13 +608,12 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     
     
     /*
-     *  Method to check if any attributes of schema versioning namespace should
-     *  cause exclusion of a schema component along with it's descendant
+     *  Method to check if any of attributes of schema versioning namespace
+     *  should cause exclusion of a schema component along with it's descendant
      *  instructions.
-     *  
-     *  ref: http://www.w3.org/TR/xmlschema11-1/#cip
      */
-    private boolean checkVersionControlAttributes(QName element, XMLAttributes attributes) {             
+    private boolean checkVersionControlAttributes(QName element, 
+                                                  XMLAttributes attributes) {             
         
         boolean ignoreSchemaComponent = false;
 
@@ -621,7 +625,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         List facetAvailableList = null;
         List facetUnavailableList = null;
         
-        // iterate all attributes of an element, and get values of schema versioning attributes
+        // iterate all attributes of an element, and get values of schema
+        // versioning attributes.
         final int length = attributes.getLength();
         
         for (int attrIdx = 0; attrIdx < length; ++attrIdx) {
@@ -638,8 +643,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                 "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName, nfe.getMessage()},
-                                XMLErrorReporter.SEVERITY_ERROR);
+                                new Object[] {element.localpart, attrLocalName,
+                                nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
@@ -649,21 +654,23 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                 "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName, nfe.getMessage()},
-                                XMLErrorReporter.SEVERITY_ERROR);
+                                new Object[] {element.localpart, attrLocalName,
+                                nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
+                // '\\s+' is regex denoting longest sequence of consecutive
+                // white-space characters.
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
-                   typeAvailableList = tokenizeString(attrValue, "\\s");
+                   typeAvailableList = tokenizeString(attrValue, "\\s+");
                 }
                 else if (SchemaSymbols.ATT_TYPEUNAVAILABLE.equals(attrLocalName)) {
-                    typeUnavailableList = tokenizeString(attrValue, "\\s");
+                    typeUnavailableList = tokenizeString(attrValue, "\\s+");
                 }
                 else if (SchemaSymbols.ATT_FACETAVAILABLE.equals(attrLocalName)) {
-                    facetAvailableList = tokenizeString(attrValue, "\\s");
+                    facetAvailableList = tokenizeString(attrValue, "\\s+");
                 }
                 else if (SchemaSymbols.ATT_FACETUNAVAILABLE.equals(attrLocalName)) {
-                    facetUnavailableList = tokenizeString(attrValue, "\\s");
+                    facetUnavailableList = tokenizeString(attrValue, "\\s+");
                 }
                 else {
                     // report a warning
@@ -675,7 +682,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
             }
             
-        } // end attributes iteration
+        }
                              
         // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable,
         // vc:typeUnavailable, vc:facetAvailable & vc:facetUnavailable.
@@ -713,7 +720,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         
         return ignoreSchemaComponent;
         
-    } //checkSupportedVersion
+    } // checkVersionControlAttributes
     
     
     /* 
@@ -722,8 +729,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * on the values of vc:minVersion & vc:maxVersion attributes from schema
      * versioning namespace. 
     */
-    public boolean schemaVersionAllowsExclude(BigDecimal minVer,
-                                              BigDecimal maxVer) {
+    private boolean schemaVersionAllowsExclude(BigDecimal minVer,
+                                               BigDecimal maxVer) {
         
         boolean minMaxSchemaVerAllowsIgnore = false;
         
@@ -732,7 +739,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         // Here value of "V" is an instance variable fSupportedVersion.
         
         if (minVer != null && maxVer != null) {
-           // if both vc:minVersion & vc:maxVersion attributes are present on a schema component
+           // if both vc:minVersion & vc:maxVersion attributes are present on a
+           // schema component.
            if (!(minVer.compareTo(fSupportedVersion.getBigDecimal()) <= 0 &&
               maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
                fIgnoreDepth++;
@@ -783,9 +791,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
            String typeOrFacetUri = null;
            if (typeOrFacetRawValue.indexOf(':') != -1) {              
               typeOrFacetLocalName = typeOrFacetRawValue.substring(
-                                               typeOrFacetRawValue.indexOf(':') + 1);
+                                         typeOrFacetRawValue.indexOf(':') + 1);
               String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, 
-                                                   typeOrFacetRawValue.indexOf(':'));
+                                             typeOrFacetRawValue.indexOf(':'));
               typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix.intern());
            }
            else {
@@ -795,14 +803,14 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
            if (typeOrFacet == Constants.IS_TYPE) {
               // check for availability of schema types
               if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
-                        !schemaVersioningHelper.isTypeSupported(typeOrFacetLocalName,
+                        !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName,
                                                                 typeOrFacetUri)) {
                   fIgnoreDepth++;
                   typeOrFacetAvlAllowsIgnore = true;
                   break;             
               }
               else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && 
-                         !schemaVersioningHelper.isTypeSupported(typeOrFacetLocalName,
+                         !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName,
                                                                  typeOrFacetUri)) {
                   typeOrFacetUnavlAllowsIgnore = false;
                   break;
@@ -811,21 +819,21 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
            else if (typeOrFacet == Constants.IS_FACET) {
                // check for availability of schema facets
                if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
-                         !schemaVersioningHelper.isFacetSupported(typeOrFacetLocalName,
+                         !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName,
                                                                   typeOrFacetUri)) {
                    fIgnoreDepth++;
                    typeOrFacetAvlAllowsIgnore = true;
                    break;             
                }
-               else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && 
-                          !schemaVersioningHelper.isFacetSupported(typeOrFacetLocalName,
+               else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY &&
+                          !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName,
                                                                    typeOrFacetUri)) {
                    typeOrFacetUnavlAllowsIgnore = false;
                    break;
                }
            }
            
-        } // end of list iteration
+        }
         
         if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY) {
            if (typeOrFacetAvlAllowsIgnore) {
@@ -844,21 +852,19 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
     
     /*
-     * Method to tokenize a string value given a delimeter, and return a List
-     * containing the string tokens. 
+     * Method to tokenize a string value given a tokenizing delimiter, and
+     * return a List containing the string tokens. 
      */
     private List tokenizeString(String strValue, String delim) {
-        List tokenizedList = new ArrayList();
+        List stringTokens = new ArrayList();
         
         String[] strSplitValue = strValue.split(delim);
         
         for (int strIdx = 0; strIdx < strSplitValue.length; strIdx++) {
-           if (!(strSplitValue[strIdx].trim()).equals("")) {
-              tokenizedList.add(strSplitValue[strIdx].trim());   
-           }
+           stringTokens.add(strSplitValue[strIdx]);
         }
         
-        return tokenizedList;
+        return stringTokens;
         
     } // tokenizeString
     

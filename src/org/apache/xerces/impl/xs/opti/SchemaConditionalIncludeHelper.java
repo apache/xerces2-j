@@ -26,9 +26,8 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.xni.QName;
 
 /**
- * This class provides supporting functionality for schema versioning
- * pre-processing, during conditional inclusion of schema components (newly
- * introduced in XML Schema 1.1).
+ * This class provides supporting functionality for XML Schema conditional
+ * include pre-processing (newly introduced in XML Schema 1.1).
  * 
  * 
  * ref: http://www.w3.org/TR/xmlschema11-1/#cip
@@ -37,27 +36,36 @@ import org.apache.xerces.xni.QName;
  * 
  * @version $Id$
  */
-public class SchemaVersioningHelper {
+public class SchemaConditionalIncludeHelper {
     
-    // list variables holding 'natively supported' XML Schema types and facets
-    // by Xerces-J XML Schema 1.1 engine.    
+    // instance variables holding "natively supported" XML Schema types and
+    // facets by Xerces-J XML Schema 1.1 engine.    
     List typesSupported = null;
     List facetsSupported = null;
     
-    // class constructor
-    public SchemaVersioningHelper() {
+    
+    /*
+     * Class constructor.
+     */
+    public SchemaConditionalIncludeHelper() {
         typesSupported = new ArrayList();
         facetsSupported = new ArrayList();
         initialize();
     }
     
-    // initializing the supported XML Schema types and facets
+    
+    /*
+     * Initializing the supported XML Schema types and facets.
+     */
     private void initialize() {
         initSupportedTypes();
         initSupportedFacets();
     }
     
-    // initializing the supported XML Schema types
+    
+    /*
+     * Initializing the supported XML Schema types.
+     */
     private void initSupportedTypes() {
         
         typesSupported.add(new QName(null, SchemaSymbols.ATTVAL_ANYTYPE, 
@@ -166,7 +174,9 @@ public class SchemaVersioningHelper {
     } // initSupportedTypes
     
     
-    // initializing the supported XML Schema facets
+    /*
+     * Initializing the supported XML Schema facets.
+     */
     private void initSupportedFacets() {
         
         facetsSupported.add(new QName(null, SchemaSymbols.ELT_LENGTH, 
@@ -205,8 +215,9 @@ public class SchemaVersioningHelper {
     } // initSupportedFacets
     
     
-    // Method to check if the schema type specified by method arguments (the QName
-    // components of the schema type) is supported by Xerces-J natively.
+    /* Method to check if a schema type specified by method arguments (the
+     * QName components of the schema type) is supported by Xerces-J natively.
+     */
     public boolean isTypeSupported(String localName, String uri) {
        boolean typeSupported = false;
        
@@ -224,8 +235,9 @@ public class SchemaVersioningHelper {
     } // isTypeSupported 
     
     
-    // Method to check if the schema facet specified by method arguments (the QName
-    // components of a schema facet) is supported by Xerces-J natively.
+    /* Method to check if a schema facet specified by method arguments (the
+     * QName components of a schema facet) is supported by Xerces-J natively.
+     */
     public boolean isFacetSupported(String localName, String uri) {
         boolean facetSupported = false;
         
