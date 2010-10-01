@@ -75,34 +75,27 @@ v.validate(instanceDocument);
   <faq title="XPath 2.0 support for XML Schema 1.1 validation">
   	<q>How Xerces-J uses an XPath 2.0 engine for XML Schema 1.1 assertions and type alternatives?</q>
   	<a>
-  	   <p>XML Schema 1.1 'assertions' and 'type alternatives' require an <jump href="http://www.w3.org/TR/xpath20/">XPath 2.0</jump> 
-  	   processor for evaluation. 
-  	   For XSD 1.1 assertions, full XPath 2.0 support is required. For XSD 1.1 type alternatives, 
-  	   XML schema engines can provide full XPath 2.0 support or they can implement a smaller XPath 2.0 subset, as
-  	   defined by the XSD 1.1 language.
-  	   Within the type alternatives implementation, Xerces-J first attempts to compile the XPath expression with a 
-  	   native Xerces "XPath subset" parser.
-  	   If parsing with the native Xerces "XPath subset" parser fails, Xerces-J transparently switches over to another processor which 
-  	   supports all of XPath 2.0. The native processor in Xerces-J was written for efficiency, so you will likely get better
-  	   performance if your XPath expressions fall within the minimum subset defined by the XML Schema 1.1 specification.
-  	   For full XPath 2.0 evaluation (for XSD 1.1 'assertions', and optionally for 'type alternatives'), 
-  	   Xerces-J uses the <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
+  	   <p>XML Schema 1.1 'assertions' and 'type alternatives' require an <jump href="http://www.w3.org/TR/xpath20/">XPath 2.0</jump> processor
+  	   for evaluation. For XSD 1.1 assertions, full XPath 2.0 support is required. For XSD 1.1 type alternatives, XML schema engines can
+  	   provide full XPath 2.0 support or they can implement a smaller XPath 2.0 subset, as defined by the XSD 1.1 language.
+  	   Within the type alternatives implementation, Xerces-J first attempts to compile the XPath expression with a native Xerces "XPath subset"
+  	   parser. If parsing with the native Xerces "XPath subset" parser fails, Xerces-J transparently switches over to another processor which 
+  	   supports all of XPath 2.0. The native processor in Xerces-J was written for efficiency, so you will likely get better performance if your
+  	   XPath expressions fall within the minimum subset defined by the XML Schema 1.1 specification. For full XPath 2.0 evaluation 
+  	   (for XSD 1.1 'assertions', and optionally for 'type alternatives'), Xerces-J uses the 
+  	   <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
   	   </p>
   	   <p>
-  	   Xerces-J bundles a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later). Users should be aware that more recent releases of PsychoPath
-  	   have better conformance to the W3C XPath 2.0 language than the PsychoPath XPath 2.0 jar that's bundled with Apache Xerces-J. Builds of the 
-  	   PsychoPath XPath 2.0 jar are available for download from the following locations:
+  	   Xerces-J does bundle a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later).
   	   </p>
-  	   <ul>
-  	     <li><jump href="http://www.eclipse.org/webtools/">Eclipse Web Tools Platform (WTP) Project</jump>. The latest 'Released' or a 'Stable milestone' 
-  	     WTP version can be downloaded from here (from which the PsychoPath XPath 2.0 jar can be extracted).
-  	     </li>
-  	     <li><jump href="https://build.eclipse.org/hudson/view/WTP/job/cbi-wtp-wst.xsl.psychopath/">Eclipse/PsychoPath continuous build server</jump>. 
-  	     The most recent PsychoPath XPath 2.0 developer build can be downloaded from here.</li>
-  	   </ul>
-  	   <p>
-  	   The latest PsychoPath XPath 2.0 engine builds at Eclipse require a minimum JDK level of 1.5.
-  	   </p>
+  	   <note>
+  	   Users should be aware that more recent releases of PsychoPath
+  	   XPath engine may have better conformance to the W3C XPath 2.0 language than the PsychoPath XPath 2.0 jar that's bundled with Apache Xerces-J.
+  	   Builds of the PsychoPath XPath 2.0 jar are available for download from following location,  	   
+  	   <jump href="http://www.eclipse.org/webtools/">Eclipse Web Tools Platform (WTP) Project</jump> - The latest 'Released' or a 'Stable milestone' 
+  	   WTP version can be downloaded from here (from which the PsychoPath XPath 2.0 jar can be extracted). The latest PsychoPath XPath 2.0 engine
+  	   builds at Eclipse require a minimum JDK level of 1.5.
+  	   </note>
   	</a>
   </faq>
   <faq title="Using Entities and CDATA Sections">
