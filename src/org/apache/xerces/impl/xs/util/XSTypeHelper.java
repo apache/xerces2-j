@@ -17,6 +17,11 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
@@ -39,9 +44,9 @@ public class XSTypeHelper {
         String type2Name = typeDefn2.getName();
         
         if (("anyType".equals(type1Name) && 
-            "anyType".equals(type2Name)) ||
+             "anyType".equals(type2Name)) ||
             ("anySimpleType".equals(type1Name) && 
-            "anySimpleType".equals(type2Name))) {
+             "anySimpleType".equals(type2Name))) {
                typesIdentical = true;  
         }
         
@@ -81,5 +86,33 @@ public class XSTypeHelper {
         return uriEqual;
         
     } // uriEqual
+    
+    
+    /*
+     * Determine if a lexical "string value" conforms to a given schema
+     * simpleType definition. Using Xerces API 'XSSimpleType.validate'
+     * for this need.
+     */
+    public static boolean isValueValidForASimpleType(String value,
+                                                     XSSimpleType simplType) {
+        
+        boolean isValueValid = true;
+        
+        try {
+            // construct necessary context objects
+            ValidatedInfo validatedInfo = new ValidatedInfo();
+            ValidationContext validationState = new ValidationState();
+            
+            // attempt to validate the "string value" with a simpleType
+            // instance.
+            simplType.validate(value, validationState, validatedInfo);
+        } 
+        catch(InvalidDatatypeValueException ex){
+            isValueValid = false;
+        }
+        
+        return isValueValid;
+        
+    } // isValueValidForASimpleType
     
 }

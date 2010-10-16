@@ -29,13 +29,10 @@ import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.assertion.XMLAssertAdapter;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -975,13 +972,14 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
         XSSimpleTypeDefinition simpleTypeDefn = null;
         
-        // Inspecting the member types of union in order, to find that which
+        // Iterate the member types of union in order, to find that which
         // schema type can successfully validate an atomic value first.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
                                                             memTypeIdx++) {
            XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item
                                                              (memTypeIdx);
-              if (isValueValidForASimpleType(value, memSimpleType)) {
+              if (XSTypeHelper.isValueValidForASimpleType(value,
+                                                          memSimpleType)) {
                  // no more memberTypes need to be checked
                  simpleTypeDefn = memSimpleType; 
                  break; 
@@ -991,34 +989,6 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         return simpleTypeDefn;
         
     } // getActualListItemTypeForVarietyUnion
-    
-    
-    /*
-     * Determine if a lexical "string value" conforms to a given schema
-     * simpleType definition. Using Xerces API 'XSSimpleType.validate'
-     * for this need.
-     */
-    private boolean isValueValidForASimpleType(String value, XSSimpleType 
-                                                             simplType) {
-        
-        boolean isValueValid = true;
-        
-        try {
-            // construct necessary context objects
-            ValidatedInfo validatedInfo = new ValidatedInfo();
-            ValidationContext validationState = new ValidationState();
-            
-            // attempt to validate the "string value" with a simpleType
-            // instance.
-            simplType.validate(value, validationState, validatedInfo);
-        } 
-        catch(InvalidDatatypeValueException ex){
-            isValueValid = false;
-        }
-        
-        return isValueValid;
-        
-    } // isValueValidForASimpleType
     
     
     /*
