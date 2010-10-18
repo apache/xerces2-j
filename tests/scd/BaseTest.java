@@ -35,7 +35,7 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 
 
 /**
- * @version $Id: $
+ * @version $Id$
  */
 public class BaseTest implements DOMErrorHandler {
     private SCDResolver resolver;

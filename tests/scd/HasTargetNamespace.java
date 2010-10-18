@@ -25,7 +25,7 @@ import org.apache.xerces.xs.XSObject;
  * Tests for the SCD API that designate components of a schema that
  * has a target namespace. 
  * @author Ishan Jayawardena udeshike@gmail.com
- * @version $Id: $
+ * @version $Id$
  */
 public class HasTargetNamespace extends BaseTest {
 

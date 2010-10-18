@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 /**
  * @author Ishan Jayawardena udeshike@gmail.com
- * @version $Id: $
+ * @version $Id$
  */
 public class NoTargetNamespace extends TestCase {
 

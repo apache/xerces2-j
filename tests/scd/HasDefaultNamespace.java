@@ -20,7 +20,7 @@ package scd;
 /**
  * Tests for the SCD API that designate components of a schema that
  * has a default namespace.
- * @version $Id: $
+ * @version $Id$
  * @author Ishan Jayawardena udeshike@gmail.com
  */
 public class HasDefaultNamespace extends BaseTest {
