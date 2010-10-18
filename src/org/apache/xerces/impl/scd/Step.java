@@ -28,13 +28,13 @@ class Step {
     private final short axis;
     private final QName nametest;
     private final int predicate;
-    
+
     public Step(short axis, QName nametest, int predicate) {
         this.axis = axis;
         this.nametest = nametest;
         this.predicate = predicate;
     }
-    
+
     /**
      * returns the axis type of the axis contained in the step
      * @return the axis type
@@ -42,7 +42,7 @@ class Step {
     public short getAxisType() {
         return this.axis;
     }
-    
+
     /**
      * the string representation of the axis of the step
      * @return the axis name
@@ -50,7 +50,7 @@ class Step {
     public String getAxisName() {
         return Axis.axisToString(axis);
     }
-    
+
     /**
      * returns the name test of the step
      * @return the nametest
@@ -58,7 +58,7 @@ class Step {
     public QName getNametest() {
         return this.nametest;
     }
-    
+
     /**
      * returns the predicate value of the step
      * @return the predicate
@@ -66,15 +66,15 @@ class Step {
     public int getPredicate() {
         return this.predicate;
     }
-    
+
     /**
      * prints the content of the axis
      */
     public String toString() {
         return "(" +
-        		"axis=" + Axis.axisToString(axis) +
-        		", nametest=" + ((nametest != null) ? ("{\"" + nametest.uri + "\"" + " \"" + nametest.rawname + "\"}") : null) +
-        		", predicate= " + predicate +
-        		")";
+        "axis=" + Axis.axisToString(axis) +
+        ", nametest=" + ((nametest != null) ? ("{\"" + nametest.uri + "\"" + " \"" + nametest.rawname + "\"}") : null) +
+        ", predicate= " + predicate +
+        ")";
     }
 } // class Step

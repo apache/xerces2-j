@@ -53,7 +53,7 @@ class SCDParser {
     public SCDParser() {
         steps = new ArrayList(LIST_SIZE);
     }
-    
+
     private static int getCharType(int c) throws SCDException {
         switch (c) {
         case '@':
@@ -92,7 +92,7 @@ class SCDParser {
             return CHARTYPE_NC_NAME;
         }
         throw new SCDException("Error in SCP: Unsupported character "
-                        + (char) c + " (" + c + ")");
+                + (char) c + " (" + c + ")");
     }
 
     public static char charAt(String s, int position) {
@@ -104,7 +104,7 @@ class SCDParser {
     }
 
     private static QName readQName(String step, int[] finalPosition, int currentPosition, NamespaceContext nsContext)
-            throws SCDException {
+    throws SCDException {
         return readNameTest(step, finalPosition, currentPosition, nsContext);
     }
 
@@ -117,13 +117,13 @@ class SCDParser {
      * TODO: this is the name test zero
      */
     public static final QName ZERO = new QName(null, "0", "0", null);
-    
+
     /*
      * Similar to readQName() method. But this method additionally tests for another two types
      * of name tests. i.e the wildcard name test and the zero name test.
      */
     private static QName readNameTest(String step, int[] finalPosition, int currentPosition, NamespaceContext nsContext)
-            throws SCDException {
+    throws SCDException {
         int initialPosition = currentPosition;
         int start = currentPosition;
         String prefix = ""; // for the default namespace
@@ -174,7 +174,7 @@ class SCDParser {
             throw new SCDException("Error in SCP: Namespace context is null");
         }
         throw new SCDException("Error in SCP: Invalid nametest starting character \'"
-                        + charAt(step, currentPosition) + "\'");
+                + charAt(step, currentPosition) + "\'");
     } // readNameTest()
 
     private static int scanNCName(String data, int currentPosition) {
@@ -210,12 +210,12 @@ class SCDParser {
                         }
                         if (charAt(data, currentPosition - 2) == '(') {
                             throw new SCDException(
-                                    "Error in SCD: empty xmlns scheme data between '(' and ')'");
+                            "Error in SCD: empty xmlns scheme data between '(' and ')'");
                         }
                     }
                 } else { // check if '^' is used as an escape char
                     if (charAt(data, currentPosition + 1) == '('
-                            || charAt(data, currentPosition + 1) == ')'
+                        || charAt(data, currentPosition + 1) == ')'
                             || charAt(data, currentPosition + 1) == '^') {
                         currentPosition = currentPosition + 2;
                     } else {
@@ -259,12 +259,12 @@ class SCDParser {
             } catch (NumberFormatException e) {
                 e.printStackTrace();
                 throw new SCDException(
-                        "Error in SCP: A NumberFormatException occurred while reading the predicate");
+                "Error in SCP: A NumberFormatException occurred while reading the predicate");
             }
         }
         throw new SCDException(
                 "Error in SCP: Attempt to read an invalid predicate starting from position "
-                        + ++currentPosition);
+                + ++currentPosition);
     } // readPredicate()
 
     /**
@@ -273,10 +273,10 @@ class SCDParser {
      * @return a list of Steps contained in the SCDParser
      */
     public List parseSCP(String scp, NamespaceContext nsContext, boolean isRelative)
-            throws SCDException {
+    throws SCDException {
         steps.clear();
         Step step;
-        
+
         if (scp.length() == 1 && scp.charAt(0) == '/') { // read a schema
             // schema step.
             //System.out.println("<SCHEMA STEP>");
@@ -323,7 +323,7 @@ class SCDParser {
     }
 
     private static Step processStep(String step, int[] newPosition, int currentPosition, NamespaceContext nsContext)
-            throws SCDException {
+    throws SCDException {
         short axis = -1;
         QName nameTest = null;
         int predicate = 0;
@@ -363,7 +363,7 @@ class SCDParser {
                 axis = Axis.SCHEMA_ELEMENT;
                 nameTest = name;
             } else if (charAt(step, newPos) == ':'
-                    && charAt(step, newPos + 1) == ':') {
+                && charAt(step, newPos + 1) == ':') {
                 // TODO: what to do with extension axes?
                 // Could be a hashtable look up; fail if extension axis
                 axis = Axis.qnameToAxis(name.rawname);
@@ -375,7 +375,7 @@ class SCDParser {
                         nsContext);
             } else if (charAt(step, newPos) == '(') {
                 throw new SCDException(
-                        "Error in SCP: Extension accessor not supported!");
+                "Error in SCP: Extension accessor not supported!");
             } else if (charAt(step, newPos) == '/') { // /abc:def/...
                 axis = Axis.SCHEMA_ELEMENT;
                 nameTest = name;
@@ -431,20 +431,20 @@ class SCDParser {
                 // process xscd() part
                 String data = relativeSCD.substring(currentPosition[0] + 4, relativeSCD.length());
                 if (charAt(data, 0) == '('
-                        && charAt(data, data.length() - 1) == ')') {
+                    && charAt(data, data.length() - 1) == ')') {
                     return parseSCP(data.substring(1, data.length() - 1), nsContext, isIncompleteSCD);
                 }
                 throw new SCDException("Error in SCD: xscd() part is invalid at position "
-                                + ++currentPosition[0]);
+                        + ++currentPosition[0]);
             } else {
                 throw new SCDException("Error in SCD: Expected \'xmlns\' or \'xscd\' at position "
-                                + ++currentPosition[0]);
+                        + ++currentPosition[0]);
             }
         }
         throw new SCDException("Error in SCD: Error at position "
                 + ++currentPosition[0]);
     } // createSteps()
-        
+
     private static int readxmlns(String data, NamespaceContext nsContext,
             int currentPosition) throws SCDException {
         if (charAt(data, currentPosition++) == '(') {
@@ -454,7 +454,7 @@ class SCDParser {
             if (currentPosition == pos) {
                 throw new SCDException(
                         "Error in SCD: Missing namespace name at position "
-                                + ++currentPosition);
+                        + ++currentPosition);
             }
             String name = data.substring(pos, currentPosition);
             // skip S
@@ -462,7 +462,7 @@ class SCDParser {
             // read '='
             if (charAt(data, currentPosition) != '=') {
                 throw new SCDException("Error in SCD: Expected a  \'=\' character at position "
-                                + ++currentPosition);
+                        + ++currentPosition);
             }
             // skip S
             currentPosition = skipWhiteSpaces(data, ++currentPosition);
@@ -471,7 +471,7 @@ class SCDParser {
             currentPosition = scanXmlnsSchemeData(data, currentPosition);
             if (currentPosition == pos) {
                 throw new SCDException("Error in SCD: Missing namespace value at position "
-                                + ++currentPosition);
+                        + ++currentPosition);
             }
             String uri = data.substring(pos, currentPosition);
             if (charAt(data, currentPosition) == ')') {
@@ -479,10 +479,10 @@ class SCDParser {
                 return ++currentPosition;
             }
             throw new SCDException("Error in SCD: Invalid xmlns pointer part at position "
-                            + ++currentPosition);
+                    + ++currentPosition);
         }
         throw new SCDException("Error in SCD: Invalid xmlns pointer part at position "
-                        + ++currentPosition);
+                + ++currentPosition);
     } // readxmlns()
-      
+
 }

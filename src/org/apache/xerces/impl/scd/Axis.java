@@ -31,7 +31,7 @@ final class Axis {
         "substitutionGroup", "baseType", "itemType", "memberType", "primitiveType",
         "key", "annotation", "component", "currentComponent", "attributeUse",
         "particle", null};
-        
+
     public static final short SCHEMA_ATTRIBUTE   = 0;              
     public static final short SCHEMA_ELEMENT     = 1;
     public static final short TYPE               = 2;
@@ -60,10 +60,10 @@ final class Axis {
     public static final short PARTICLE           = 25;
     public static final short EXTENSION_AXIS     = 26;
     public static final short SPECIAL_COMPONENT  = 27;
-   
+
     private static final short UNKNOWN_AXIS      = -1;
     public static final short NO_AXIS           = 100;
-    
+
     /**
      * returns the string representation of an axis
      * @param axis the input axis type
@@ -75,7 +75,7 @@ final class Axis {
         }
         return null;
     }
-    
+
     /**
      * returns the axis type of a name
      * @param name : the qname that needs to be tested against the axis names
@@ -83,9 +83,9 @@ final class Axis {
      */
     public static short qnameToAxis(String name) {
         for (short i = 0; i < AXIS_TYPES.length; ++i) {
-           if (AXIS_TYPES[i].equals(name)) {
-               return i;
-           }
+            if (AXIS_TYPES[i].equals(name)) {
+                return i;
+            }
         }
         return UNKNOWN_AXIS;
     }

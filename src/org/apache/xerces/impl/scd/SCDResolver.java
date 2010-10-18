@@ -238,14 +238,15 @@ public class SCDResolver {
             if (typeDef != null && !currentComponents.contains(typeDef)) {
                 currentComponents.add(typeDef);
             }
-            break;
         }
-        case XSConstants.ATTRIBUTE_DECLARATION:
+        break;
+        case XSConstants.ATTRIBUTE_DECLARATION: {
             XSObject typeDef = ((XSAttributeDeclaration)sourceComponent).getTypeDefinition();
             if (typeDef != null && !currentComponents.contains(typeDef)) {
                 currentComponents.add(typeDef);
             }
-            break;
+        }
+        break;
         }
         // TODO: we dont have type alternative for now.
     } // getElidedComponents()
@@ -291,8 +292,8 @@ public class SCDResolver {
             for (int i = start; i < currentComponents.size(); ++i) {
                 addComponent((XSObject)currentComponents.get(i), step.getNametest(), result);
             }
-            break;
         }
+        break;
         default:
             throw new SCDException("Error in SCD: Unsupported top level component type "
                     + step.getAxisName());
@@ -339,8 +340,8 @@ public class SCDResolver {
             for (int i = start; i < currentComponents.size(); ++i) {
                 addComponent((XSObject)currentComponents.get(i), step.getNametest(), result);
             }
-            break;
         }
+        break;
         case Axis.ATTRIBUTE_GROUP:
             for (int i = 0, n = currentComponents.size(); i < n; ++i) {
                 componentLinked((XSObject)currentComponents.get(i), XSConstants.ATTRIBUTE_GROUP, step.getNametest(), result);
@@ -493,8 +494,8 @@ public class SCDResolver {
                     }
                 }
             }
-            break;
         }
+        break;
         case Axis.PARTICLE: {
             for (int i = 0, n = currentComponents.size(); i < n; ++i) {
                 XSObject comp = (XSObject)currentComponents.get(i);
@@ -506,8 +507,8 @@ public class SCDResolver {
                     }
                 }
             }
-            break;
         }
+        break;
         case Axis.EXTENSION_AXIS:
             throw new SCDException("Error in SCD: Extension axis is not supported");
             //break;
@@ -521,7 +522,7 @@ public class SCDResolver {
         // get the annotations() components
         XSObjectList annotations = xsModel.getAnnotations();
         for (int i = 0, n = annotations.size(); i < n; ++i) {
-            addComponent(annotations.item(i), nameTest, currentComponents);
+            addComponent(annotations.item(i), nameTest, result);
         }
         final short[] SCHEMA_COMPONENTS = new short[] {
                 XSConstants.ELEMENT_DECLARATION, XSConstants.TYPE_DEFINITION, XSConstants.ATTRIBUTE_DECLARATION,
@@ -533,7 +534,7 @@ public class SCDResolver {
             map = xsModel.getComponents(SCHEMA_COMPONENTS[i]);
             if (!map.isEmpty()) {
                 for (int j = 0, n =map.size(); j < n; ++j) {
-                    addComponent(map.item(i), nameTest, currentComponents);
+                    addComponent(map.item(i), nameTest, result);
                 }
             }
         }
@@ -577,8 +578,8 @@ public class SCDResolver {
             if (NO_FILTER == filter || (term != null && term.getType() == filter)) {
                 addComponent(term, nameTest, outputComponents);
             }
-            break;
         }
+        break;
         case XSConstants.MODEL_GROUP:
             if (IS_SPEC_COMPLIANT == false) {
                 XSObjectList particles = ((XSModelGroup) sourceComponent).getParticles();
@@ -661,8 +662,8 @@ public class SCDResolver {
                             nameTest, targetComponents);
                 }
             }
-            break;
         }
+        break;
         case XSConstants.ELEMENT_DECLARATION: {
             componentChildren(sourceComponent, filter, nameTest, targetComponents);
             if (NO_FILTER == filter || XSConstants.ANNOTATION == filter) {
@@ -685,8 +686,8 @@ public class SCDResolver {
                 addComponent(((XSElementDeclaration)sourceComponent).getSubstitutionGroupAffiliation(),
                         nameTest, targetComponents);
             }
-            break;
         }
+        break;
         case XSConstants.TYPE_DEFINITION:
             if (((XSTypeDefinition)sourceComponent).getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
                 componentChildren(sourceComponent, filter, nameTest, targetComponents);
@@ -799,15 +800,15 @@ public class SCDResolver {
                 addComponent(((XSAttributeDeclaration)sourceComponent).getTypeDefinition(),
                         nameTest, targetComponents);
             }
-            break;
         }
+        break;
         case XSConstants.ELEMENT_DECLARATION: {
             if (NO_FILTER == filter || XSConstants.TYPE_DEFINITION == filter) {
                 addComponent(((XSElementDeclaration)sourceComponent).getTypeDefinition(),
                         nameTest, targetComponents);
             }
-            break;
         }
+        break;
         case XSConstants.TYPE_DEFINITION:
             if (((XSTypeDefinition)sourceComponent).getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
                 if (NO_FILTER == filter || XSConstants.FACET == filter) {
@@ -872,15 +873,15 @@ public class SCDResolver {
                     addComponent(term, nameTest, targetComponents);
                 }
             }
-            break;
         }
+        break;
         case XSConstants.PARTICLE: {
             XSTerm term = ((XSParticle)sourceComponent).getTerm();
             if (NO_FILTER == filter || term.getType() == filter) {
                 addComponent(term, nameTest, targetComponents);
             }
-            break;
         }
+        break;
         default:
             break; // TODO: cases Schema and Type Alternative yet to be implemented
         }   
