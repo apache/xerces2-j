@@ -84,35 +84,35 @@ import org.w3c.dom.NodeList;
 public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     // class variable declarations
-    DynamicContext fDynamicContext;
-    XSModel fSchema = null;
-    AbstractPsychoPathImpl fAbstrPsychopathImpl = null;
+    private DynamicContext fDynamicContext;
+    private XSModel fSchema = null;
+    private AbstractPsychoPathImpl fAbstrPsychopathImpl = null;
 
     // the DOM root of assertions tree
-    Document fAssertDocument = null;
+    private Document fAssertDocument = null;
 
     // an element to track construction of assertion DOM tree. This object
     // changes as per the XNI document events.
-    Element fCurrentAssertDomNode = null;
+    private Element fCurrentAssertDomNode = null;
 
     // a stack holding the DOM roots for assertions evaluation
-    Stack fAssertRootStack = null;
+    private Stack fAssertRootStack = null;
 
     // a stack parallel to 'assertRootStack' storing all assertions for a
     // single XDM tree.
-    Stack fAssertListStack = null;
+    private Stack fAssertListStack = null;
 
     // XMLSchemaValidator reference. set from the XMLSchemaValidator object
     // itself.
-    XMLSchemaValidator fValidator = null;
+    private XMLSchemaValidator fValidator = null;
     
     // parameters to pass to PsychoPath engine (like, the XML namespace
     // bindings).
-    Map fAssertParams = null;
+    private Map fAssertParams = null;
     
     // an instance variable to track the name of an attribute currently
     // been processed for assertions.
-    String fAttrName = null;
+    private String fAttrName = null;
 
     
     /*
@@ -1000,15 +1000,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Class to store "assertion evaluation" error details.
      */
-    class AssertionError {
+    final class AssertionError {
         
         // instance variables        
-        String errorCode = null;
-        QName element = null;
-        XSAssertImpl assertImpl = null;
-        String value = null;
+        private final String errorCode;
+        private final QName element;
+        private final XSAssertImpl assertImpl;
+        private final String value;
         // does this error concerns simpleType -> list
-        boolean isList;
+        private final boolean isList;
         
         // class constructor
         public AssertionError(String errorCode, QName element, 
