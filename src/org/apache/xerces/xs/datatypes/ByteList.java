@@ -58,4 +58,8 @@ public interface ByteList extends List {
      */
     public byte item(int index) throws XSException;
     
+    /**
+     * Construct and return a byte array for bytes contained in this list.
+     */
+    public byte[] toByteArray();
 }

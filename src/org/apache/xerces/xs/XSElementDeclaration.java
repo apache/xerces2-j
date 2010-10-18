@@ -60,6 +60,8 @@ public interface XSElementDeclaration extends XSTerm {
     /**
      * [Value constraint]: the constraint value with respect to the [type 
      * definition], otherwise <code>null</code>. 
+     * 
+     * @deprecated Use getValueConstraintValue().getNormalizedValue() instead
      */
     public String getConstraintValue();
 
@@ -67,9 +69,8 @@ public interface XSElementDeclaration extends XSTerm {
      * Value Constraint: Binding specific actual constraint value or 
      * <code>null</code> if the value is in error or there is no value 
      * constraint. 
-     * @exception XSException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
-     *   method.
+     * 
+     * @deprecated Use getValueConstraintValue().getActualValue() instead
      */
     public Object getActualVC()
                                             throws XSException;
@@ -83,11 +84,9 @@ public interface XSElementDeclaration extends XSTerm {
      * method returns <code>LISTOFUNION_DT</code>. To query the actual 
      * constraint value of the list or list of union type definitions use 
      * <code>itemValueTypes</code>. If the <code>actualNormalizedValue</code>
-     *  is <code>null</code>, this method returns <code>UNAVAILABLE_DT</code>
-     * . 
-     * @exception XSException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
-     *   method.
+     *  is <code>null</code>, this method returns <code>UNAVAILABLE_DT</code>.
+     * 
+     * @deprecated Use getValueConstraintValue().getActualValueType() instead
      */
     public short getActualVCType()
                                             throws XSException;
@@ -101,12 +100,16 @@ public interface XSElementDeclaration extends XSTerm {
      * for each actual constraint value in the list the array contains the 
      * corresponding memberType kind. For examples, see 
      * <code>ItemPSVI.itemValueTypes</code>. 
-     * @exception XSException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
-     *   method.
+     * 
+     * @deprecated Use getValueConstraintValue().getListValueTypes() instead
      */
     public ShortList getItemValueTypes()
                                             throws XSException;
+
+    /**
+     * The actual value of the default or fixed value constraint.
+     */
+    public XSValue getValueConstraintValue();
 
     /**
      *  If nillable is true, then an element may also be valid if it carries 

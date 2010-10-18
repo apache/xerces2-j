@@ -22,14 +22,15 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
-import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 
 /**
  * Attribute namespace implementation; stores PSVI attribute items.
@@ -71,20 +72,8 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
      * value in the original document, this is true; otherwise, it is false  */
     protected boolean fSpecified = true;
 
-    /** schema normalized value property */
-    protected String fNormalizedValue = null;
-    
-    /** schema actual value */
-    protected Object fActualValue = null;
-
-    /** schema actual value type */
-    protected short fActualValueType = XSConstants.UNAVAILABLE_DT;
-
-    /** actual value types if the value is a list */
-    protected ShortList fItemValueTypes = null;
-
-    /** member type definition against which attribute was validated */
-    protected XSSimpleTypeDefinition fMemberType = null;
+    /** Schema value */
+    protected ValidatedInfo fValue = new ValidatedInfo();
 
     /** validation attempted: none, partial, full */
     protected short fValidationAttempted = AttributePSVI.VALIDATION_NONE;
@@ -123,7 +112,7 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
      * @return the normalized value of this item after validation
      */
     public String getSchemaNormalizedValue() {
-        return fNormalizedValue;
+        return fValue.getNormalizedValue();
     }
 
     /**
@@ -207,7 +196,7 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
      * @return  a simple type declaration
      */
     public XSSimpleTypeDefinition getMemberTypeDefinition() {
-        return fMemberType;
+        return fValue.getMemberTypeDefinition();
     }
 
     /**
@@ -232,12 +221,8 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
         this.fValidationAttempted = attr.getValidationAttempted();
         this.fErrorCodes = attr.getErrorCodes();
         this.fErrorMessages = attr.getErrorMessages();
-        this.fNormalizedValue = attr.getSchemaNormalizedValue();
-        this.fActualValue = attr.getActualNormalizedValue();
-        this.fActualValueType = attr.getActualNormalizedValueType();
-        this.fItemValueTypes = attr.getItemValueTypes();
+        this.fValue.copyFrom(attr.getSchemaValue());
         this.fTypeDecl = attr.getTypeDefinition();
-        this.fMemberType = attr.getMemberTypeDefinition();
         this.fSpecified = attr.getIsSchemaSpecified();
     }
     
@@ -245,21 +230,28 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
      * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValue()
      */
     public Object getActualNormalizedValue() {
-        return this.fActualValue;
+        return fValue.getActualValue();
     }
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValueType()
      */
     public short getActualNormalizedValueType() {
-        return this.fActualValueType;
+        return fValue.getActualValueType();
     }
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
      */
     public ShortList getItemValueTypes() {
-        return this.fItemValueTypes;
+        return fValue.getListValueTypes();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getSchemaValue()
+     */
+    public XSValue getSchemaValue() {
+        return fValue;
     }
     
     // REVISIT: Forbid serialization of PSVI DOM until

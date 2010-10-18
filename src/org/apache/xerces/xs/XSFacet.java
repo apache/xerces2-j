@@ -34,6 +34,25 @@ public interface XSFacet extends XSObject {
     public String getLexicalFacetValue();
 
     /**
+     * If this facet is length, minLength, maxLength, totalDigits,
+     * fractionDigits, minScale, or maxScale, and if the value can fit in "int",
+     * then return the value of the facet as an int. If the value can't fit,
+     * return -1. Use getActualFacetValue() to get the BigInteger
+     * representation. For all other facets, return 0.
+     */
+    public int getIntFacetValue();
+
+    /**
+     * If this facet is minInclusive, maxInclusive, minExclusive, or
+     * maxExclusive, then return the actual value of the facet. If this facet
+     * is length, minLength, maxLength, totalDigits, fractionDigits, minScale,
+     * or maxScale, then return a BigInteger representation of the value. If
+     * this facet is whiteSpace or explicitTimezone, then return the String
+     * representation of the facet.
+     */
+    public Object getActualFacetValue();
+
+    /**
      * [Facets]: check whether a facet is fixed. 
      */
     public boolean getFixed();

@@ -22,16 +22,18 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
-import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNotationDeclaration;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 
 /**
  * Element namespace implementation; stores PSVI element items.
@@ -78,23 +80,11 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      */
     protected boolean fSpecified = true;
 
-    /** schema normalized value property */
-    protected String fNormalizedValue = null;
-
-    /** schema actual value */
-    protected Object fActualValue = null;
-
-    /** schema actual value type */
-    protected short fActualValueType = XSConstants.UNAVAILABLE_DT;
-
-    /** actual value types if the value is a list */
-    protected ShortList fItemValueTypes = null;
+    /** Schema value */
+    protected ValidatedInfo fValue = new ValidatedInfo();
 
     /** http://www.w3.org/TR/xmlschema-1/#e-notation*/
     protected XSNotationDeclaration fNotation = null;
-
-    /** member type definition against which element was validated */
-    protected XSSimpleTypeDefinition fMemberType = null;
 
     /** validation attempted: none, partial, full */
     protected short fValidationAttempted = ElementPSVI.VALIDATION_NONE;
@@ -136,7 +126,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      * @return the normalized value of this item after validation
      */
     public String getSchemaNormalizedValue() {
-        return fNormalizedValue;
+        return fValue.getNormalizedValue();
     }
 
     /**
@@ -237,7 +227,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      * @return  a simple type declaration
      */
     public XSSimpleTypeDefinition getMemberTypeDefinition() {
-        return fMemberType;
+        return fValue.getMemberTypeDefinition();
     }
 
     /**
@@ -275,11 +265,14 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         this.fValidationAttempted = elem.getValidationAttempted();
         this.fErrorCodes = elem.getErrorCodes();
         this.fErrorMessages = elem.getErrorMessages();
-        this.fNormalizedValue = elem.getSchemaNormalizedValue();
-        this.fActualValue = elem.getActualNormalizedValue();
-        this.fActualValueType = elem.getActualNormalizedValueType();
-        this.fItemValueTypes = elem.getItemValueTypes();
-        this.fMemberType = elem.getMemberTypeDefinition();
+        if (fTypeDecl instanceof XSSimpleTypeDefinition ||
+                fTypeDecl instanceof XSComplexTypeDefinition &&
+                ((XSComplexTypeDefinition)fTypeDecl).getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
+            this.fValue.copyFrom(elem.getSchemaValue());
+        }
+        else {
+            this.fValue.reset();
+        }
         this.fSpecified = elem.getIsSchemaSpecified();
         this.fNil = elem.getNil();
     }
@@ -288,21 +281,28 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValue()
      */
     public Object getActualNormalizedValue() {
-        return this.fActualValue;
+        return fValue.getActualValue();
     }
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValueType()
      */
     public short getActualNormalizedValueType() {
-        return this.fActualValueType;
+        return fValue.getActualValueType();
     }
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
      */
     public ShortList getItemValueTypes() {
-        return this.fItemValueTypes;
+        return fValue.getListValueTypes();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getSchemaValue()
+     */
+    public XSValue getSchemaValue() {
+        return fValue;
     }
     
     // REVISIT: Forbid serialization of PSVI DOM until

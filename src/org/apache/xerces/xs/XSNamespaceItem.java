@@ -30,7 +30,9 @@ public interface XSNamespaceItem {
 
     /**
      * [schema components]: a list of top-level components, i.e. element 
-     * declarations, attribute declarations, etc. 
+     * declarations, attribute declarations, etc. Identity-constraint
+     * definitions are also considered top-level.
+     * 
      * @param objectType The type of the declaration, i.e. 
      *   <code>ELEMENT_DECLARATION</code>. Note that 
      *   <code>XSTypeDefinition.SIMPLE_TYPE</code> and 
@@ -97,6 +99,14 @@ public interface XSNamespaceItem {
      *   a declaration does not exist. 
      */
     public XSNotationDeclaration getNotationDeclaration(String name);
+
+    /**
+     * Convenience method. Returns an identity-constraint definition.
+     * @param name The name of the definition.
+     * @return An identity-constraint definition or <code>null</code> if such 
+     *   a declaration does not exist. 
+     */
+    public XSIDCDefinition getIDCDefinition(String name);
 
     /**
      * [document location] - a list of location URIs for the documents that 

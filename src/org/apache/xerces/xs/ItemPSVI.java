@@ -96,15 +96,16 @@ public interface ItemPSVI {
     /**
      * <code>[schema normalized value]</code>: the normalized value of this 
      * item after validation. 
+     * 
+     * @deprecated Use getSchemaValue().getNormalizedValue() instead
      */
     public String getSchemaNormalizedValue();
 
     /**
      * <code>[schema normalized value]</code>: Binding specific actual value 
      * or <code>null</code> if the value is in error. 
-     * @exception XSException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
-     *   method.
+     * 
+     * @deprecated Use getSchemaValue().getActualValue() instead
      */
     public Object getActualNormalizedValue()
                                    throws XSException;
@@ -118,11 +119,9 @@ public interface ItemPSVI {
      * method returns <code>LISTOFUNION_DT</code>. To query the actual value 
      * of the list or list of union type definitions use 
      * <code>itemValueTypes</code>. If the <code>actualNormalizedValue</code>
-     *  is <code>null</code>, this method returns <code>UNAVAILABLE_DT</code>
-     * . 
-     * @exception XSException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
-     *   method.
+     *  is <code>null</code>, this method returns <code>UNAVAILABLE_DT</code>. 
+     *   
+     *  @deprecated Use getSchemaValue().getActualValueType() instead
      */
     public short getActualNormalizedValueType()
                                    throws XSException;
@@ -154,13 +153,20 @@ public interface ItemPSVI {
      * <code>actualNormalizedValueType</code> is <code>LISTOFUNION_DT</code>
      * , and the <code>itemValueTypes</code> is an array of size 3 with the 
      * following values: <code>INTEGER_DT, INTEGER_DT, STRING_DT</code>. 
-     * @exception XSException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
-     *   method.
+     *  
+     *  @deprecated Use getSchemaValue().getListValueTypes() instead
      */
     public ShortList getItemValueTypes()
                                    throws XSException;
 
+    /**
+     * If this item has a simple type definition or a complex type with simple
+     * content, then return the value with respect to the simple type. If
+     * this item doesn't have a simple-typed value, the behavior of this method
+     * is not specified.
+     */
+    public XSValue getSchemaValue();
+    
     /**
      * <code>[type definition]</code>: an item isomorphic to the type 
      * definition used to validate the schema item. 

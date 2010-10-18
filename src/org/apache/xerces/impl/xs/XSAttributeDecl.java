@@ -30,6 +30,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 
 /**
  * The XML representation for an attribute declaration
@@ -224,6 +225,10 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
                fDefault.itemValueTypes;
     }
     
+    public XSValue getValueConstraintValue() {
+        return fDefault;
+    }
+
     public boolean getInheritable() {
         return fInheritable;
     }

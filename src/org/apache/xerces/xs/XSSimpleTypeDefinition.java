@@ -252,6 +252,11 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public XSObjectList getMultiValueFacets();
 
     /**
+     * A constraining facet object. An instance of XSFacet or XSMultiValueFacet.
+     */
+    public XSObject getFacet(int facetType);
+
+    /**
      * A sequence of [annotations] or an empty <code>XSObjectList</code>.
      */
     public XSObjectList getAnnotations();

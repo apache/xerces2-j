@@ -25,6 +25,7 @@ import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSValue;
 
 /**
  * The XML representation for an attribute use
@@ -141,6 +142,10 @@ public class XSAttributeUseImpl implements XSAttributeUse {
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
                fDefault.itemValueTypes;
+    }
+
+    public XSValue getValueConstraintValue() {
+        return fDefault;
     }
 
     /**

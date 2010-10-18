@@ -2673,11 +2673,7 @@ public class XMLSchemaValidator
 
             if (fDefaultValue != null)
                 fCurrentPSVI.fSpecified = true;
-            fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
-            fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
-            fCurrentPSVI.fActualValue = fValidatedInfo.actualValue;
-            fCurrentPSVI.fActualValueType = fValidatedInfo.actualValueType;
-            fCurrentPSVI.fItemValueTypes = fValidatedInfo.itemValueTypes;
+            fCurrentPSVI.fValue.copyFrom(fValidatedInfo);
 
             if (fStrictAssess) {
                 // get all errors for the current element, its attribute,
@@ -3313,7 +3309,7 @@ public class XMLSchemaValidator
             }
         }
         if (fIdConstraint) {
-            attrPSVI.fActualValue = actualValue;
+            attrPSVI.fValue.copyFrom(fValidatedInfo);
         }
 
         if (fAugPSVI) {
@@ -3322,18 +3318,11 @@ public class XMLSchemaValidator
             // PSVI: attribute type
             attrPSVI.fTypeDecl = attDV;
 
-            // PSVI: attribute memberType
-            attrPSVI.fMemberType = fValidatedInfo.memberType;
             // PSVI: attribute normalized value
             // NOTE: we always store the normalized value, even if it's invlid,
             // because it might still be useful to the user. But when the it's
             // not valid, the normalized value is not trustable.
-            attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
-            attrPSVI.fActualValue = fValidatedInfo.actualValue;
-            attrPSVI.fActualValueType = fValidatedInfo.actualValueType;
-            attrPSVI.fItemValueTypes = fValidatedInfo.itemValueTypes;
-
-
+            attrPSVI.fValue.copyFrom(fValidatedInfo);
 
             // PSVI: validation attempted:
             attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;
@@ -3443,11 +3432,7 @@ public class XMLSchemaValidator
 
                     attrPSVI.fDeclaration = currDecl;
                     attrPSVI.fTypeDecl = currDecl.fType;
-                    attrPSVI.fMemberType = defaultValue.memberType;
-                    attrPSVI.fNormalizedValue = normalized;
-                    attrPSVI.fActualValue = defaultValue.actualValue;
-                    attrPSVI.fActualValueType = defaultValue.actualValueType;
-                    attrPSVI.fItemValueTypes = defaultValue.itemValueTypes;
+                    attrPSVI.fValue.copyFrom(defaultValue);
                     attrPSVI.fValidationContext = fValidationRoot;
                     attrPSVI.fValidity = AttributePSVI.VALIDITY_VALID;
                     attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;

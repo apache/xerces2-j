@@ -74,6 +74,10 @@ public class XSSimpleTypeDelegate
         return type.getFacets();
     }
 
+    public XSObject getFacet(int facetType) {
+        return type.getFacet(facetType);
+    }
+
     public boolean getFinite() {
         return type.getFinite();
     }

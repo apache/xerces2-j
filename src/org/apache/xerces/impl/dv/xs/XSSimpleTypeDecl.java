@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.math.BigInteger;
 import java.util.AbstractList;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -32,6 +33,7 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
@@ -287,9 +289,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private int fMinScale; //for XML Schema 1.1
     private Vector fPattern;
     private Vector fPatternStr;
-    private Vector fEnumeration;
-    private short[] fEnumerationType;
-    private ShortList[] fEnumerationItemType;   // used in case fenumerationType value is LIST or LISTOFUNION 
+    private ValidatedInfo[] fEnumeration;
+    private int fEnumerationSize;
     private ShortList fEnumerationTypeList;
     private ObjectList fEnumerationItemTypeList;
     private StringList fLexicalPattern;
@@ -414,8 +415,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPattern = fBase.fPattern;
         fPatternStr = fBase.fPatternStr;
         fEnumeration = fBase.fEnumeration;
-        fEnumerationType = fBase.fEnumerationType;
-        fEnumerationItemType = fBase.fEnumerationItemType;
+        fEnumerationSize = fBase.fEnumerationSize;
         fAssertion = fBase.fAssertion; // added for XML Schema 1.1
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
@@ -542,8 +542,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPattern = fBase.fPattern;
         fPatternStr = fBase.fPatternStr;
         fEnumeration = fBase.fEnumeration;
-        fEnumerationType = fBase.fEnumerationType;
-        fEnumerationItemType = fBase.fEnumerationItemType;
+        fEnumerationSize = fBase.fEnumerationSize;
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
         fMaxInclusive = fBase.fMaxInclusive;
@@ -920,22 +919,20 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             if ((allowedFacet & FACET_ENUMERATION) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"enumeration", fTypeName});
             } else {
-                fEnumeration = new Vector();
                 Vector enumVals = facets.enumeration;
-                fEnumerationType = new short[enumVals.size()];
-                fEnumerationItemType = new ShortList[enumVals.size()];
+                int size = enumVals.size();
+                fEnumeration = new ValidatedInfo[size];
                 Vector enumNSDecls = facets.enumNSDecls;
                 ValidationContextImpl ctx = new ValidationContextImpl(context);
                 enumerationAnnotations = facets.enumAnnotations;
-                for (int i = 0; i < enumVals.size(); i++) {
+                fEnumerationSize = 0;
+                for (int i = 0; i < size; i++) {
                     if (enumNSDecls != null)
                         ctx.setNSContext((NamespaceContext)enumNSDecls.elementAt(i));
                     try {
-                        ValidatedInfo info = getActualEnumValue((String)enumVals.elementAt(i), ctx, tempInfo);
+                        ValidatedInfo info = getActualEnumValue((String)enumVals.elementAt(i), ctx, null);
                         // check 4.3.5.c0 must: enumeration values from the value space of base
-                        fEnumeration.addElement(info.actualValue);
-                        fEnumerationType[i] = info.actualValueType;
-                        fEnumerationItemType[i] = info.itemValueTypes;
+                        fEnumeration[fEnumerationSize++] = info;
                     } catch (InvalidDatatypeValueException ide) {
                         reportError("enumeration-valid-restriction", new Object[]{enumVals.elementAt(i), this.getBaseType().getName()});
                     }
@@ -1645,6 +1642,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if ((fFacetsDefined & FACET_ENUMERATION) == 0 && (fBase.fFacetsDefined & FACET_ENUMERATION) != 0) {
             fFacetsDefined |= FACET_ENUMERATION;
             fEnumeration = fBase.fEnumeration;
+            fEnumerationSize = fBase.fEnumerationSize;
             enumerationAnnotations = fBase.enumerationAnnotations;
         }
         // inherit maxExclusive
@@ -1864,16 +1862,16 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         //enumeration
         if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
             boolean present = false;
-            final int enumSize = fEnumeration.size();
+            final int enumSize = fEnumerationSize;
             final short primitiveType1 = convertToPrimitiveKind(type);
             for (int i = 0; i < enumSize; i++) {
-                final short primitiveType2 = convertToPrimitiveKind(fEnumerationType[i]);
+                final short primitiveType2 = convertToPrimitiveKind(fEnumeration[i].actualValueType);
                 if ((primitiveType1 == primitiveType2 ||
                         primitiveType1 == XSConstants.ANYSIMPLETYPE_DT && primitiveType2 == XSConstants.STRING_DT ||
                         primitiveType1 == XSConstants.STRING_DT && primitiveType2 == XSConstants.ANYSIMPLETYPE_DT)
-                        && fEnumeration.elementAt(i).equals(ob)) {
+                        && fEnumeration[i].actualValue.equals(ob)) {
                     if (primitiveType1 == XSConstants.LIST_DT || primitiveType1 == XSConstants.LISTOFUNION_DT) {
-                        ShortList enumItemType = fEnumerationItemType[i];
+                        ShortList enumItemType = fEnumeration[i].itemValueTypes;
                         final int typeList1Length = itemType != null ? itemType.getLength() : 0;
                         final int typeList2Length = enumItemType != null ? enumItemType.getLength() : 0;
                         if (typeList1Length == typeList2Length) {
@@ -1902,8 +1900,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 }
             }
             if(!present){
+                StringBuffer sb = new StringBuffer();
+                appendEnumString(sb);
                 throw new InvalidDatatypeValueException("cvc-enumeration-valid",
-                        new Object [] {content, fEnumeration.toString()});
+                        new Object [] {content, sb.toString()});
             }
         }
 
@@ -2044,6 +2044,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             ValidatedInfo validatedInfo, boolean needNormalize)
     throws InvalidDatatypeValueException{
 
+        validatedInfo.actualType = this;
+
         String nvalue;
         if (needNormalize) {
             nvalue = normalize(content, fWhiteSpace);
@@ -2152,6 +2154,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                         validatedInfo.memberType = fMemberTypes[i];
                     }
 
+                    // Set this again because it was changed to the member type
+                    validatedInfo.actualType = this;
                     return aValue;
                 } catch(InvalidDatatypeValueException invalidValue) {
                 }
@@ -2169,14 +2173,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 }
                 typesBuffer.append(decl.fTypeName);
                 if(decl.fEnumeration != null) {
-                    Vector v = decl.fEnumeration;
-                    typesBuffer.append(" : [");
-                    for(int j = 0;j < v.size(); j++) {
-                        if(j != 0)
-                            typesBuffer.append(',');
-                        typesBuffer.append(v.elementAt(j));
-                    }
-                    typesBuffer.append(']');
+                    typesBuffer.append(" : ");
+                    decl.appendEnumString(typesBuffer);
                 }             
             }
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3",
@@ -2478,10 +2476,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if (fLexicalEnumeration == null){
             if (fEnumeration == null)
                 return StringListImpl.EMPTY_LIST;
-            int size = fEnumeration.size();
+            int size = fEnumerationSize;
             String[] strs = new String[size];
             for (int i = 0; i < size; i++)
-                strs[i] = fEnumeration.elementAt(i).toString();
+                strs[i] = fEnumeration[i].normalizedValue;
             fLexicalEnumeration = new StringListImpl(strs, size);
         }
         return fLexicalEnumeration;
@@ -2495,16 +2493,24 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if (fActualEnumeration == null) {
             fActualEnumeration = new AbstractObjectList() {
                 public int getLength() {
-                    return (fEnumeration != null) ? fEnumeration.size() : 0;
+                    return (fEnumeration != null) ? fEnumerationSize : 0;
                 }
                 public boolean contains(Object item) {
-                    return (fEnumeration != null && fEnumeration.contains(item));
+                    if (fEnumeration == null) {
+                        return false;
+                    }
+                    for (int i = 0; i < fEnumerationSize; i++) {
+                        if (fEnumeration[i].getActualValue().equals(item)) {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
                 public Object item(int index) {
                     if (index < 0 || index >= getLength()) {
                         return null;
                     }
-                    return fEnumeration.elementAt(index);
+                    return fEnumeration[index].getActualValue();
                 }
             };
         }
@@ -2517,17 +2523,18 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      */
     public ObjectList getEnumerationItemTypeList() {
         if (fEnumerationItemTypeList == null) {
-            if(fEnumerationItemType == null)
+            if (fEnumeration == null) {
                 return null;
+            }
             fEnumerationItemTypeList = new AbstractObjectList() {
                 public int getLength() {
-                    return (fEnumerationItemType != null) ? fEnumerationItemType.length : 0;
+                    return (fEnumeration != null) ? fEnumerationSize : 0;
                 }
                 public boolean contains(Object item) {
-                    if(fEnumerationItemType == null || !(item instanceof ShortList))
+                    if (fEnumeration == null || !(item instanceof ShortList))
                         return false;
-                    for(int i = 0;i < fEnumerationItemType.length; i++)
-                        if(fEnumerationItemType[i] == item)
+                    for (int i = 0;i < fEnumerationSize; i++)
+                        if (fEnumeration[i].itemValueTypes == item)
                             return true;
                     return false;
                 }
@@ -2535,7 +2542,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     if (index < 0 || index >= getLength()) {
                         return null;
                     }
-                    return fEnumerationItemType[index];
+                    return fEnumeration[index].itemValueTypes;
                 }
             };
         }
@@ -2544,10 +2551,14 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     public ShortList getEnumerationTypeList() {
         if (fEnumerationTypeList == null) {
-            if (fEnumerationType == null) {
+            if (fEnumeration == null) {
                 return ShortListImpl.EMPTY_LIST;
             }
-            fEnumerationTypeList = new ShortListImpl (fEnumerationType, fEnumerationType.length);
+            short[] list = new short[fEnumerationSize];
+            for (int i = 0; i < fEnumerationSize; i++) {
+                list[i] = fEnumeration[i].actualValueType;
+            }
+            fEnumerationTypeList = new ShortListImpl(list, fEnumerationSize);
         }
         return fEnumerationTypeList;
     }
@@ -3245,10 +3256,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fPattern = null;
         fPatternStr = null;
         fEnumeration = null;
-        fEnumerationType = null;
-        fEnumerationItemType = null;
         fLexicalPattern = null;
         fLexicalEnumeration = null;
+        fActualEnumeration = null;
+        fEnumerationTypeList = null;
+        fEnumerationItemTypeList = null;
         fMaxInclusive = null;
         fMaxExclusive = null;
         fMinExclusive = null;
@@ -3328,6 +3340,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_WHITESPACE,
                             WS_FACET_STRING[fWhiteSpace],
+                            0,
+                            null,
                             (fFixedFacet & FACET_WHITESPACE) != 0,
                             whiteSpaceAnnotation);
                 count++;
@@ -3337,6 +3351,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_LENGTH,
                             Integer.toString(fLength),
+                            fLength,
+                            null,
                             (fFixedFacet & FACET_LENGTH) != 0,
                             lengthAnnotation);
                 count++;
@@ -3346,6 +3362,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_MINLENGTH,
                             Integer.toString(fMinLength),
+                            fMinLength,
+                            null,
                             (fFixedFacet & FACET_MINLENGTH) != 0,
                             minLengthAnnotation);
                 count++;
@@ -3355,6 +3373,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_MAXLENGTH,
                             Integer.toString(fMaxLength),
+                            fMaxLength,
+                            null,
                             (fFixedFacet & FACET_MAXLENGTH) != 0,
                             maxLengthAnnotation);
                 count++;
@@ -3364,6 +3384,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_TOTALDIGITS,
                             Integer.toString(fTotalDigits),
+                            fTotalDigits,
+                            null,
                             (fFixedFacet & FACET_TOTALDIGITS) != 0,
                             totalDigitsAnnotation);
                 count++;
@@ -3373,6 +3395,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_FRACTIONDIGITS,
                             "0",
+                            0,
+                            null,
                             true,
                             fractionDigitsAnnotation);
                 count++;
@@ -3382,6 +3406,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_FRACTIONDIGITS,
                             Integer.toString(fFractionDigits),
+                            fFractionDigits,
+                            null,
                             (fFixedFacet & FACET_FRACTIONDIGITS) != 0,
                             fractionDigitsAnnotation);
                 count++;
@@ -3391,6 +3417,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_MAXINCLUSIVE,
                             fMaxInclusive.toString(),
+                            0,
+                            fMaxInclusive,
                             (fFixedFacet & FACET_MAXINCLUSIVE) != 0,
                             maxInclusiveAnnotation);
                 count++;
@@ -3400,6 +3428,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_MAXEXCLUSIVE,
                             fMaxExclusive.toString(),
+                            0,
+                            fMaxExclusive,
                             (fFixedFacet & FACET_MAXEXCLUSIVE) != 0,
                             maxExclusiveAnnotation);
                 count++;
@@ -3409,6 +3439,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_MINEXCLUSIVE,
                             fMinExclusive.toString(),
+                            0,
+                            fMinExclusive,
                             (fFixedFacet & FACET_MINEXCLUSIVE) != 0,
                             minExclusiveAnnotation);
                 count++;
@@ -3418,6 +3450,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl(
                             FACET_MININCLUSIVE,
                             fMinInclusive.toString(),
+                            0,
+                            fMinInclusive,
                             (fFixedFacet & FACET_MININCLUSIVE) != 0,
                             minInclusiveAnnotation);
                 count++;
@@ -3427,6 +3461,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl (
                             FACET_EXPLICITTIMEZONE,
                             ET_FACET_STRING[fExplicitTimezone],
+                            0,
+                            null,
                             (fFixedFacet & FACET_EXPLICITTIMEZONE) != 0,
                             explicitTimezoneAnnotation);
                 count++;
@@ -3436,6 +3472,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl (
                             FACET_MAXSCALE,
                             Integer.toString(fMaxScale),
+                            fMaxScale,
+                            null,
                             (fFixedFacet & FACET_MAXSCALE) != 0,
                             maxScaleAnnotation);
                 count++;
@@ -3445,6 +3483,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSFacetImpl (
                             FACET_MINSCALE,
                             Integer.toString(fMinScale),
+                            fMinScale,
+                            null,
                             (fFixedFacet & FACET_MINSCALE) != 0,
                             minScaleAnnotation);
                 count++;
@@ -3454,6 +3494,28 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         return (fFacets != null) ? fFacets : XSObjectListImpl.EMPTY_LIST;
     }
 
+    public XSObject getFacet(int facetType) {
+        if (facetType == FACET_ENUMERATION || facetType == FACET_PATTERN) {
+            XSObjectList list = getMultiValueFacets();
+            for (int i = 0; i < list.getLength(); i++) {
+                XSMultiValueFacet f = (XSMultiValueFacet)list.item(i);
+                if (f.getFacetKind() == facetType) {
+                    return f;
+                }
+            }
+        }
+        else {
+            XSObjectList list = getFacets();
+            for (int i = 0; i < list.getLength(); i++) {
+                XSFacet f = (XSFacet)list.item(i);
+                if (f.getFacetKind() == facetType) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+    
     /**
      *  A list of enumeration and pattern constraining facets if it exists,
      * otherwise an empty <code>XSObjectList</code>.
@@ -3475,6 +3537,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSMVFacetImpl(
                             FACET_PATTERN,
                             this.getLexicalPattern(),
+                            null,
                             patternAnnotations);
                 count++;
             }
@@ -3483,6 +3546,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     new XSMVFacetImpl(
                             FACET_ENUMERATION,
                             this.getLexicalEnumeration(),
+                            new ObjectListImpl(fEnumeration, fEnumerationSize),
                             enumerationAnnotations);
                 count++;
             }
@@ -3518,13 +3582,17 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     private static final class XSFacetImpl implements XSFacet {
         final short kind;
-        final String value;
+        final String svalue;
+        final int ivalue;
+        Object avalue;
         final boolean fixed;
         final XSObjectList annotations;  
 
-        public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
+        public XSFacetImpl(short kind, String svalue, int ivalue, Object avalue, boolean fixed, XSAnnotation annotation) {
             this.kind = kind;
-            this.value = value;
+            this.svalue = svalue;
+            this.ivalue = ivalue;
+            this.avalue = avalue;
             this.fixed = fixed;
 
             if (annotation != null) {
@@ -3571,9 +3639,26 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
          * @see org.apache.xerces.xs.XSFacet#getLexicalFacetValue()
          */
         public String getLexicalFacetValue() {
-            return value;
+            return svalue;
         }
 
+        public Object getActualFacetValue() {
+            if (avalue == null) {
+                if (kind == FACET_WHITESPACE || kind == FACET_EXPLICITTIMEZONE) {
+                    avalue = svalue;
+                }
+                else {
+                    // Must a facet with an integer value. Use BigInteger.
+                    avalue = BigInteger.valueOf(ivalue);
+                }
+            }
+            return avalue;
+        }
+        
+        public int getIntFacetValue() {
+            return ivalue;
+        }
+        
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#isFixed()
          */
@@ -3615,12 +3700,14 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private static final class XSMVFacetImpl implements XSMultiValueFacet {
         final short kind;
         final XSObjectList annotations;
-        final StringList values;
+        final StringList svalues;
+        final ObjectList avalues;
         final Vector asserts;
 
-        public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
+        public XSMVFacetImpl(short kind, StringList svalues, ObjectList avalues, XSObjectList annotations) {
             this.kind = kind;
-            this.values = values;
+            this.svalues = svalues;
+            this.avalues = avalues;
             this.annotations = (annotations != null) ? annotations : XSObjectListImpl.EMPTY_LIST;
             this.asserts = null;
         }		
@@ -3630,7 +3717,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public XSMVFacetImpl(short kind, Vector asserts) {
             this.kind = kind;
             this.asserts = asserts;
-            this.values = null;
+            this.svalues = null;
+            this.avalues = null;
             this.annotations = null;
         }
 
@@ -3652,9 +3740,13 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
          * @see org.apache.xerces.xs.XSMultiValueFacet#getLexicalFacetValues()
          */
         public StringList getLexicalFacetValues() {
-            return values;
+            return svalues;
         }
 
+        public ObjectList getEnumerationValues() {
+            return avalues;
+        }
+        
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSObject#getName()
          */
@@ -3726,5 +3818,15 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         return valueType;
     }
 
+    private void appendEnumString(StringBuffer sb) {
+        sb.append('[');
+        for (int i = 0; i < fEnumerationSize; i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append(fEnumeration[i].actualValue);
+        }
+        sb.append(']');
+    }
 } // class XSSimpleTypeDecl
 

@@ -36,6 +36,7 @@ import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeGroupDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSIDCDefinition;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroupDefinition;
 import org.apache.xerces.xs.XSNamedMap;
@@ -70,7 +71,7 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
                                                   false,    // model group
                                                   false,    // particle
                                                   false,    // wildcard
-                                                  false,    // idc
+                                                  true,    // idc
                                                   true,     // notation
                                                   false,    // annotation
                                                   false,    // facet
@@ -324,6 +325,9 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
                 case XSConstants.NOTATION_DECLARATION:
                     tables[i] = fGrammarList[i].fGlobalNotationDecls;
                     break;
+                case XSConstants.IDENTITY_CONSTRAINT:
+                    tables[i] = fGrammarList[i].fGlobalIDConstraintDecls;
+                    break;
                 }
             }
             // for complex/simple types, create a special implementation,
@@ -402,6 +406,9 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
                 break;
             case XSConstants.NOTATION_DECLARATION:
                 table = fGrammarList[i].fGlobalNotationDecls;
+                break;
+            case XSConstants.IDENTITY_CONSTRAINT:
+                table = fGrammarList[i].fGlobalIDConstraintDecls;
                 break;
             }
             
@@ -591,6 +598,40 @@ public final class XSModelImpl extends AbstractList implements XSModel, XSNamesp
             return null;
         }
         return sg.getGlobalGroupDecl(name, loc);
+    }
+
+    /**
+     * Convenience method. Returns a top-level model group definition.
+     *
+     * @param name      The name of the definition.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @return A top-level model group definition definition or null if such
+     *         definition does not exist.
+     */
+    public XSIDCDefinition getIDCDefinition(String name, String namespace) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return (XSIDCDefinition)sg.fGlobalIDConstraintDecls.get(name);
+    }
+    
+    /**
+     * Convenience method. Returns a top-level model group definition.
+     *
+     * @param name      The name of the definition.
+     * @param namespace The namespace of the definition, otherwise null.
+     * @param loc The schema location where the component was defined
+     * @return A top-level model group definition definition or null if such
+     *         definition does not exist.
+     */
+    public XSIDCDefinition getIDCDefinition(String name, String namespace,
+                                                          String loc) {
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
+        if (sg == null) {
+            return null;
+        }
+        return sg.getIDConstraintDecl(name, loc);
     }
 
 
