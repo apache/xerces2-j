@@ -302,15 +302,16 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         // get the value.
         NodeList childList = fCurrentAssertDomNode.getChildNodes();
         StringBuffer textValueContents = new StringBuffer();
-        for (int childNodeIndex = 0; childNodeIndex < childList.getLength();
-                                                         childNodeIndex++) {
+        final int childListLength = childList.getLength();
+        for (int childNodeIndex = 0; childNodeIndex < childListLength; childNodeIndex++) {
             Node node = childList.item(childNodeIndex);
-            if (node.getNodeType() == Node.TEXT_NODE) {
+            short nodeType = node.getNodeType();
+            if (nodeType == Node.TEXT_NODE) {
                 textChildCount++;
                 effectiveChildCount++;
                 textValueContents.append(node.getNodeValue());
             }
-            else if (node.getNodeType() == Node.ELEMENT_NODE) {
+            else if (nodeType == Node.ELEMENT_NODE) {
                 effectiveChildCount++;  
             }
         }
@@ -366,8 +367,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
-        XSObjectList attrMemberTypes = null;        
-        for (int i = 0; i < assertList.size(); i++) {
+        XSObjectList attrMemberTypes = null;
+        final int assertListSize = assertList.size();
+        for (int i = 0; i < assertListSize; i++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);               
             boolean xpathContextExists = false;
             if (assertImpl.getType() == XSConstants.ASSERTION) {
@@ -461,8 +463,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         
         // assertions from a simple type definition           
         Vector assertList = (Vector) assertions;
-        
-        for (int i = 0; i < assertList.size(); i++) {
+        final int assertListLength = assertList.size();
+        for (int i = 0; i < assertListLength; i++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);
             if (itemType != null) {
                // evaluating assertions for simpleType -> list.                    
@@ -519,24 +521,23 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      * component, xs:list.
      */
     private void setValueOf$valueForAListItem(XSSimpleTypeDefinition simpType,
-                                              String value) 
-                                              throws Exception {
-        
-        if ((simpType.getMemberTypes()).getLength() > 0) {
+            String value) throws Exception {
+        XSObjectList memberTypes = simpType.getMemberTypes();
+        if (memberTypes.getLength() > 0) {
             // The list item's type has variety 'union'.
             XSSimpleTypeDefinition actualListItemType = 
-                                        getActualListItemTypeForVarietyUnion(
-                                                     simpType.getMemberTypes(),
-                                                     value);
+                getActualListItemTypeForVarietyUnion(
+                        memberTypes,
+                        value);
             // set a schema 'typed value' to variable $value
             setTypedValueFor$value(value, actualListItemType,
-                                                 null);
+                    null);
         } 
         else {
-           // The list item's type has variety 'atomic'.
-           setTypedValueFor$value(value, simpType, null); 
+            // The list item's type has variety 'atomic'.
+            setTypedValueFor$value(value, simpType, null); 
         }
-        
+
     } // setSchemaTypeOn$valueForAListItem
     
     
@@ -550,8 +551,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                boolean isAttribute) {
         
         boolean validationFailedForUnion = true;
-        
-        for (int memberTypeIdx = 0; memberTypeIdx < memberTypes.getLength();
+        final int memberTypesLength = memberTypes.getLength();
+        for (int memberTypeIdx = 0; memberTypeIdx < memberTypesLength;
                                                          memberTypeIdx++) {
             XSSimpleTypeDefinition memType = (XSSimpleTypeDefinition) 
                                            memberTypes.item(memberTypeIdx);
@@ -561,8 +562,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                            getNamespace()) &&
                                                simpleTypeHasAsserts(memType)) {
                 XSObjectList memberTypeFacets = memType.getMultiValueFacets();
-                for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < 
-                                                  memberTypeFacets.getLength(); 
+                final int memberTypeFacetsLength = memberTypeFacets.getLength();
+                for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < memberTypeFacetsLength; 
                                                   memberTypeFacetIdx++) {
                     XSMultiValueFacet facet = (XSMultiValueFacet) 
                                    memberTypeFacets.item(memberTypeFacetIdx);
@@ -620,9 +621,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         boolean hasAssertions = false;
         
         XSObjectList simpleTypeFacets = simpleType.getMultiValueFacets();
-        
-        for (int facetIdx = 0; facetIdx < simpleTypeFacets.getLength(); 
-                                                        facetIdx++) {
+        final int simpleTypeFacetsLength = simpleTypeFacets.getLength();
+        for (int facetIdx = 0; facetIdx < simpleTypeFacetsLength; facetIdx++) {
             XSMultiValueFacet facet = (XSMultiValueFacet) simpleTypeFacets.
                                                  item(facetIdx);
             if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT && 
@@ -806,14 +806,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             // construct a list of atomic XDM items, to assign to XPath2
             // context variable $value.
             List xdmItemList = new ArrayList();
-            if ((listItemType.getMemberTypes()).getLength() > 0) {
+            final XSObjectList memberTypes = listItemType.getMemberTypes();
+            if (memberTypes.getLength() > 0) {
                // itemType of xs:list has variety 'union'. here list items may
                // have different types, which are determined below.
                while (values.hasMoreTokens()) {
                    String itemValue = values.nextToken();
                    XSSimpleTypeDefinition listItemTypeForUnion = 
                                          getActualListItemTypeForVarietyUnion
-                                               (listItemType.getMemberTypes(), 
+                                               (memberTypes, 
                                                        itemValue);
                    xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue
                                                           (listItemTypeForUnion.
@@ -873,11 +874,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
          // the below 'if else' clauses are written to process few special
          // cases, handling few of schema types, within PsychoPath XPath
          // engine.
-         if ("dayTimeDuration".equals(elementType.getName())) {
+         final String elementTypeName = elementType.getName();
+         if ("dayTimeDuration".equals(elementTypeName)) {
              typeCode = PsychoPathTypeHelper.DAYTIMEDURATION_DT;
              isxsd11Type = true;
          }
-         else if ("yearMonthDuration".equals(elementType.getName())) {
+         else if ("yearMonthDuration".equals(elementTypeName)) {
              typeCode = PsychoPathTypeHelper.YEARMONTHDURATION_DT;
              isxsd11Type = true;
          }
@@ -980,12 +982,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         
         // Iterate the member types of union in order, to find that which
         // schema type can successfully validate an atomic value first.
-        for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
-                                                            memTypeIdx++) {
-           XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item
-                                                             (memTypeIdx);
-              if (XSTypeHelper.isValueValidForASimpleType(value,
-                                                          memSimpleType)) {
+        final int memberTypesLength = memberTypes.getLength();
+        for (int memTypeIdx = 0; memTypeIdx < memberTypesLength; memTypeIdx++) {
+           XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item(memTypeIdx);
+              if (XSTypeHelper.isValueValidForASimpleType(value, memSimpleType)) {
                  // no more memberTypes need to be checked
                  simpleTypeDefn = memSimpleType; 
                  break; 
