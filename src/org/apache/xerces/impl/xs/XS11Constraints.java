@@ -21,12 +21,11 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
-import org.apache.xerces.impl.xs.models.XSEmptyCM;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.xni.QName;
 
 /**
- * XML Schema 1.0 constraints
+ * XML Schema 1.1 constraints
  * 
  * @xerces.internal
  *
