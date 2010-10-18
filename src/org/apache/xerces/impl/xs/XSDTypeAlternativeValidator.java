@@ -252,13 +252,13 @@ public class XSDTypeAlternativeValidator {
      * is used as an intermediate storage, for inheritable attribute 
      * information.
      */
-    class InheritableAttribute {       
+    final class InheritableAttribute {       
        
-       String localName = "";
-       String prefix = "";
-       String uri = "";
-       String value = "";
-       String type = "";
+       private final String localName;
+       private final String prefix;
+       private final String uri;
+       private final String value;
+       private final String type;
       
        public InheritableAttribute(String localName,
                                    String prefix,
