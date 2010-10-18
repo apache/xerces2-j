@@ -34,6 +34,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.assertion.XMLAssertAdapter;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -332,7 +333,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             else {
                 // white-space normalization is needed for the string value of
                 // $value in case of derivation from non xs:string atomic types.
-                value = (textValueContents.toString()).trim();
+                value = XMLChar.trim(textValueContents.toString());
             }    
         }
         else {

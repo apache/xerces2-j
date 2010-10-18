@@ -41,6 +41,7 @@ import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -1711,11 +1712,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
             assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport
                                             (schemaDoc.fNamespaceSupport));
-            String assertMessage = assertElement.getAttributeNS(
+            String assertMessage = XMLChar.trim(assertElement.getAttributeNS(
                                           SchemaSymbols.URI_XERCES_EXTENSIONS, 
-                                          SchemaSymbols.ATT_ASSERT_MESSAGE);
-            if (!"".equals(assertMessage.trim())) {
-               assertImpl.setMessage(assertMessage.trim());
+                                          SchemaSymbols.ATT_ASSERT_MESSAGE));
+            if (!"".equals(assertMessage)) {
+               assertImpl.setMessage(assertMessage);
             }
 
             // add assertion object, to the list of assertions to be processed

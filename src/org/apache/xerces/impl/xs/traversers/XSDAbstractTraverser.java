@@ -42,6 +42,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
@@ -518,11 +519,11 @@ abstract class XSDAbstractTraverser {
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
                     assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport
                                                      (schemaDoc.fNamespaceSupport));
-                    String assertMessage = content.getAttributeNS(
+                    String assertMessage = XMLChar.trim(content.getAttributeNS(
                                                 SchemaSymbols.URI_XERCES_EXTENSIONS,
-                                                SchemaSymbols.ATT_ASSERT_MESSAGE);
-                    if (!"".equals(assertMessage.trim())) {
-                       assertImpl.setMessage(assertMessage.trim());
+                                                SchemaSymbols.ATT_ASSERT_MESSAGE));
+                    if (!"".equals(assertMessage)) {
+                       assertImpl.setMessage(assertMessage);
                     }
                     
                     if (assertData == null) {
