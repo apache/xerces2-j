@@ -46,6 +46,7 @@ import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeGroupDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSIDCDefinition;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroupDefinition;
 import org.apache.xerces.xs.XSNamedMap;
@@ -1345,7 +1346,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                                                   false,    // model group
                                                   false,    // particle
                                                   false,    // wildcard
-                                                  false,    // idc
+                                                  true,    // idc
                                                   true,     // notation
                                                   false,    // annotation
                                                   false,    // facet
@@ -1482,6 +1483,9 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             case XSConstants.NOTATION_DECLARATION:
                 table = fGlobalNotationDecls;
                 break;
+            case XSConstants.IDENTITY_CONSTRAINT:
+                table = this.fGlobalIDConstraintDecls;
+                break;
             }
 
             // for complex/simple types, create a special implementation,
@@ -1530,6 +1534,9 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 break;
             case XSConstants.NOTATION_DECLARATION:
                 table = fGlobalNotationDeclsExt;
+                break;
+            case XSConstants.IDENTITY_CONSTRAINT:
+                table = this.fGlobalIDConstraintDeclsExt;
                 break;
             }
 
@@ -1606,6 +1613,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      */
     public XSNotationDeclaration getNotationDeclaration(String name) {
         return getGlobalNotationDecl(name);
+    }
+
+    public XSIDCDefinition getIDCDefinition(String name) {
+        return getIDConstraintDecl(name);
     }
 
 

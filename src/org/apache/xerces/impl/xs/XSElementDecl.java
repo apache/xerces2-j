@@ -31,6 +31,7 @@ import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 
 /**
  * The XML representation for an element declaration
@@ -380,6 +381,10 @@ public class XSElementDecl implements XSElementDeclaration {
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
                fDefault.itemValueTypes;
+    }
+
+    public XSValue getValueConstraintValue() {
+        return fDefault;
     }
 
 } // class XSElementDecl

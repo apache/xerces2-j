@@ -29,6 +29,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 
 /**
  * The XML representation for an attribute declaration
@@ -207,6 +208,10 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
                fDefault.itemValueTypes;
+    }
+
+    public XSValue getValueConstraintValue() {
+        return fDefault;
     }
 
 } // class XSAttributeDecl

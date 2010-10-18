@@ -48,6 +48,8 @@ public interface XSAttributeDeclaration extends XSObject {
     /**
      * Value constraint: The constraint value with respect to the [type 
      * definition], otherwise <code>null</code>. 
+     * 
+     * @deprecated Use getValueConstraintValue().getNormalizedValue() instead
      */
     public String getConstraintValue();
 
@@ -58,6 +60,8 @@ public interface XSAttributeDeclaration extends XSObject {
      * @exception XSException
      *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
      *   method.
+     *  
+     *  @deprecated Use getValueConstraintValue().getActualValue() instead
      */
     public Object getActualVC()
                                                         throws XSException;
@@ -75,6 +79,8 @@ public interface XSAttributeDeclaration extends XSObject {
      * @exception XSException
      *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
      *   method.
+     *  
+     *  @deprecated Use getValueConstraintValue().getActualValueType() instead
      */
     public short getActualVCType()
                                                         throws XSException;
@@ -91,9 +97,16 @@ public interface XSAttributeDeclaration extends XSObject {
      * @exception XSException
      *   NOT_SUPPORTED_ERR: Raised if the implementation does not support this 
      *   method.
+     *   
+     *  @deprecated Use getValueConstraintValue().getListValueTypes() instead
      */
     public ShortList getItemValueTypes()
                                                         throws XSException;
+
+    /**
+     * The actual value of the default or fixed value constraint.
+     */
+    public XSValue getValueConstraintValue();
 
     /**
      * An annotation if it exists, otherwise <code>null</code>. 

@@ -101,5 +101,11 @@ public class ByteListImpl extends AbstractList implements ByteList {
     public int size() {
         return getLength();
     }
+    
+    public byte[] toByteArray() {
+        byte[] ret = new byte[data.length];
+        System.arraycopy(data, 0, ret, 0, data.length);
+        return ret;
+    }
 }
 

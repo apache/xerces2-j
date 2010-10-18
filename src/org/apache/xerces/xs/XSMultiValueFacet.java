@@ -17,6 +17,8 @@
 
 package org.apache.xerces.xs;
 
+import org.apache.xerces.xs.datatypes.ObjectList;
+
 /**
  * Describes a multi-value constraining facets: pattern and enumeration.
  */
@@ -31,6 +33,11 @@ public interface XSMultiValueFacet extends XSObject {
      * Values of this facet. 
      */
     public StringList getLexicalFacetValues();
+
+    /**
+     * A list of XSValue objects. The actual enumeration values.
+     */
+    public ObjectList getEnumerationValues();
 
     /**
      * A sequence of [annotations] or an empty <code>XSObjectList</code>.

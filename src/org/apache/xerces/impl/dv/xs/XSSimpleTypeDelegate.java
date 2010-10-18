@@ -26,6 +26,7 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -71,6 +72,10 @@ public class XSSimpleTypeDelegate
 
     public XSObjectList getFacets() {
         return type.getFacets();
+    }
+
+    public XSObject getFacet(int facetType) {
+        return type.getFacet(facetType);
     }
 
     public boolean getFinite() {
