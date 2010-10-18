@@ -25,9 +25,9 @@ import org.apache.xerces.xni.QName;
  * @version $Id$
  */
 class Step {
-    private short axis;
-    private QName nametest;
-    private int predicate;
+    private final short axis;
+    private final QName nametest;
+    private final int predicate;
     
     public Step(short axis, QName nametest, int predicate) {
         this.axis = axis;
