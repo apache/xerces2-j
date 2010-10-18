@@ -47,18 +47,19 @@ public class Test extends AbstractPsychoPathImpl {
     protected final XSTypeAlternativeImpl fTypeAlternative;
 
     /** XPath 2.0 expression. Xerces-J native XPath 2.0 subset. */
-    protected XPath20 fXPath = null;
+    protected final XPath20 fXPath;
     
     /** XPath 2.0 expression. PsychoPath XPath 2.0 expression. */
-    protected XPath fXPathPsychoPath = null;
+    protected final XPath fXPathPsychoPath;
         
     /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
-    protected NamespaceSupport fXPath2NamespaceContext = null;
+    protected final NamespaceSupport fXPath2NamespaceContext;
 
     /** Constructs a "test" for type alternatives */
     public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative,
-                               NamespaceSupport namespaceContext) {
+            NamespaceSupport namespaceContext) {
         fXPath = xpath;
+        fXPathPsychoPath = null;
         fTypeAlternative = typeAlternative;
         fXPath2NamespaceContext = namespaceContext;
     }
@@ -68,10 +69,11 @@ public class Test extends AbstractPsychoPathImpl {
      * for PsychoPath XPath processor.
      */
     public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative,
-                             NamespaceSupport namespaceContext) {
-       fXPathPsychoPath = xpath;
-       fTypeAlternative = typeAlternative;
-       fXPath2NamespaceContext = namespaceContext;
+            NamespaceSupport namespaceContext) {
+        fXPath = null;
+        fXPathPsychoPath = xpath;
+        fTypeAlternative = typeAlternative;
+        fXPath2NamespaceContext = namespaceContext;
     }
 
     public XSTypeAlternativeImpl getTypeAlternative() {
