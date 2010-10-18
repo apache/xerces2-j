@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.xerces.dom.CoreDocumentImpl;
@@ -384,14 +385,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                     // of a simpleType -> list.
                     // tokenize the list value by the longest sequence of
                     // white-spaces.
-                    String[] values = value.split("\\s+");
+                    StringTokenizer values = new StringTokenizer(value, " \n\t\r");
                     
                     // evaluate assertion on all of list items
-                    for (int valIdx = 0; valIdx < values.length; valIdx++) {
-                        setValueOf$valueForAListItem(attrType, values[valIdx]);                        
+                    while (values.hasMoreTokens()) {
+                        String itemValue = values.nextToken();
+                        setValueOf$valueForAListItem(attrType, itemValue);                        
                         AssertionError assertError = evaluateAssertion(element, 
                                                                     assertImpl, 
-                                                                values[valIdx], 
+                                                                    itemValue, 
                                                             xpathContextExists,
                                                                         true);
                         if (assertError != null) {
@@ -465,17 +467,18 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                // evaluating assertions for simpleType -> list.                    
                // tokenize the list value by the longest sequence of
                // white-spaces.
-               String[] values = value.split("\\s+");               
+               StringTokenizer values = new StringTokenizer(value, " \n\t\r");
                
                // evaluate assertion on all of list items
-               for (int valIdx = 0; valIdx < values.length; valIdx++) {
-                  setValueOf$valueForAListItem(itemType, values[valIdx]);
-                  AssertionError assertError = evaluateAssertion(element, 
-                                                 assertImpl, values[valIdx], 
-                                                 false, true);
-                  if (assertError != null) {
-                      reportAssertionsError(assertError);    
-                  }
+               while (values.hasMoreTokens()) {
+                   String itemValue = values.nextToken();
+                   setValueOf$valueForAListItem(itemType, itemValue);
+                   AssertionError assertError = evaluateAssertion(element, 
+                           assertImpl, itemValue, 
+                           false, true);
+                   if (assertError != null) {
+                       reportAssertionsError(assertError);    
+                   }
                }
             }
             else if (memberTypes != null && memberTypes.getLength() == 0) {
@@ -797,7 +800,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                                                                  getItemType();
             // split the "string value" of list contents, into non white-space
             // tokens.
-            String[] values = value.split("\\s+");
+            StringTokenizer values = new StringTokenizer(value, " \n\t\r");
             
             // construct a list of atomic XDM items, to assign to XPath2
             // context variable $value.
@@ -805,23 +808,25 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             if ((listItemType.getMemberTypes()).getLength() > 0) {
                // itemType of xs:list has variety 'union'. here list items may
                // have different types, which are determined below.
-               for (int valIdx = 0; valIdx < values.length; valIdx++) {
+               while (values.hasMoreTokens()) {
+                   String itemValue = values.nextToken();
                    XSSimpleTypeDefinition listItemTypeForUnion = 
                                          getActualListItemTypeForVarietyUnion
                                                (listItemType.getMemberTypes(), 
-                                                              values[valIdx]);
+                                                       itemValue);
                    xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue
                                                           (listItemTypeForUnion.
-                                              getBuiltInKind(),values[valIdx]));
+                                              getBuiltInKind(), itemValue));
                }                                  
             }
             else {
                // every list item has a same type (the itemType of
                // xs:list).
-               for (int valIdx = 0; valIdx < values.length; valIdx++) {
+               while (values.hasMoreTokens()) {
+                   String itemValue = values.nextToken();
                    xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue
                                                (listItemType.getBuiltInKind(), 
-                                                             values[valIdx])); 
+                                                       itemValue)); 
                }                                  
             }
 

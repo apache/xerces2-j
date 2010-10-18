@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.opti;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -658,19 +659,17 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                 nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
-                // '\\s+' is regex denoting longest sequence of consecutive
-                // white-space characters.
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
-                   typeAvailableList = tokenizeString(attrValue, "\\s+");
+                   typeAvailableList = tokenizeString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_TYPEUNAVAILABLE.equals(attrLocalName)) {
-                    typeUnavailableList = tokenizeString(attrValue, "\\s+");
+                    typeUnavailableList = tokenizeString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_FACETAVAILABLE.equals(attrLocalName)) {
-                    facetAvailableList = tokenizeString(attrValue, "\\s+");
+                    facetAvailableList = tokenizeString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_FACETUNAVAILABLE.equals(attrLocalName)) {
-                    facetUnavailableList = tokenizeString(attrValue, "\\s+");
+                    facetUnavailableList = tokenizeString(attrValue);
                 }
                 else {
                     // report a warning
@@ -852,20 +851,16 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
     
     /*
-     * Method to tokenize a string value given a tokenizing delimiter, and
-     * return a List containing the string tokens. 
+     * Method to tokenize a string value (with XML white spaces as the 
+     * delimiter) and return a List containing the string tokens. 
      */
-    private List tokenizeString(String strValue, String delim) {
-        List stringTokens = new ArrayList();
-        
-        String[] strSplitValue = strValue.split(delim);
-        
-        for (int strIdx = 0; strIdx < strSplitValue.length; strIdx++) {
-           stringTokens.add(strSplitValue[strIdx]);
+    private List tokenizeString(String strValue) {
+        StringTokenizer st = new StringTokenizer(strValue, " \n\t\r");
+        List stringTokens = new ArrayList(st.countTokens());
+        while (st.hasMoreTokens()) {
+           stringTokens.add(st.nextToken());
         }
-        
         return stringTokens;
-        
     } // tokenizeString
     
 
