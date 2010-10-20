@@ -163,7 +163,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
 
         // add attribute nodes to DOM element node
-        for (int attIndex = 0; attIndex < attributes.getLength(); attIndex++) {
+        final int attributesLength = attributes.getLength();
+        for (int attIndex = 0; attIndex < attributesLength; attIndex++) {
             String attrUri = attributes.getURI(attIndex);
             String attQName = attributes.getQName(attIndex);
             String attrLocalName = attributes.getLocalName(attIndex);
