@@ -59,7 +59,7 @@ public class XS11AllCM implements XSCMValidator {
     private final int fMinOccurs[], fMaxOccurs[];
     private final int fNumElements, fNumTotal;
 
-    private XSOpenContentDecl fOpenContent = null;
+    private final XSOpenContentDecl fOpenContent;
 
     //
     // Constructors
