@@ -53,14 +53,15 @@ public class XSEmptyCM implements XSCMValidator {
     //
     // Data
     //
-    private XSOpenContentDecl fOpenContent = null;
+    private final XSOpenContentDecl fOpenContent;
 
     //
     // Constructors
     //
   
     // Only one instance of an XSEmptyCM with no openContent will be created.
-    public XSEmptyCM(){     
+    public XSEmptyCM() {
+        fOpenContent = null;
     }
 
     // This constructor will be called when the complexType is empty but

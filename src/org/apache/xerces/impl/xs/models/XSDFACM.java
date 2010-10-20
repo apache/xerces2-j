@@ -130,12 +130,12 @@ public class XSDFACM
     /**
      * The open content model
      */
-    private XSOpenContentDecl fOpenContent = null;
+    private final XSOpenContentDecl fOpenContent;
     
     /**
      * The XML Schema version
      */
-    private short fSchemaVersion;
+    private final short fSchemaVersion;
 
     /**
      * Array containing occurrence information for looping states 
@@ -1339,6 +1339,7 @@ public class XSDFACM
         if (openContent == null) {
             fNumTotal = 0;
             fTransTable[0] = new int[0];
+            fOpenContent = null;
         }
         else {
             fWildcards = new XSWildcardDecl[]{openContent.fWildcard};
