@@ -219,15 +219,16 @@ public class ValidatedInfo implements XSValue {
             actualValueType = o.getActualValueType();
             actualType = (XSSimpleType)o.getTypeDefinition();
             memberType = (XSSimpleType)o.getMemberTypeDefinition();
-            XSObjectList members = o.getMemberTypeDefinitions();
-            if (members == null || members.getLength() == 0) {
-                memberTypes = null;
-            }
-            else {
+            XSSimpleType realType = memberType == null ? actualType : memberType;
+            if (realType != null && realType.getBuiltInKind() == XSConstants.LISTOFUNION_DT) {
+                XSObjectList members = o.getMemberTypeDefinitions();
                 memberTypes = new XSSimpleType[members.getLength()];
                 for (int i = 0; i < members.getLength(); i++) {
                     memberTypes[i] = (XSSimpleType)members.get(i);
                 }
+            }
+            else {
+                memberTypes = null;
             }
             itemValueTypes = o.getListValueTypes();
         }

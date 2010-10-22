@@ -2044,8 +2044,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             ValidatedInfo validatedInfo, boolean needNormalize)
     throws InvalidDatatypeValueException{
 
-        validatedInfo.actualType = this;
-
         String nvalue;
         if (needNormalize) {
             nvalue = normalize(content, fWhiteSpace);
@@ -2094,6 +2092,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
             validatedInfo.actualValue = avalue;
             validatedInfo.actualValueType = fBuiltInKind;
+            validatedInfo.actualType = this;
 
             return avalue;
 
@@ -2131,6 +2130,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             validatedInfo.memberTypes = memberTypes;
             validatedInfo.itemValueTypes = new ShortListImpl(itemTypes, itemTypes.length);
             validatedInfo.normalizedValue = nvalue;
+            // Need to set it here or it will become the item type
+            validatedInfo.actualType = this;
 
             return v;
 
@@ -2154,7 +2155,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                         validatedInfo.memberType = fMemberTypes[i];
                     }
 
-                    // Set this again because it was changed to the member type
+                    // Need to set it here or it will become the member type
                     validatedInfo.actualType = this;
                     return aValue;
                 } catch(InvalidDatatypeValueException invalidValue) {
