@@ -170,7 +170,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
         XMLInputSource[] xmlInputSources = new XMLInputSource[schemas.length];
         InputStream inputStream;
         Reader reader;
-        for( int i=0; i<schemas.length; i++ ) {
+        for (int i = 0; i < schemas.length; ++i) {
             Source source = schemas[i];
             if (source instanceof StreamSource) {
                 StreamSource streamSource = (StreamSource) source;
@@ -178,9 +178,10 @@ abstract class BaseSchemaFactory extends SchemaFactory {
                 String systemId = streamSource.getSystemId();
                 inputStream = streamSource.getInputStream();
                 reader = streamSource.getReader();
-                xmlInputSources[i] = new XMLInputSource(publicId, systemId, null);
-                xmlInputSources[i].setByteStream(inputStream);
-                xmlInputSources[i].setCharacterStream(reader);
+                XMLInputSource xmlInputSource = new XMLInputSource(publicId, systemId, null);
+                xmlInputSource.setByteStream(inputStream);
+                xmlInputSource.setCharacterStream(reader);               
+                xmlInputSources[i] = xmlInputSource;
             }
             else if (source instanceof SAXSource) {
                 SAXSource saxSource = (SAXSource) source;
