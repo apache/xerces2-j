@@ -2534,9 +2534,15 @@ public class XSDHandler {
             return getSchemaDocument0(key, schemaId, schemaElement);
         }
         catch (XMLStreamException e) {
-            StAXLocationWrapper slw = new StAXLocationWrapper();
-            slw.setLocation(e.getLocation());
-            throw new XMLParseException(slw, e.getMessage(), e);
+            Throwable t = e.getNestedException();
+            if (t instanceof IOException) {
+                exception = (IOException) t;
+            }
+            else {
+                StAXLocationWrapper slw = new StAXLocationWrapper();
+                slw.setLocation(e.getLocation());
+                throw new XMLParseException(slw, e.getMessage(), e);
+            }
         }
         catch (IOException e) {
             exception = e;
