@@ -113,6 +113,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     // an instance variable to track the name of an attribute currently
     // been processed for assertions.
     private String fAttrName = null;
+    
+    // a placeholder definition used for assertions error messages.
+    private final String ERROR_PLACEHOLDER_REGEX = "\\{\\$value\\}";
 
     
     /*
@@ -258,7 +261,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     /*
      * Method to evaluate all of XML schema 1.1 assertions for an element tree.
-     * This is the root method, which evaluates all XML schema assertions, in
+     * This is the root method which evaluates all XML schema assertions, in
      * a single XML instance validation episode.
      */
     private void processAllAssertionsOnElement(QName element,
@@ -921,6 +924,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         QName element = assertError.getElement();
         XSAssertImpl assertImpl = assertError.getAssertion();
         boolean isList = assertError.isList();
+        String value = assertError.getValue();
         
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();        
         String typeString = "";
@@ -948,6 +952,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             
         String message = assertImpl.getMessage();
         if (message != null) {
+           // substitute all placeholder macro instances of "{$value}" with atomic value
+           // stored in variable "value".
+           if (value != null && !"".equals(value)) {
+              message = message.replaceAll(ERROR_PLACEHOLDER_REGEX, value);
+           }
+           
            if (!message.endsWith(".")) {
               message = message + ".";    
            }
@@ -958,7 +968,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
            else {
               message = "Assertion failed for schema type '" + typeString + "'. "
                          + message; 
-           }
+           }           
            fValidator.reportSchemaError("cvc-assertion.failure", 
                                new Object[] { message, listAssertErrMessage } );    
         }
