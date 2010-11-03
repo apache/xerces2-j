@@ -44,7 +44,7 @@ import org.apache.xerces.xs.datatypes.XSDecimal;
 import org.w3c.dom.Document;
 
 /**
- * @xerces.internal  
+ * @xerces.internal
  * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Sandy Gao, IBM
@@ -709,7 +709,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                                                          Constants.IS_FACET,
                                                          Constants.TYPE_AND_FACET_UNAVAILABILITY);
         
-        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore | 
+        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore || 
             facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
             ignoreSchemaComponent =  true;  
         }

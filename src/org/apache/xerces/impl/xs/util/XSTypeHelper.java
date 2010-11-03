@@ -22,10 +22,14 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * Class defining utility/helper methods related to schema types.
+ * @xerces.internal
+ * 
+ * Class defining utility/helper methods related to XML schema types.
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
@@ -52,8 +56,8 @@ public class XSTypeHelper {
         
         if (!typesIdentical) {                        
             if (uriEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
-                // if targetNamespace of types are same, then check for 
-                // equality of type names and of the base type.
+                // if targetNamespace of types are same, then check for  equality
+                // of type names and of the base type.
                 if ((type1Name == null && type2Name == null) ||
                     (type1Name != null && type1Name.equals(type2Name))
                           && (schemaTypesIdentical(typeDefn1.getBaseType(),
@@ -89,9 +93,42 @@ public class XSTypeHelper {
     
     
     /*
-     * Determine if a lexical "string value" conforms to a given schema
-     * simpleType definition. Using Xerces API 'XSSimpleType.validate'
-     * for this need.
+     * Determine if an atomic value is valid with respect to any of the union's
+     * member types. If this method returns 'true', then the value is valid with
+     * respect to entire union schema component. 
+     */
+    public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes,
+                                                       String content,
+                                                       ValidatedInfo validatedInfo) {
+        
+        boolean isValid = false;
+        
+        // check the union member types in order to check for validity of an 'atomic value'.
+        // the validity of 'atomic value' wrt to the 1st available type in this sequence,
+        // is sufficient to achieve the objective of this method.
+        for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
+                                                    memTypeIdx++) {
+            XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item
+                                                     (memTypeIdx);
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.
+                                                      getNamespace())) {                
+                if (XSTypeHelper.isValueValidForASimpleType(content, 
+                                                            simpleTypeDv)) {
+                    isValid = true;
+                    break;  
+                }
+            }
+        }
+        
+        return isValid;
+        
+    } // isAtomicValueValidForAnUnion
+    
+    
+    /*
+     * Determine if a lexical "string value" belongs to the value space (i.e is valid
+     * according to the type) of a given schema simpleType definition. Using Xerces API
+     * 'XSSimpleType.validate' for this need.
      */
     public static boolean isValueValidForASimpleType(String value,
                                                      XSSimpleType simplType) {
@@ -113,6 +150,6 @@ public class XSTypeHelper {
         
         return isValueValid;
         
-    } // isValueValidForASimpleType
+    } // isValueValidForASimpleType    
     
-}
+} // class XSTypeHelper

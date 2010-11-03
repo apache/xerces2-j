@@ -52,6 +52,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -3240,11 +3241,11 @@ public class XMLSchemaValidator
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
             
-            // additional check for assertions processing, for simple type 
+            // additional check for assertions processing, for simple type having  
             // variety 'union'.
             if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                if (isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
-                                                  attrValue, null)) {
+                if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
+                                                              attrValue, null)) {
                     fisAtomicValueValid = false; 
                 }
             }
@@ -3395,11 +3396,11 @@ public class XMLSchemaValidator
                     fValidationState.setFacetChecking(false);
                     attDV.validate(fValidationState, defaultValue);
                     
-                    // additional check for assertions processing, for simple type 
+                    // additional check for assertions processing, for simple type having 
                     // variety 'union'.
                     if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
-                                                         null, defaultValue)) {
+                        if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
+                                                                      null, defaultValue)) {
                             fisAtomicValueValid = false; 
                         }
                     }
@@ -3608,12 +3609,12 @@ public class XMLSchemaValidator
                     }
                     retValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     
-                    // additional check for assertions processing, for simple type 
+                    // additional check for assertions processing, for simple type having 
                     // variety 'union'.
                     if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
-                                                     String.valueOf(textContent), 
-                                                     null)) {
+                        if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
+                                                              String.valueOf(textContent), 
+                                                              null)) {
                             fisAtomicValueValid = false; 
                         }
                     }
@@ -3658,12 +3659,12 @@ public class XMLSchemaValidator
                     }
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     
-                    // additional check for assertions processing, for simple type 
+                    // additional check for assertions processing, for simple type having 
                     // variety 'union'.
                     if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
-                                                         String.valueOf(textContent), 
-                                                         null)) {
+                        if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
+                                                              String.valueOf(textContent), 
+                                                              null)) {
                             fisAtomicValueValid = false; 
                         }
                     }
@@ -4824,49 +4825,6 @@ public class XMLSchemaValidator
                 fData = newdata;
             }
         }
-    }
+    }    
     
-    
-    /*
-     * Determine if an atomic value is valid with respect to any of the 
-     * union's built-in schema types. If this method returns 'true', then
-     * the value is valid with respect to an union schema component. 
-     */
-    private boolean isAtomicValueValidForAnUnion(XSObjectList
-                                              memberTypes, String content,
-                                              ValidatedInfo validatedInfo) {
-        
-        boolean isValid = false;
-        
-        // check the union member types in sequence, to check for validity of
-        // an 'atomic value'. the validity of 'atomic value' wrt to 1st type
-        // in this sequence, is sufficient to achieve the objective of this
-        // method.
-        for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); 
-                                                    memTypeIdx++) {
-            XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item
-                                                     (memTypeIdx);
-            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.
-                                                      getNamespace())) {
-                try {
-                   if (validatedInfo != null) {
-                       simpleTypeDv.validate(fValidationState, validatedInfo); 
-                   }
-                   else {                       
-                       simpleTypeDv.validate(content, fValidationState, 
-                                             fValidatedInfo);
-                   }
-                   isValid = true;
-                   break;
-                }
-                catch(InvalidDatatypeValueException idve) {
-                   isValid = false;  
-                }
-            }
-        }
-        
-        return isValid;
-        
-    } // isAtomicValueValidForAnUnion    
-    
-} // class SchemaValidator
+} // class XMLSchemaValidator

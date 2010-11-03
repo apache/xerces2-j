@@ -26,8 +26,10 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.xni.QName;
 
 /**
- * This class provides supporting functionality for XML Schema conditional
- * include pre-processing (newly introduced in XML Schema 1.1).
+ * @xerces.internal
+ * 
+ * This class provides supporting functionality for XML Schema conditional include
+ * pre-processing (newly introduced in XML Schema 1.1).
  * 
  * 
  * ref: http://www.w3.org/TR/xmlschema11-1/#cip
@@ -215,16 +217,18 @@ public class SchemaConditionalIncludeHelper {
     } // initSupportedFacets
     
     
-    /* Method to check if a schema type specified by method arguments (the
+    /* 
+     * Method to check if a schema type specified by method arguments (the
      * QName components of the schema type) is supported by Xerces-J natively.
+     * 
      */
     public boolean isTypeSupported(String localName, String uri) {
        boolean typeSupported = false;
        
        for (Iterator iter = typesSupported.iterator(); iter.hasNext(); ) {
           QName typeQname = (QName) iter.next();
-          if (localName.equals(typeQname.localpart) &&
-              uri.equals(typeQname.uri)) {
+          if (localName.equals(typeQname.localpart) && uri.equals
+                                                        (typeQname.uri)) {
                 typeSupported = true;
                 break;
           }
@@ -235,16 +239,18 @@ public class SchemaConditionalIncludeHelper {
     } // isTypeSupported 
     
     
-    /* Method to check if a schema facet specified by method arguments (the
+    /* 
+     * Method to check if a schema facet specified by method arguments (the
      * QName components of a schema facet) is supported by Xerces-J natively.
+     * 
      */
     public boolean isFacetSupported(String localName, String uri) {
         boolean facetSupported = false;
         
         for (Iterator iter = facetsSupported.iterator(); iter.hasNext(); ) {
            QName typeQname = (QName) iter.next();
-           if (localName.equals(typeQname.localpart) &&
-               uri.equals(typeQname.uri)) {
+           if (localName.equals(typeQname.localpart) && uri.equals
+                                                          (typeQname.uri)) {
                  facetSupported = true;
                  break;
            }
@@ -254,4 +260,4 @@ public class SchemaConditionalIncludeHelper {
         
     } // isFacetSupported
 
-}
+} // class SchemaConditionalIncludeHelper
