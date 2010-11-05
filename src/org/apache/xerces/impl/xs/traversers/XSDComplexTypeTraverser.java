@@ -1530,6 +1530,20 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // minOccurs == maxOccurs == 0
         }
 
+        // Effective content
+        //
+        // 3.1 If the explicit content is empty then the appropriate case among the following:
+        //     3.1.1 If the effective mixed is true, then A particle whose properties are as follows:
+        //           {min occurs} 1
+        //           {max occurs} 1
+        //           {term}       a model group whose {compositor} is sequence and whose {particles} is empty
+        //     3.1.2 otherwise empty
+        // 3.2 otherwise the explicit content
+        //
+        if (particle == null && isMixed) {
+            particle = XSConstraints.getEmptySequence();
+        }
+
         // XML Schema 1.1
         //
         // When dealing with a complex type that does not have a complexContent
@@ -1554,26 +1568,16 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fOpenContent = null;
             }
         }
-
-        // Effective content
-        //
-        // 3.1 If the explicit content is empty then the appropriate case among the following:
-        //     3.1.1 If the effective mixed is true, then A particle whose properties are as follows:
-        //           {min occurs} 1
-        //           {max occurs} 1
-        //           {term}       a model group whose {compositor} is sequence and whose {particles} is empty
-        //     3.1.2 otherwise empty
-        // 3.2 otherwise the explicit content
-        //
         // XML Schema 1.1
         //
         // Dealing with a complex type that has no complexContent/simpleContent child
         //
         // 6.3 Particle of Content type - based on wildcard element
         //    
-        if (particle == null && (isMixed || (!isDerivation && fOpenContent != null))) {
+        if (particle == null && (!isDerivation && fOpenContent != null)) {
             particle = XSConstraints.getEmptySequence();
         }
+
         fParticle = particle;
 
         // -----------------------------------------------------------------------
