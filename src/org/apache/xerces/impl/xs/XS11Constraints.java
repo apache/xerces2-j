@@ -225,12 +225,12 @@ class XS11Constraints extends XSConstraints {
             intersectWildcard.fNamespaceList = localWildcard.fNamespaceList;
         }
         // 3 O, O1, and O2 all have {variety} = enumeration, and the {namespaces} of O is the intersection of the {namespaces} of O1 and O2.
-        else if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST || otherWildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST) {
+        else if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST && otherWildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST) {
             intersectWildcard.fType = XSWildcardDecl.NSCONSTRAINT_LIST;
             intersectWildcard.fNamespaceList = intersect2sets(wildcard.fNamespaceList, otherWildcard.fNamespaceList);
         }
         // 4 O, O1, and O2 all have {variety} not, and the {namespaces} of O is the union of the {namespaces} of O1 and O2.
-        else if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT || otherWildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
+        else if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT && otherWildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
             intersectWildcard.fType = XSWildcardDecl.NSCONSTRAINT_NOT;
             intersectWildcard.fNamespaceList = union2sets(wildcard.fNamespaceList, otherWildcard.fNamespaceList);
         }
