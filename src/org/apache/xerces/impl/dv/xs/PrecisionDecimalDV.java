@@ -163,7 +163,11 @@ class PrecisionDecimalDV extends TypeValidator {
                 return false;
             }
 
-            final XPrecisionDecimal oval = (XPrecisionDecimal)val;            
+            final XPrecisionDecimal oval = (XPrecisionDecimal)val;
+            if (sign == 0 && oval.sign == 0) {
+                // Both are NaN. Treat as "equal".
+                return true;
+            }
             return this.compareTo(oval) == EQUAL;
         }
 
@@ -204,7 +208,7 @@ class PrecisionDecimalDV extends TypeValidator {
 
         public int compareTo(XPrecisionDecimal val) {
             // seen NaN
-            if (sign == 0) {
+            if (sign == 0 || val.sign == 0) {
                 return INDETERMINATE;
             }
 
@@ -231,10 +235,19 @@ class PrecisionDecimalDV extends TypeValidator {
             }
 
             if (sign != val.sign) {
+                // Return equal if both are 0
+                if (isZero() && val.isZero()) {
+                    return EQUAL;
+                }
                 return sign > val.sign ? GREATER_THAN : LESS_THAN;
             }
 
             return sign * compare(val);
+        }
+        private boolean isZero() {
+            // Either "000" or "0.00"
+            return totalDigits == 1 && intDigits == 0 &&
+                   (fracDigits == 0 || fvalue.charAt(fracDigits-1) == '0');
         }
 
         // To enable comparison - the exponent part of the decimal will be limited
