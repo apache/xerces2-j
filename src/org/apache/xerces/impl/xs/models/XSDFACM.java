@@ -317,68 +317,75 @@ public class XSDFACM
             state[0] = XSCMValidator.FIRST_ERROR;
             return findMatchingDecl(curElem, subGroupHandler);
         }
+
+        state[0] = nextState;
+        if (fCountingStates == null) {
+            return matchingDecl;
+        }
+        // Interleave open content can appear anywhere, even while counting
+        if (fOpenContent != null && fOpenContent.fWildcard == matchingDecl &&
+                fOpenContent.fMode == XSOpenContentDecl.MODE_INTERLEAVE) {
+            return matchingDecl;
+        }
         
-        if (fCountingStates != null) {
-            Occurence o = fCountingStates[curState];
-            if (o != null) {
-                if (curState == nextState) {
-                    if (++state[2] > o.maxOccurs && 
+        Occurence o = fCountingStates[curState];
+        if (o != null) {
+            if (curState == nextState) {
+                if (++state[2] > o.maxOccurs && 
                         o.maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-                        // It's likely that we looped too many times on the current state
-                        // however it's possible that we actually matched another particle
-                        // which allows the same name.
-                        //
-                        // Consider:
-                        //
-                        // <xs:sequence>
-                        //  <xs:element name="foo" type="xs:string" minOccurs="3" maxOccurs="3"/>
-                        //  <xs:element name="foo" type="xs:string" fixed="bar"/>
-                        // </xs:sequence>
-                        //
-                        // and
-                        //
-                        // <xs:sequence>
-                        //  <xs:element name="foo" type="xs:string" minOccurs="3" maxOccurs="3"/>
-                        //  <xs:any namespace="##any" processContents="skip"/>
-                        // </xs:sequence>
-                        //
-                        // In the DFA there will be two transitions from the current state which 
-                        // allow "foo". Note that this is not a UPA violation. The ambiguity of which
-                        // transition to take is resolved by the current value of the counter. Since 
-                        // we've already seen enough instances of the first "foo" perhaps there is
-                        // another element declaration or wildcard deeper in the element map which
-                        // matches.
-                        return findMatchingDecl(curElem, state, subGroupHandler, elemIndex, eDeclHelper);
-                    }  
-                }
-                else if (state[2] < o.minOccurs) {
-                    // not enough loops on the current state.
-                    state[1] = state[0];
-                    state[0] = XSCMValidator.FIRST_ERROR;
-                    return findMatchingDecl(curElem, subGroupHandler);
-                }
-                else {
-                    // Exiting a counting state. If we're entering a new
-                    // counting state, reset the counter.
-                    o = fCountingStates[nextState];
-                    if (o != null) {
-                        state[2] = (elemIndex == o.elemIndex) ? 1 : 0;
-                    }
-                }
+                    // It's likely that we looped too many times on the current state
+                    // however it's possible that we actually matched another particle
+                    // which allows the same name.
+                    //
+                    // Consider:
+                    //
+                    // <xs:sequence>
+                    //  <xs:element name="foo" type="xs:string" minOccurs="3" maxOccurs="3"/>
+                    //  <xs:element name="foo" type="xs:string" fixed="bar"/>
+                    // </xs:sequence>
+                    //
+                    // and
+                    //
+                    // <xs:sequence>
+                    //  <xs:element name="foo" type="xs:string" minOccurs="3" maxOccurs="3"/>
+                    //  <xs:any namespace="##any" processContents="skip"/>
+                    // </xs:sequence>
+                    //
+                    // In the DFA there will be two transitions from the current state which 
+                    // allow "foo". Note that this is not a UPA violation. The ambiguity of which
+                    // transition to take is resolved by the current value of the counter. Since 
+                    // we've already seen enough instances of the first "foo" perhaps there is
+                    // another element declaration or wildcard deeper in the element map which
+                    // matches.
+                    return findMatchingDecl(curElem, state, subGroupHandler, elemIndex, eDeclHelper);
+                }  
+            }
+            else if (state[2] < o.minOccurs) {
+                // not enough loops on the current state.
+                state[1] = state[0];
+                state[0] = XSCMValidator.FIRST_ERROR;
+                return findMatchingDecl(curElem, subGroupHandler);
             }
             else {
+                // Exiting a counting state. If we're entering a new
+                // counting state, reset the counter.
                 o = fCountingStates[nextState];
                 if (o != null) {
-                    // Entering a new counting state. Reset the counter.
-                    // If we've already seen one instance of the looping
-                    // particle set the counter to 1, otherwise set it 
-                    // to 0.
                     state[2] = (elemIndex == o.elemIndex) ? 1 : 0;
                 }
             }
         }
+        else {
+            o = fCountingStates[nextState];
+            if (o != null) {
+                // Entering a new counting state. Reset the counter.
+                // If we've already seen one instance of the looping
+                // particle set the counter to 1, otherwise set it 
+                // to 0.
+                state[2] = (elemIndex == o.elemIndex) ? 1 : 0;
+            }
+        }
 
-        state[0] = nextState;
         return matchingDecl;
     } // oneTransition(QName, int[], SubstitutionGroupHandler):  Object
 
