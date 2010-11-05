@@ -854,7 +854,11 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
         }
         // Equal objects must have same hash code
         public int hashCode() {
-            return Arrays.hashCode(states);
+            int res = 0;
+            for (int i = 0; i < states.length; i++) {
+                res = res * 7 + states[i];
+            }
+            return res;
         }
         // it equals to another object if and only if they both have the same
         // base and derived states
