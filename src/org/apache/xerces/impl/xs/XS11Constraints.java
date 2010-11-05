@@ -47,21 +47,6 @@ class XS11Constraints extends XSConstraints {
         return false;
     }
 
-    public boolean overlapUPA(XSWildcardDecl wildcard1,
-            XSWildcardDecl wildcard2) {
-        // if the intersection of the two wildcards is not any and
-    	// and the {namespaces} of such intersection is not the empty set
-        // TODO: is this correct? No overlap if the intersection is "any"?
-        // TODO: should this be different between 1.0 and 1.1?
-        XSWildcardDecl intersect = performIntersectionWith(wildcard1, wildcard2, wildcard1.fProcessContents);
-        if (intersect.fType != XSWildcardDecl.NSCONSTRAINT_ANY &&
-                intersect.fNamespaceList.length != 0) {
-            return true;
-        }
-
-        return false;
-    }
-
     /**
      *  Schema Component Constraint: Wildcard Subset
      */

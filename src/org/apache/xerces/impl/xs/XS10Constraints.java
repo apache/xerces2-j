@@ -61,19 +61,6 @@ class XS10Constraints extends XSConstraints {
         return false;
     }
 
-    public boolean overlapUPA(XSWildcardDecl wildcard1,
-            XSWildcardDecl wildcard2) {
-        // if the intersection of the two wildcard is not empty list
-        XSWildcardDecl intersect = performIntersectionWith(wildcard1, wildcard2, wildcard1.fProcessContents);
-        if (intersect == null ||
-                intersect.fType != XSWildcardDecl.NSCONSTRAINT_LIST ||
-                intersect.fNamespaceList.length != 0) {
-            return true;
-        }
-
-        return false;
-    }
-    
     /**
      *  Schema Component Constraint: Wildcard Subset
      *  

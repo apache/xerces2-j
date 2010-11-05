@@ -587,6 +587,20 @@ public abstract class XSConstraints {
         return false;
     }
 
+    public boolean overlapUPA(XSWildcardDecl wildcard1,
+            XSWildcardDecl wildcard2) {
+        // if the intersection of the two wildcards is not any and
+        // and the {namespaces} of such intersection is not the empty set
+        XSWildcardDecl intersect = performIntersectionWith(wildcard1, wildcard2, wildcard1.fProcessContents);
+        if (intersect == null ||
+                intersect.fType != XSWildcardDecl.NSCONSTRAINT_LIST ||
+                intersect.fNamespaceList.length != 0) {
+            return true;
+        }
+
+        return false;
+    }
+
     // call one of the above methods according to the type of decls
     public boolean overlapUPA(Object decl1, Object decl2,
             SubstitutionGroupHandler sgHandler) {
@@ -721,9 +735,6 @@ public abstract class XSConstraints {
     public abstract boolean overlapUPA(XSElementDecl element,
             XSWildcardDecl wildcard,
             SubstitutionGroupHandler sgHandler);
-
-    public abstract boolean overlapUPA(XSWildcardDecl wildcard1,
-            XSWildcardDecl wildcard2);
 
     protected abstract void groupSubsumption(XSParticleDecl dParticle, XSParticleDecl bParticle,
             XSGrammarBucket grammarBucket, SubstitutionGroupHandler SGHandler,
