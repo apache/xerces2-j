@@ -556,21 +556,31 @@ public abstract class XSConstraints {
 
         // or if there is an element decl in element1's substitution group,
         // who has the same name/namespace with element2
-        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element1, fSchemaVersion);
-        for (int i = subGroup.length-1; i >= 0; i--) {
-            if (subGroup[i].fName == element2.fName &&
-                    subGroup[i].fTargetNamespace == element2.fTargetNamespace) {
+        XSElementDecl[] subGroup1 = sgHandler.getSubstitutionGroup(element1, fSchemaVersion);
+        for (int i = subGroup1.length-1; i >= 0; i--) {
+            if (subGroup1[i].fName == element2.fName &&
+                    subGroup1[i].fTargetNamespace == element2.fTargetNamespace) {
                 return true;
             }
         }
 
         // or if there is an element decl in element2's substitution group,
         // who has the same name/namespace with element1
-        subGroup = sgHandler.getSubstitutionGroup(element2, fSchemaVersion);
-        for (int i = subGroup.length-1; i >= 0; i--) {
-            if (subGroup[i].fName == element1.fName &&
-                    subGroup[i].fTargetNamespace == element1.fTargetNamespace) {
+        XSElementDecl[] subGroup2 = sgHandler.getSubstitutionGroup(element2, fSchemaVersion);
+        for (int i = subGroup2.length-1; i >= 0; i--) {
+            if (subGroup2[i].fName == element1.fName &&
+                    subGroup2[i].fTargetNamespace == element1.fTargetNamespace) {
                 return true;
+            }
+        }
+
+        // or if the 2 substitution groups overlap.
+        for (int i = subGroup1.length-1; i >= 0; i--) {
+            for (int j = subGroup2.length-1; j >= 0; j--) {
+                if (subGroup1[i].fName == subGroup2[i].fName &&
+                        subGroup1[i].fTargetNamespace == subGroup2[i].fTargetNamespace) {
+                    return true;
+                }
             }
         }
 
