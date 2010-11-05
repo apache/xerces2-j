@@ -174,11 +174,8 @@ public class XSWildcardDecl implements XSWildcard {
                 break;
             case NSCONSTRAINT_NOT:
                 buffer.append(SchemaSymbols.ATTVAL_TWOPOUNDOTHER);
-                buffer.append(":\"");
-                if (fNamespaceList[0] != null)
-                    buffer.append(fNamespaceList[0]);
-                buffer.append("\"");
-                break;
+                buffer.append(':');
+                // fall through
             case NSCONSTRAINT_LIST:
                 if (fNamespaceList.length == 0)
                     break;
