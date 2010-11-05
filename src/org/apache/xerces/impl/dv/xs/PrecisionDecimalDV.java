@@ -137,9 +137,20 @@ class PrecisionDecimalDV extends TypeValidator {
             intDigits = intEnd - actualIntStart;
             if (intDigits > 0) {
                 ivalue = content.substring(actualIntStart, intEnd);
+                totalDigits = intDigits + fracDigits;
+            }
+            else {
+                totalDigits = fracDigits;
+                for (int i = 0; i < fracDigits; i++,totalDigits--) {
+                    if (fvalue.charAt(i) != '0') {
+                        break;
+                    }
+                }
+                if (totalDigits == 0) {
+                    totalDigits = 1;
+                }
             }
 
-            totalDigits = intDigits + fracDigits;
             precision = fracDigits - pvalue;
         }
 
