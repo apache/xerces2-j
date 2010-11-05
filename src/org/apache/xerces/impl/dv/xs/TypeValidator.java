@@ -107,6 +107,11 @@ public abstract class TypeValidator {
     public int getPrecision(Object value){
         return 0;
     }
+
+    //whether this value has a precision. false indicate it's a special value.
+    public boolean hasPrecision(Object value){
+        return false;
+    }
     
     public boolean hasTimeZone(Object value){
         return false;

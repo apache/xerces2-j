@@ -31,7 +31,7 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 class PrecisionDecimalDV extends TypeValidator {
 
-    static class XPrecisionDecimal {
+    private static class XPrecisionDecimal {
 
         // sign: 0 for absent; 1 for positive values; -1 for negative values (except in case of INF, -INF)
         int sign = 1;
@@ -52,12 +52,16 @@ class PrecisionDecimalDV extends TypeValidator {
 
         XPrecisionDecimal(String content) throws NumberFormatException {
             if(content.equals("NaN")) {
-                ivalue = content;
+                ivalue = "NaN";
                 sign = 0;
                 return;
             }
-            if(content.equals("+INF") || content.equals("INF") || content.equals("-INF")) {
-                ivalue = content.charAt(0) == '+' ? content.substring(1) : content;
+            if(content.equals("+INF") || content.equals("INF")) {
+                ivalue = "INF";
+                return;
+            }
+            if(content.equals("-INF")) {
+                ivalue = "-INF";
                 return;
             }
             initD(content);
@@ -394,10 +398,6 @@ class PrecisionDecimalDV extends TypeValidator {
         return ((XPrecisionDecimal)value1).compareTo((XPrecisionDecimal)value2);
     }
 
-    public int getFractionDigits(Object value) {
-        return ((XPrecisionDecimal)value).fracDigits;
-    }
-
     public int getTotalDigits(Object value) {
         return ((XPrecisionDecimal)value).totalDigits;
     }
@@ -411,5 +411,11 @@ class PrecisionDecimalDV extends TypeValidator {
 
     public int getPrecision(Object value){
         return ((XPrecisionDecimal)value).precision;
+    }
+
+    public boolean hasPrecision(Object value){
+        XPrecisionDecimal pd = (XPrecisionDecimal)value;
+        // Can't be NaN (sign==0) or +-INF. != is OK. See initD().
+        return pd.sign != 0 && pd.ivalue != "INF" && pd.ivalue != "-INF";
     }
 }

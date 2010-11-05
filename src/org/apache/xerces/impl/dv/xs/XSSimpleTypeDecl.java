@@ -1909,10 +1909,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         //fractionDigits
         if ((fFacetsDefined & FACET_FRACTIONDIGITS) != 0) {
-            int scale = fDVs[fValidationDV].getFractionDigits(ob);
-            if (scale > fFractionDigits) {
+            int fracDigits = fDVs[fValidationDV].getFractionDigits(ob);
+            if (fracDigits > fFractionDigits) {
                 throw new InvalidDatatypeValueException("cvc-fractionDigits-valid",
-                        new Object[] {content, Integer.toString(scale), Integer.toString(fFractionDigits)});
+                        new Object[] {content, Integer.toString(fracDigits), Integer.toString(fFractionDigits)});
             }
         }
 
@@ -1926,20 +1926,24 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         }
         
         //maxScale      
-        if ((fFacetsDefined & FACET_MAXSCALE) != 0) {            
-            int precision = fDVs[fValidationDV].getPrecision(ob);
-            if (precision > fMaxScale){
-                throw new InvalidDatatypeValueException("cvc-maxScale-valid",
-                        new Object[] {content, Integer.toString(fMaxScale), fTypeName, Integer.toString(precision)});
+        if ((fFacetsDefined & FACET_MAXSCALE) != 0) {
+            if (fDVs[fValidationDV].hasPrecision(ob)) {
+                int precision = fDVs[fValidationDV].getPrecision(ob);
+                if (precision > fMaxScale){
+                    throw new InvalidDatatypeValueException("cvc-maxScale-valid",
+                            new Object[] {content, Integer.toString(fMaxScale), fTypeName, Integer.toString(precision)});
+                }
             }
         } 
         
         //minScale      
         if ((fFacetsDefined & FACET_MINSCALE) != 0) {            
-            int precision = fDVs[fValidationDV].getPrecision(ob);
-            if (precision < fMinScale){
-                throw new InvalidDatatypeValueException("cvc-minScale-valid",
-                        new Object[] {content, Integer.toString(fMinScale), fTypeName, Integer.toString(precision)} );
+            if (fDVs[fValidationDV].hasPrecision(ob)) {
+                int precision = fDVs[fValidationDV].getPrecision(ob);
+                if (precision < fMinScale){
+                    throw new InvalidDatatypeValueException("cvc-minScale-valid",
+                            new Object[] {content, Integer.toString(fMinScale), fTypeName, Integer.toString(precision)} );
+                }
             }
         }
         
