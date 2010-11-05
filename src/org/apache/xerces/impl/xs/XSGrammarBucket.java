@@ -21,8 +21,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.apache.xerces.xni.QName;
-
 /**
  * A class used to hold the internal schema grammar set for the current instance
  * 
@@ -31,7 +29,7 @@ import org.apache.xerces.xni.QName;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSGrammarBucket implements XSElementDeclHelper {
+public class XSGrammarBucket {
 
     // Data
 
@@ -234,18 +232,5 @@ public class XSGrammarBucket implements XSElementDeclHelper {
         fNoNSGrammar = null;
         fGrammarRegistry.clear();
     }
-    
-    // Implements XSElementDeclHelper interface
-    public XSElementDecl getGlobalElementDecl(QName element) {
-        return getGlobalElementDecl(element.uri, element.localpart);
-    }
 
-    public XSElementDecl getGlobalElementDecl(String namespace, String name) {
-        SchemaGrammar sGrammar = getGrammar(namespace);
-        if (sGrammar != null) {
-            return sGrammar.getGlobalElementDecl(name);
-        }
-        return null;
-    }
-    
 } // class XSGrammarBucket

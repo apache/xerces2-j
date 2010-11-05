@@ -17,7 +17,9 @@
 
 package org.apache.xerces.impl.xs.models;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -47,7 +49,7 @@ import org.apache.xerces.xni.QName;
  * @version $Id$
  */
 public class XSDFACM
-    implements XSCMValidator {
+    implements XSCMValidator, XS11CMRestriction.XS11CM {
 
     //
     // Constants
@@ -461,7 +463,7 @@ public class XSDFACM
         return null;
     } // findMatchingDecl(QName, SubstitutionGroupHandler): Object
     
-    boolean allowExpandedName(XSWildcardDecl wildcard, QName curElem, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper) {
+    public boolean allowExpandedName(XSWildcardDecl wildcard, QName curElem, SubstitutionGroupHandler subGroupHandler, XSElementDeclHelper eDeclHelper) {
         if (wildcard.allowQName(curElem)) {
             if (wildcard.fDisallowedSibling && findMatchingElemDecl(curElem, subGroupHandler) != null) {
                 return false;
@@ -1245,18 +1247,6 @@ public class XSDFACM
     }
 
     /**
-     * Check whether this content model is a valid restriction of the other one.
-     *
-     * @param base  the base content model
-     * @return      true if this content model is a valid restriction.
-     */
-    public boolean isValidRestriction(XSCMValidator base,
-            SubstitutionGroupHandler subGroupHandler,
-            XSElementDeclHelper eDeclHelper) {
-        return true;
-    }
-
-    /**
      * Check which elements are valid to appear at this point. This method also
      * works if the state is in error, in which case it returns what should
      * have been seen.
@@ -1329,36 +1319,198 @@ public class XSDFACM
         return fIsCompactedForUPA;
     }
     
-    private XSDFACM(XSOpenContentDecl openContent) {
-        fSchemaVersion = Constants.SCHEMA_VERSION_1_1;
-        fFinalStateFlags = new boolean[]{true};
-        fNumElements = 0;
-        fTransTable = new int[1][];
-        fTransTableSize = 1;
-        fIsCompactedForUPA = false;
-        if (openContent == null) {
-            fNumTotal = 0;
-            fTransTable[0] = new int[0];
-            fOpenContent = null;
-        }
-        else {
-            fWildcards = new XSWildcardDecl[]{openContent.fWildcard};
-            fNumTotal = 1;
-            fTransTable[0] = new int[]{0};
-            fOpenContent = openContent;
-        }
-    }
-    static XSDFACM EMPTY_DFA = null;
-    static XSDFACM createEmptyDFA(XSOpenContentDecl openContent) {
-        if (openContent == null) {
-            if (EMPTY_DFA == null) {
-                EMPTY_DFA = new XSDFACM(null);
+    public XSElementDecl nextElementTransition(int[] s, int[] sn, int[] index) {
+        for (int idx = index[0] + 1; idx < fNumElements; idx++) {
+            if (isAllowedTransition(s, sn, idx)) {
+                index[0] = idx;
+                return fElements[idx];
             }
-            return EMPTY_DFA;
+        }
+        index[0] = -1;
+        return null;
+    }
+    public XSWildcardDecl nextWildcardTransition(int[] s, int[] sn, int[] index) {
+        for (int idx = index[0] == -1 ? fNumElements : index[0] + 1; idx < fNumTotal; idx++) {
+            if (isAllowedTransition(s, sn, idx)) {
+                index[0] = idx;
+                return fWildcards[idx];
+            }
+        }
+        index[0] = -1;
+        return null;
+    }
+    private boolean isAllowedTransition(int[] s, int[] sn, int index) {
+        int n = fTransTable[s[0]][index];
+        if (n == -1) {
+            // Transition not allowed
+            return false;
+        }
+        // Record the next state
+        if (sn != null) {
+            sn[0] = n;
+        }
+
+        // If there are no counting state, the transition is allowed.
+        if (fCountingStates == null) {
+            return true;
+        }
+        
+        // If the transition is for an interleave open content, then it's
+        // always allowed, even while counting.
+        if (index == fNumTotal-1 && fOpenContent != null &&
+                fOpenContent.fMode == XSOpenContentDecl.MODE_INTERLEAVE) {
+            return true;
+        }
+        
+        // Handling of counting states
+        Occurence o = fCountingStates[s[0]];
+        if (o != null) {
+            // If the previous state is a counting state
+            if (s[0] == n) {
+                // And the transition loops back to the same state
+                if (s[2] == o.maxOccurs) {
+                    // Too many when trying to stay in this loop
+                    return false;
+                }
+                // Allowed transition. Increase the count. Don't need to do so
+                // when we've satisfied the minOccurs requirement and maxOccurs
+                // is unbounded.
+                if (sn != null) {
+                    sn[2] = s[2];
+                    if (sn[2] == 0 || sn[2] < o.minOccurs || o.maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                        sn[2]++;
+                    }
+                }
+            }
+            else if (s[2] < o.minOccurs) {
+                // Exiting a counting state, but minOccurs is not satisfied.
+                return false;
+            }
+            else {
+                // Exiting a counting state. If we're entering a new
+                // counting state, reset the counter.
+                o = fCountingStates[n];
+                if (o != null && sn != null) {
+                    sn[2] = (index == o.elemIndex) ? 1 : 0;
+                }
+            }
         }
         else {
-            return new XSDFACM(openContent);
+            // Previous state was not counting. Check the new state.
+            o = fCountingStates[n];
+            if (o != null && sn != null) {
+                // Entering a new counting state. Reset the counter.
+                sn[2] = (index == o.elemIndex) ? 1 : 0;
+            }
+        }
+
+        return true;
+    }
+    public boolean isOpenContent(XSWildcardDecl w) {
+        return fOpenContent != null && fOpenContent.fWildcard == w;
+    }
+    public List getDefinedNames(SubstitutionGroupHandler subGroupHandler) {
+        // Add names of all known elements and their sub-group members
+        List ret = new ArrayList();
+        for (int i = 0; i < fNumElements; i++) {
+            XSElementDecl e = fElements[i];
+            ret.add(e.fTargetNamespace);
+            ret.add(e.fName);
+            if (e.fScope == XSElementDecl.SCOPE_GLOBAL) {
+                XSElementDecl[] es = subGroupHandler.getSubstitutionGroup(e, fSchemaVersion);
+                for (int j = 0; j < es.length; j++) {
+                    ret.add(es[j].fTargetNamespace);
+                    ret.add(es[j].fName);
+                }
+            }
+        }
+        return ret;
+    }
+    public void optimizeStates(XS11CMRestriction.XS11CM base, int[] b, int[] d, int indexb) {
+        // Can only optimize if the current state is a counting state.
+        if (fCountingStates == null || fCountingStates[d[0]] == null) {
+            return;
+        }
+        // Not sure whether we need this. Better to optimize only when we've
+        // seen at least one element, to be sure we are "locked in" this state.
+        if (d[2] <= 0) {
+            return;
+        }
+        // When the count is less than minOccurs, or greater than minOccurs
+        // but less than maxOccurs, then we can try to bring the count up to
+        // min/maxOccurs, if base has sufficient space.
+        int need = 0;
+        if (d[2] < fCountingStates[d[0]].minOccurs) {
+            need = fCountingStates[d[0]].minOccurs - d[2];
+        }
+        else if (d[2] > fCountingStates[d[0]].minOccurs && d[2] < fCountingStates[d[0]].maxOccurs) {
+            need = fCountingStates[d[0]].maxOccurs - d[2];
+        }
+        // Derived has no space.
+        if (need == 0) {
+            return;
+        }
+        // Different strategy for different base kind.
+        if (base instanceof XSDFACM) {
+            optimizeForDFABase((XSDFACM)base, b, d, need);
+        }
+        else if (base instanceof XS11AllCM) {
+            optimizeForAllBase((XS11AllCM)base, b, d, need, indexb);
         }
     }
-    
+    private void optimizeForDFABase(XSDFACM base, int[] b, int[] d, int need) {
+        // Base must also be on a counting state
+        if (base.fCountingStates == null || base.fCountingStates[b[0]] == null) {
+            return;
+        }
+        // And have seen at least one element
+        if (b[2] <= 0) {
+            return;
+        }
+        // If base has max=unbounded, then there's enough space for "need"
+        if (base.fCountingStates[d[0]].maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            d[2] += need;
+            if (b[2] + need > base.fCountingStates[d[0]].minOccurs) {
+                // Avoid setting count bigger than min if max is unbounded.
+                // It makes no difference. Not exceeding min means fewer
+                // distinct states, so shorter state-pairs in the list.
+                b[2] = base.fCountingStates[d[0]].minOccurs;
+            }
+            else {
+                b[2] += need;
+            }
+        }
+        else {
+            // If base doesn't have sufficient space, lower "need"
+            if (need > base.fCountingStates[d[0]].maxOccurs - b[2]) {
+                need = base.fCountingStates[d[0]].maxOccurs - b[2];
+            }
+            b[2] += need;
+            d[2] += need;
+        }
+    }
+    private void optimizeForAllBase(XS11AllCM base, int[] b, int[] d, int need, int indexb) {
+        // Need to have seen an element, to be safe.
+        if (b[indexb] <= 0) {
+            return;
+        }
+        // Similar to the DFA case.
+        if (base.maxOccurs(indexb) == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            d[2] += need;
+            if (b[indexb] + need > base.minOccurs(indexb)) {
+                b[indexb] = base.minOccurs(indexb);
+            }
+            else {
+                b[indexb] += need;
+            }
+        }
+        else {
+            if (need > base.maxOccurs(indexb) - b[indexb]) {
+                need = base.maxOccurs(indexb) - b[indexb];
+            }
+            b[indexb] += need;
+            d[2] += need;
+        }
+    }
+
 } // class DFAContentModel

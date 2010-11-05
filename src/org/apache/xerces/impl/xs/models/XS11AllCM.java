@@ -17,9 +17,12 @@
 
 package org.apache.xerces.impl.xs.models;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -38,7 +41,7 @@ import org.apache.xerces.xni.QName;
  * @author Khaled Noaman, IBM
  * @version $Id$
  */
-public class XS11AllCM implements XSCMValidator {
+public class XS11AllCM implements XSCMValidator, XS11CMRestriction.XS11CM {
 
     //
     // Constants
@@ -170,10 +173,10 @@ public class XS11AllCM implements XSCMValidator {
         return null;
     }
 
-    private boolean allowExpandedName(XSWildcardDecl wildcard,
-                                      QName curElem,
-                                      SubstitutionGroupHandler subGroupHandler,
-                                      XSElementDeclHelper eDeclHelper) {
+    public boolean allowExpandedName(XSWildcardDecl wildcard,
+                                     QName curElem,
+                                     SubstitutionGroupHandler subGroupHandler,
+                                     XSElementDeclHelper eDeclHelper) {
         if (wildcard.allowQName(curElem)) {
             if (wildcard.fDisallowedSibling && findMatchingElemDecl(curElem, subGroupHandler) != null) {
                 return false;
@@ -273,23 +276,7 @@ public class XS11AllCM implements XSCMValidator {
             return false;
         }
 
-        // If <all> has minOccurs of zero and there are
-        // no children to validate, it is trivially valid
-        //
-        // XML Schema 1.1
-        // reached final state and doing suffix validation against open content
-        if ((fHasOptionalContent && state == STATE_START) || state == STATE_SUFFIX) {
-            return true;
-        }
-
-        for (int i = 1; i < fNumTotal; i++) {
-            // if one element is required, but not present, then error
-            if (currentState[i] < fMinOccurs[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return isFinal(currentState);
     }
 
     /**
@@ -320,18 +307,6 @@ public class XS11AllCM implements XSCMValidator {
             }
         }
         return false;
-    }
-
-    /**
-     * Check whether this content model is a valid restriction of the other one.
-     *
-     * @param base  the base content model
-     * @return      true if this content model is a valid restriction.
-     */
-    public boolean isValidRestriction(XSCMValidator base,
-            SubstitutionGroupHandler subGroupHandler,
-            XSElementDeclHelper eDeclHelper) {
-        return true;
     }
 
     /**
@@ -386,6 +361,15 @@ public class XS11AllCM implements XSCMValidator {
     }
 
     private boolean isFinal(int[] currentState) {
+        // If <all> has minOccurs of zero and there are
+        // no children to validate, it is trivially valid
+        //
+        // XML Schema 1.1
+        // reached final state and doing suffix validation against open content
+        if ((fHasOptionalContent && currentState[0] == STATE_START) || currentState[0] == STATE_SUFFIX) {
+            return true;
+        }
+
         for (int i = 1; i < fNumTotal; i++) {
             // if one element is required, but not present, then error
             if (currentState[i] < fMinOccurs[i]) {
@@ -396,4 +380,247 @@ public class XS11AllCM implements XSCMValidator {
         return true;
     }
 
+    public XSElementDecl nextElementTransition(int[] s, int[] sn, int[] index) {
+        for (int idx = index[0] == -1 ? 1 : index[0] + 1; idx < fNumElements; idx++) {
+            if (isAllowedTransition(s, sn, idx)) {
+                index[0] = idx;
+                return fElements[idx];
+            }
+        }
+        index[0] = -1;
+        return null;
+    }
+    public XSWildcardDecl nextWildcardTransition(int[] s, int[] sn, int[] index) {
+        int idx = index[0] == -1 ? fNumElements : index[0] + 1;
+        for (; idx < fNumTotal; idx++) {
+            if (isAllowedTransition(s, sn, idx)) {
+                index[0] = idx;
+                return fWildcards[idx];
+            }
+        }
+        if (isOpenContentAllowed(s, sn)) {
+            index[0] = fNumTotal;
+            return fOpenContent.fWildcard;
+        }
+        index[0] = -1;
+        return null;
+    }
+    private boolean isAllowedTransition(int[] s, int[] sn, int index) {
+        // Already used suffix open content. Can't make any other transition.
+        if (s[0] == STATE_SUFFIX) {
+            return false;
+        }
+        // Already seen all allowed occurrences.
+        if (s[index] == fMaxOccurs[index]) {
+            return false;
+        }
+        // Allowed transition. Update next state.
+        if (sn != null) {
+            System.arraycopy(s, 0, sn, 0, s.length);
+            sn[0] = STATE_CHILD;
+            // Only increase count if meaningful. i.e. don't exceed minOccurs
+            // if max is unbounded.
+            if (sn[index] == 0 || sn[index] < fMinOccurs[index] || fMaxOccurs[index] != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                sn[index]++;
+            }
+        }
+        return true;
+    }
+    private boolean isOpenContentAllowed(int[] s, int[] sn) {
+        if (fOpenContent == null) {
+            return false;
+        }
+        if (fOpenContent.fMode == XSOpenContentDecl.MODE_SUFFIX) {
+            // Suffix open content can only kick in on final states
+            if (isFinal(s)) {
+                sn[0] = STATE_SUFFIX;
+                return true;
+            }
+            return false;
+        }
+        
+        // Interleave: keep old state
+        System.arraycopy(s, 0, sn, 0, s.length);
+        return true;
+    }
+    public boolean isOpenContent(XSWildcardDecl w) {
+        return fOpenContent != null && fOpenContent.fWildcard == w;
+    }
+    public List getDefinedNames(SubstitutionGroupHandler subGroupHandler) {
+        List ret = new ArrayList();
+        // Index starts at 1. Get names of all elements and their sub-groups
+        for (int i = 1; i < fNumElements; i++) {
+            XSElementDecl e = fElements[i];
+            ret.add(e.fTargetNamespace);
+            ret.add(e.fName);
+            if (e.fScope == XSElementDecl.SCOPE_GLOBAL) {
+                XSElementDecl[] es = subGroupHandler.getSubstitutionGroup(e, Constants.SCHEMA_VERSION_1_1);
+                for (int j = 0; j < es.length; j++) {
+                    ret.add(es[j].fTargetNamespace);
+                    ret.add(es[j].fName);
+                }
+            }
+        }
+        return ret;
+    }
+    public void optimizeStates(XS11CMRestriction.XS11CM base, int[] b, int[] d, int indexb) {
+    }
+
+    // Constructor only used by copy()
+    private XS11AllCM(boolean hasOptionalContent, XSElementDecl[] elements,
+            XSWildcardDecl[] wildcards, int[] minOccurs, int[] maxOccurs,
+            int numElements, int numTotal, XSOpenContentDecl openContent) {
+        super();
+        fHasOptionalContent = hasOptionalContent;
+        fElements = elements;
+        fWildcards = wildcards;
+        fMinOccurs = minOccurs;
+        fMaxOccurs = maxOccurs;
+        fNumElements = numElements;
+        fNumTotal = numTotal;
+        fOpenContent = openContent;
+    }
+
+    // Make a copy to be modified
+    XS11AllCM copy() {
+        int[] minOccurs, maxOccurs;
+        if (fNumTotal > 1) {
+            minOccurs = new int[fNumTotal];
+            maxOccurs = new int[fNumTotal];
+            System.arraycopy(fMinOccurs, 0, minOccurs, 0, fNumTotal);
+            System.arraycopy(fMaxOccurs, 0, maxOccurs, 0, fNumTotal);
+        }
+        else {
+            minOccurs = null;
+            maxOccurs = null;
+        }
+
+        return new XS11AllCM(fHasOptionalContent, fElements,
+                fWildcards, minOccurs, maxOccurs,
+                fNumElements, fNumTotal, fOpenContent);
+    }
+    // Collect occurrence information as the derived content model.
+    // Add min/maxOccurs of the specified derived element to the entry
+    // for its corresponding base element
+    void collectOccurs(int[] min, int[] max, int b, int d) {
+        min[b] += fMinOccurs[d];
+        if (max[b] != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            if (fMaxOccurs[d] == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                max[b] = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            }
+            else {
+                max[b] += fMaxOccurs[d];
+            }
+        }
+    }
+    // Attempt to reduce min/maxOccurs from the base content model.
+    boolean removeAsBase(int[] min, int[] max, int[] used) {
+        for (int i = 1; i < fNumElements; i++) {
+            // Base has more minOccurs, can't be satisfied by derived. Error.
+            if (fMinOccurs[i] > min[i]) {
+                return false;
+            }
+            // Min in base is no long significant.
+            fMinOccurs[i] = 0;
+            // 2 cases. a) If base matches a single derived, then it's OK
+            // for derived to have bigger maxOccurs. Reduce both to make max
+            // in base 0. b) If base matches more than 1 derived, then it has
+            // to have big enough maxOccurs to cover all derived elements,
+            // otherwise we can't decide which derived to consume first.
+            // max of the base will be whatever is left, because it's possible
+            // for it to match derived wildcard.
+            if (fMaxOccurs[i] != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                if (max[i] == SchemaSymbols.OCCURRENCE_UNBOUNDED ||
+                        fMaxOccurs[i] < max[i]) {
+                    // Base doesn't have sufficient maxOccurs
+                    if (used[i] > 1) {
+                        // Not OK if there are more than one derived.
+                        // Mark base as not usable.
+                        used[i] = -1;
+                        continue;
+                    }
+                    // OK if there is only one derived. #a case above.
+                    // Base becomes 0; derived is subtracted.
+                    if (max[i] != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                        max[i] -= fMaxOccurs[i];
+                    }
+                    fMaxOccurs[i] = 0;
+                }
+                else {
+                    // Base has sufficient maxOccurs. Subtract from base and
+                    // make derived 0.
+                    fMaxOccurs[i] -= max[i];
+                    max[i] = 0;
+                }
+            }
+            else {
+                // Base has sufficient maxOccurs = unbounded.
+                if (max[i] == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                    // If derived is also unbounded, make both 0
+                    fMaxOccurs[i] = 0;
+                }
+                max[i] = 0;
+            }
+        }
+
+        return true;
+    }
+    // Attempt to reduce min/maxOccurs from the derived content model.
+    void removeAsDerived(int[] max, int[] used, int[] match) {
+        for (int i = 1; i < fNumElements; i++) {
+            int b = match[i];
+            // Only if the derived element has a base match that's usable
+            if (b < 0 || used[b] < 0) {
+                continue;
+            }
+            // min must have been satisfied. Max is 0 for 1-many matches.
+            // max can only be >0 for 1-1 match.
+            fMinOccurs[i] = 0;
+            fMaxOccurs[i] = max[b];
+        }
+    }
+    int minOccurs(int index) {
+        return fMinOccurs[index];
+    }
+    int maxOccurs(int index) {
+        return fMaxOccurs[index];
+    }
+    boolean isUnbounded(int index) {
+        return index < fNumTotal ? fMaxOccurs[index] == SchemaSymbols.OCCURRENCE_UNBOUNDED : true;
+    }
+    boolean hasOptionalContent() {
+        return fHasOptionalContent;
+    }
+    int totalMin() {
+        int ret = 0;
+        for (int i = 1; i < fNumTotal; i++) {
+            ret += fMinOccurs[i];
+        }
+        return ret;
+    }
+    int min(int i) {
+        return fMinOccurs[i];
+    }
+    XSOpenContentDecl getOpenContent() {
+        return fOpenContent;
+    }
+    // Called to know the size of the state machine if this is viewed as DFA
+    int calOccurs() {
+        long ret = 1;
+        for (int i = 1; i < fNumTotal; i++) {
+            // Multiply all maxOccurs. If max is unbounded, then use min.
+            int occ = fMaxOccurs[i];
+            if (occ == 0) {
+                continue;
+            }
+            if (occ == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                occ = fMinOccurs[i] == 0 ? 1 : fMinOccurs[i];
+            }
+            ret *= occ + 1;
+            if (ret > Integer.MAX_VALUE) {
+                return -1;
+            }
+        }
+        return (int)ret;
+    }
 } // class XSAll11CM

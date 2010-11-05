@@ -83,19 +83,6 @@ public interface XSCMValidator {
     public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler, XSConstraints xsConstraints) throws XMLSchemaException;
 
     /**
-     * Check whether this content model is a valid restriction of the other one.
-     * This method is never called in 1.0 mode.
-     *
-     * @param base             the base content model
-     * @param subGroupHandler  the substitution group handler
-     * @param eDeclHelper      the global element decl helper
-     * @return                 true if this content model is a valid restriction.
-     */
-    public boolean isValidRestriction(XSCMValidator base,
-                                      SubstitutionGroupHandler subGroupHandler,
-                                      XSElementDeclHelper eDeclHelper);
-
-    /**
      * Check which elements are valid to appear at this point. This method also
      * works if the state is in error, in which case it returns what should
      * have been seen.

@@ -1718,19 +1718,6 @@ public class XMLSchemaValidator
         }
         return null;
     }
-    public XSElementDecl getGlobalElementDecl(String namespace, String name) {
-        final SchemaGrammar sGrammar =
-            findSchemaGrammar(
-                XSDDescription.CONTEXT_ELEMENT,
-                namespace,
-                null,
-                null,
-                null);
-        if (sGrammar != null) {
-            return sGrammar.getGlobalElementDecl(name);
-        }
-        return null;
-    }
     
     //
     // Protected methods

@@ -350,7 +350,7 @@ class XS10Constraints extends XSConstraints {
     } // performIntersectionWith
 
     protected void groupSubsumption(XSParticleDecl dParticle, XSParticleDecl bParticle,
-            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            XSGrammarBucket grammarBucket, SubstitutionGroupHandler SGHandler,
             CMBuilder cmBuilder, XMLErrorReporter errorReporter, String dName,
             SimpleLocator locator) {
         try {
@@ -367,7 +367,7 @@ class XS10Constraints extends XSConstraints {
     }
     
     protected void typeSubsumption(XSComplexTypeDecl dType, XSComplexTypeDecl bType,
-            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            XSGrammarBucket grammarBucket, SubstitutionGroupHandler SGHandler,
             CMBuilder cmBuilder, XMLErrorReporter errorReporter, SimpleLocator locator) {
         try {
             particleValidRestriction(dType.fParticle, SGHandler, bType.fParticle, SGHandler);

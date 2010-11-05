@@ -17,11 +17,14 @@
 
 package org.apache.xerces.impl.xs.models;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSElementDeclHelper;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
@@ -39,7 +42,7 @@ import org.apache.xerces.xni.QName;
  * @author Lisa Martin, IBM
  * @version $Id$
  */
-public class XSEmptyCM implements XSCMValidator {
+public class XSEmptyCM implements XSCMValidator, XS11CMRestriction.XS11CM {
 
     //
     // Constants
@@ -144,23 +147,6 @@ public class XSEmptyCM implements XSCMValidator {
     }
 
     /**
-     * Check whether this content model is a valid restriction of the other one.
-     *
-     * @param base  the base content model
-     * @return      true if this content model is a valid restriction.
-     */
-    public boolean isValidRestriction(XSCMValidator base,
-                                      SubstitutionGroupHandler subGroupHandler,
-                                      XSElementDeclHelper eDeclHelper) {
-        // Delegate to DFA
-        return XSDFACM.createEmptyDFA(fOpenContent).isValidRestriction(base, subGroupHandler, eDeclHelper);
-    }
-    
-    XSOpenContentDecl getOpenContent() {
-        return fOpenContent;   
-    }
-
-    /**
      * Check which elements are valid to appear at this point. This method also
      * works if the state is in error, in which case it returns what should
      * have been seen.
@@ -185,9 +171,26 @@ public class XSEmptyCM implements XSCMValidator {
         return false;
     }
     
-    private boolean allowExpandedName(XSWildcardDecl wildcard,
-            QName curElem,
-            SubstitutionGroupHandler subGroupHandler,
+    public XSElementDecl nextElementTransition(int[] s, int[] sn, int[] index) {
+        return null;
+    }
+    public XSWildcardDecl nextWildcardTransition(int[] s, int[] sn, int[] index) {
+        sn[0] = s[0];
+        if (fOpenContent == null) {
+            return null;
+        }
+        if (index[0] == -1) {
+            index[0] = 0;
+            return fOpenContent.fWildcard;
+        }
+        index[0] = -1;
+        return null;
+    }
+    public boolean isOpenContent(XSWildcardDecl w) {
+        return fOpenContent != null && fOpenContent.fWildcard == w;
+    }
+    public boolean allowExpandedName(XSWildcardDecl wildcard,
+            QName curElem, SubstitutionGroupHandler subGroupHandler,
             XSElementDeclHelper eDeclHelper) {
         if (wildcard.allowQName(curElem)) {
             if (wildcard.fDisallowedDefined && eDeclHelper.getGlobalElementDecl(curElem) != null) {
@@ -197,5 +200,12 @@ public class XSEmptyCM implements XSCMValidator {
         }
         return false;
     }
-
+    public List getDefinedNames(SubstitutionGroupHandler subGroupHandler) {
+        return Collections.EMPTY_LIST;
+    }
+    public void optimizeStates(XS11CMRestriction.XS11CM base, int[] b, int[] d, int indexb) {
+    }
+    public XSOpenContentDecl getOpenContent() {
+        return fOpenContent;
+    }
 } // class XSEmptyCM

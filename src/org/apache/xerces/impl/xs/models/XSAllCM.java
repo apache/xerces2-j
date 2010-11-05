@@ -198,18 +198,6 @@ public class XSAllCM implements XSCMValidator {
     }
 
     /**
-     * Check whether this content model is a valid restriction of the other one.
-     *
-     * @param base  the base content model
-     * @return      true if this content model is a valid restriction.
-     */
-    public boolean isValidRestriction(XSCMValidator base,
-                                      SubstitutionGroupHandler subGroupHandler,
-                                      XSElementDeclHelper eDeclHelper) {
-        throw new RuntimeException("Should never be called in 1.0 mode.");
-    }
-
-    /**
      * Check which elements are valid to appear at this point. This method also
      * works if the state is in error, in which case it returns what should
      * have been seen.

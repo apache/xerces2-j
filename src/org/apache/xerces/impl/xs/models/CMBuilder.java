@@ -497,4 +497,11 @@ public class CMBuilder {
         }
         return true;
     }
+
+    // Called by XS11CMRestriction to make sure we don't use too much memory
+    // when we have to represent an "all" model group as a DFA. The parameter
+    // "occurs" is the number of distinct states in that DFA.
+    void testOccurrences(int occurs) {
+        fNodeFactory.testOccurrences(occurs);
+    }
 }

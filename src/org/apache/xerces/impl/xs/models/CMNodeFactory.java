@@ -166,4 +166,12 @@ public class CMNodeFactory {
 
     } // setProperty(String,Object)
 
+    // Called by XS11CMRestriction to make sure we don't use too much memory
+    // when we have to represent an "all" model group as a DFA. The parameter
+    // "occurs" is the number of distinct states in that DFA.
+    void testOccurrences(int occurs) {
+        if (fSecurityManager != null && (occurs < 0 || occurs > maxNodeLimit)) {
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "maxOccurLimit", new Object[]{ new Integer(maxNodeLimit) }, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+    }
 }//CMNodeFactory()

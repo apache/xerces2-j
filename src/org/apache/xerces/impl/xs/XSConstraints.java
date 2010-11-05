@@ -716,12 +716,12 @@ public abstract class XSConstraints {
             XSWildcardDecl wildcard2);
 
     protected abstract void groupSubsumption(XSParticleDecl dParticle, XSParticleDecl bParticle,
-            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            XSGrammarBucket grammarBucket, SubstitutionGroupHandler SGHandler,
             CMBuilder cmBuilder, XMLErrorReporter errorReporter, String dName,
             SimpleLocator locator);
     
     protected abstract void typeSubsumption(XSComplexTypeDecl dType, XSComplexTypeDecl bType,
-            XSElementDeclHelper eDeclHelper, SubstitutionGroupHandler SGHandler,
+            XSGrammarBucket grammarBucket, SubstitutionGroupHandler SGHandler,
             CMBuilder cmBuilder, XMLErrorReporter errorReporter, SimpleLocator locator);
     
 } // class XSContraints
