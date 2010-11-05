@@ -90,10 +90,14 @@ class XS11Constraints extends XSConstraints {
             }
 
             // 4 Both sub and super have {variety} = not, and super's {namespaces} is a subset of sub's {namespaces}.
-            if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
+            else if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
                 if (superWildcard.fType != XSWildcardDecl.NSCONSTRAINT_NOT || !subset2sets(superWildcard.fNamespaceList, wildcard.fNamespaceList)) {
                     return false;
                 }
+            }
+            else {
+                // Sub is any super is not. Not a subset.
+                return false;
             }
         }
 
