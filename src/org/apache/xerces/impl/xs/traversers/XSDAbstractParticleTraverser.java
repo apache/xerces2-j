@@ -165,7 +165,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      * particles (element and wild-card declarations) to a global particle array (fPArray), by expanding
      * the input particle (method argument) recursively.
      */
-    private void expandGroupParticleForCompositorAll(XSParticleDecl particle, Element child) {
+    private void expandGroupParticleForCompositorAll(XSParticleDecl particle, 
+                                                     Element contextElement) {
         
         XSModelGroupImpl group = (XSModelGroupImpl) particle.fValue;
         if (group.getCompositor() == XSModelGroup.COMPOSITOR_ALL) {
@@ -178,7 +179,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                }
                else {
                    // the sub particle is a model-group. call the method recursively.
-                   expandGroupParticleForCompositorAll(subParticles[partlIdx], child); 
+                   expandGroupParticleForCompositorAll(subParticles[partlIdx], contextElement); 
                }
             }
         }
@@ -186,7 +187,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             String wrongCompsName = (group.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) ? 
                                      "xs:"+SchemaSymbols.ELT_SEQUENCE : "xs:"+SchemaSymbols.ELT_CHOICE;
             // it's an error to have a non-all (xs:all) compositor within "xs:all -> xs:group"
-            reportSchemaError("mg-props-correct.3", new Object[] {wrongCompsName}, child);
+            reportSchemaError("mg-props-correct.3", new Object[] { wrongCompsName }, contextElement);
         }
         
     } // expandGroupParticleForCompositorAll
