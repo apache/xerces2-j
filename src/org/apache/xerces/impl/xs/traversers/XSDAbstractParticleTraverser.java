@@ -26,6 +26,7 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
@@ -105,6 +106,14 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                         }
                     }
                     else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                        // check for the constraints on minOccurs and maxOccurs attributes of xs:group particle
+                        Object[] groupAttrValues = fAttrChecker.checkAttributes(child, false, schemaDoc);
+                        XInt  groupMinAttr = (XInt)  groupAttrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+                        XInt  groupMaxAttr = (XInt)  groupAttrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];                        
+                        if (!(groupMinAttr.intValue() == 1 && groupMaxAttr.intValue() == 1)) {
+                            reportSchemaError("cos-all-limited.1.3", null, child);  
+                        }
+                        
                         particle = fSchemaHandler.fGroupTraverser.traverseLocal(child, schemaDoc, grammar);                                                
                         if (particle != null) {
                             expandGroupParticleForCompositorAll(particle, child); 
@@ -187,7 +196,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             String wrongCompsName = (group.getCompositor() == XSModelGroup.COMPOSITOR_SEQUENCE) ? 
                                      "xs:"+SchemaSymbols.ELT_SEQUENCE : "xs:"+SchemaSymbols.ELT_CHOICE;
             // it's an error to have a non-all (xs:all) compositor within "xs:all -> xs:group"
-            reportSchemaError("mg-props-correct.3", new Object[] { wrongCompsName }, contextElement);
+            reportSchemaError("cos-all-limited.2-xs11", new Object[] { wrongCompsName }, contextElement);
         }
         
     } // expandGroupParticleForCompositorAll
