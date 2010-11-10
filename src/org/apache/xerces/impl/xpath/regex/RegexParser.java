@@ -471,7 +471,7 @@ class RegexParser {
 
             while (this.offset + 1 < this.regexlen) {
                 ch = this.regex.charAt(this.offset + 1);
-                if ('1' <= ch && ch <= '9') {
+                if ('0' <= ch && ch <= '9') {
                     refno = (refno * 10) + (ch - '0');
                     if (refno < this.parennumber) {
                         finalRefno= refno;
@@ -604,7 +604,7 @@ class RegexParser {
 
         while  (this.offset < this.regexlen) {
             final int ch = this.regex.charAt(this.offset);
-            if ('1' <= ch && ch <= '9') {
+            if ('0' <= ch && ch <= '9') {
                 refnum = (refnum * 10) + (ch - '0');
                 if (refnum < this.parennumber) {
                     ++this.offset;
