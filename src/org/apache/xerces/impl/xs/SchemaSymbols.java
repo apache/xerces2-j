@@ -90,6 +90,7 @@ public final class SchemaSymbols {
     public static final String ELT_MINSCALE               = "minScale".intern();
     public static final String ELT_NOTATION               = "notation".intern();
     public static final String ELT_OPENCONTENT            = "openContent".intern();
+    public static final String ELT_OVERRIDE               = "override".intern();
     public static final String ELT_PATTERN                = "pattern".intern();
     public static final String ELT_REDEFINE               = "redefine".intern();
     public static final String ELT_RESTRICTION            = "restriction".intern();

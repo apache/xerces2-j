@@ -61,6 +61,8 @@ import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaDOMParser;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
+import org.apache.xerces.impl.xs.traversers.override.DOMOverrideImpl;
+import org.apache.xerces.impl.xs.traversers.override.OverrideTransformationManager;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.XSInputSource;
 import org.apache.xerces.parsers.SAXParser;
@@ -341,11 +343,13 @@ public class XSDHandler {
     // use Schema Element to lookup the SystemId.
     private String doc2SystemId(Element ele) {
         String documentURI = null;
-        /**
-         * REVISIT: Casting until DOM Level 3 interfaces are available. -- mrglavas
-         */
-        if(ele.getOwnerDocument() instanceof org.apache.xerces.impl.xs.opti.SchemaDOM){
-            documentURI = ((org.apache.xerces.impl.xs.opti.SchemaDOM) ele.getOwnerDocument()).getDocumentURI();
+        final Document ownerDoc = ele.getOwnerDocument();
+
+        if (ownerDoc instanceof org.apache.xerces.impl.xs.opti.SchemaDOM) {
+            documentURI = ((org.apache.xerces.impl.xs.opti.SchemaDOM) ownerDoc).getDocumentURI();
+        }
+        else if (ownerDoc.getImplementation().hasFeature("Core", "3.0")) {
+            documentURI = ownerDoc.getDocumentURI();
         }
         return documentURI != null ? documentURI : (String) fDoc2SystemId.get(ele);
     }
@@ -417,6 +421,9 @@ public class XSDHandler {
     
     // the Grammar Pool
     private XMLGrammarPool fGrammarPool;
+    
+    //override Manager
+    private OverrideTransformationManager fOverrideHandler;
     
     //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
@@ -648,11 +655,17 @@ public class XSDHandler {
             	fDoc2SystemId.put(schemaRoot, schemaId);
             }
         }
-        
+
         // before constructing trees and traversing a schema, need to reset
         // all traversers and clear all registries
         prepareForTraverse();
-        
+
+        // Tell override handler about the original schema root
+        // Need to know if that schema would be later overriden - possible collision
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fOverrideHandler.addSchemaRoot((String)fDoc2SystemId.get(schemaRoot), schemaRoot);
+        }
+
         fRoot = constructTrees(schemaRoot, is.getSystemId(), desc, grammar != null);
         if (fRoot == null) {
             return null;
@@ -840,7 +853,8 @@ public class XSDHandler {
             int secondIdx = 0;
             // for include and redefine
             if (referType == XSDDescription.CONTEXT_INCLUDE ||
-                    referType == XSDDescription.CONTEXT_REDEFINE) {
+                    referType == XSDDescription.CONTEXT_REDEFINE ||
+                    referType == XSDDescription.CONTEXT_OVERRIDE ) {
                 // if the referred document has no targetNamespace,
                 // it's a chameleon schema
                 if (currSchemaInfo.fTargetNamespace == null) {
@@ -907,7 +921,8 @@ public class XSDHandler {
             updateImportListFor(sg);
         }
         else if (referType == XSDDescription.CONTEXT_INCLUDE ||
-                referType == XSDDescription.CONTEXT_REDEFINE) {
+                        referType == XSDDescription.CONTEXT_REDEFINE || 
+                        referType == XSDDescription.CONTEXT_OVERRIDE) {
             sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
         }
         else if(fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT) {
@@ -1047,7 +1062,8 @@ public class XSDHandler {
                 newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child, isg == null);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
-                    (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
+                    (localName.equals(SchemaSymbols.ELT_REDEFINE)) ||
+                    (localName.equals(SchemaSymbols.ELT_OVERRIDE) && fSchemaVersion == Constants.SCHEMA_VERSION_1_1)) {
                 // validation for redefine/include will be the same here; just
                 // make sure TNS is right (don't care about redef contents
                 // yet).
@@ -1111,32 +1127,66 @@ public class XSDHandler {
                 }
                 // pass the systemId of the current document as the base systemId
                 boolean mustResolve = false;
+                boolean isOverride = false;
                 refType = XSDDescription.CONTEXT_INCLUDE;
-                if(localName.equals(SchemaSymbols.ELT_REDEFINE)) {
+                if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
                     mustResolve = nonAnnotationContent(child);
                     refType = XSDDescription.CONTEXT_REDEFINE;
+                }
+                else if (localName.equals(SchemaSymbols.ELT_OVERRIDE)){
+                    mustResolve = nonAnnotationContent(child);
+                    refType = XSDDescription.CONTEXT_OVERRIDE;
+                    isOverride = true;
                 }
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(refType);
                 fSchemaGrammarDescription.setBaseSystemId(doc2SystemId(schemaRoot));
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(callerTNS);
-                
-                boolean alreadyTraversed = false;
+
                 XMLInputSource schemaSource = resolveSchemaSource(fSchemaGrammarDescription, mustResolve, child, true);
-                if (fNamespaceGrowth && refType == XSDDescription.CONTEXT_INCLUDE) {
-                    try {
-                        final String schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
-                        alreadyTraversed = sg.getDocumentLocations().contains(schemaId);
-                    }
-                    catch(MalformedURIException e) {
-                        
-                    }
+                String schemaId = null;
+                try {
+                    schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);                     
+                }
+                catch(MalformedURIException e) {
                 }
 
+                // If namespace growth is enabled, and we have already
+                // processed the same schema (ie. same system id), we
+                // treat the schema as duplicate, since we cannot replace
+                // the existing global components
+                boolean alreadyTraversed = (fNamespaceGrowth) ? sg.getDocumentLocations().contains(schemaId) : false;
                 if (!alreadyTraversed) {
                     newSchemaRoot = resolveSchema(schemaSource, fSchemaGrammarDescription, mustResolve, child);
                     schemaNamespace = currSchemaInfo.fTargetNamespace;
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                        if (isOverride) {
+                            final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
+
+                            // Either we had a collision where the transformed
+                            // schema has global components or we hit a
+                            // transformation cycle
+                            if (transformedSchemaRoot == null) {
+                                fLastSchemaWasDuplicate = true;
+                            }
+                            // In case of a collision where the transformed
+                            // schema has no global components, the override
+                            // transformer will return the new transformed
+                            // schema. We need to process that new schema,
+                            // so we set the duplicate schema flag to false
+
+                            else if (fLastSchemaWasDuplicate && transformedSchemaRoot != newSchemaRoot) {
+                                fLastSchemaWasDuplicate = false;
+                            }
+
+                            newSchemaRoot = transformedSchemaRoot;
+                        }
+                        else {
+                            // check for override collision
+                            fOverrideHandler.checkSchemaRoot(schemaId, child, newSchemaRoot);
+                        }
+                    }
                 }
                 else {
                     fLastSchemaWasDuplicate = true;
@@ -1174,7 +1224,7 @@ public class XSDHandler {
         fDependencyMap.put(currSchemaInfo, dependencies);
         return currSchemaInfo;
     } // end constructTrees
-    
+
     private boolean isExistingGrammar(XSDDescription desc, boolean ignoreConflict) {
         SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
         if (sg == null) {
@@ -1288,7 +1338,8 @@ public class XSDHandler {
                     continue;
                 }
                 else if (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
-                        DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
+                        DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT) ||
+                        (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_OVERRIDE) && fSchemaVersion == Constants.SCHEMA_VERSION_1_1)) {
                     if (!dependenciesCanOccur) {
                         reportSchemaError("s4s-elt-invalid-content.3", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
                     }
@@ -1502,8 +1553,22 @@ public class XSDHandler {
                     currSG.addAnnotation(fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
                     sawAnnotation = true;
                 }
-                else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
-                    currSchemaDoc.fDefaultOpenContent = fComplexTypeTraverser.traverseOpenContent(globalComp, currSchemaDoc, currSG, true);
+                else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    if (componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
+                        currSchemaDoc.fDefaultOpenContent = fComplexTypeTraverser.traverseOpenContent(globalComp, currSchemaDoc, currSG, true);
+                    }
+                    // if component is of override type - currently we do not
+                    // attempt to validate <override> Element since it will
+                    // be reflected on schema anyway
+                    //
+                    // REVISIT - is it required to validate Override components
+                    // that do not affect any schema..?
+                    else if (componentType.equals(SchemaSymbols.ELT_OVERRIDE)){
+                        continue;
+                    }
+                    else {
+                        reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
+                    }
                 }
                 else {
                     reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
@@ -3601,6 +3666,10 @@ public class XSDHandler {
         fGlobalNotationDecls.clear();
         fGlobalIDConstraintDecls.clear();
         fGlobalTypeDecls.clear();
+        
+        if (fOverrideHandler != null) {
+            fOverrideHandler.reset();
+        }
     }
     public void setDeclPool (XSDeclarationPool declPool){
         fDeclPool = declPool;
@@ -3708,8 +3777,7 @@ public class XSDHandler {
         } catch (XMLConfigurationException e) {
         }
         
-        fTypeValidatorHelper = TypeValidatorHelper.getInstance(fSchemaVersion);
-        
+        fTypeValidatorHelper = TypeValidatorHelper.getInstance(fSchemaVersion);        
     } // reset(XMLComponentManager)
     
     
@@ -4445,6 +4513,9 @@ public class XSDHandler {
         }
         else {
             fSupportedVersion = SUPPORTED_VERSION_1_1;
+            if (fOverrideHandler == null) {
+                fOverrideHandler = new OverrideTransformationManager(this, new DOMOverrideImpl(this));
+            }
         }
         fSchemaParser.setSupportedVersion(fSupportedVersion);
     }

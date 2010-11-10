@@ -90,6 +90,13 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * until a component from that namespace is referenced from the instance.
      */
     public final static short CONTEXT_XSITYPE   = 7;
+    
+    /**
+     * Indicate that the current schema document is being <override>n by another
+     * schema document.
+     */
+    
+    public final static short CONTEXT_OVERRIDE  = 8;
 
     // REVISIT: write description of these fields	
     protected short fContextType;

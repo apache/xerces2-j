@@ -1052,6 +1052,8 @@ public class XSAttributeChecker {
         // XML Schema 1.1 - same list
         fEleAttrs11MapG.put(SchemaSymbols.ELT_INCLUDE, attrList);
         fEleAttrs11MapG.put(SchemaSymbols.ELT_REDEFINE, attrList);
+        // for element "override" - global
+        fEleAttrs11MapG.put(SchemaSymbols.ELT_OVERRIDE, attrList);
 
         // for element "import" - global
         attrList = Container.getContainer(3);
