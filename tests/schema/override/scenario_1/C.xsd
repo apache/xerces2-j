@@ -1,0 +1,15 @@
+<xs:schema version="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://www.moinc.org"
+xmlns="http://www.moinc.org"
+elementFormDefault="qualified">
+	
+	
+	<xs:complexType name="personName">
+	  <xs:sequence>
+	   <xs:element name="firstName"/>
+	   <xs:element name="lastName"/>
+	  </xs:sequence>
+ 	</xs:complexType>
+
+	
+</xs:schema>

@@ -1,0 +1,28 @@
+<xs:schema version="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://www.moinc.org"
+xmlns="http://www.moinc.org"
+elementFormDefault="qualified">
+	
+	
+	<xs:override schemaLocation="overridden.xsd">
+	  <xs:complexType name="personName">
+	   <xs:sequence>
+	    <xs:element name="givenName"/>
+	    <xs:element name="surname"/>
+	   </xs:sequence>
+	  </xs:complexType>
+
+	 <xs:element name="addressee" type="xs:string"/>
+	</xs:override>
+
+	<xs:element name="addressee" type="personName"/>
+
+	
+ 	<xs:element name="developer" type="developerType"/>
+
+	<xs:complexType name="personName">
+	   <xs:sequence>
+	    <xs:element name="givenName"/>	    
+	   </xs:sequence>
+	  </xs:complexType>
+</xs:schema>
