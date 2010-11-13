@@ -32,10 +32,10 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 /**
  * @version $Id$
  */
-public class DOMOverrideImpl extends OverrideTransformer {
+public final class DOMOverrideImpl extends OverrideTransformer {
 
     // records all the override schema components and it's properties
-    private ArrayList fOverrideComponents = new ArrayList();
+    private final ArrayList fOverrideComponents = new ArrayList();
 
     // overridden schema document 
     private Document fOverridenDoc;
@@ -50,7 +50,7 @@ public class DOMOverrideImpl extends OverrideTransformer {
     private DOMImplementation fDOMImpl;
     
     // XSDHandler - error reporting
-    private XSDHandler fSchemaHandler;
+    private final XSDHandler fSchemaHandler;
 
     public DOMOverrideImpl(XSDHandler schemaHandler){
         fSchemaHandler = schemaHandler;
@@ -310,13 +310,13 @@ public class DOMOverrideImpl extends OverrideTransformer {
      * 
      * Used to store override elements and properties for later processing
      */
-    private static class OverrideElement{
-        int componentType;
-        Element originalElement;
+    private static final class OverrideElement {
+        final int componentType;
+        final Element originalElement;
+        final String cName;
         boolean overrideCloned = false; 
-        String cName ;
         
-        OverrideElement(int componentType, Element elem,String cName) {
+        OverrideElement(int componentType, Element elem, String cName) {
             this.componentType = componentType;
             originalElement = elem;
             this.cName = cName; 

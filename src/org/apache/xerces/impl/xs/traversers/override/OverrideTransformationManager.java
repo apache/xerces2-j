@@ -54,9 +54,9 @@ final public class OverrideTransformationManager {
 
     // private data 
     private OverrideTransformer fOverrideTransformationHandler;
-    private Hashtable fSystemId2ContextMap = new Hashtable();
+    private final Hashtable fSystemId2ContextMap = new Hashtable();
     private int fCurrentState = STATE_INCLUDE;
-    private XSDHandler fSchemaHandler;
+    private final XSDHandler fSchemaHandler;
 
     // Constructor
     public OverrideTransformationManager(XSDHandler handler, OverrideTransformer overrideHandler){
@@ -341,17 +341,15 @@ final public class OverrideTransformationManager {
      */
     private static final class DocumentContext {     
         
-        private ArrayList fRootElementList = new ArrayList();
-        private Hashtable fSchema2StateMap = new Hashtable();
+        private final ArrayList fRootElementList = new ArrayList();
+        private final Hashtable fSchema2StateMap = new Hashtable();
         
         //indicate Transformation handler that this schema root is original
         private final static Boolean IS_ORIGINAL = Boolean.TRUE;
         //indicate Transformation handler that this schema root is transformed
         private final static Boolean IS_TRANSFORMED = Boolean.FALSE;
         
-        DocumentContext() {
-
-        }
+        DocumentContext() {}
 
         void addSchemasToArray(Element schemaRoot){
             fRootElementList.add(schemaRoot);
