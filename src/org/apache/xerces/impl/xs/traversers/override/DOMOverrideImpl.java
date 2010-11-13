@@ -55,7 +55,6 @@ public class DOMOverrideImpl extends OverrideTransformer {
     public DOMOverrideImpl(XSDHandler schemaHandler){
         fSchemaHandler = schemaHandler;
         try {
-            //System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMXSImplementationSourceImpl");
             //get a DOM registry base
             final DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
             // get a DOM implementation the Level 3 XML module
