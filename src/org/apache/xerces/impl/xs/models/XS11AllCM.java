@@ -143,7 +143,7 @@ public class XS11AllCM implements XSCMValidator, XS11CMRestriction.XS11CM {
         return state;
     }
 
-    // convinient method: when error occurs, to find a matching decl
+    // convenient method: when error occurs, to find a matching decl
     // from the candidate elements.
     Object findMatchingDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
         Object matchingDecl = findMatchingElemDecl(elementName, subGroupHandler);
@@ -161,7 +161,7 @@ public class XS11AllCM implements XSCMValidator, XS11CMRestriction.XS11CM {
         return null;
     }
 
-    // convinient method: to find a matching element decl 
+    // convenient method: to find a matching element decl 
     XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
         for (int i = 1; i < fNumElements; i++) {
             final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fElements[i], Constants.SCHEMA_VERSION_1_1);
