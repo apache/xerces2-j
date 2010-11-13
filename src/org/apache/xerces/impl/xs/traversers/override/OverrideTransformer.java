@@ -18,7 +18,11 @@ package org.apache.xerces.impl.xs.traversers.override;
 
 import org.w3c.dom.Element;
 
-
+/**
+ * @xerces.internal
+ * 
+ * @version $Id$
+ */
 public abstract class OverrideTransformer {
 
     // different type definitions needed to record type of OverrideElement

@@ -18,6 +18,8 @@
 package org.apache.xerces.impl.xs.traversers.override;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class OverrideTransformException extends Exception {

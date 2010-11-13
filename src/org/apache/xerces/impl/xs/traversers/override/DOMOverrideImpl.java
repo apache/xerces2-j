@@ -30,6 +30,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public final class DOMOverrideImpl extends OverrideTransformer {

@@ -26,8 +26,12 @@ import org.apache.xerces.util.DOMUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-
-final public class OverrideTransformationManager {
+/**
+ * @xerces.internal
+ * 
+ * @version $Id$
+ */
+public final class OverrideTransformationManager {
 
     // public static data
     public final static int STATE_INCLUDE = 1;
