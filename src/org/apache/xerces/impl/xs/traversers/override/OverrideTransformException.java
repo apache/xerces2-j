@@ -24,23 +24,18 @@ public class OverrideTransformException extends Exception {
 
     private static final long serialVersionUID = 5800328170981546685L;
 
-    public OverrideTransformException() {
-        // TODO Auto-generated constructor stub
-    }
+    public OverrideTransformException() {}
 
     public OverrideTransformException(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     public OverrideTransformException(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
     public OverrideTransformException(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
 
 }
