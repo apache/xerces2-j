@@ -19,8 +19,8 @@ package schema.override;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.traversers.override.DOMOverrideImpl;
+import org.apache.xerces.impl.xs.traversers.override.OverrideTransformException;
 import org.apache.xerces.impl.xs.traversers.override.OverrideTransformer;
-import org.apache.xerces.impl.xs.traversers.override.exception.OverrideTransformException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
