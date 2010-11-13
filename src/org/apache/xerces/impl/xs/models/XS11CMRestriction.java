@@ -67,10 +67,10 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
     private XSDFACM dfab;
 
     // Temporary QName object
-    private QName qname = new QName();
+    private final QName qname = new QName();
 
     // Pairs of matching states from base and derived.
-    private List states = new ArrayList();
+    private final List states = new ArrayList();
     // A pair of matching states.
     private StatePair pair = null;
 
@@ -78,14 +78,14 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
     // from the derived type. We keep subtract matching components in the base
     // from this wildcard.
     private short wType;
-    private List wNSList = new ArrayList();
-    private List wNSListTemp = new ArrayList();
+    private final List wNSList = new ArrayList();
+    private final List wNSListTemp = new ArrayList();
     // Disallowed name list
-    private List wDNList = new ArrayList();
+    private final List wDNList = new ArrayList();
     // ##sibling and ##defined
     private boolean wDD, wDS;
     // Allowed name list, used after subtracting a disallowed list.
-    private List wANList = new ArrayList();
+    private final List wANList = new ArrayList();
 
     // List of QNames used for ##sibling and ##defined checking
     private List globals;
@@ -99,7 +99,7 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
     private int[] b, bn, d, dn;
     // Index of the previously matched decl in base and derived, so that we
     // know where to continue.
-    private int[] indexb = new int[1], indexd = new int[1];
+    private final int[] indexb = new int[1], indexd = new int[1];
     // Optimization. If an element declaration in derived is the same as an
     // element declaration in base without using any substitution group, then
     // we don't need to dig into the sub-groups. They will be the same.
@@ -838,7 +838,7 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
 
     // A pair of base/derived states.
     private static class StatePair {
-        private int[] states;
+        private final int[] states;
         public StatePair(int[] b, int[] d) {
             this.states = new int[b.length + d.length];
             System.arraycopy(b, 0, states, 0, b.length);
