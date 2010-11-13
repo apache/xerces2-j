@@ -22,7 +22,6 @@ import java.util.Iterator;
 
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.xs.traversers.override.exception.OverrideTransformException;
 import org.apache.xerces.util.DOMUtil;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.impl.xs.traversers.override.exception;
+package org.apache.xerces.impl.xs.traversers.override;
 
 /**
  * @version $Id$

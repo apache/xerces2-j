@@ -16,7 +16,6 @@
  */
 package org.apache.xerces.impl.xs.traversers.override;
 
-import org.apache.xerces.impl.xs.traversers.override.exception.OverrideTransformException;
 import org.w3c.dom.Element;
 
 
