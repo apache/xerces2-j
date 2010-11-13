@@ -17,7 +17,7 @@
 package org.apache.xerces.impl.xs.traversers.override;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -54,12 +54,12 @@ final public class OverrideTransformationManager {
 
     // private data 
     private OverrideTransformer fOverrideTransformationHandler;
-    private final Hashtable fSystemId2ContextMap = new Hashtable();
+    private final HashMap fSystemId2ContextMap = new HashMap();
     private int fCurrentState = STATE_INCLUDE;
     private final XSDHandler fSchemaHandler;
 
     // Constructor
-    public OverrideTransformationManager(XSDHandler handler, OverrideTransformer overrideHandler){
+    public OverrideTransformationManager(XSDHandler handler, OverrideTransformer overrideHandler) {
         fSchemaHandler = handler;
         fOverrideTransformationHandler = overrideHandler;
     }
@@ -342,7 +342,7 @@ final public class OverrideTransformationManager {
     private static final class DocumentContext {     
         
         private final ArrayList fRootElementList = new ArrayList();
-        private final Hashtable fSchema2StateMap = new Hashtable();
+        private final HashMap fSchema2StateMap = new HashMap();
         
         //indicate Transformation handler that this schema root is original
         private final static Boolean IS_ORIGINAL = Boolean.TRUE;
