@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
 /**
  * @version $Id$
  */
-public class OverrideTrasformTest extends BaseOverrideTest {
+public class OverrideTransformTest extends BaseOverrideTest {
 
     String[] fOverridingDocs = {"overriding.xsd","overriding1.xsd","overriding2.xsd"};
     String[] fOverriddenDocs = {"overridden.xsd","overridden1.xsd","overridden2.xsd"};
@@ -81,7 +81,7 @@ public class OverrideTrasformTest extends BaseOverrideTest {
     
     
     public static void main(String args[]) {
-        junit.textui.TestRunner.run(OverrideTrasformTest.class);
+        junit.textui.TestRunner.run(OverrideTransformTest.class);
     }
     
 }

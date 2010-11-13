@@ -23,11 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSConstraints;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.traversers.override.DOMOverrideImpl;
 import org.apache.xerces.impl.xs.traversers.override.OverrideTransformationManager;
 import org.apache.xerces.util.DOMUtil;

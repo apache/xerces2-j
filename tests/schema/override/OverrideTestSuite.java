@@ -19,8 +19,6 @@ package schema.override;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import schema.annotations.AllTests;
-import schema.annotations.XSAttributeGroupAnnotationsTest;
 
 /**
  * @version $Id$
@@ -34,7 +32,7 @@ public class OverrideTestSuite {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for Schema Annotations");
         //$JUnit-BEGIN$
-        suite.addTestSuite(OverrideTrasformTest.class);
+        suite.addTestSuite(OverrideTransformTest.class);
         suite.addTestSuite(OverrideHandlerTest.class);
         
         return suite;
