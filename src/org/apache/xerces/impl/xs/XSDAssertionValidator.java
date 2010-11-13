@@ -358,22 +358,33 @@ public class XSDAssertionValidator {
      * Method to initialize the assertions processor.
      */
     private void initializeAssertProcessor(Map assertParams) {
+             
+        String assertProcessorProp;
+        try {
+            assertProcessorProp = SecuritySupport.getSystemProperty("org.apache.xerces.assertProcessor");
+        }
+        catch (SecurityException se) {
+            assertProcessorProp = null;
+        }
         
-        String assertProcessorProp = System.getProperty("org.apache.xerces.assertProcessor");
-        
-        if (assertProcessorProp == null || assertProcessorProp.equals("")) {
+        if (assertProcessorProp == null || assertProcessorProp.length() == 0) {
             // if assertion processor is not specified via a system property, initialize it to
             // the "PsychoPath XPath 2.0" processor.
             fAssertionProcessor = new XMLAssertPsychopathImpl(assertParams);
-        } else {
+        } 
+        else {
             try {
-                Class assertClass = ClassLoader.getSystemClassLoader().loadClass(assertProcessorProp);
+                ClassLoader cl = ObjectFactory.findClassLoader();
+                Class assertClass = ObjectFactory.findProviderClass(assertProcessorProp, cl, true);
                 fAssertionProcessor = (XMLAssertHandler) assertClass.newInstance();
-            } catch (ClassNotFoundException ex) {
+            } 
+            catch (ClassNotFoundException ex) {
                 throw new XNIException(ex.getMessage(), ex);
-            } catch (InstantiationException ex) {
+            } 
+            catch (InstantiationException ex) {
                 throw new XNIException(ex.getMessage(), ex);
-            } catch (IllegalAccessException ex) {
+            } 
+            catch (IllegalAccessException ex) {
                 throw new XNIException(ex.getMessage(), ex);
             }
         }
