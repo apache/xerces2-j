@@ -31,7 +31,7 @@ import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * An XML Schema validator subcomponent handling 'type alternative' processing.
+ * An XML Schema validator subcomponent handling "type alternative" processing.
  * 
  * @xerces.internal
  * 
@@ -52,7 +52,7 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * Class constructor
+     * Class constructor.
      */
     public XSDTypeAlternativeValidator() {
       // NO OP ...
@@ -60,29 +60,22 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * Determine the schema type applicable for an element declaration,
-     * using type alternative information.
+     * Determine the schema type applicable for an element declaration, using type alternative information.
      */
-    public XSTypeDefinition getCurrentType(XSElementDecl currentElemDecl, 
-                                           QName element, 
-                                           XMLAttributes attributes) {
+    public XSTypeDefinition getCurrentType(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes) {
         
         XSTypeDefinition currentType = null;        
         boolean typeSelected = false;
         
-        XSTypeAlternativeImpl[] alternatives = currentElemDecl.
-                                                   getTypeAlternatives();
+        XSTypeAlternativeImpl[] alternatives = currentElemDecl.getTypeAlternatives();
         
         if (alternatives != null) {              
-            // construct a list of attributes needed for CTA processing.
-            // This method call adds inherited attributes as well, to the list
-            // of attributes.
+            // Construct a list of attributes needed for CTA processing. This includes inherited attributes as well.
             XMLAttributes ctaAttributes = getAttributesForCTA(attributes);
             
             for (int i = 0; i < alternatives.length; i++) {
                 Test test = alternatives[i].getTest();
-                if (test != null && test.evaluateTest(element, 
-                                                      ctaAttributes)) {
+                if (test != null && test.evaluateTest(element, ctaAttributes)) {
                     currentType = alternatives[i].getTypeDefinition();
                     typeSelected = true;
                     break;
@@ -90,8 +83,7 @@ public class XSDTypeAlternativeValidator {
             }
             //if a type is not selected try to assign the default type
             if (!typeSelected) {
-                XSTypeAlternativeImpl defType = currentElemDecl.
-                                                   getDefaultTypeDefinition();
+                XSTypeAlternativeImpl defType = currentElemDecl.getDefaultTypeDefinition();
                 if (defType != null) {
                     currentType = defType.getTypeDefinition();
                 }
@@ -104,20 +96,16 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * Type alternative processing interface during the XNI event
-     * 'handleStartElement' in XMLSchemaValidator. 
+     * Type alternative processing interface during the XNI event 'handleStartElement' in XMLSchemaValidator. 
      */
-    public void handleStartElement(XSElementDecl currentElemDecl, 
-                                   XMLAttributes attributes) {
+    public void handleStartElement(XSElementDecl currentElemDecl, XMLAttributes attributes) {
         
         fInhrAttrCountStack.push(fInheritableAttrList.size());
         
-        // Find attributes among the attributes of the current element, which
-        // are declared inheritable. The inheritable attributes will later be
-        // used for processing 'type alternative' instruction.
+        // Find attributes among the attributes of the current element, which are declared inheritable.
+        // The inheritable attributes will later be used for processing "type alternative" instruction.
         if (attributes.getLength() > 0) {
-           // get inheritable attributes, only if an element has a complex
-           // type (i.e, has > 0 attributes).
+           // get inheritable attributes, only if an element has a complex type (i.e, has > 0 attributes).
            saveInheritableAttributes(currentElemDecl, attributes);
         }
         
@@ -125,13 +113,12 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * Type alternative processing interface during the XNI event
-     * 'handleEndElement' in XMLSchemaValidator. 
+     * Type alternative processing interface during the XNI event 'handleEndElement' in XMLSchemaValidator. 
      */
     public void handleEndElement() {
         
-        // modify the Vector list 'fInheritableAttrList' and pop the stack,
-        // 'fInhrAttrCountStack', to reflect inheritable attributes processing.
+        // modify the Vector list 'fInheritableAttrList' and pop the stack, 'fInhrAttrCountStack', to reflect
+        // inheritable attributes processing.
         if (fInhrAttrCountStack.size() > 0) {
             fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
         }
@@ -140,8 +127,7 @@ public class XSDTypeAlternativeValidator {
     
 
     /*
-     * Construct a list of attributes, needed for CTA processing. This includes
-     * inherited attributes as well.  
+     * Construct a list of attributes, needed for CTA processing. This includes inherited attributes as well.  
      */
     private XMLAttributes getAttributesForCTA(XMLAttributes attributes) {
 
@@ -150,27 +136,19 @@ public class XSDTypeAlternativeValidator {
       for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
          QName qName = new QName();
          attributes.getName(attrIndx, qName);
-         ctaAttributes.addAttribute(qName, attributes.getType(attrIndx),
-                                    attributes.getValue(attrIndx));   
+         ctaAttributes.addAttribute(qName, attributes.getType(attrIndx), attributes.getValue(attrIndx));   
       }
       
-      // traverse up the XML tree, to find inherited attributes.
-      // attributes only from the nearest ancestor, are added to the list.
-      for (int elemIndx = fInheritableAttrList.size() - 1; elemIndx > -1; 
-                                                             elemIndx--) {        
-         InheritableAttribute inhAttr = (InheritableAttribute) 
-                                  fInheritableAttrList.elementAt(elemIndx);
-         // if an inheritable attribute doesn't already exist in the attributes
-         // list, add it to the list.
+      // Traverse up the XML tree, to find inheritable attributes. Attributes only from the nearest ancestor,
+      // are added to the list (since there is recursive inclusion of inheritable attributes in an XML tree).
+      for (int elemIndx = fInheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
+         InheritableAttribute inhAttr = (InheritableAttribute) fInheritableAttrList.elementAt(elemIndx);
+         // if an inheritable attribute doesn't already exist in the attributes list, add it to the list
          if (!attributeExists(ctaAttributes, inhAttr)) {
-            String rawName = "".equals(inhAttr.getPrefix()) ? 
-                                       inhAttr.getLocalName() : 
-                                       inhAttr.getPrefix() + ":" + 
+            String rawName = "".equals(inhAttr.getPrefix()) ? inhAttr.getLocalName() : inhAttr.getPrefix() + ":" + 
                                        inhAttr.getLocalName(); 
-            fTempQName.setValues(inhAttr.getPrefix(), inhAttr.getLocalName(), 
-                                                  rawName, inhAttr.getUri());
-            ctaAttributes.addAttribute(fTempQName, inhAttr.getType(), 
-                                                   inhAttr.getValue());
+            fTempQName.setValues(inhAttr.getPrefix(), inhAttr.getLocalName(), rawName, inhAttr.getUri());
+            ctaAttributes.addAttribute(fTempQName, inhAttr.getType(), inhAttr.getValue());
          }
       }
       
@@ -180,41 +158,31 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * For the current element being handled by the Schema validator, find
-     * all inheritable attributes for this element. Save these inheritable
-     * attributes, in a global Vector list.
+     * For the current element being handled by the Schema validator, find all inheritable attributes for this element.
+     * Save these inheritable attributes, to a global Vector list.
      */
-    private void saveInheritableAttributes(XSElementDecl currentElemDecl,
-                                           XMLAttributes attributes) {
+    private void saveInheritableAttributes(XSElementDecl currentElemDecl, XMLAttributes attributes) {
        
-       if (currentElemDecl != null && currentElemDecl.fType instanceof  
-                                                         XSComplexTypeDecl) {
-          XSComplexTypeDecl currentComplexType = (XSComplexTypeDecl) 
-                                                        currentElemDecl.fType;
-          XSObjectListImpl attributeUses = (XSObjectListImpl) 
-                                      currentComplexType.getAttributeUses();           
+       if (currentElemDecl != null && currentElemDecl.fType instanceof XSComplexTypeDecl) {
+          XSComplexTypeDecl currentComplexType = (XSComplexTypeDecl) currentElemDecl.fType;
+          XSObjectListImpl attributeUses = (XSObjectListImpl) currentComplexType.getAttributeUses();           
           
           // iterate all the attributes, being passed to this method        
           for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
              String attrName = attributes.getLocalName(attrIndx);
              String attrUri = attributes.getURI(attrIndx);            
-             // iterate all the attribute declarations of a complex type,
-             // for the current element.
-             for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); 
-                                                            attrUsesIndx++) {
-                XSAttributeUseImpl attrUseImpl = (XSAttributeUseImpl) 
-                                            attributeUses.get(attrUsesIndx);
+             // iterate all the attribute declarations of a complex type, for the current element
+             for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
+                XSAttributeUseImpl attrUseImpl = (XSAttributeUseImpl) attributeUses.get(attrUsesIndx);
                 XSAttributeDeclaration attrDecl = attrUseImpl.getAttrDeclaration();              
                 // the current element, has an inheritable attribute
-                if (attrName.equals(attrDecl.getName()) &&
-                        XSTypeHelper.uriEqual(attrUri, attrDecl.getNamespace()) &&    
-                      attrUseImpl.getInheritable()) {                   
-                    InheritableAttribute inhrAttr = new InheritableAttribute(
-                                            attributes.getLocalName(attrIndx),
-                                            attributes.getPrefix(attrIndx),
-                                            attributes.getURI(attrIndx),
-                                            attributes.getValue(attrIndx),
-                                            attributes.getType(attrIndx)) ;
+                if (attrName.equals(attrDecl.getName()) && XSTypeHelper.uriEqual(attrUri, attrDecl.getNamespace()) &&    
+                                                                                       attrUseImpl.getInheritable()) {                   
+                    InheritableAttribute inhrAttr = new InheritableAttribute(attributes.getLocalName(attrIndx),
+                                                                             attributes.getPrefix(attrIndx),
+                                                                             attributes.getURI(attrIndx),
+                                                                             attributes.getValue(attrIndx),
+                                                                             attributes.getType(attrIndx)) ;
                     fInheritableAttrList.add(inhrAttr);                   
                }
             }
@@ -225,18 +193,16 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * Check if an inheritable attribute, exists in the attributes list
+     * Check if an inheritable attribute, exists in the attributes list.
      */
-    private boolean attributeExists(XMLAttributes attributes, 
-                                    InheritableAttribute inhAttr) {
+    private boolean attributeExists(XMLAttributes attributes, InheritableAttribute inhAttr) {
       
       boolean attrExists = false;
       
       for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
           String localName = attributes.getLocalName(attrIndx);
           String uri = attributes.getURI(attrIndx);          
-          if (localName.equals(inhAttr.getLocalName()) &&
-                XSTypeHelper.uriEqual(uri, inhAttr.getUri())) {              
+          if (localName.equals(inhAttr.getLocalName()) && XSTypeHelper.uriEqual(uri, inhAttr.getUri())) {              
              attrExists = true;
              break;
           }
@@ -248,9 +214,8 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * A class representing an inheritable attribute. An instance of this class
-     * is used as an intermediate storage, for inheritable attribute 
-     * information.
+     * A class representing an inheritable attribute. An instance of this class is used as an intermediate storage,
+     * for inheritable attribute information.
      */
     final class InheritableAttribute {       
        
@@ -260,11 +225,8 @@ public class XSDTypeAlternativeValidator {
        private final String value;
        private final String type;
       
-       public InheritableAttribute(String localName,
-                                   String prefix,
-                                   String uri,
-                                   String value,
-                                   String type) {
+       public InheritableAttribute(String localName, String prefix, String uri, 
+                                   String value, String type) {
          this.localName = localName;
          this.prefix = prefix;
          this.uri = uri;
@@ -292,6 +254,6 @@ public class XSDTypeAlternativeValidator {
           return type; 
        }
        
-    } // class, InheritableAttribute
+    } // class InheritableAttribute
     
 } // class XSDTypeAlternativeValidator

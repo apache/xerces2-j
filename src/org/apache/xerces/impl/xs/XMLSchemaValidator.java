@@ -2160,11 +2160,8 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-            XSTypeDefinition currentType = fTypeAlternativeValidator.
-                                                     getCurrentType(
-                                                         fCurrentElemDecl, 
-                                                         element, 
-                                                         attributes);           
+            XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, 
+                                                                                    element, attributes);           
            if (currentType != null) {
                fCurrentType = currentType;    
            }
@@ -2380,8 +2377,7 @@ public class XMLSchemaValidator
         
         // delegate to 'type alternative' validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-           fTypeAlternativeValidator.handleStartElement(fCurrentElemDecl, 
-                                                        attributes);
+           fTypeAlternativeValidator.handleStartElement(fCurrentElemDecl, attributes);
         }
 
         // call all active identity constraints
