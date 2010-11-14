@@ -80,7 +80,7 @@ class HTMLCollectionImpl
     
     
     /**
-     * Request collection of all images in document: &lt;IMAGE&gt; elements.
+     * Request collection of all images in document: &lt;IMG&gt; elements.
      */
     static final short        IMAGE = 3;
     
@@ -100,7 +100,7 @@ class HTMLCollectionImpl
     
     
     /**
-     * Request collection of all options in selection: &lt;OPTION&gt; elments in
+     * Request collection of all options in selection: &lt;OPTION&gt; elements in
      * &lt;SELECT&gt; or &lt;OPTGROUP&gt;.
      */
     static final short        OPTION = 6;
@@ -115,8 +115,7 @@ class HTMLCollectionImpl
     
     /**
      * Request collection of all form elements: &lt;INPUT&gt;, &lt;BUTTON&gt;,
-     * &lt;SELECT&gt;, &lt;TEXT&gt; and &lt;TEXTAREA&gt; elements inside form
-     * &lt;FORM&gt;.
+     * &lt;SELECT&gt;, and &lt;TEXTAREA&gt; elements inside form &lt;FORM&gt;.
      */
     static final short        ELEMENT = 8;
     
@@ -136,8 +135,8 @@ class HTMLCollectionImpl
 
     
     /**
-     * Request collection of all cells in row: &lt;TD&gt; elements in &lt;TR&gt;
-     * (non recursive).
+     * Request collection of all cells in row: &lt;TD&gt; and &lt;TH&gt;
+     * elements in &lt;TR&gt; (non recursive).
      */
     static final short        CELL = -3;
 
@@ -445,7 +444,7 @@ class HTMLCollectionImpl
                           elem.getTagName().equals( "TBODY" ) );
                 break;
             case CELL:
-                // Any <TD> element.
+                // Any <TD> or <TH> element.
                 match = ( elem instanceof HTMLTableCellElement );
                 break;
             }
