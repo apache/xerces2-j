@@ -112,10 +112,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     private int fIgnoreDepth = -1;
     private boolean fPerformConditionalInclusion = true; //REVISIT: use feature
     
-    // instance variable to support XML Schema 1.1 conditional include
-    // processing. 
-    private SchemaConditionalIncludeHelper schemaCondlInclHelper = new 
-                                              SchemaConditionalIncludeHelper(); 
+    // instance variable to support XML Schema 1.1 conditional include processing. 
+    private SchemaConditionalIncludeHelper schemaCondlInclHelper = new SchemaConditionalIncludeHelper(); 
     
     //
     // XMLDocumentHandler methods
@@ -255,8 +253,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 return;
             }
 
-            // perform conditional exclusion checks for schema versioning
-            // namespace (does not apply to <schema> element).
+            // perform conditional exclusion checks for schema versioning namespace 
+            // (does not apply to <schema> element).
             if (fDepth > 0) {
                 checkVersionControlAttributes(element, attributes);
                 if (fIgnoreDepth > -1) {
@@ -609,12 +607,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     
     
     /*
-     *  Method to check if any of attributes of schema versioning namespace
-     *  should cause exclusion of a schema component along with it's descendant
-     *  instructions.
+     *  Method to check if any of attributes of schema versioning namespace should cause exclusion
+     *  of a schema component along with it's descendant instructions.
      */
-    private boolean checkVersionControlAttributes(QName element, 
-                                                  XMLAttributes attributes) {             
+    private boolean checkVersionControlAttributes(QName element, XMLAttributes attributes) {             
         
         boolean ignoreSchemaComponent = false;
 
@@ -626,8 +622,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         List facetAvailableList = null;
         List facetUnavailableList = null;
         
-        // iterate all attributes of an element, and get values of schema
-        // versioning attributes.
+        // iterate all attributes of an element, and get values of schema versioning attributes.
         final int length = attributes.getLength();
         
         for (int attrIdx = 0; attrIdx < length; ++attrIdx) {
@@ -643,9 +638,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName,
-                                nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
+                                                   "s4s-att-invalid-value",
+                                                   new Object[] {element.localpart, attrLocalName,
+                                                   nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
@@ -654,9 +649,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                "s4s-att-invalid-value",
-                                new Object[] {element.localpart, attrLocalName,
-                                nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
+                                                   "s4s-att-invalid-value",
+                                                   new Object[] {element.localpart, attrLocalName,
+                                                   nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
@@ -673,11 +668,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
                 else {
                     // report a warning
-                    fErrorReporter.reportError(fLocator, 
-                            XSMessageFormatter.SCHEMA_DOMAIN,
-                            "src-cip.1",
-                            new Object[]{ attrLocalName },
-                            XMLErrorReporter.SEVERITY_WARNING);
+                    fErrorReporter.reportError(fLocator, XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "src-cip.1", new Object[]{ attrLocalName },
+                                               XMLErrorReporter.SEVERITY_WARNING);
                 }
             }
             
@@ -685,32 +678,27 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                              
         // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable,
         // vc:typeUnavailable, vc:facetAvailable & vc:facetUnavailable.
-        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? 
-                                                  false : 
-                                                  schemaVersionAllowsExclude(minVer, maxVer);
+        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? false : 
+                                               schemaLangVersionAllowsExclude(minVer, maxVer);
         boolean typeAvlAllowsIgnore = (typeAvailableList == null) ? false : 
-                                             typeAndFacetAvailableAllowsExclude(
-                                                         typeAvailableList,
-                                                         Constants.IS_TYPE,
+                                               typeAndFacetAvailableAllowsExclude(
+                                                         typeAvailableList, Constants.IS_TYPE,
                                                          Constants.TYPE_AND_FACET_AVAILABILITY);
         boolean typeUnavlAllowsIgnore = (typeUnavailableList == null) ? false :
-                                             typeAndFacetAvailableAllowsExclude(
-                                                         typeUnavailableList,
-                                                         Constants.IS_TYPE,
+                                               typeAndFacetAvailableAllowsExclude(
+                                                         typeUnavailableList, Constants.IS_TYPE,
                                                          Constants.TYPE_AND_FACET_UNAVAILABILITY);
         boolean facetAvlAllowsIgnore = (facetAvailableList == null) ? false : 
-                                             typeAndFacetAvailableAllowsExclude(
-                                                         facetAvailableList,
-                                                         Constants.IS_FACET,
+                                               typeAndFacetAvailableAllowsExclude(
+                                                         facetAvailableList,Constants.IS_FACET,
                                                          Constants.TYPE_AND_FACET_AVAILABILITY);
         boolean facetUnavlAllowsIgnore = (facetUnavailableList == null) ? false :
-                                             typeAndFacetAvailableAllowsExclude(
-                                                         facetUnavailableList,
-                                                         Constants.IS_FACET,
+                                               typeAndFacetAvailableAllowsExclude(
+                                                         facetUnavailableList, Constants.IS_FACET,
                                                          Constants.TYPE_AND_FACET_UNAVAILABILITY);
         
         if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore || 
-            facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
+                                                    facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
             ignoreSchemaComponent =  true;  
         }
         else {
@@ -723,25 +711,21 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     
     
     /* 
-     * Method to determine whether a schema component and it's descendant
-     * instructions should be excluded from schema processing, depending
-     * on the values of vc:minVersion & vc:maxVersion attributes from schema
-     * versioning namespace. 
+     * Method to determine whether a schema component and it's descendant instructions should be excluded
+     * from schema processing, depending on the values of vc:minVersion & vc:maxVersion attributes from
+     * schema versioning namespace.
     */
-    private boolean schemaVersionAllowsExclude(BigDecimal minVer,
-                                               BigDecimal maxVer) {
+    private boolean schemaLangVersionAllowsExclude(BigDecimal minVer, BigDecimal maxVer) {
         
         boolean minMaxSchemaVerAllowsIgnore = false;
         
-        // The condition vc:minVersion <= V < vc:maxVersion needs to be true
-        // for a schema component to be included in a validation episode.
-        // Here value of "V" is an instance variable fSupportedVersion.
+        // The condition "vc:minVersion <= V < vc:maxVersion" needs to be true for a schema component to be
+        // included in a validation episode. Here value of "V" is an instance variable fSupportedVersion.
         
         if (minVer != null && maxVer != null) {
-           // if both vc:minVersion & vc:maxVersion attributes are present on a
-           // schema component.
+           // if both vc:minVersion & vc:maxVersion attributes are present on a schema component.
            if (!(minVer.compareTo(fSupportedVersion.getBigDecimal()) <= 0 &&
-              maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
+                 maxVer.compareTo(fSupportedVersion.getBigDecimal()) == 1)) {
                fIgnoreDepth++;
                minMaxSchemaVerAllowsIgnore = true;   
            }
@@ -767,19 +751,16 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     
 
     /* 
-     * Method to determine whether a schema component and it's descendant
-     * instructions should be excluded from schema processing, depending
-     * on values of vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable
+     * Method to determine whether a schema component and it's descendant instructions should be excluded
+     * from schema processing, depending on values of vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable
      * and vc:facetUnavailable attributes from schema versioning namespace. 
     */
-    private boolean typeAndFacetAvailableAllowsExclude(
-                                               List typeOrFacetList,
-                                               short typeOrFacet,
-                                               short availaibilityUnavlCheck) {
+    private boolean typeAndFacetAvailableAllowsExclude(List typeOrFacetList,
+                                                       short typeOrFacet,
+                                                       short availaibilityUnavlCheck) {
         
-        // either of the following boolean values would be returned from this
-        // method, depending on whether availability or unavailability check is
-        // asked for.
+        // either of the following boolean values would be returned from this method, depending on whether
+        // availability or unavailability check is asked for.
         boolean typeOrFacetAvlAllowsIgnore = false;        
         boolean typeOrFacetUnavlAllowsIgnore = true;
         
@@ -789,10 +770,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
            String typeOrFacetLocalName = null;
            String typeOrFacetUri = null;
            if (typeOrFacetRawValue.indexOf(':') != -1) {              
-              typeOrFacetLocalName = typeOrFacetRawValue.substring(
-                                         typeOrFacetRawValue.indexOf(':') + 1);
-              String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, 
-                                             typeOrFacetRawValue.indexOf(':'));
+              typeOrFacetLocalName = typeOrFacetRawValue.substring(typeOrFacetRawValue.indexOf(':') + 1);
+              String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, typeOrFacetRawValue.indexOf(':'));
               typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix.intern());
            }
            else {
@@ -802,15 +781,13 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
            if (typeOrFacet == Constants.IS_TYPE) {
               // check for availability of schema types
               if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
-                        !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName,
-                                                                typeOrFacetUri)) {
+                                                  !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName, typeOrFacetUri)) {
                   fIgnoreDepth++;
                   typeOrFacetAvlAllowsIgnore = true;
                   break;             
               }
               else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && 
-                         !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName,
-                                                                 typeOrFacetUri)) {
+                                                  !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName, typeOrFacetUri)) {
                   typeOrFacetUnavlAllowsIgnore = false;
                   break;
               }
@@ -818,15 +795,13 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
            else if (typeOrFacet == Constants.IS_FACET) {
                // check for availability of schema facets
                if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
-                         !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName,
-                                                                  typeOrFacetUri)) {
+                                                  !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName, typeOrFacetUri)) {
                    fIgnoreDepth++;
                    typeOrFacetAvlAllowsIgnore = true;
                    break;             
                }
                else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY &&
-                          !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName,
-                                                                   typeOrFacetUri)) {
+                                                  !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName, typeOrFacetUri)) {
                    typeOrFacetUnavlAllowsIgnore = false;
                    break;
                }
@@ -851,16 +826,18 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
     
     /*
-     * Method to tokenize a string value (with XML white spaces as the 
-     * delimiter) and return a List containing the string tokens. 
+     * Method to tokenize a string value (with XML white spaces as the delimiter) and return a List
+     * containing the string tokens. 
      */
     private List tokenizeString(String strValue) {
+        
         StringTokenizer st = new StringTokenizer(strValue, " \n\t\r");
         List stringTokens = new ArrayList(st.countTokens());
         while (st.hasMoreTokens()) {
            stringTokens.add(st.nextToken());
         }
         return stringTokens;
+        
     } // tokenizeString
     
 

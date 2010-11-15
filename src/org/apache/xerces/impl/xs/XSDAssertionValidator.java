@@ -93,7 +93,7 @@ public class XSDAssertionValidator {
             NamespaceSupport xpathNamespaceContext = null;
             if (assertionList instanceof XSObjectList) {
                 xpathNamespaceContext = ((XSAssertImpl)((XSObjectList) assertionList).item(0)).
-                                                                          getXPath2NamespaceContext();    
+                                                                            getXPath2NamespaceContext();    
             }
             else {
                 Vector assertVector = (Vector) assertionList;
@@ -133,8 +133,7 @@ public class XSDAssertionValidator {
                 assertPSVI.fNotation = notation;
                 assertPSVI.fGrammars = grammarBucket.getGrammars();
 
-                // construct the augmentations object for assertions.
-                // store assertPSVI into the augmentations.
+                // construct the augmentations object for assertions. store assertPSVI into the augmentations.
                 AugmentationsImpl assertAugs = new AugmentationsImpl();
                 assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);
                 assertAugs.putItem("ATOMIC_VALUE_VALIDITY", Boolean.valueOf(atomicValueValid));
@@ -148,7 +147,7 @@ public class XSDAssertionValidator {
     
     
     /*
-     * Accumulate a list of assertions (fetch from the underlying XSModel instance) to be processed
+     * Accumulate a list of assertions (get from the underlying XSModel instance) to be processed
      * for the current context. Return the assertions list.
      */
     private List getAssertsForEvaluation(QName element, XMLAttributes attributes) {
@@ -190,7 +189,7 @@ public class XSDAssertionValidator {
             }
         }
 
-        // add assertion facets, from "complexType -> simpleContent -> restriction"
+        // add assertion facets from "complexType -> simpleContent -> restriction"
         XSSimpleTypeDefinition simpleContentType = complexTypeDef.getSimpleType();
         if (simpleContentType != null) {
             XSObjectList complexTypeFacets = simpleContentType.getMultiValueFacets();
@@ -206,7 +205,7 @@ public class XSDAssertionValidator {
             }
         }
 
-        // find assertions from attributes of a complex type, and add them to the parent assertions list.
+        // find assertions from attributes of a complex type, and add them to the parent assertions list
         XSObjectListImpl attrAsserts = getAssertsFromAttributes(attributes);
         for (int attrAssertIdx = 0; attrAssertIdx < attrAsserts.getLength(); attrAssertIdx++) {
             complexTypeAsserts.addXSObject(attrAsserts.item(attrAssertIdx)); 
@@ -229,14 +228,14 @@ public class XSDAssertionValidator {
             AttributePSVImpl attrPSVI = (AttributePSVImpl) attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
             XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition) attrPSVI.getTypeDefinition();
             if (attrType != null) {
-                // this accumulates assertions only for simpleType -> restriction
+                // this accumulates assertions only for "simpleType -> restriction"
                 XSObjectList facets = attrType.getMultiValueFacets();
 
                 // simpleType variety is 'unknown/absent' at the moment                    
                 short attrTypeVariety = XSSimpleTypeDefinition.VARIETY_ABSENT;
 
                 if (facets.getLength() == 0 && attrType.getItemType() != null) {
-                    // facets for simpleType -> list
+                    // facets for "simpleType -> list"
                     attrTypeVariety = XSSimpleTypeDefinition.VARIETY_LIST;
                     facets = (XSObjectListImpl) attrType.getItemType().getMultiValueFacets();    
                 }
@@ -256,7 +255,7 @@ public class XSDAssertionValidator {
                     }
                 }
 
-                // iterate all the facets, for attributes having the simpleType variety "atomic | list", and
+                // iterate all the schema facets for attributes having the simpleType variety "atomic | list", and
                 // accumulate assertions from them.
                 for (int facetIdx = 0; facetIdx < facets.getLength(); facetIdx++) {
                     XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(facetIdx);
@@ -293,11 +292,11 @@ public class XSDAssertionValidator {
         XSObjectListImpl facets = (XSObjectListImpl) simpleTypeDef.getMultiValueFacets();
 
         if (facets.getLength() == 0 && simpleTypeDef.getItemType() != null) {
-            // facets for simpleType -> list
+            // facets for "simpleType -> list"
             facets = (XSObjectListImpl) simpleTypeDef.getItemType().getMultiValueFacets();    
         }
         else if (simpleTypeDef.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-            // Special handling for assertions on simpleType -> union cases. Adding an assertion here,
+            // Special handling for assertions on "simpleType -> union" cases. Adding an assertion here,
             // for determining the NamespaceContext.
             XSAssertImpl assertImpl = getFirstAssertFromUnionMemberTypes(simpleTypeDef.getMemberTypes());
             if (assertImpl != null) {
@@ -306,7 +305,7 @@ public class XSDAssertionValidator {
             }
         }
 
-        // iterate all the facets, having the 'simple type' variety "atomic | list", and accumulate assertions
+        // iterate all the schema facets having the simpleType variety "atomic | list", and accumulate assertions
         // from them.
         for (int facetIdx = 0; facetIdx < facets.getLength(); facetIdx++) {
             XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(facetIdx);
@@ -324,9 +323,8 @@ public class XSDAssertionValidator {
     
     
     /*
-     * Get the 1st assertion from the member types of simpleType union. Needed to get an schema
-     * "namespace context", which is available for example, in the 1st assertion in the assertions
-     * list.
+     * Get the 1st assertion from the member types of simpleType having variety union. Needed to get an schema
+     * "namespace context", which is available for example, in the 1st assertion in the assertions list.
      */
     private XSAssertImpl getFirstAssertFromUnionMemberTypes(XSObjectList memberTypes) {
         
@@ -337,7 +335,7 @@ public class XSDAssertionValidator {
             if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.getNamespace())) {
                 XSObjectList memberTypeFacets = memType.getMultiValueFacets();
                 for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < memberTypeFacets.getLength(); 
-                                                                                   memberTypeFacetIdx++) {
+                                                                                memberTypeFacetIdx++) {
                     XSMultiValueFacet facet = (XSMultiValueFacet) memberTypeFacets.item(memberTypeFacetIdx);
                     if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
                         Vector assertFacets = facet.getAsserts();
@@ -368,8 +366,8 @@ public class XSDAssertionValidator {
         }
         
         if (assertProcessorProp == null || assertProcessorProp.length() == 0) {
-            // if assertion processor is not specified via a system property, initialize it to
-            // the "PsychoPath XPath 2.0" processor.
+            // if assertion processor is not specified via a system property, initialize it to the
+            // "PsychoPath XPath 2.0" processor.
             fAssertionProcessor = new XMLAssertPsychopathImpl(assertParams);
         } 
         else {
