@@ -805,7 +805,8 @@ public class XSDHandler {
             {"TargetNamespace.1", "TargetNamespace.2"},
             {"TargetNamespace.1", "TargetNamespace.2"},
             {"TargetNamespace.1", "TargetNamespace.2"},
-            {"TargetNamespace.1", "TargetNamespace.2"}
+            {"TargetNamespace.1", "TargetNamespace.2"},
+            {"src-override.2.1", "src-override.2.1"},
     };
     
     private static final String[] ELE_ERROR_CODES = {
