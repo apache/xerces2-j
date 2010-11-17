@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xs.traversers.override;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -38,6 +39,10 @@ public final class DOMOverrideImpl extends OverrideTransformer {
 
     // records all the override schema components and it's properties
     private final ArrayList fOverrideComponents = new ArrayList();
+    private final HashMap[] fOverrideComponentsMap =  new HashMap[] {
+            null, new HashMap(), new HashMap(), new HashMap(),
+            new HashMap(), new HashMap(), new HashMap()
+    };
 
     // overridden schema document 
     private Document fOverridenDoc;
@@ -78,6 +83,9 @@ public final class DOMOverrideImpl extends OverrideTransformer {
 
     public void clearState(){
         fOverrideComponents.clear();
+        for (int i=1; i <fOverrideComponentsMap.length; i++) {
+            fOverrideComponentsMap[i].clear();
+        }
         fOverridenDoc = null;
         fOverrideElem = null;            
         hasPerformedTransformations = false;
@@ -214,9 +222,16 @@ public final class DOMOverrideImpl extends OverrideTransformer {
      * Create a new OverrideElemnt and record it into <override> components
      */
     private void addOverrideElement(int componentType, Element elem) {
-        String cName = DOMUtil.getAttrValue(elem, SchemaSymbols.ATT_NAME);
-        OverrideElement e = new OverrideElement(componentType, elem,cName);
-        fOverrideComponents.add(e);
+        final String cName = DOMUtil.getAttrValue(elem, SchemaSymbols.ATT_NAME);
+        final HashMap cMap = fOverrideComponentsMap[componentType];
+        if (cMap.get(cName) != null) {
+            fSchemaHandler.reportSchemaError("sch-props-correct.2", new Object []{cName}, elem);
+        }
+        else {
+            OverrideElement e = new OverrideElement(componentType, elem,cName);
+            fOverrideComponents.add(e);
+            cMap.put(cName, e);
+        }
     }
 
     /**
