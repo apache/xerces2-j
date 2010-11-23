@@ -59,9 +59,11 @@
               <li>maxOccurs may now be >1</li>
               <li>Wildcards are now allowed</li>
               <li>Derivation by extension</li>
+              <li>xs:group is allowed as a child of xs:all</li>
            </ul>
            <li>Assertions</li>
            <li>Conditional Type Assignment</li>
+           <li>Simplified Complex Type restriction rules (also known as Subsumption)</li>
            <li>Open Content and Default Open Content</li>
            <li>Default attribute group</li>
            <li>Target namespace on local element/attribute declarations</li>
@@ -73,6 +75,16 @@
               <li>not #defined</li>
               <li>not #definedSibling</li>
               <li>Relaxation of UPA in the presence of wildcards</li>
+           </ul>
+           <li>Overriding component definitions (xs:override)</li>
+           <li>Conditional Inclusion</li>
+           <ul>
+              <li>vc:minVersion</li>
+              <li>vc:maxVersion</li>
+              <li>vc:typeAvailable</li>
+              <li>vc:typeUnavailable</li>
+              <li>vc:facetAvailable</li>
+              <li>vc:facetUnavailable</li>
            </ul>
            <li>Context property for local simple/complex type definitions</li>
            <li>explicitTimezone facet and dateTimeStamp derived type</li>
