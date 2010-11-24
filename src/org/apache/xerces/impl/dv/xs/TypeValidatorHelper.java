@@ -20,6 +20,8 @@ package org.apache.xerces.impl.dv.xs;
 import org.apache.xerces.impl.Constants;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public abstract class TypeValidatorHelper {
@@ -77,7 +79,7 @@ public abstract class TypeValidatorHelper {
     // Inner classes
 
     // XML Schema 1.0 
-    protected static class TypeValidatorHelper1_0 extends TypeValidatorHelper {
+    static class TypeValidatorHelper1_0 extends TypeValidatorHelper {
 
         // Data
         protected static int[] fAllowedFacets;
@@ -131,7 +133,7 @@ public abstract class TypeValidatorHelper {
     }
 
     // XML Schema 1.1 
-    protected static class TypeValidatorHelper1_1 extends TypeValidatorHelper {
+    static class TypeValidatorHelper1_1 extends TypeValidatorHelper {
 
         // Data
         protected static int[] fAllowedFacets;
