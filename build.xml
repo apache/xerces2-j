@@ -68,8 +68,8 @@ Authors:
     <property name='jar.dv' value='xercesDV.jar'/>
     <property name='jar.resolver' value='resolver.jar'/>
     <property name='jar.serializer' value='serializer.jar'/>
+    <property name='jar.charnormalizer' value='icu4j.jar'/>
     <property name='jar.psychopath' value='org.eclipse.wst.xml.xpath2.processor_1.1.0.jar'/>
-	<property name='jar.icu' value='icu4j.jar'/>
     <property name='jar.cup' value='cupv10k-runtime.jar'/>
     <property name='jar.junit' value='junit.jar'/>
     <property name='jar.ant' value='ant.jar'/>
@@ -293,7 +293,7 @@ Authors:
            destdir="${build.dest}"
            source="${javac.source}"
            target="${javac.target}"
-           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${tools.dir}/${jar.psychopath}:${tools.dir}/${jar.cup}:${tools.dir}/${jar.icu}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${tools.dir}/${jar.charnormalizer}:${tools.dir}/${jar.psychopath}:${tools.dir}/${jar.cup}"
            debug="${debug}"
            debuglevel="${debuglevel}"
            deprecation="${deprecation}"
@@ -578,12 +578,13 @@ Authors:
     <copy file="NOTICE.resolver.txt" tofile="${distsrc.dir}/NOTICE.resolver.txt"/>
     <copy file="NOTICE.serializer.txt" tofile="${distsrc.dir}/NOTICE.serializer.txt"/>
     <copy file="LICENSE.DOM-documentation.html" tofile="${distsrc.dir}/LICENSE.DOM-documentation.html"/>
+    <copy file="LICENSE.icu4j.html" tofile="${distsrc.dir}/LICENSE.icu4j.html"/>
     <copy file="LICENSE.DOM-software.html" tofile="${distsrc.dir}/LICENSE.DOM-software.html"/>
     <copy file="LICENSE-SAX.html" tofile="${distsrc.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
     <copy file="LICENSE.cupv10k-runtime.txt" tofile="${distsrc.dir}/LICENSE.cupv10k-runtime.txt"/>
-    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html"/>
+    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
@@ -680,8 +681,9 @@ Authors:
     <copy file="LICENSE-SAX.html" tofile="${distbin.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distbin.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
+    <copy file="LICENSE.icu4j.html" tofile="${distsrc.dir}/LICENSE.icu4j.html"/>
     <copy file="LICENSE.cupv10k-runtime.txt" tofile="${distsrc.dir}/LICENSE.cupv10k-runtime.txt"/>
-    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.0.0.html"/>
+    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html"/>
     <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
 
     <copy file="${build.dir}/${jar.samples}" tofile="${distbin.dir}/${jar.samples}"/>
@@ -707,6 +709,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${distbin.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${distbin.dir}/${jar.charnormalizer}"/>
     <!-- include the PsychoPath XPath 2.0 processor -->
     <copy file="${tools.dir}/${jar.psychopath}" tofile="${distbin.dir}/${jar.psychopath}"/>
     <!-- include the Java Cup Runtime -->
@@ -737,6 +741,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${distbin.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${distbin.dir}/${jar.charnormalizer}"/>
     <!-- include the PsychoPath XPath 2.0 processor -->
     <copy file="${tools.dir}/${jar.psychopath}" tofile="${distbin.dir}/${jar.psychopath}"/>
     <!-- include the Java Cup Runtime -->
@@ -946,6 +952,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${build.dir}/${jar.charnormalizer}"/>
     <!-- include the PsychoPath XPath 2.0 processor -->
     <copy file="${tools.dir}/${jar.psychopath}" tofile="${build.dir}/${jar.psychopath}"/>
     <!-- include the Java Cup Runtime -->
@@ -962,12 +970,12 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${build.dir}/${jar.charnormalizer}"/>
     <!-- include the PsychoPath XPath 2.0 processor -->
     <copy file="${tools.dir}/${jar.psychopath}" tofile="${build.dir}/${jar.psychopath}"/>
     <!-- include the Java Cup Runtime -->
     <copy file="${tools.dir}/${jar.cup}" tofile="${build.dir}/${jar.cup}"/>
-	<!-- include the ICU Runtime -->
-    <copy file="${tools.dir}/${jar.icu}" tofile="${build.dir}/${jar.icu}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -1298,6 +1306,8 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+    <!-- include the ICU4J character normalizer -->
+    <copy file="${tools.dir}/${jar.charnormalizer}" tofile="${build.dir}/${jar.charnormalizer}"/>
   </target>
 
   <!-- =================================================================== -->
