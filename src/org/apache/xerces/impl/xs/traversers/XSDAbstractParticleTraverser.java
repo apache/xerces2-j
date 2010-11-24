@@ -316,7 +316,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     // traversing one (one inside another one; referring to a global group,
     // etc.), so we have push/pos context methods to save the same of the
     // current traversal before starting the traversal of another model group.
-    protected static class ParticleArray {
+    static class ParticleArray {
         // big array to contain all particles
         XSParticleDecl[] fParticles = new XSParticleDecl[10];
         // the ending position of particles in the array for each context
