@@ -26,13 +26,12 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.xni.QName;
 
 /**
- * @xerces.internal
- * 
  * This class provides supporting functionality for XML Schema conditional include
  * pre-processing (newly introduced in XML Schema 1.1).
  * 
- * 
  * ref: http://www.w3.org/TR/xmlschema11-1/#cip
+ * 
+ * @xerces.internal
  * 
  * @author Mukul Gandhi, IBM
  * 
