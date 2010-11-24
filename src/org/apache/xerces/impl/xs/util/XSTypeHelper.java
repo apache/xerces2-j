@@ -40,8 +40,7 @@ public class XSTypeHelper {
     /*
      * Checks if the two schema type components are identical.
      */
-    public static boolean schemaTypesIdentical(XSTypeDefinition typeDefn1,
-                                               XSTypeDefinition typeDefn2) {
+    public static boolean isSchemaTypesIdentical(XSTypeDefinition typeDefn1, XSTypeDefinition typeDefn2) {
         boolean typesIdentical = false;
         
         String type1Name = typeDefn1.getName();
@@ -55,11 +54,11 @@ public class XSTypeHelper {
         }
         
         if (!typesIdentical) {                        
-            if (uriEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
-                // if targetNamespace of types are same, then check for  equality of type names and of the base type.
+            if (isUriEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
+                // if targetNamespace of types are same, then check for  equality of type names and of the base type
                 if ((type1Name == null && type2Name == null) ||
                     (type1Name != null && type1Name.equals(type2Name))
-                          && (schemaTypesIdentical(typeDefn1.getBaseType(), typeDefn2.getBaseType()))) {
+                          && (isSchemaTypesIdentical(typeDefn1.getBaseType(), typeDefn2.getBaseType()))) {
                      typesIdentical = true;   
                 }
             }
@@ -67,13 +66,13 @@ public class XSTypeHelper {
         
         return typesIdentical;
         
-    } // schemaTypesIdentical
+    } // isSchemaTypesIdentical
     
     
     /*
      * Check if two URI values are equal.
      */
-    public static boolean uriEqual(String uri1, String uri2) {
+    public static boolean isUriEqual(String uri1, String uri2) {
         
         boolean uriEqual = false;
         
@@ -87,7 +86,7 @@ public class XSTypeHelper {
         
         return uriEqual;
         
-    } // uriEqual
+    } // isUriEqual
     
     
     /*
@@ -95,14 +94,14 @@ public class XSTypeHelper {
      * If this method returns 'true', then the value is valid with respect to entire union 
      * schema component. 
      */
-    public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes,
-                                                       String content, ValidatedInfo validatedInfo) {
+    public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes, String content, 
+                                                       ValidatedInfo validatedInfo) {
         
         boolean isValid = false;
         
-        // check the union member types in order to check for validity of an 'atomic value'.
-        // the validity of 'atomic value' wrt to the 1st available type in this sequence,
-        // is sufficient to achieve the objective of this method.
+        // check the union member types in order to check for validity of an 'atomic value'. the validity 
+        // of 'atomic value' wrt to the 1st available type in union's member type collection, is 
+        // sufficient to achieve the objective of this method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
             if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace())) {                

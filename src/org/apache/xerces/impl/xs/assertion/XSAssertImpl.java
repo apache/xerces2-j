@@ -219,9 +219,8 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     }
     
     /*
-     * Tests if two assertion components are equal. Xerces has a specific
-     * notion of assertions equality, as described by the algorithm in this
-     * method.
+     * Tests if two assertion components are equal. Xerces has a specific notion of assertions equality, 
+     * as described by the algorithm in this method.
      */
     public boolean equals(XSAssertImpl pAssertion) {
       boolean returnVal = false;
@@ -230,9 +229,8 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
       String currXpathStr = this.getTest().getXPath().toString();        
       
       // if type and the xpath string are same, the asserts are equal
-      if (XSTypeHelper.schemaTypesIdentical(pAssertion.getTypeDefinition(),
-                                            fTypeDefinition) && 
-                                            currXpathStr.equals(xpathStr)) {
+      if (XSTypeHelper.isSchemaTypesIdentical(pAssertion.getTypeDefinition(), fTypeDefinition) && 
+                                              currXpathStr.equals(xpathStr)) {
          returnVal = true;  
       }
         

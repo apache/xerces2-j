@@ -1114,38 +1114,29 @@ public class XSSerializer {
                                             Element parentDomNode)
                                             throws DOMException {
         
-        // iterate all attributes on the Complex type. all attributes on a 
-        // complex type (from all of xs:attribute & xs:attributeGroup 
-        // declarations) are expanded, into an XSObjectList list.  
+        // iterate all attributes on the complex type. all attributes on a complex type (from all-of 
+        // it's xs:attribute & xs:attributeGroup declarations) are expanded, into an XSObjectList list.  
         XSObjectList attributeUses = complexTypeDecl.getAttributeUses();
         for (int attrUsesIdx = 0; attrUsesIdx < attributeUses.getLength(); attrUsesIdx++) {
            XSAttributeUse attrUse = (XSAttributeUse) attributeUses.item(attrUsesIdx);
            String constraintName = null;
            String constraintVal = null;           
            if (attrUse.getConstraintType() != XSConstants.VC_NONE) {
-              constraintName = (attrUse.getConstraintType() == 
-                                         XSConstants.VC_DEFAULT) ? 
-                                         "default" : "fixed";
+              constraintName = (attrUse.getConstraintType() == XSConstants.VC_DEFAULT) ? "default" : "fixed";
               constraintVal = attrUse.getConstraintValue();
            }
            
-           String requiredVal = (attrUse.getRequired() == true) ? 
-                                 "required" : "optional"; 
+           String requiredVal = (attrUse.getRequired() == true) ? "required" : "optional"; 
            
            XSAttributeDecl attrDecl = (XSAttributeDecl) 
                                                   attrUse.getAttrDeclaration();
            XSComplexTypeDefinition enclosingCTDefn = attrDecl.
                                                   getEnclosingCTDefinition();
-           boolean complexTypesIdentical = (enclosingCTDefn == null) ? false : 
-                                                XSTypeHelper.schemaTypesIdentical(
-                                                                complexTypeDecl,
-                                                                enclosingCTDefn);
-           // do not add attributes, from the base type. they will be
-           // serialized as part of the base type serialization.
+           boolean complexTypesIdentical = (enclosingCTDefn == null) ? false : XSTypeHelper.isSchemaTypesIdentical(
+                                                                                  complexTypeDecl, enclosingCTDefn);
+           // do not add attributes, from the base type. they will be serialized as part of the base type serialization.
            if (complexTypesIdentical) {
-              addAttributeToSchemaComponent(document, parentDomNode, 
-                                            attrDecl, constraintName, 
-                                            constraintVal, requiredVal); 
+              addAttributeToSchemaComponent(document, parentDomNode, attrDecl, constraintName, constraintVal, requiredVal); 
            }
         }
         
