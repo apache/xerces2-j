@@ -38,19 +38,21 @@ import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
+
+// TODO: tests:
+// * base all: (e, w?)?; derived all: (e)? w. Should be invalid <e1/>
+// * base all: (e/f, w); derived all: (e, w)
+// * base: e|w(lax) + w(skip), derived: w(lax) + w(skip)
+// Example test:
+// Bad: base: ((a|b)&) derived: (a & b).
+// derive allow a,b, base doesn't.
+// Bad: base: ((ns1:a|ns2:b) & ns1:*) derived: (ns1:a & ns2:b).
+// derive allow a,b, base doesn't.
+// Good: base: ((ns1:a|ns2:b) & ns1:*? & ns2:*?) derived: (ns1:a & ns2:b).
+// base: (a{2} & *), derived: (a & *)
 /**
-    // TODO: tests:
-    // * base all: (e, w?)?; derived all: (e)? w. Should be invalid <e1/>
-    // * base all: (e/f, w); derived all: (e, w)
-    // * base: e|w(lax) + w(skip), derived: w(lax) + w(skip)
-            // Example test:
-            // Bad: base: ((a|b)&) derived: (a & b).
-            // derive allow a,b, base doesn't.
-            // Bad: base: ((ns1:a|ns2:b) & ns1:*) derived: (ns1:a & ns2:b).
-            // derive allow a,b, base doesn't.
-            // Good: base: ((ns1:a|ns2:b) & ns1:*? & ns2:*?) derived: (ns1:a & ns2:b).
-            // base: (a{2} & *), derived: (a & *)
-    
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public final class XS11CMRestriction implements XSElementDeclHelper {
