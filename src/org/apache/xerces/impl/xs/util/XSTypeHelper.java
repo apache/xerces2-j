@@ -27,9 +27,9 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * @xerces.internal
- * 
  * Class defining utility/helper methods related to XML schema types.
+ * 
+ * @xerces.internal
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
