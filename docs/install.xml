@@ -49,6 +49,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for the CUP Parser Generator</td>
    </tr>
    <tr>
+    <td>LICENSE.icu4j.html</td>
+    <td>License file for ICU4J 4.2</td>
+   </tr>
+   <tr>
     <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html</td>
     <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
@@ -87,6 +91,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>cupv10k-runtime.jar</td>
     <td>Jar file containing the CUP Parser Generator Runtime</td>
+   </tr>
+   <tr>
+    <td>icu4j.jar</td>
+    <td>Jar file containing ICU4J 4.2</td>
    </tr>
    <tr>
     <td>org.eclipse.wst.xml.xpath2.processor_1.1.0.jar</td>
@@ -162,6 +170,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>LICENSE.cupv10k-runtime.txt</td>
     <td>License for the CUP Parser Generator</td>
+   </tr>
+   <tr>
+    <td>LICENSE.icu4j.html</td>
+    <td>License file for ICU4J 4.2</td>
    </tr>
    <tr>
     <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html</td>
@@ -267,6 +279,14 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>cupv10k-runtime.LICENSE.txt</td>
     <td>License for the CUP Parser Generator</td>
+   </tr>
+   <tr>
+    <td>icu4j.jar</td>
+    <td>Jar file containing ICU4J 4.2</td>
+   </tr>
+   <tr>
+    <td>icu4j.LICENSE.html</td>
+    <td>License file for ICU4J 4.2</td>
    </tr>
    <tr>
     <td>junit.jar</td>
