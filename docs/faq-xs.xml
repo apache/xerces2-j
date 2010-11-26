@@ -86,10 +86,10 @@ v.validate(instanceDocument);
   	   <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
   	   </p>
   	   <p>
-  	   Xerces-J does bundle a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later).
+  	   Xerces-J bundles a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later).
   	   </p>
   	   <note>
-  	   Users should be aware that more recent releases of PsychoPath
+  	   Users should be aware that more recent releases of the PsychoPath
   	   XPath engine may have better conformance to the W3C XPath 2.0 language than the PsychoPath XPath 2.0 jar that's bundled with Apache Xerces-J.
   	   Builds of the PsychoPath XPath 2.0 jar are available for download from following location,  	   
   	   <jump href="http://www.eclipse.org/webtools/">Eclipse Web Tools Platform (WTP) Project</jump> - The latest 'Released' or a 'Stable milestone' 
