@@ -18,6 +18,101 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.11.0'>
+   <desc>
+    <p>
+     This release expands on Xerces' experimental support for XML Schema 1.1
+      by providing implementations for the simplified complex type restriction
+      rules (also known as subsumption), xs:override and a few other XML Schema
+      1.1 features. This release also introduces experimental support for XML
+      Schema Component Designators (SCD). It fixes several bugs which were
+      present in &ParserName; 2.10.0 and also includes a few other minor
+      enhancements.
+    </p>
+   </desc>
+   <changes>
+    <add>
+     <note>
+      Implemented XML Schema 1.1's simplified complex type restriction
+      rules (also known as subsumption).
+     </note>
+     <submitter name='Sandy Gao'/>
+    </add>
+    <add>
+     <note>
+      Added support for XML Schema 1.1's overriding component definitions
+      (&lt;xs:override>).
+     </note>
+     <submitter name='Khaled Noaman, Udayanga Wickramasinghe'/>
+    </add>
+    <add>
+     <note>
+      Added experimental support for a parser and evaluator for
+      <jump href='http://www.w3.org/TR/2010/CR-xmlschema-ref-20100119/'>
+      XML Schema Component Designators</jump> (SCD).
+     </note>
+     <submitter name='Sandy Gao, Ishan Jayawardena'/>
+    </add>
+    <add>
+     <note>
+      Implemented support for the vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable
+      and vc:facetUnavailable attributes for conditional inclusion processing in XML
+      Schema 1.1 documents.
+     </note>
+     <submitter name='Mukul Gandhi'/>
+    </add>
+    <add>
+     <note>
+      Implemented support for allowing xs:group as a child of xs:all in XML Schema 1.1 
+      documents.
+     </note>
+     <submitter name='Mukul Gandhi'/>
+    </add>
+    <update>
+     <note>
+      Made several enhancements to the support for assertions in the XML Schema 1.1
+      implementation.
+     </note>
+     <submitter name='Mukul Gandhi'/>
+    </update>
+    <update>
+     <note>
+      Improved the ways in which the XML Schema API exposes values and identity
+      constraint information.
+     </note>
+     <submitter name='Sandy Gao'/>
+    </update>
+    <fix>
+     <note>
+      Fixed a bug where XMLSchemaValidator.findSchemaGrammar() was not getting
+      called for substitution groups.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the regular expression support which was introduced in the previous
+      release. See JIRA Issue
+      <jump href='https://issues.apache.org/jira/browse/XERCESJ-1456'>XERCESJ-1456</jump>
+      for details.
+     </note>
+     <submitter name='Khaled Noaman'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed multiple issues with decimal precision in the processing of xs:precisionDecimal
+      values.
+     </note>
+     <submitter name='Sandy Gao'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs and made various improvements.
+     </note>
+     <submitter name='Mukul Gandhi, Sandy Gao, Michael Glavassevich, Johannes Koch, Khaled Noaman'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.10.0'>
    <desc>
     <p>
