@@ -297,8 +297,8 @@ and xni.parser.PSVIConfiguration.
   <a>
    <p>
     As of version 2.10.0, Xerces requires JDK 1.3 or later to run and also requires JDK 1.3 or
-    later to build the source code. Since Xerces release 2.11.0, the XML Schema 1.1 build at
-    Xerces requires JDK 1.4 or later to run and also to build the source code.    
+    later to build the source code. Starting with the Xerces 2.11.0 release, the XML Schema 1.1
+    experimental distribution requires JDK 1.4 or later to run and also to build the source code.
    </p>
   </a>
  </faq>
