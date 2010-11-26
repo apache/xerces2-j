@@ -39,8 +39,11 @@
 	  of the XML Schema 1.1
 	  <jump href='http://www.w3.org/TR/2009/WD-xmlschema11-1-20091203/'>Structures</jump> and
 	  <jump href='http://www.w3.org/TR/2009/WD-xmlschema11-2-20091203/'>Datatypes</jump>
-	  Working Drafts (December 2009) is provided for evaluation. For more information, refer
-	  to the <link idref='xml-schema'>XML Schema</link> page.
+	  Working Drafts (December 2009) and an experimental implementation of the 
+	  <jump href='http://www.w3.org/TR/2010/CR-xmlschema-ref-20100119/'>XML Schema Definition
+	  Language (XSD): Component Designators</jump> (SCD) Candidate Recommendation (January 2010)	  
+	  are provided for evaluation. For more information, refer to the <link idref='xml-schema'>
+	  XML Schema</link> page.
     </p>
     <p>
       Xerces2 also provides a <link idref='dom3'>complete implementation</link> of the 
@@ -135,7 +138,11 @@
 	and
 	<jump href='http://www.w3.org/TR/2009/WD-xmlschema11-2-20091203/'>Datatypes</jump>
 	Working Drafts (December 2009)
-      </li>      
+      </li>   
+      <li>
+    <jump href='http://www.w3.org/TR/2010/CR-xmlschema-ref-20100119/'>XML Schema Definition Language 
+    (XSD): Component Designators</jump> (SCD) Candidate Recommendation (January 2010)
+      </li>   
     </ul>
   </s2>
   
@@ -150,11 +157,11 @@
   <s2 title='Changes from Previous Release'>
 
     <p>
-      The &ParserNameLong; &ParserVersion; introduces experimental support for XML Schema 1.1.
-      This release also contains an implementation of the parsing portion of JAXP 1.4, including
-      partial support for StAX 1.0 (javax.xml.stream.events only) and a complete implementation of
-      the DOM Element Traversal API. It fixes several bugs which were present in the previous release
-      and also includes a few other minor enhancements and performance improvements.
+      The &ParserNameLong; &ParserVersion; expands on its experimental support for XML Schema 1.1
+      by providing implementations for the simplified complex type restriction rules (also known as
+      subsumption), xs:override and a few other XML Schema 1.1 features. This release also introduces
+      experimental support for XML Schema Component Designators (SCD). It fixes several bugs which
+      were present in the previous release and also includes a few other minor enhancements.
     </p>
     <p>
       For a more complete list of changes, refer to the 
