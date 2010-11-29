@@ -49,8 +49,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class providing common services for XPath expression evaluation,
- * with 'PsychoPath XPath 2.0' engine.
+ * A base class providing common services for XPath expression evaluation, with 
+ * 'PsychoPath XPath 2.0' engine.
  * 
  * @xerces.internal
  * 
@@ -66,16 +66,12 @@ public class AbstractPsychoPathImpl {
     /*
      * Initialize the 'PsychoPath XPath 2' dynamic context.
      */
-    protected DynamicContext initDynamicContext(XSModel schema,
-                                                Document document,
-                                                Map psychoPathParams) {
+    protected DynamicContext initDynamicContext(XSModel schema, Document document, Map psychoPathParams) {
         
         fDynamicContext = new DefaultDynamicContext(schema, document);        
         
-        // populate the 'PsychoPath XPath 2' static context, with namespace
-        // bindings derived from the XML Schema document.
-        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport)
-                                    psychoPathParams.get("XPATH2_NS_CONTEXT");
+        // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document.
+        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
         while (currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
@@ -89,17 +85,14 @@ public class AbstractPsychoPathImpl {
         
         return fDynamicContext;
         
-    } //initDynamicContext
+    } // initDynamicContext
     
     
     /*
      * Evaluate XPath expression with PsychoPath engine.
      */
-    protected boolean evaluatePsychoPathExpr(XPath xp,
-                                             String xPathDefaultNamespace,
-                                             Element contextNode)
-                                          throws StaticError, DynamicError,
-                                          Exception {
+    protected boolean evaluateXPathExpr(XPath xp, String xPathDefaultNamespace, Element contextNode)
+                                        throws StaticError, DynamicError, Exception {
         
         StaticChecker sc = new StaticNameResolver(fDynamicContext);
         sc.check(xp);
@@ -109,8 +102,7 @@ public class AbstractPsychoPathImpl {
            eval = new DefaultEvaluator(fDynamicContext, domDoc);           
            // change focus to the top most element
            ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
-           nodeEvalRS.add(new ElementType(contextNode, 
-                           fDynamicContext.node_position(contextNode)));
+           nodeEvalRS.add(new ElementType(contextNode, fDynamicContext.node_position(contextNode)));
            if (xPathDefaultNamespace != null) {
              fDynamicContext.add_namespace(null, xPathDefaultNamespace);  
            }
@@ -143,15 +135,13 @@ public class AbstractPsychoPathImpl {
         
         return result;
         
-    } //evaluatePsychoPathExpr
+    } // evaluateXPathExpr
     
     
     /*
      * Compile an XPath string, and return the compiled XPath expression.
      */
-    protected XPath compileXPathStr(String xpathStr,
-                                    XSAssertImpl assertImpl,
-                                    XSDHandler fSchemaHandler) {        
+    protected XPath compileXPathStr(String xpathStr, XSAssertImpl assertImpl, XSDHandler fSchemaHandler) {        
         XPathParser xpp = new JFlexCupParser();
         XPath xp = null;
         
@@ -164,29 +154,25 @@ public class AbstractPsychoPathImpl {
         
         return xp;
         
-    } //compileXPathStr
+    } // compileXPathStr
     
     
     /*
      * Method to report error messages.
      */
-    private void reportError(String key, XSAssertImpl assertImpl,
-                                         XSDHandler fSchemaHandler) {
+    private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler) {
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
         String typeString = "";
         
         if (typeDef != null) {
-           typeString = (typeDef.getName() != null) ? typeDef.getName() :
-                                                            "#anonymous";   
+           typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
         }
         else {
            typeString = "#anonymous"; 
         }
         
-        fSchemaHandler.reportSchemaError(key, new Object[] {
-                               assertImpl.getTest().getXPath().toString(),
-                               typeString }, null);
+        fSchemaHandler.reportSchemaError(key, new Object[] {assertImpl.getTest().getXPath().toString(), typeString }, null);
         
-    } //reportError
+    } // reportError
     
 } // class AbstractPsychoPathImpl

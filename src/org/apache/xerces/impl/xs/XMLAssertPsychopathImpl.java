@@ -69,10 +69,9 @@ import org.w3c.dom.NodeList;
  * This class interfaces with the "Eclipse/PsychoPath XPath 2.0" engine for XPath 
  * expression evaluations for XML Schema assertions.
  * 
- * The class here constructs Xerces PSVI enabled DOM trees -- "on which
- * PsychoPath XPath engine operates" (for typed XDM instance support) from
- * XNI event calls. XML Schema assertions are evaluated on these XPath tree
- * instances in a bottom up fashion.
+ * The class here constructs Xerces PSVI enabled DOM trees -- "on which PsychoPath XPath 
+ * engine operates" (for typed XDM instance support) from XNI event calls. XML Schema 
+ * assertions are evaluated on these XPath tree instances in a bottom up fashion.
  * 
  * @xerces.internal
  * 
@@ -573,12 +572,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             boolean result;            
             if ((value == null) ||
                 (xPathContextExists == true)) {
-                result = fAbstrPsychopathImpl.evaluatePsychoPathExpr(xp, assertImpl.getXPathDefaultNamespace(),
+                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, assertImpl.getXPathDefaultNamespace(),
                                                                      fCurrentAssertDomNode);  
             } 
             else {
                 // XPath context is "undefined"
-                result = fAbstrPsychopathImpl.evaluatePsychoPathExpr(xp, assertImpl.getXPathDefaultNamespace(),
+                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, assertImpl.getXPathDefaultNamespace(),
                                                                      null); 
             }
             
