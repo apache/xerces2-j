@@ -1953,6 +1953,7 @@ public class XMLSchemaValidator
                     && (next = fCurrentCM.whatCanGoHere(fCurrCMState)).size() > 0) {
                     String expected = expectedStr(next);
                     final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);
+                    String elemExpandedQname = (element.uri != null) ? "{"+'"'+element.uri+'"'+":"+element.localpart+"}" : element.localpart;
                     if (occurenceInfo != null) {
                         final int minOccurs = occurenceInfo[0];
                         final int maxOccurs = occurenceInfo[1];
@@ -1975,11 +1976,11 @@ public class XMLSchemaValidator
                                     expected, Integer.toString(maxOccurs) });
                         }
                         else {
-                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
+                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { elemExpandedQname, expected });
                         }
                     }
                     else {
-                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
+                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { elemExpandedQname, expected });
                     }
                 }
                 else {
