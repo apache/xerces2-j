@@ -2014,7 +2014,8 @@ public class XMLSchemaValidator
                 if (ctype.fParticle != null
                     && (next = fCurrentCM.whatCanGoHere(fCurrCMState)).size() > 0) {
                     String expected = expectedStr(next);
-                    final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);
+                    final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);                    
+                    String elemExpandedQname = (element.uri != null) ? "{"+'"'+element.uri+'"'+":"+element.localpart+"}" : element.localpart;                    
                     if (occurenceInfo != null) {
                         final int minOccurs = occurenceInfo[0];
                         final int maxOccurs = occurenceInfo[1];
@@ -2028,20 +2029,20 @@ public class XMLSchemaValidator
                             }
                             else {
                                 reportSchemaError("cvc-complex-type.2.4.g", new Object[] { element.rawname, 
-                                        fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(minOccurs) });
+                                                   fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(minOccurs) });
                             }
                         }
                         // Check if this is a violation of maxOccurs
                         else if (count >= maxOccurs && maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
                             reportSchemaError("cvc-complex-type.2.4.e", new Object[] { element.rawname, 
-                                    expected, Integer.toString(maxOccurs) });
+                                               expected, Integer.toString(maxOccurs) });
                         }
                         else {
-                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
+                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { elemExpandedQname, expected });
                         }
                     }
                     else {
-                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
+                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { elemExpandedQname, expected });
                     }
                 }
                 else {
