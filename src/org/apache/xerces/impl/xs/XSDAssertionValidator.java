@@ -254,6 +254,9 @@ public class XSDAssertionValidator {
                         attrAssertList.addXSObject(assertImpl);
                     }
                 }
+                else if (attrType.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
+                    attrTypeVariety = XSSimpleTypeDefinition.VARIETY_ATOMIC;   
+                }
 
                 // iterate all the schema facets for attributes having the simpleType variety "atomic | list", and
                 // accumulate assertions from them.
