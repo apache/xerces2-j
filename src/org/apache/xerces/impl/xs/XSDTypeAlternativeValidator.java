@@ -176,7 +176,7 @@ public class XSDTypeAlternativeValidator {
                 XSAttributeUseImpl attrUseImpl = (XSAttributeUseImpl) attributeUses.get(attrUsesIndx);
                 XSAttributeDeclaration attrDecl = attrUseImpl.getAttrDeclaration();              
                 // the current element, has an inheritable attribute
-                if (attrName.equals(attrDecl.getName()) && XSTypeHelper.isUriEqual(attrUri, attrDecl.getNamespace()) &&    
+                if (attrName.equals(attrDecl.getName()) && XSTypeHelper.isURIEqual(attrUri, attrDecl.getNamespace()) &&    
                                                                                        attrUseImpl.getInheritable()) {                   
                     InheritableAttribute inhrAttr = new InheritableAttribute(attributes.getLocalName(attrIndx),
                                                                              attributes.getPrefix(attrIndx),
@@ -202,7 +202,7 @@ public class XSDTypeAlternativeValidator {
       for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
           String localName = attributes.getLocalName(attrIndx);
           String uri = attributes.getURI(attrIndx);          
-          if (localName.equals(inhAttr.getLocalName()) && XSTypeHelper.isUriEqual(uri, inhAttr.getUri())) {              
+          if (localName.equals(inhAttr.getLocalName()) && XSTypeHelper.isURIEqual(uri, inhAttr.getUri())) {              
              attrExists = true;
              break;
           }

@@ -54,7 +54,7 @@ public class XSTypeHelper {
         }
         
         if (!typesIdentical) {                        
-            if (isUriEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
+            if (isURIEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
                 // if targetNamespace of types are same, then check for  equality of type names and of the base type
                 if ((type1Name == null && type2Name == null) ||
                     (type1Name != null && type1Name.equals(type2Name))
@@ -68,26 +68,12 @@ public class XSTypeHelper {
         
     } // isSchemaTypesIdentical
     
-    
     /*
      * Check if two URI values are equal.
      */
-    public static boolean isUriEqual(String uri1, String uri2) {
-        
-        boolean uriEqual = false;
-        
-        if ((uri1 != null && uri2 == null) ||
-            (uri1 == null && uri2 != null)) {
-           uriEqual = false;
-        } else if ((uri1 == null && uri2 == null) ||
-                    uri1.equals(uri2)) {
-           uriEqual = true;   
-        } 
-        
-        return uriEqual;
-        
-    } // isUriEqual
-    
+    public static boolean isURIEqual(String uri1, String uri2) {
+        return (uri1 == uri2 || (uri1 != null && uri1.equals(uri2)));
+    } // isURIEqual   
     
     /*
      * Determine if an atomic value is valid with respect to any of the union's member types. 
