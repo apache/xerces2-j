@@ -3227,7 +3227,8 @@ public class XMLSchemaValidator
             
             // additional check for assertions processing, for simple type having  
             // variety 'union'.
-            if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
                 if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
                                                               attrValue, null)) {
                     fisAtomicValueValid = false; 
@@ -3382,7 +3383,8 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having 
                     // variety 'union'.
-                    if (attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                        attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
                         if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), 
                                                                       null, defaultValue)) {
                             fisAtomicValueValid = false; 
@@ -3595,7 +3597,8 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having 
                     // variety 'union'.
-                    if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                        dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
                         if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
                                                               String.valueOf(textContent), 
                                                               null)) {
@@ -3645,7 +3648,8 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having 
                     // variety 'union'.
-                    if (dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                        dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
                         if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), 
                                                               String.valueOf(textContent), 
                                                               null)) {
