@@ -213,9 +213,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  // get XSModel instance                
                  fSchema =  ((PSVIElementNSImpl) fCurrentAssertDomNode).getSchemaInformation();
                  
-                 // pop the stack, to go one level up
+                 // pop the stack to go one level up
                  fAssertRootStack.pop();
-                 // get assertions, and go one level up on the stack
+                 // get assertions and go one level up on the stack
                  List assertions = (List) fAssertListStack.pop(); 
                  Boolean atomicValueValidity = (Boolean) augs.getItem("ATOMIC_VALUE_VALIDITY");
                  if (atomicValueValidity.booleanValue()) {                    
