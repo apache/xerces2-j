@@ -1235,8 +1235,8 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
             fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
 
-            fParticle = null;
-            fAttrGrp = null;
+            fParticle = createParticle();
+            fAttrGrp = createAttrGrp();
         }
 
         // overridden methods
@@ -1268,25 +1268,23 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             // null implementation
         }
 
-        public XSObjectList getAttributeUses() {
+        public XSObjectList getAnnotations() {
             return XSObjectListImpl.EMPTY_LIST;
         }
-
-        public XSAttributeGroupDecl getAttrGrp() {
+        
+        public XSNamespaceItem getNamespaceItem() {
+            return SG_SchemaNS;
+        }
+        
+        private XSAttributeGroupDecl createAttrGrp() {
             XSWildcardDecl wildcard = new XSWildcardDecl();
             wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
             XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
             attrGrp.fAttributeWC = wildcard;
             return attrGrp;
-        }
-
-        public XSWildcard getAttributeWildcard() {
-            XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
-            return wildcard;
-        }
-
-        public XSParticle getParticle() {
+        }   
+        
+        private XSParticleDecl createParticle() {
             // the wildcard used in anyType (content and attribute)
             // the spec will change strict to skip for anyType
             XSWildcardDecl wildcard = new XSWildcardDecl();
@@ -1309,14 +1307,6 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             particleG.fValue = group;
         
             return particleG;
-        }
-
-        public XSObjectList getAnnotations() {
-            return XSObjectListImpl.EMPTY_LIST;
-        }
-        
-        public XSNamespaceItem getNamespaceItem() {
-            return SG_SchemaNS;
         }
     }
     
