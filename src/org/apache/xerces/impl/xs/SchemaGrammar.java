@@ -659,19 +659,19 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             XSComplexTypeDecl anyType = getXSAnyType(schemaVersion);
             annotationType.setValues("#AnonType_" + SchemaSymbols.ELT_ANNOTATION, fTargetNamespace, anyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
-                    XSComplexTypeDecl.CONTENTTYPE_ELEMENT, false, annotationAttrs, null, annotationParticle, new XSObjectListImpl(null, 0), null);
+                    XSComplexTypeDecl.CONTENTTYPE_ELEMENT, false, annotationAttrs, null, annotationParticle, XSObjectListImpl.EMPTY_LIST, null);
             annotationType.setName("#AnonType_" + SchemaSymbols.ELT_ANNOTATION);
             annotationType.setIsAnonymous();
             
             documentationType.setValues("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION, fTargetNamespace, anyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
-                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0), null);
+                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, anyWCSequenceParticle, XSObjectListImpl.EMPTY_LIST, null);
             documentationType.setName("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION);
             documentationType.setIsAnonymous();
             
             appinfoType.setValues("#AnonType_" + SchemaSymbols.ELT_APPINFO, fTargetNamespace, anyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
-                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0), null);
+                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, anyWCSequenceParticle, XSObjectListImpl.EMPTY_LIST, null);
             appinfoType.setName("#AnonType_" + SchemaSymbols.ELT_APPINFO);
             appinfoType.setIsAnonymous();
             
