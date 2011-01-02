@@ -17,7 +17,7 @@
 -->
 <!DOCTYPE book SYSTEM 'dtd/book.dtd'>
 <book title='&ParserName; Documentation' 
-      copyright='1999-2010 The Apache Software Foundation'>
+      copyright='1999-2011 The Apache Software Foundation'>
  <external label='Home' href='http://xerces.apache.org/'/>
  <separator/>
  <document label='Readme' title='&ParserNameLong; Readme'
