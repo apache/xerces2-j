@@ -151,7 +151,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             fCurrentAssertDomNode.appendChild(elem);
             fCurrentAssertDomNode = elem;
         }
-
+        
         // add attribute nodes to DOM element node
         final int attributesLength = attributes.getLength();
         for (int attIndex = 0; attIndex < attributesLength; attIndex++) {
@@ -190,11 +190,18 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     public void endElement(QName element, Augmentations augs) throws Exception {
         
-        if (fCurrentAssertDomNode != null) {
+        if (fCurrentAssertDomNode != null) {            
             // set PSVI information on the element
             ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
             ((PSVIElementNSImpl) fCurrentAssertDomNode).setPSVI(elemPSVI);
-       
+            
+            // handling default values of elements (adding them as 'text' node in the assertion tree)
+            XSElementDecl elemDecl = (XSElementDecl) elemPSVI.getElementDeclaration();
+            if (elemDecl != null && elemDecl.fDefault != null && fCurrentAssertDomNode.getChildNodes().getLength() == 0) {
+                String normalizedDefaultValue = elemDecl.fDefault.normalizedValue;
+                fCurrentAssertDomNode.appendChild(fAssertDocument.createTextNode(normalizedDefaultValue));
+            }
+            
             // itemType for xs:list
             XSSimpleTypeDefinition itemType = null;
             
@@ -220,13 +227,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  Boolean atomicValueValidity = (Boolean) augs.getItem("ATOMIC_VALUE_VALIDITY");
                  if (atomicValueValidity.booleanValue()) {                    
                     // depending on simple content's validity status from XMLSchemaValidator, process
-                    // XML schema assertions.
+                    // XML schema assertions.                    
                     processAllAssertionsOnElement(element, itemType, memberTypes, assertions, elemPSVI);
                  }
             }
 
             if (fCurrentAssertDomNode.getParentNode() instanceof Element) {
-                fCurrentAssertDomNode = (Element)fCurrentAssertDomNode.getParentNode();
+                fCurrentAssertDomNode = (Element) fCurrentAssertDomNode.getParentNode();
             }
         }
         
