@@ -55,7 +55,7 @@ public abstract class CharacterDataImpl
     protected String data;
 
     /** Empty child nodes. */
-    private static transient NodeList singletonNodeList = new NodeList() {
+    private static final transient NodeList singletonNodeList = new NodeList() {
         public Node item(int index) { return null; }
         public int getLength() { return 0; }
     };
