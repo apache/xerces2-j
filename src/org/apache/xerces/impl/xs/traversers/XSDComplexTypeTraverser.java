@@ -316,6 +316,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             Object[] wcAttrValues = fAttrChecker.checkAttributes(child, false, schemaDoc);
             ocDecl.fWildcard = fSchemaHandler.fWildCardTraverser.traverseWildcardDecl(child, wcAttrValues, schemaDoc, grammar);
             fAttrChecker.returnAttrArray(wcAttrValues, schemaDoc);
+            if (ocMode == XSOpenContentDecl.MODE_NONE) {
+                ocDecl.fWildcard = null;
+                reportSchemaError("src-ct11.3", new Object[]{fName}, elmNode);
+            }
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
