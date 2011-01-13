@@ -435,8 +435,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_COMPLEXCONTENT)) {
+                final boolean mixedAttPresent = (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1)
+                    ? DOMUtil.getAttr(complexTypeDecl, SchemaSymbols.ATT_MIXED) != null : false;
                 traverseComplexContent(child, mixedAtt.booleanValue(),
-                        schemaDoc, grammar);
+                        mixedAttPresent, schemaDoc, grammar);
                 Element elemTmp = DOMUtil.getNextSiblingElement(child);
                 if (elemTmp != null) {
                     String siblingName = DOMUtil.getLocalName(elemTmp);
@@ -885,8 +887,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
     
     private void traverseComplexContent(Element complexContentElement,
-            boolean mixedOnType, XSDocumentInfo schemaDoc,
-            SchemaGrammar grammar)
+            boolean mixedOnType, boolean mixedOnTypePresent, 
+            XSDocumentInfo schemaDoc, SchemaGrammar grammar)
     throws ComplexTypeRecoverableError {
         
         Object[] complexContentAttrValues = fAttrChecker.checkAttributes(complexContentElement, false,
@@ -899,6 +901,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         Boolean mixedAtt     = (Boolean) complexContentAttrValues[XSAttributeChecker.ATTIDX_MIXED];
         if (mixedAtt != null) {
             mixedContent = mixedAtt.booleanValue();
+            if (mixedOnTypePresent && mixedContent != mixedOnType) {
+                fAttrChecker.returnAttrArray(complexContentAttrValues, schemaDoc);
+                throw new ComplexTypeRecoverableError("src-ct11.4",
+                        new Object[]{fName}, complexContentElement);
+            }
         }        
 
         // -----------------------------------------------------------------------
