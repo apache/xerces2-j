@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -63,6 +64,8 @@ import org.w3c.dom.Element;
  */
 class XSDAttributeTraverser extends XSDAbstractTraverser {
     
+    private static final String SCHEMA11_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.Schema11DVFactoryImpl";
+    
     public XSDAttributeTraverser (XSDHandler handler,
             XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
@@ -88,7 +91,13 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         XSAnnotationImpl annotation = null;
         if (attrDecl.getAttributeNode(SchemaSymbols.ATT_REF) != null) {
             if (refAtt != null) {
-                attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt, attrDecl);
+                if (SchemaSymbols.URI_XSI.equals(refAtt.uri) && fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
+                    attribute = getAttributeDeclForXSINamespace(refAtt.localpart, enclosingParent, schemaFactory); 
+                }
+                else {
+                   attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt, attrDecl);
+                }
                 
                 Element child = DOMUtil.getFirstChildElement(attrDecl);
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -101,7 +110,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                         annotation = traverseSyntheticAnnotation(attrDecl, text, attrValues, false, schemaDoc);
                     }
                 }
-                
+
                 if (child != null) {
                     reportSchemaError("src-attribute.3.2", new Object[]{refAtt.rawname}, child);
                 }
@@ -221,6 +230,36 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         return attrUse;
     }
     
+    /*
+     * Construct an XSAttributeDecl object for attributes in the namespace http://www.w3.org/2001/XMLSchema-instance 
+     */
+    private XSAttributeDecl getAttributeDeclForXSINamespace(String localpart, XSObject enclosingParent, SchemaDVFactory schemaFactory) {
+        
+        XSAttributeDecl attrDecl = new XSAttributeDecl();
+        
+        XSSimpleType anyURI = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_ANYURI);        
+        if (SchemaSymbols.XSI_TYPE.equals(localpart)) {
+            attrDecl.setValues(SchemaSymbols.XSI_TYPE, SchemaSymbols.URI_XSI, schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_QNAME), 
+                               XSConstants.VC_NONE, XSConstants.SCOPE_GLOBAL, null, enclosingParent, null, false);   
+        }
+        else if (SchemaSymbols.XSI_NIL.equals(localpart)) {
+            attrDecl.setValues(SchemaSymbols.XSI_NIL, SchemaSymbols.URI_XSI, schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_BOOLEAN), 
+                               XSConstants.VC_NONE, XSConstants.SCOPE_GLOBAL, null, enclosingParent, null, false);  
+        }
+        else if (SchemaSymbols.XSI_SCHEMALOCATION.equals(localpart)) {
+            attrDecl.setValues(SchemaSymbols.XSI_SCHEMALOCATION, SchemaSymbols.URI_XSI, schemaFactory.createTypeList("#AnonType_schemaLocation", 
+                               SchemaSymbols.URI_XSI, (short)0, anyURI, null), XSConstants.VC_NONE, XSConstants.SCOPE_GLOBAL, null, enclosingParent, 
+                               null, false); 
+        }
+        else if (SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION.equals(localpart)) {
+            attrDecl.setValues(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION, SchemaSymbols.URI_XSI, anyURI, XSConstants.VC_NONE, XSConstants.SCOPE_GLOBAL, 
+                               null, enclosingParent, null, false);
+        }
+        
+        return attrDecl;
+        
+    } // getAttributeDeclForXSINamespace
+
     protected XSAttributeDecl traverseGlobal(Element attrDecl,
             XSDocumentInfo schemaDoc,
             SchemaGrammar grammar) {

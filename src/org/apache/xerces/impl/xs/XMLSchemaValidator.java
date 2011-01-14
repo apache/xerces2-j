@@ -3366,7 +3366,7 @@ public class XMLSchemaValidator
             // {required} is true matches one of the attribute information items in the element
             // information item's [attributes] as per clause 3.1 above.
             if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
-                if (!isSpecified)
+                if (!isSpecified)                    
                     reportSchemaError(
                         "cvc-complex-type.4",
                         new Object[] { element.rawname, currDecl.fName });
