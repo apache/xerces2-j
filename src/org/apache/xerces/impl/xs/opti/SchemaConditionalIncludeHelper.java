@@ -39,8 +39,7 @@ import org.apache.xerces.xni.QName;
  */
 public class SchemaConditionalIncludeHelper {
     
-    // instance variables holding "natively supported" XML Schema types and
-    // facets by Xerces-J XML Schema 1.1 engine.    
+    // instance variables holding "natively supported" XML Schema types and facets by Xerces-J XML Schema 1.1 engine.    
     List typesSupported = null;
     List facetsSupported = null;
     
@@ -217,19 +216,18 @@ public class SchemaConditionalIncludeHelper {
     
     
     /* 
-     * Method to check if a schema type specified by method arguments (the
-     * QName components of the schema type) is supported by Xerces-J natively.
-     * 
+     * Method to check if a schema type specified by method arguments (the QName components of the schema type) is
+     * supported by Xerces-J natively.
      */
     public boolean isTypeSupported(String localName, String uri) {
+        
        boolean typeSupported = false;
        
        for (Iterator iter = typesSupported.iterator(); iter.hasNext(); ) {
           QName typeQname = (QName) iter.next();
-          if (localName.equals(typeQname.localpart) && uri.equals
-                                                        (typeQname.uri)) {
-                typeSupported = true;
-                break;
+          if (typeQname.localpart.equals(localName) && typeQname.uri.equals(uri)) {
+              typeSupported = true;
+              break;
           }
        }
        
@@ -239,19 +237,18 @@ public class SchemaConditionalIncludeHelper {
     
     
     /* 
-     * Method to check if a schema facet specified by method arguments (the
-     * QName components of a schema facet) is supported by Xerces-J natively.
-     * 
+     * Method to check if a schema facet specified by method arguments (the QName components of a schema facet) is 
+     * supported by Xerces-J natively.
      */
     public boolean isFacetSupported(String localName, String uri) {
+        
         boolean facetSupported = false;
         
         for (Iterator iter = facetsSupported.iterator(); iter.hasNext(); ) {
            QName typeQname = (QName) iter.next();
-           if (localName.equals(typeQname.localpart) && uri.equals
-                                                          (typeQname.uri)) {
-                 facetSupported = true;
-                 break;
+           if (typeQname.localpart.equals(localName) && typeQname.uri.equals(uri)) {
+               facetSupported = true;
+               break;
            }
         }
         
