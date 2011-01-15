@@ -17,12 +17,16 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -35,6 +39,8 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * @version $Id$
  */
 public class XSTypeHelper {
+    
+    private static final String EMPTY_STRING = "".intern();
     
     
     /*
@@ -80,8 +86,7 @@ public class XSTypeHelper {
      * If this method returns 'true', then the value is valid with respect to entire union 
      * schema component. 
      */
-    public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes, String content, 
-                                                       ValidatedInfo validatedInfo) {
+    public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo) {
         
         boolean isValid = false;
         
@@ -104,9 +109,8 @@ public class XSTypeHelper {
     
     
     /*
-     * Determine if a lexical "string value" belongs to the value space (i.e is valid
-     * according to the type) of a given schema simpleType definition. Using Xerces API
-     * 'XSSimpleType.validate' for this need.
+     * Determine if a lexical "string value" belongs to the value space (i.e is valid according to the type) of a given schema 
+     * simpleType definition. Using Xerces API 'XSSimpleType.validate' for this need.
      */
     public static boolean isValueValidForASimpleType(String value, XSSimpleType simplType) {
         
@@ -126,6 +130,43 @@ public class XSTypeHelper {
         
         return isValueValid;
         
-    } // isValueValidForASimpleType    
+    } // isValueValidForASimpleType
+    
+    
+    /*
+     * Validate a QName value (it should be in correct lexical form, and it's prefix must be declared), and report
+     * errors as found.
+     */
+    public static void validateQNameValue(String qNameStr, NamespaceContext namespaceContext, XMLErrorReporter errorReporter) {
+        
+        String prefix, localpart;
+        int colonptr = qNameStr.indexOf(":");
+        if (colonptr > 0) {
+            prefix = qNameStr.substring(0, colonptr);
+            localpart = qNameStr.substring(colonptr + 1);
+        } else {
+            prefix = EMPTY_STRING;
+            localpart = qNameStr;
+        }
+        
+        // both prefix (if any) and localpart must be valid NCName
+        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix)) {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1",
+                                      new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
+        }
+
+        if(!XMLChar.isValidNCName(localpart)) {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1",
+                                      new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
+        }
+
+        // resove prefix to a uri, report an error if failed
+        String uri = namespaceContext.getURI(prefix.intern());
+        if (prefix.length() > 0 && uri == null) {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "UndeclaredPrefix",
+                                      new Object[] {qNameStr, prefix}, XMLErrorReporter.SEVERITY_ERROR);
+        }
+        
+    } // validateQNameValue
     
 } // class XSTypeHelper

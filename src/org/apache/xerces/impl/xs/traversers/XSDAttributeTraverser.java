@@ -96,7 +96,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                     attribute = getAttributeDeclForXSINamespace(refAtt.localpart, enclosingParent, schemaFactory); 
                 }
                 else {
-                   attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt, attrDecl);
+                    attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt, attrDecl);
                 }
                 
                 Element child = DOMUtil.getFirstChildElement(attrDecl);
@@ -231,7 +231,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
     }
     
     /*
-     * Construct an XSAttributeDecl object for attributes in the namespace http://www.w3.org/2001/XMLSchema-instance 
+     * Construct an XSAttributeDecl object for attributes in the namespace http://www.w3.org/2001/XMLSchema-instance.
      */
     private XSAttributeDecl getAttributeDeclForXSINamespace(String localpart, XSObject enclosingParent, SchemaDVFactory schemaFactory) {
         

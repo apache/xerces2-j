@@ -17,17 +17,18 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.Augmentations;
@@ -655,16 +656,16 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     }
                 }
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
-                   typeAvailableList = tokenizeString(attrValue);
+                   typeAvailableList = tokenizeQNameListString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_TYPEUNAVAILABLE.equals(attrLocalName)) {
-                    typeUnavailableList = tokenizeString(attrValue);
+                    typeUnavailableList = tokenizeQNameListString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_FACETAVAILABLE.equals(attrLocalName)) {
-                    facetAvailableList = tokenizeString(attrValue);
+                    facetAvailableList = tokenizeQNameListString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_FACETUNAVAILABLE.equals(attrLocalName)) {
-                    facetUnavailableList = tokenizeString(attrValue);
+                    facetUnavailableList = tokenizeQNameListString(attrValue);
                 }
                 else {
                     // report a warning
@@ -826,20 +827,24 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
     
     /*
-     * Method to tokenize a string value (with XML white spaces as the delimiter) and return a List
+     * Method to tokenize a QName list specified as a string value (with XML white spaces as the delimiter) and return a List
      * containing the string tokens. 
      */
-    private List tokenizeString(String strValue) {
+    private List tokenizeQNameListString(String strValue) {
         
         StringTokenizer st = new StringTokenizer(strValue, " \n\t\r");
         List stringTokens = new ArrayList(st.countTokens());
+        
         while (st.hasMoreTokens()) {
-           stringTokens.add(st.nextToken());
+           String QNameStr = st.nextToken();
+           XSTypeHelper.validateQNameValue(QNameStr, fNamespaceContext, fErrorReporter);          
+           stringTokens.add(QNameStr);
         }
+        
         return stringTokens;
         
-    } // tokenizeString
-    
+    } // tokenizeQNameListString
+
 
     /**
      * A simple boolean based stack.
