@@ -638,10 +638,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                         minVer = new BigDecimal(attrValue);                    
                     }
                     catch (NumberFormatException nfe) {
-                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                   "s4s-att-invalid-value",
-                                                   new Object[] {element.localpart, attrLocalName,
-                                                   nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
+                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "s4s-att-invalid-value",
+                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, 
+                                                   XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
@@ -649,10 +648,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                         maxVer = new BigDecimal(attrValue);                        
                     }
                     catch (NumberFormatException nfe) {
-                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                   "s4s-att-invalid-value",
-                                                   new Object[] {element.localpart, attrLocalName,
-                                                   nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
+                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "s4s-att-invalid-value",
+                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, 
+                                                   XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
@@ -669,37 +667,30 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
                 else {
                     // report a warning
-                    fErrorReporter.reportError(fLocator, XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "src-cip.1", new Object[]{ attrLocalName },
+                    fErrorReporter.reportError(fLocator, XSMessageFormatter.SCHEMA_DOMAIN, "src-cip.1", new Object[]{ attrLocalName }, 
                                                XMLErrorReporter.SEVERITY_WARNING);
                 }
             }
             
         }
                              
-        // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable,
-        // vc:typeUnavailable, vc:facetAvailable & vc:facetUnavailable.
-        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? false : 
-                                               schemaLangVersionAllowsExclude(minVer, maxVer);
-        boolean typeAvlAllowsIgnore = (typeAvailableList == null) ? false : 
-                                               typeAndFacetAvailableAllowsExclude(
-                                                         typeAvailableList, Constants.IS_TYPE,
-                                                         Constants.TYPE_AND_FACET_AVAILABILITY);
-        boolean typeUnavlAllowsIgnore = (typeUnavailableList == null) ? false :
-                                               typeAndFacetAvailableAllowsExclude(
-                                                         typeUnavailableList, Constants.IS_TYPE,
-                                                         Constants.TYPE_AND_FACET_UNAVAILABILITY);
-        boolean facetAvlAllowsIgnore = (facetAvailableList == null) ? false : 
-                                               typeAndFacetAvailableAllowsExclude(
-                                                         facetAvailableList,Constants.IS_FACET,
-                                                         Constants.TYPE_AND_FACET_AVAILABILITY);
-        boolean facetUnavlAllowsIgnore = (facetUnavailableList == null) ? false :
-                                               typeAndFacetAvailableAllowsExclude(
-                                                         facetUnavailableList, Constants.IS_FACET,
-                                                         Constants.TYPE_AND_FACET_UNAVAILABILITY);
+        // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable, vc:typeUnavailable, 
+        // vc:facetAvailable & vc:facetUnavailable.
+        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? false : schemaLangVersionAllowsExclude(minVer, maxVer);
+        boolean typeAvlAllowsIgnore = (typeAvailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
+                                                                                  typeAvailableList, Constants.IS_TYPE,
+                                                                                  Constants.TYPE_AND_FACET_AVAILABILITY);
+        boolean typeUnavlAllowsIgnore = (typeUnavailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
+                                                                                  typeUnavailableList, Constants.IS_TYPE,
+                                                                                  Constants.TYPE_AND_FACET_UNAVAILABILITY);
+        boolean facetAvlAllowsIgnore = (facetAvailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
+                                                                                  facetAvailableList,Constants.IS_FACET,
+                                                                                  Constants.TYPE_AND_FACET_AVAILABILITY);
+        boolean facetUnavlAllowsIgnore = (facetUnavailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
+                                                                                     facetUnavailableList, Constants.IS_FACET,
+                                                                                     Constants.TYPE_AND_FACET_UNAVAILABILITY);
         
-        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore || 
-                                                    facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
+        if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore || facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
             ignoreSchemaComponent =  true;  
         }
         else {
@@ -756,9 +747,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * from schema processing, depending on values of vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable
      * and vc:facetUnavailable attributes from schema versioning namespace. 
     */
-    private boolean typeAndFacetAvailableAllowsExclude(List typeOrFacetList,
-                                                       short typeOrFacet,
-                                                       short availaibilityUnavlCheck) {
+    private boolean typeAndFacetAvailableAllowsExclude(List typeOrFacetList, short typeOrFacet, short availaibilityUnavlCheck) {
         
         // either of the following boolean values would be returned from this method, depending on whether
         // availability or unavailability check is asked for.
