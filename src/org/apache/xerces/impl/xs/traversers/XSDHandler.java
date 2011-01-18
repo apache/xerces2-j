@@ -1793,6 +1793,17 @@ public class XSDHandler {
             }
         }
 
+        // XML Schema 1.1 allows reference to xsi attributes
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+                declType == ATTRIBUTE_TYPE &&
+                declToTraverse.uri == SchemaSymbols.URI_XSI) {
+            SchemaGrammar xsiGrammar = SchemaGrammar.getXSIGrammar(fSchemaVersion);
+            Object retObj = xsiGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
+            if (retObj != null) {
+                return retObj;
+            }
+        }
+
         // now check whether this document can access the requsted namespace
         if (!currSchema.isAllowedNS(declToTraverse.uri)) {
             // cannot get to this schema from the one containing the requesting decl

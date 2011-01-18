@@ -1362,6 +1362,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     // the grammars to hold components of the schema-instance namespace
     public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI, Constants.SCHEMA_VERSION_1_0);
+    private final static BuiltinSchemaGrammar SG_XSI11 = new BuiltinSchemaGrammar(GRAMMAR_XSI, Constants.SCHEMA_VERSION_1_1);
     
     public static SchemaGrammar getS4SGrammar(short schemaVersion) {
         if (schemaVersion == Constants.SCHEMA_VERSION_1_0) {
@@ -1372,6 +1373,14 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
 
         return SG_SchemaNSExtended;
+    }
+    
+    public static SchemaGrammar getXSIGrammar(short schemaVersion) {
+        if (schemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            return SG_XSI11;
+        }
+            
+        return SG_XSI;
     }
 
     static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
