@@ -18,10 +18,12 @@
 package xni;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Stack;
-import java.util.Vector;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
@@ -144,10 +146,10 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
     protected int fIndent;
 
     /** The map used to store IDs for types and elements */
-    protected HashMap fIDMap;
+    protected Map fIDMap;
 
     /** A list of ids for defined XSObjects */
-    protected Vector fDefined;
+    protected List fDefined;
 
     private char[] fIndentChars =
         { '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t' };
@@ -179,7 +181,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
         fAnonNum = 1000;
         fIDMap = new HashMap();
-        fDefined = new Vector();
+        fDefined = new ArrayList();
         fIndent = 0;
         fPSVINamespaceContext = new NamespaceSupport();
     } // reset(XMLComponentManager)
@@ -387,7 +389,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             fPSVINamespaceContext,
             null);
 
-        Vector attributes = new Vector();
+        List attributes = new ArrayList();
         attributes.add("xmlns:xsi");
         attributes.add("http://www.w3.org/2001/XMLSchema-instance");
         attributes.add(XMLSymbols.fCDATASymbol);
@@ -1722,10 +1724,10 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
     private void processPSVIElementRef(
         String elementName,
-        Vector attributes,
+        List attributes,
         XSObject obj) {
         if (attributes == null) {
-            attributes = new Vector();
+            attributes = new ArrayList();
         }
         String ref = this.getID(obj);
         if (ref != null) {
@@ -1753,7 +1755,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
     private void processPSVIAttributeDeclarationRef(XSAttributeDeclaration att) {
         if (att == null)
             return;
-        Vector attributes = new Vector();
+        List attributes = new ArrayList();
         attributes.add("name");
         attributes.add(att.getName());
         attributes.add(XMLSymbols.fCDATASymbol);
@@ -1875,7 +1877,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         this.sendEmptyElementEvent(tagname, null);
     } //sendEmptyElementEvent
 
-    private void sendEmptyElementEvent(String tagname, Vector attributes) {
+    private void sendEmptyElementEvent(String tagname, List attributes) {
         this.sendIndent();
         fDocumentHandler.emptyElement(
             createQName(tagname),
@@ -1891,7 +1893,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      *
      * @throws IOEXception
      */
-    private void sendStartElementEvent(String tagname, Vector attributes) {
+    private void sendStartElementEvent(String tagname, List attributes) {
         fDocumentHandler.startElement(
             createQName(tagname),
             createAttributes(attributes),
@@ -1921,7 +1923,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         this.sendIndentedElement(tagName, null);
     } //sendIndentedElement
 
-    private void sendIndentedElement(String tagName, Vector attributes) {
+    private void sendIndentedElement(String tagName, List attributes) {
         this.sendIndent();
         this.sendStartElementEvent(tagName, attributes);
         this.sendNewLine();
@@ -1966,7 +1968,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
     private void sendElementEvent(
         String elementName,
-        Vector attributes,
+        List attributes,
         String elementValue) {
         XMLString text =
             elementValue == null
@@ -1980,11 +1982,11 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
     private void sendElementEvent(
         String elementName,
-        Vector attributes,
+        List attributes,
         XMLString elementValue) {
         if (elementValue == null || elementValue.length == 0) {
             if (attributes == null) {
-                attributes = new Vector();
+                attributes = new ArrayList();
             }
             attributes.add("xsi:nil");
             attributes.add("true");
@@ -2005,7 +2007,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         // since this method is called everytime we define something with an ID,
         // may as well mark the ID as defined here
         fDefined.add(id);
-        Vector attributes = new Vector();
+        List attributes = new ArrayList();
         attributes.add("id");
         attributes.add(id);
         attributes.add(XMLSymbols.fIDSymbol);
@@ -2042,13 +2044,13 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         return new QName(prefix, localpart, rawname, uri);
     }
 
-    private XMLAttributes createAttributes(Vector atts) {
+    private XMLAttributes createAttributes(List atts) {
         XMLAttributes attributes = new XMLAttributesImpl();
         if (atts != null) {
             for (int i = 0; i < atts.size(); i += 3) {
-                String rawname = (String)atts.elementAt(i);
-                String value = (String)atts.elementAt(i + 1);
-                String type = (String)atts.elementAt(i + 2);
+                String rawname = (String)atts.get(i);
+                String value = (String)atts.get(i + 1);
+                String type = (String)atts.get(i + 2);
                 attributes.addAttribute(createQName(rawname), type, value);
             }
         }
