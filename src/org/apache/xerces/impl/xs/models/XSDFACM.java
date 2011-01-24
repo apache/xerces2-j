@@ -357,7 +357,7 @@ public class XSDFACM
                     // we've already seen enough instances of the first "foo" perhaps there is
                     // another element declaration or wildcard deeper in the element map which
                     // matches.
-                    return findMatchingDecl(curElem, state, subGroupHandler, elemIndex, eDeclHelper);
+                    return findMatchingDecl(curElem, state, subGroupHandler, ++elemIndex, eDeclHelper);
                 }  
             }
             else if (state[2] < o.minOccurs) {
