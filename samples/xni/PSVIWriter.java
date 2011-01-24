@@ -72,6 +72,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 import org.apache.xerces.xs.XSWildcard;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -906,7 +907,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             processPSVISchemaErrorCode(elemPSVI.getErrorCodes());
             sendElementEvent(
                 "psv:schemaNormalizedValue",
-                elemPSVI.getSchemaNormalizedValue());
+                getSchemaNormalizedValue(elemPSVI));
             sendElementEvent(
                 "psv:schemaSpecified",
                 elemPSVI.getIsSchemaSpecified() ? "schema" : "infoset");
@@ -958,7 +959,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             processPSVISchemaErrorCode(attrPSVI.getErrorCodes());
             sendElementEvent(
                 "psv:schemaNormalizedValue",
-                attrPSVI.getSchemaNormalizedValue());
+                getSchemaNormalizedValue(attrPSVI));
             sendElementEvent(
                 "psv:schemaSpecified",
                 attrPSVI.getIsSchemaSpecified() ? "schema" : "infoset");
@@ -1319,7 +1320,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 sendIndentedElement("psv:attributeUse");
                 sendElementEvent("psv:required", String.valueOf(use.getRequired()));
                 processPSVIAttributeDeclarationOrRef(use.getAttrDeclaration());
-                processPSVIValueConstraint(use.getConstraintType(), use.getConstraintValue());
+                processPSVIValueConstraint(use.getConstraintType(), getConstraintValue(use));
                 sendUnIndentedElement("psv:attributeUse");
             }
             sendUnIndentedElement("psv:attributeUses");
@@ -1534,7 +1535,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             "psv:typeDefinition",
             elem.getTypeDefinition());
         processPSVIScope("psv:scope", elem.getEnclosingCTDefinition(), elem.getScope());
-        processPSVIValueConstraint(elem.getConstraintType(), elem.getConstraintValue());
+        processPSVIValueConstraint(elem.getConstraintType(), getConstraintValue(elem));
         sendElementEvent("psv:nillable", String.valueOf(elem.getNillable()));
         processPSVIIdentityConstraintDefinitions(elem.getIdentityConstraints());
         processPSVISubstitutionGroupAffiliation(elem);
@@ -1560,7 +1561,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             "psv:typeDefinition",
             attr.getTypeDefinition());
         processPSVIScope("psv:scope", attr.getEnclosingCTDefinition(), attr.getScope());
-        processPSVIValueConstraint(attr.getConstraintType(), attr.getConstraintValue());
+        processPSVIValueConstraint(attr.getConstraintType(), getConstraintValue(attr));
         processPSVIAnnotation(attr.getAnnotation());
         sendUnIndentedElement("psv:attributeDeclaration");
     }
@@ -2362,6 +2363,27 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             _elementState.push(new ElementState(false));
         }
     } //checkForChildren
+    
+    private String getConstraintValue(XSElementDeclaration elemDecl) {
+        return getConstraintValue(elemDecl.getValueConstraintValue());
+    } // getConstraintValue(XSElementDeclaration)
+    
+    private String getConstraintValue(XSAttributeDeclaration attrDecl) {
+        return getConstraintValue(attrDecl.getValueConstraintValue());
+    } // getConstraintValue(XSAttributeDeclaration)
+    
+    private String getConstraintValue(XSAttributeUse attrUse) {
+        return getConstraintValue(attrUse.getValueConstraintValue());
+    } // getConstraintValue(XSAttributeUse)
+    
+    private String getConstraintValue(XSValue vcValue) {
+        return (vcValue != null) ? vcValue.getNormalizedValue() : null;
+    } // getConstraintValue(XSValue)
+    
+    private String getSchemaNormalizedValue(ItemPSVI itemPSVI) {
+        XSValue schemaValue = itemPSVI.getSchemaValue();
+        return (schemaValue != null) ? schemaValue.getNormalizedValue() : null;
+    } // getSchemaNormalizedValue(ItemPSVI)
 
     class ElementState {
         public boolean isEmpty;
