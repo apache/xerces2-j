@@ -2385,7 +2385,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         return (schemaValue != null) ? schemaValue.getNormalizedValue() : null;
     } // getSchemaNormalizedValue(ItemPSVI)
 
-    class ElementState {
+    static final class ElementState {
         public boolean isEmpty;
         XMLAttributes fAttributes;
 
