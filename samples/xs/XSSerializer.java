@@ -57,6 +57,7 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSValue;
 import org.apache.xerces.xs.XSWildcard;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -266,7 +267,8 @@ public class XSSerializer {
                    constraintName = (attrUse.getConstraintType() == 
                                                XSConstants.VC_DEFAULT) ? 
                                                "default" : "fixed";
-                   constraintVal = attrUse.getConstraintValue();
+                   XSValue xsConstraintVal = attrUse.getValueConstraintValue();
+                   constraintVal = xsConstraintVal.getNormalizedValue();
                }
                String requiredVal = (attrUse.getRequired() == true) ? 
                                               "required" : "optional"; 
@@ -1123,7 +1125,8 @@ public class XSSerializer {
            String constraintVal = null;           
            if (attrUse.getConstraintType() != XSConstants.VC_NONE) {
               constraintName = (attrUse.getConstraintType() == XSConstants.VC_DEFAULT) ? "default" : "fixed";
-              constraintVal = attrUse.getConstraintValue();
+              XSValue xsConstraintVal = attrUse.getValueConstraintValue();
+              constraintVal = xsConstraintVal.getNormalizedValue();
            }
            
            String requiredVal = (attrUse.getRequired() == true) ? "required" : "optional"; 
