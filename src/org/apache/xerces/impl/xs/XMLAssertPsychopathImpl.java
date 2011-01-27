@@ -224,10 +224,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  fAssertRootStack.pop();
                  // get assertions and go one level up on the stack
                  List assertions = (List) fAssertListStack.pop(); 
-                 Boolean atomicValueValidity = (Boolean) augs.getItem("ATOMIC_VALUE_VALIDITY");
-                 if (atomicValueValidity.booleanValue()) {                    
-                    // depending on simple content's validity status from XMLSchemaValidator, process
-                    // XML schema assertions.                    
+                 Boolean isAssertProcessingNeeded = (Boolean) augs.getItem("ASSERT_PROC_NEEDED_FOR_UNION");
+                 if (isAssertProcessingNeeded.booleanValue()) {                    
+                    // if in a pre-processing step in XMLSchemaValidator, a member type of union in XML Schema namespace successfully 
+                    // validated an atomic value, don't process assertions on such union types. For all other use-cases (non union
+                    // simple types or complex types, applicable assertions would always be processed.
                     processAllAssertionsOnElement(element, itemType, memberTypes, assertions, elemPSVI);
                  }
             }

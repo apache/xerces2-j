@@ -82,28 +82,25 @@ public class XSTypeHelper {
     } // isURIEqual   
     
     /*
-     * Determine if an atomic value is valid with respect to any of the union's member types. 
-     * If this method returns 'true', then the value is valid with respect to entire union 
-     * schema component. 
+     * Determine if an atomic value is valid with respect to any of the union's member types (those that are in XML Schema namespace). 
+     * If this method returns 'true', then the value is valid with respect to entire union schema component. 
      */
     public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo) {
         
-        boolean isValid = false;
+        boolean isValueValid = false;
         
-        // check the union member types in order to check for validity of an 'atomic value'. the validity 
-        // of 'atomic value' wrt to the 1st available type in union's member type collection, is 
-        // sufficient to achieve the objective of this method.
+        // check the union member types in order to check for validity of an 'atomic value'. the validity of 'atomic value' wrt
+        // to the 1st available type in union's member type collection, is sufficient to achieve the objective of this method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
-            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace())) {                
-                if (XSTypeHelper.isValueValidForASimpleType(content, simpleTypeDv)) {
-                    isValid = true;
-                    break;  
-                }
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && 
+                    XSTypeHelper.isValueValidForASimpleType(content, simpleTypeDv)) {
+                isValueValid = true;
+                break;  
             }
         }
         
-        return isValid;
+        return isValueValid;
         
     } // isAtomicValueValidForAnUnion
     

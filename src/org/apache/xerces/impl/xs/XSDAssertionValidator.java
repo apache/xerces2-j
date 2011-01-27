@@ -122,7 +122,7 @@ public class XSDAssertionValidator {
      */
     public void handleEndElement(QName element, XSElementDecl elemDecl, 
                                  XSTypeDefinition typeDef, XSNotationDecl notation,
-                                 XSGrammarBucket grammarBucket, boolean atomicValueValid) {
+                                 XSGrammarBucket grammarBucket, boolean isAssertProcessingNeededForUnion) {
         
         if (fAssertionProcessor != null) {
             try {
@@ -136,7 +136,7 @@ public class XSDAssertionValidator {
                 // construct the augmentations object for assertions. store assertPSVI into the augmentations.
                 AugmentationsImpl assertAugs = new AugmentationsImpl();
                 assertAugs.putItem(Constants.ELEMENT_PSVI, assertPSVI);
-                assertAugs.putItem("ATOMIC_VALUE_VALIDITY", Boolean.valueOf(atomicValueValid));
+                assertAugs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(isAssertProcessingNeededForUnion));
                 fAssertionProcessor.endElement(element, assertAugs);
             } catch (Exception ex) {
                 throw new XNIException(ex.getMessage(), ex);
