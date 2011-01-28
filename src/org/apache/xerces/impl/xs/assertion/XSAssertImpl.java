@@ -37,80 +37,74 @@ import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
  */
 public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
 
-    protected short assertKind = XSConstants.ASSERTION;
+    // The kind of assertion this is
+    private short fAssertKind = XSConstants.ASSERTION;
     
-    /** The type definition associated with the assertion component */
-    protected XSTypeDefinition fTypeDefinition;
+    // The type definition associated with the assertion component
+    private XSTypeDefinition fTypeDefinition;
 
-    /** Xerces object representing the assert 'test' attribute */
-    protected Test fTestExpr = null;
+    // Xerces object representing the assert 'test' attribute
+    private Test fTestExpr = null;
     
-    /** Compiled XPath 2.0 expression */
-    protected XPath fCompiledXPath = null;
+    // Compiled XPath 2.0 expression
+    private XPath fCompiledXPathExpr = null;
     
-    /** Optional annotations */
-    protected XSObjectList fAnnotations = null;
+    // Optional annotations
+    private XSObjectList fAnnotations = null;
 
-    /** Default XPath namespace */
-    protected String fXPathDefaultNamespace = null;
+    // Default XPath namespace
+    private String fXPathDefaultNamespace = null;
       
-    /** XPath 2.0 namespace context. Derived from XSDocumentInfo in Xerces
-        schema "component traversers".
-    */
-    protected NamespaceSupport fXPath2NamespaceContext = null;
+    // XPath 2.0 namespace context. Derived from XSDocumentInfo in Xerces schema "component traversers".
+    private NamespaceSupport fXPath2NamespaceContext = null;
     
-    // a non null value of this object indicates, that this assertion belongs
-    // to an attribute's schema type, and value of this object would be the
-    // attribute's name.
-    protected String attrName = null;
+    // a non-null value of this object indicates that this assertion belongs to an attribute's schema type, and
+    // value of this object would be the attribute's name.
+    private String fAttrName = null;
     
-    // a non null value of this object indicates, that this assertion belongs
-    // to an attribute's schema type, and value of this object would be the
-    // attribute's value.
-    protected String attrValue = null;
+    // a non-null value of this object indicates that this assertion belongs to an attribute's schema type, and
+    // value of this object would be the attribute's value.
+    private String fAttrValue = null;
     
-    // XSDHandler object, passed on from the Xerces schema "component
-    // traversers". 
-    protected XSDHandler fSchemaHandler = null;
+    // XSDHandler object passed on from the Xerces XSModel traversers. 
+    private XSDHandler fSchemaHandler = null;
     
-    // user-defined message to provide to an user context, during assertion
-    // failures.
-    protected String message = null;
+    // an user-defined message to provide to the user context, during assertion failures.
+    private String fMessage = null;
     
-    // representing the schema type's variety, if an assertion belongs to a
-    // schema simpleType.
-    protected short fVariety = 0;
+    // represents the schema type's variety if an assertion belongs to a schema simpleType.
+    private short fVariety = 0;
 
-    /** Constructor */
-    public XSAssertImpl(XSTypeDefinition type,
-            XSObjectList annotations, XSDHandler schemaHandler) {
-        // An assert component must correspond to a schema type        
+    /*
+     * Class constructor.
+     */
+    public XSAssertImpl(XSTypeDefinition type, XSObjectList annotations, XSDHandler schemaHandler) {
+        // an assert component corresponds to a schema type        
         fTypeDefinition = type;
         
         fSchemaHandler = schemaHandler; 
         fAnnotations = annotations;
     }
-
-    /** Sets the test attribute value */
+    
     public void setTest(Test expr) {
         fTestExpr = expr;        
-        // compile the XPath string, into an object
-        fCompiledXPath = compileXPathStr(expr.toString(),
-                                         this,
-                                         fSchemaHandler);
+        // compile the XPath string, and keep compiled representation into this object for later use (this helps us to
+        // optimize assertions evaluations).
+        setCompiledExpr(compileXPathStr(expr.toString(), this, fSchemaHandler));
+    }
+    
+    public void setCompiledExpr(XPath compiledXPathExpr) {
+        fCompiledXPathExpr = compiledXPathExpr;  
     }
 
-    /** Sets the assertion annotations */
     public void setAnnotations(XSObjectList annotations) {
         fAnnotations = annotations;
     }
 
-    /** Sets the xpath default namespace */
     public void setXPathDefaultNamespace(String namespace) {
         fXPathDefaultNamespace = namespace;
     }
       
-    /** Sets the XPath 2.0 namespace context */
     public void setXPath2NamespaceContext(NamespaceSupport namespaceContext) {
         fXPath2NamespaceContext = namespaceContext;       
     }
@@ -123,24 +117,29 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
      * -> an assertion facet from a simpleType :   XSConstants.ASSERTION_FACET
      */
     public void setAssertKind(short assertKind) {
-        this.assertKind = assertKind;
+        this.fAssertKind = assertKind;
     }
     
-    /**
-     * Sets the attribute name
-     */
     public void setAttrName(String attrName) {
-        this.attrName = attrName;   
+        this.fAttrName = attrName;   
     }
     
-    /**
-     * Sets the attribute value
-     */
     public void setAttrValue(String attrValue) {
-        this.attrValue = attrValue;   
+        this.fAttrValue = attrValue;   
     }
     
-   
+    public void setTypeDefinition(XSTypeDefinition typeDefn) {
+        fTypeDefinition = typeDefn;  
+    }
+
+    public void setMessage(String message) {
+       this.fMessage = message;    
+    }
+    
+    public void setVariety(short variety) {
+        fVariety = variety;  
+    }
+    
     public XSObjectList getAnnotations() {
         return fAnnotations;
     }
@@ -150,7 +149,7 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     }
     
     public XPath getCompiledXPath() {
-        return fCompiledXPath;
+        return fCompiledXPathExpr;
     }
 
     public Test getTest() {
@@ -159,10 +158,6 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     
     public XSTypeDefinition getTypeDefinition() {
         return fTypeDefinition;
-    }
-    
-    public void setTypeDefinition(XSTypeDefinition typeDefn) {
-        fTypeDefinition = typeDefn;  
     }
     
     public String getXPathDefaultNamespace() {
@@ -175,7 +170,7 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
     public String getName() {
         return null;
     }
-
+    
     /**
      * @see org.apache.xerces.xs.XSObject#getNamespace()
      */
@@ -190,32 +185,36 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
         return null;
     }
 
-    /**
-     * Get the type of the object
-     */
     public short getType() {
-        return assertKind;
+        return fAssertKind;
     }
     
-    /**
-     * Get the attribute name
-     */
     public String getAttrName() {
-        return attrName;  
+        return fAttrName;  
     }
     
-    /**
-     * Get the attribute value
-     */
     public String getAttrValue() {
-        return attrValue;  
+        return fAttrValue;  
     }
        
-    /**
-     * Get the XPath 2.0 namespace context
-     */
     public NamespaceSupport getXPath2NamespaceContext() {
         return fXPath2NamespaceContext;
+    }
+    
+    public String getMessage() {
+       return fMessage;   
+    }
+    
+    public short getVariety() {
+       return fVariety;  
+    }
+    
+    public XSDHandler getSchemaHandler() {
+       return fSchemaHandler;  
+    }
+    
+    public short getAssertKind() {
+       return fAssertKind;  
     }
     
     /*
@@ -223,47 +222,20 @@ public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
      * as described by the algorithm in this method.
      */
     public boolean equals(XSAssertImpl pAssertion) {
-      boolean returnVal = false;
-      
-      String xpathStr = pAssertion.getTest().getXPath().toString();
-      String currXpathStr = this.getTest().getXPath().toString();        
-      
-      // if type and the xpath string are same, the asserts are equal
-      if (XSTypeHelper.isSchemaTypesIdentical(pAssertion.getTypeDefinition(), fTypeDefinition) && 
-                                              currXpathStr.equals(xpathStr)) {
-         returnVal = true;  
-      }
         
-      return returnVal;
-    }
+        boolean returnVal = false;
 
-    /*
-     * Set error message, for assertions failures.
-     */
-    public void setMessage(String message) {
-       this.message = message;    
-    }
-    
-    /* 
-     * Get the error message string.
-     */
-    public String getMessage() {
-       return message;   
-    }
+        String xpathStr = pAssertion.getTest().getXPath().toString();
+        String currXpathStr = this.getTest().getXPath().toString();        
 
-    /*
-     * If the assertion belongs to a simpleType, set the variety
-     * of the type.
-     */
-    public void setVariety(short variety) {
-        fVariety = variety;  
-    }
+        // if type and the xpath string are same, the asserts are equal
+        if (XSTypeHelper.isSchemaTypesIdentical(pAssertion.getTypeDefinition(), fTypeDefinition) && 
+                currXpathStr.equals(xpathStr)) {
+            returnVal = true;  
+        }
+
+        return returnVal;
+        
+    } // equals
     
-    
-    /*
-     * Get the value of simpleType's variety.
-     */
-    public short getVariety() {
-       return fVariety;  
-    }
-}
+} // class XSAssertImpl
