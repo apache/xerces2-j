@@ -446,8 +446,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                  }
             }
             else if (isTypeDerivedFromUnion) {
-                // although Xerces XSModel treats this case as a simpleType with variety union, but from assertions perspective,
-                // this is treated like a "simpleType -> restriction" case (which also appears to be syntactically in every case?).
+                // although Xerces XSModel treats this case as a simpleType with variety union, but from assertions perspective
+                // this is treated like a "simpleType -> restriction" case (which also appears to be syntactically true in every case?).
                 // REVISIT...
                 setValueOf$ValueForSTVarietyUnion(value, memberTypes);
                 AssertionError assertError = evaluateAssertion(element, assertImpl, value, false, false);
