@@ -280,16 +280,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         if (textChildCount == effectiveChildCount) {
             // the DOM tree we are inspecting has simple content. therefore we can find the desired string value. 
             XSElementDeclaration elemDecl = pElemPSVI.getElementDeclaration();
-            if ((elemDecl.getTypeDefinition()).derivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA,
-                                                           SchemaSymbols.ATTVAL_STRING,
-                                                           XSConstants.DERIVATION_RESTRICTION)) {
-                // if element's schema type is derived by restriction from xs:string, white-space normalization is
-                // not needed for the string value for context variable $value.
+            if ((elemDecl.getTypeDefinition()).derivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ATTVAL_STRING, XSConstants.DERIVATION_RESTRICTION)) {
+                // if element's schema type is derived by restriction from xs:string, white-space normalization is not needed for the
+                // string value for context variable $value.
                 value = textValueContents.toString();  
             }
             else {
-                // white-space normalization is needed for the string value of $value in case of derivation from
-                // non xs:string atomic types.
+                // white-space normalization is needed for the string value of $value in case of derivation from non xs:string atomic types.
                 value = XMLChar.trim(textValueContents.toString());
             }    
         }
@@ -306,8 +303,8 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Evaluate assertions on a "complex type".
      */
-    private void evaluateAssertionsFromAComplexType(QName element, List assertions, String value) 
-                                                    throws Exception {
+    private void evaluateAssertionsFromAComplexType(QName element, List assertions, String value) throws Exception {
+        
         if (value != null) {
             // complex type with simple content
             setTypedValueFor$value(value, null, null);
@@ -428,7 +425,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                }
             }
             else if (memberTypes != null && memberTypes.getLength() == 0) {
-                // evaluating assertions for "simpleType -> restriction"
+                // evaluating assertions for "simpleType -> restriction" (not derived by union)
                 setTypedValueFor$value(value, null, null);
                 AssertionError assertError = evaluateAssertion(element, assertImpl, value, false, false);
                 if (assertError != null) {
@@ -532,9 +529,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                             }
                             catch(Exception ex) {
                                // An exception may occur if for example, a typed value cannot be constructed by PsychoPath
-                               // engine for a given "string value" (say a value '5' was attempted to be formed as a typed
+                               // XPath engine for a given "string value" (say a value '5' was attempted to be converted to a typed
                                // value xs:date).
-                               // it's useful to report warning ... TO DO
+                               // it's useful to report warning ... REVISIT
                             }
                         }
                         if (assertsSucceeded == assertFacets.size()) {
@@ -836,7 +833,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
            fValidator.reportSchemaError("cvc-assertion.failure", new Object[] { message, listAssertErrMessage } );    
         }
         else {
-           fValidator.reportSchemaError(key, new Object[] { elemErrorAnnotation, assertImpl.getTest().getXPath().toString(),
+           fValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(),
                                                             typeString, listAssertErrMessage} );
         }
         
@@ -850,8 +847,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
         XSSimpleTypeDefinition simpleTypeDefn = null;
         
-        // iterate the member types of union in order, to find that which schema type can successfully validate an
-        // atomic value first.
+        // iterate the member types of union in order, to find that which schema type can successfully validate an atomic value first.
         final int memberTypesLength = memberTypes.getLength();
         for (int memTypeIdx = 0; memTypeIdx < memberTypesLength; memTypeIdx++) {
            XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item(memTypeIdx);
@@ -881,8 +877,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         private final boolean isList;
         
         // class constructor
-        public AssertionError(String errorCode, QName element, XSAssertImpl assertImpl,
-                              String value, boolean isList) {
+        public AssertionError(String errorCode, QName element, XSAssertImpl assertImpl, String value, boolean isList) {
            this.errorCode = errorCode;
            this.element = element;
            this.assertImpl = assertImpl;
