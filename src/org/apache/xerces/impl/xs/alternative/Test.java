@@ -27,6 +27,7 @@ import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
 import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
@@ -39,6 +40,7 @@ import org.w3c.dom.Element;
  * @xerces.internal
  * 
  * @author Hiranya Jayathilaka, University of Moratuwa
+ * @author Mukul Gandhi IBM
  * @version $Id$
  */
 public class Test extends AbstractPsychoPathImpl {
@@ -119,8 +121,8 @@ public class Test extends AbstractPsychoPathImpl {
        
        try {
          // construct a DOM document (used by psychopath engine as XPath XDM instance). 
-         // A PSVI DOM is constructed, to comply to PsychoPath design. This doesn't seem to 
-         // affect CTA psychopath evaluations. CTA spec, doesn't require a typed XDM tree.
+         // A PSVI DOM is constructed to comply to PsychoPath design. This doesn't seem to 
+         // affect CTA psychopath evaluations. CTA spec doesn't require a typed XDM tree.
          // REVISIT ...
          Document document = new PSVIDocumentImpl();
          
@@ -138,9 +140,11 @@ public class Test extends AbstractPsychoPathImpl {
          // construct parameter values for psychopath processor
          Map psychoPathParams = new HashMap();
          psychoPathParams.put("XPATH2_NS_CONTEXT", fXPath2NamespaceContext);
-         initDynamicContext(null, document, psychoPathParams);
-         
-         result = evaluateXPathExpr(fXPathPsychoPath, fTypeAlternative.fXPathDefaultNamespace, elem);
+         DynamicContext xpath2DynamicContext = initDynamicContext(null, document, psychoPathParams);
+         if (fTypeAlternative.fXPathDefaultNamespace != null) {
+             xpath2DynamicContext.add_namespace(null, fTypeAlternative.fXPathDefaultNamespace);  
+         }
+         result = evaluateXPathExpr(fXPathPsychoPath, elem);
        } 
        catch (StaticError ex) {
            result = false; 

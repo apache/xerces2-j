@@ -83,7 +83,7 @@ import org.w3c.dom.NodeList;
 public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
 
     // class variable declarations
-    private DynamicContext fDynamicContext;
+    private DynamicContext fXpath2DynamicContext;
     private XSModel fSchema = null;
     private AbstractPsychoPathImpl fAbstrPsychopathImpl = null;
 
@@ -128,7 +128,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     private void initXPathProcessor() throws Exception {        
         fValidator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
         fAbstrPsychopathImpl = new AbstractPsychoPathImpl();
-        fDynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchema, fAssertDocument, fAssertParams);        
+        fXpath2DynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchema, fAssertDocument, fAssertParams);        
     } // initXPathProcessor
     
 
@@ -310,15 +310,19 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             setTypedValueFor$value(value, null, null);
         } else {
             // complex type with complex content. set xpath context variable $value to an empty sequence.
-            fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
+            fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                                              "value"), getXPath2ResultSequence(new ArrayList()));
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
         XSObjectList attrMemberTypes = null;
         final int assertListSize = assertList.size();
-        for (int i = 0; i < assertListSize; i++) {
-            XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(i);               
+        for (int assertIdx = 0; assertIdx < assertListSize; assertIdx++) {
+            XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(assertIdx);
+            String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace(); 
+            if (xPathDefaultNamespace != null) {
+                fXpath2DynamicContext.add_namespace(null, xPathDefaultNamespace);  
+            }
             boolean xpathContextExists = false;
             if (assertImpl.getType() == XSConstants.ASSERTION) {
                 // not an assertion facet
@@ -410,6 +414,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         
         for (int assertIdx = 0; assertIdx < assertListLength; assertIdx++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(assertIdx);
+            String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace(); 
+            if (xPathDefaultNamespace != null) {
+                fXpath2DynamicContext.add_namespace(null, xPathDefaultNamespace);  
+            }
             if (itemType != null) {
                // evaluating assertions for "simpleType -> list". tokenize the list value by the longest sequence of white-spaces.
                StringTokenizer values = new StringTokenizer(value, " \n\t\r");
@@ -587,8 +595,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Method to evaluate an assertion object.
      */
-    private AssertionError evaluateAssertion(QName element, XSAssertImpl assertImpl, String value,
-                                             boolean xPathContextExists, boolean isList) {
+    private AssertionError evaluateAssertion(QName element, XSAssertImpl assertImpl, String value, boolean xPathContextExists, boolean isList) {
         
         AssertionError assertionError = null;
         
@@ -598,13 +605,11 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             boolean result;            
             if ((value == null) ||
                 (xPathContextExists == true)) {
-                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, assertImpl.getXPathDefaultNamespace(),
-                                                                     fCurrentAssertDomNode);  
+                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, fCurrentAssertDomNode);  
             } 
             else {
                 // XPath context is "undefined"
-                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, assertImpl.getXPathDefaultNamespace(),
-                                                                     null); 
+                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, null); 
             }
             
             if (!result) {
@@ -658,11 +663,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
               if (typeDef instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition) typeDef).getSimpleType() != null) {
                   setValueOf$ValueForCTWithSimpleContent(value, (XSComplexTypeDefinition) typeDef);
               }
-              else if (typeDef instanceof XSComplexTypeDefinition && 
-                      ((XSComplexTypeDefinition) typeDef).getSimpleType() == null) {
-                  // assign an empty XPath2 sequence to xpath context variable
-                  // $value.
-                  fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
+              else if (typeDef instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition) typeDef).getSimpleType() == null) {
+                  // assign an empty XPath2 sequence to xpath context variable $value
+                  fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                                                    "value"), getXPath2ResultSequence(new ArrayList())); 
               }
               else {
@@ -680,7 +683,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     private void setValueOf$ValueForSTVarietyAtomic(String value, short xsdTypecode) {
         AnyType psychoPathType = SchemaTypeValueFactory.newSchemaTypeValue(xsdTypecode, value);
-        fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
+        fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                                          "value"), (AnyAtomicType) psychoPathType);
     } // setValueOf$ValueForSTVarietyAtomic
 
@@ -718,13 +721,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             }
 
             // assign an XPath2 sequence to xpath context variable $value
-            fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
+            fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName(
                                            "value"), getXPath2ResultSequence(xdmItemList));
         }
         else if (complexTypeSimplContentType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
             // simple content type has variety xs:union
             XSSimpleTypeDefinition simpleContentTypeForUnion = getActualListItemTypeForVarietyUnion(complexTypeSimplContentType.getMemberTypes(), value);
-            fDynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), 
+            fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), 
                                          SchemaTypeValueFactory.newSchemaTypeValue(simpleContentTypeForUnion.getBuiltInKind(), value));
         }
         else {

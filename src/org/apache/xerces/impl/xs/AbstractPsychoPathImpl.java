@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
  */
 public class AbstractPsychoPathImpl {
     
-    private DynamicContext fDynamicContext = null;
+    private DynamicContext fXpath2DynamicContext = null;
     private Document domDoc = null;
     
     
@@ -68,7 +68,7 @@ public class AbstractPsychoPathImpl {
      */
     protected DynamicContext initDynamicContext(XSModel schema, Document document, Map psychoPathParams) {
         
-        fDynamicContext = new DefaultDynamicContext(schema, document);        
+        fXpath2DynamicContext = new DefaultDynamicContext(schema, document);        
         
         // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document.
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
@@ -76,14 +76,14 @@ public class AbstractPsychoPathImpl {
         while (currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
             String uri = xpath2NamespaceContext.getURI(prefix);
-            fDynamicContext.add_namespace(prefix, uri);
+            fXpath2DynamicContext.add_namespace(prefix, uri);
         }
         
-        fDynamicContext.add_function_library(new FnFunctionLibrary());
-        fDynamicContext.add_function_library(new XSCtrLibrary());        
+        fXpath2DynamicContext.add_function_library(new FnFunctionLibrary());
+        fXpath2DynamicContext.add_function_library(new XSCtrLibrary());        
         domDoc = document;
         
-        return fDynamicContext;
+        return fXpath2DynamicContext;
         
     } // initDynamicContext
     
@@ -91,26 +91,21 @@ public class AbstractPsychoPathImpl {
     /*
      * Evaluate XPath expression with PsychoPath engine.
      */
-    protected boolean evaluateXPathExpr(XPath xp, String xPathDefaultNamespace, Element contextNode)
-                                        throws StaticError, DynamicError, Exception {
+    protected boolean evaluateXPathExpr(XPath xp, Element contextNode) throws StaticError, DynamicError, Exception {
         
-        StaticChecker sc = new StaticNameResolver(fDynamicContext);
+        StaticChecker sc = new StaticNameResolver(fXpath2DynamicContext);
         sc.check(xp);
        
         Evaluator eval = null;
         if (contextNode != null) {
-           eval = new DefaultEvaluator(fDynamicContext, domDoc);           
+           eval = new DefaultEvaluator(fXpath2DynamicContext, domDoc);           
            // change focus to the top most element
            ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
-           nodeEvalRS.add(new ElementType(contextNode, fDynamicContext.node_position(contextNode)));
-           if (xPathDefaultNamespace != null) {
-             fDynamicContext.add_namespace(null, xPathDefaultNamespace);  
-           }
-           
-           fDynamicContext.set_focus(new Focus(nodeEvalRS));
+           nodeEvalRS.add(new ElementType(contextNode, fXpath2DynamicContext.node_position(contextNode)));           
+           fXpath2DynamicContext.set_focus(new Focus(nodeEvalRS));
         }
-        else {
-           eval = new DefaultEvaluator(fDynamicContext, null);   
+        else {           
+           eval = new DefaultEvaluator(fXpath2DynamicContext, null);
         }
         
         ResultSequence rs = eval.evaluate(xp);
