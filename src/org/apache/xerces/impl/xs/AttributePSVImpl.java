@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
@@ -62,10 +63,61 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
+    
+    /** true if this object is immutable **/
+    protected boolean fIsConstant;
+    
+    public AttributePSVImpl() {}
+    
+    public AttributePSVImpl(boolean isConstant, AttributePSVI attrPSVI) {
+        fDeclaration = attrPSVI.getAttributeDeclaration();
+        fTypeDecl = attrPSVI.getTypeDefinition();
+        fSpecified = attrPSVI.getIsSchemaSpecified();
+        fValue.copyFrom(attrPSVI.getSchemaValue());
+        fValidationAttempted = attrPSVI.getValidationAttempted();
+        fValidity = attrPSVI.getValidity();
+        if (attrPSVI instanceof AttributePSVImpl) {
+            final AttributePSVImpl attrPSVIImpl = (AttributePSVImpl) attrPSVI;
+            fErrors = (attrPSVIImpl.fErrors != null) ?
+                    (String[]) attrPSVIImpl.fErrors.clone() : null;
+        }
+        else {
+            final StringList errorCodes = attrPSVI.getErrorCodes();
+            final int length = errorCodes.getLength();
+            if (length > 0) {
+                final StringList errorMessages = attrPSVI.getErrorMessages();
+                final String[] errors = new String[length << 1];
+                for (int i = 0, j = 0; i < length; ++i) {
+                    errors[j++] = errorCodes.item(i);
+                    errors[j++] = errorMessages.item(i);
+                }
+                fErrors = errors;
+            }
+        }
+        fValidationContext = attrPSVI.getValidationContext();
+        fIsConstant = isConstant;
+    }
 
     //
     // AttributePSVI methods
     //
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#constant()
+     */
+    public ItemPSVI constant() {
+        if (isConstant()) {
+            return this;
+        }
+        return new AttributePSVImpl(true, this);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#isConstant()
+     */
+    public boolean isConstant() {
+        return fIsConstant;
+    }
 
     /**
      * [schema default]

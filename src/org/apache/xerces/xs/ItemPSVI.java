@@ -54,6 +54,19 @@ public interface ItemPSVI {
      * performed on the item. 
      */
     public static final short VALIDATION_FULL           = 2;
+    
+    /**
+     * Returns a reference to an immutable instance with the same data
+     * that this instance of <code>ItemPSVI</code> currently has.
+     */
+    public ItemPSVI constant();
+    
+    /** 
+     * Returns <code>true</code> if this specific instance of
+     * <code>ItemPSVI</code> is immutable, otherwise <code>false</code>.
+     */
+    public boolean isConstant();
+    
     /**
      * The nearest ancestor element information item with a 
      * <code>[schema information]</code> property (or this element item 
