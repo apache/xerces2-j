@@ -20,6 +20,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSElementDeclaration;
@@ -84,9 +85,64 @@ public class ElementPSVImpl implements ElementPSVI {
     /** the schema information property */
     protected XSModel fSchemaInformation = null;
     
+    /** true if this object is immutable **/
+    protected boolean fIsConstant;
+    
+    public ElementPSVImpl() {}
+    
+    public ElementPSVImpl(boolean isConstant, ElementPSVI elementPSVI) {
+        fDeclaration = elementPSVI.getElementDeclaration();
+        fTypeDecl = elementPSVI.getTypeDefinition();
+        fNil = elementPSVI.getNil();
+        fSpecified = elementPSVI.getIsSchemaSpecified();
+        fValue.copyFrom(elementPSVI.getSchemaValue());
+        fNotation = elementPSVI.getNotation();
+        fValidationAttempted = elementPSVI.getValidationAttempted();
+        fValidity = elementPSVI.getValidity();
+        fValidationContext = elementPSVI.getValidationContext();
+        if (elementPSVI instanceof ElementPSVImpl) {
+            final ElementPSVImpl elementPSVIImpl = (ElementPSVImpl) elementPSVI;
+            fErrors = (elementPSVIImpl.fErrors != null) ?
+                    (String[]) elementPSVIImpl.fErrors.clone() : null;
+            elementPSVIImpl.copySchemaInformationTo(this);
+        }
+        else {
+            final StringList errorCodes = elementPSVI.getErrorCodes();
+            final int length = errorCodes.getLength();
+            if (length > 0) {
+                final StringList errorMessages = elementPSVI.getErrorMessages();
+                final String[] errors = new String[length << 1];
+                for (int i = 0, j = 0; i < length; ++i) {
+                    errors[j++] = errorCodes.item(i);
+                    errors[j++] = errorMessages.item(i);
+                }
+                fErrors = errors;
+            }
+            fSchemaInformation = elementPSVI.getSchemaInformation();
+        }
+        fIsConstant = isConstant;
+    }
+    
     //
     // ElementPSVI methods
     //
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#constant()
+     */
+    public ItemPSVI constant() {
+        if (isConstant()) {
+            return this;
+        }
+        return new ElementPSVImpl(true, this);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#isConstant()
+     */
+    public boolean isConstant() {
+        return fIsConstant;
+    }
 
     /**
      * [schema default]
