@@ -315,11 +315,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
-        XSObjectList attrMemberTypes = null;
         final int assertListSize = assertList.size();
         for (int assertIdx = 0; assertIdx < assertListSize; assertIdx++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(assertIdx);
-            String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace(); 
+            String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace();             
             if (xPathDefaultNamespace != null) {
                 fXpath2DynamicContext.add_namespace(null, xPathDefaultNamespace);  
             }
@@ -328,58 +327,33 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                 // not an assertion facet
                 xpathContextExists = true;   
             }
-            // check if this is an assertion, from an attribute
+            
             if (assertImpl.getAttrName() != null) {
+                // evaluate assertion from an attribute
                 value = assertImpl.getAttrValue();
                 XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition) assertImpl.getTypeDefinition();                
-                attrMemberTypes = attrType.getMemberTypes();
-                final boolean isTypeDerivedFromUnion = ((XSSimpleType) attrType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;                
-                if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
-                    // this assertion belongs to a type, that is an item type of a "simpleType -> list".
-                    // tokenize the list value by the longest sequence of white-spaces.
-                    StringTokenizer values = new StringTokenizer(value, " \n\t\r");
-                    
-                    // evaluate assertion on all of list items
-                    while (values.hasMoreTokens()) {
-                        String itemValue = values.nextToken();
-                        setValueOf$valueForAListItem(itemValue, attrType);                        
-                        AssertionError assertError = evaluateAssertion(element, assertImpl, itemValue, xpathContextExists, true);
-                        if (assertError != null) {
-                            reportAssertionsError(assertError);    
-                        }
-                    }
-                }
-                else if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
+                XSObjectList attrMemberTypes = attrType.getMemberTypes();
+                final boolean isTypeDerivedFromUnion = ((XSSimpleType) attrType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
+                if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
                     // evaluating assertions for "simpleType -> restriction" (not derived by union)
                     setTypedValueFor$value(value, null, attrType);
-                    AssertionError assertError = evaluateAssertion(element, assertImpl, value, xpathContextExists, false);
+                    AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, xpathContextExists, false);
                     if (assertError != null) {
                         reportAssertionsError(assertError);    
                     }
                 }
-                else if (attrMemberTypes != null && attrMemberTypes.getLength() > 0 && !isTypeDerivedFromUnion) {
-                   // evaluate assertions for "simpleType -> union"
-                   boolean isValidationFailedForUnion = isValidationFailedForUnion(attrMemberTypes, element, value, false);
-                   // only 1 error message is reported for assertion failures on "simpleType -> union", since it is hard 
-                   // (perhaps impossible?) to determine statically that what all assertions can cause validation failure, 
-                   // when participating in an XML schema union.
-                   if (isValidationFailedForUnion) {                        
-                        fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", new Object[] { element.rawname, value } );   
-                   } 
+                else if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
+                    // evaluating assertions for "simpleType -> list"
+                    evaluateAssertionOnSTListValue(element, value, assertImpl, xpathContextExists, attrType);
                 }
-                else if (isTypeDerivedFromUnion) {
-                    // although Xerces XSModel treats this case as a simpleType with variety union, but from assertions perspective
-                    // this is treated like a "simpleType -> restriction" case (which also appears to be syntactically true in every case?).
-                    // REVISIT...
-                    setValueOf$ValueForSTVarietyUnion(value, attrMemberTypes);
-                    AssertionError assertError = evaluateAssertion(element, assertImpl, value, false, false);
-                    if (assertError != null) {
-                        reportAssertionsError(assertError);    
-                    }
+                else {
+                    // evaluating assertions for "simpleType -> union"
+                    evaluateAssertionOnSTUnion(element, attrMemberTypes, isTypeDerivedFromUnion, assertImpl, value);
                 }
             }
             else {
-                AssertionError assertError = evaluateAssertion(element, assertImpl, value, xpathContextExists, false);
+                // evaluate an assertion from other parts (i.e not from attributes) of complexType's content model
+                AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, xpathContextExists, false);
                 if (assertError != null) {
                     reportAssertionsError(assertError);    
                 }  
@@ -387,7 +361,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         }
         
     } // evaluateAssertionsFromAComplexType
-    
+
     
     /*
      * Evaluate assertions on a "simple type".
@@ -418,51 +392,75 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
             if (xPathDefaultNamespace != null) {
                 fXpath2DynamicContext.add_namespace(null, xPathDefaultNamespace);  
             }
-            if (itemType != null) {
-               // evaluating assertions for "simpleType -> list". tokenize the list value by the longest sequence of white-spaces.
-               StringTokenizer values = new StringTokenizer(value, " \n\t\r");
-               
-               // evaluate assertion on all of list items
-               while (values.hasMoreTokens()) {
-                   String itemValue = values.nextToken();
-                   setValueOf$valueForAListItem(itemValue, itemType);
-                   AssertionError assertError = evaluateAssertion(element, assertImpl, itemValue, false, true);
-                   if (assertError != null) {
-                       reportAssertionsError(assertError);    
-                   }
-               }
-            }
-            else if (memberTypes != null && memberTypes.getLength() == 0) {
+            if (memberTypes != null && memberTypes.getLength() == 0) {
                 // evaluating assertions for "simpleType -> restriction" (not derived by union)
                 setTypedValueFor$value(value, null, null);
-                AssertionError assertError = evaluateAssertion(element, assertImpl, value, false, false);
+                AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
                 if (assertError != null) {
                     reportAssertionsError(assertError);    
                 }    
             }
-            else if (memberTypes != null && memberTypes.getLength() > 0 && !isTypeDerivedFromUnion) {
-                  // evaluate assertions for "simpleType -> union"
-                  boolean isValidationFailedForUnion = isValidationFailedForUnion(memberTypes, element, value, false);
-                 // only 1 error message is reported for assertion failures on "simpleType -> union", since it is hard 
-                 // (perhaps impossible?) to determine statically that what all assertions can cause validation failure, 
-                 // when participating in an XML schema union.
-                 if (isValidationFailedForUnion) {
-                      fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", new Object[] { element.rawname, value } );   
-                 }
-            }
-            else if (isTypeDerivedFromUnion) {
-                // although Xerces XSModel treats this case as a simpleType with variety union, but from assertions perspective
-                // this is treated like a "simpleType -> restriction" case (which also appears to be syntactically true in every case?).
-                // REVISIT...
-                setValueOf$ValueForSTVarietyUnion(value, memberTypes);
-                AssertionError assertError = evaluateAssertion(element, assertImpl, value, false, false);
-                if (assertError != null) {
-                    reportAssertionsError(assertError);    
-                }
+            else if (itemType != null) {
+               // evaluating assertions for "simpleType -> list"
+               evaluateAssertionOnSTListValue(element, value, assertImpl, false, itemType);
+            }            
+            else {
+               // evaluating assertions for "simpleType -> union"
+               evaluateAssertionOnSTUnion(element, memberTypes, isTypeDerivedFromUnion, assertImpl, value);
             }
         }
         
     } // evaluateAssertionsFromASimpleType
+    
+    
+    /*
+     * Evaluate assertion on a simpleType xs:list value. Assertion is evaluated on each list item.
+     */
+    private void evaluateAssertionOnSTListValue(QName element, String listStrValue, XSAssertImpl assertImpl, boolean xpathContextExists,
+                                                XSSimpleTypeDefinition itemType) throws Exception {
+        
+        // tokenize the list value by the longest sequence of white-spaces.
+        StringTokenizer values = new StringTokenizer(listStrValue, " \n\t\r");
+        
+        // evaluate assertion on all of list items
+        while (values.hasMoreTokens()) {
+            String itemValue = values.nextToken();
+            setValueOf$valueForAListItem(itemValue, itemType);                        
+            AssertionError assertError = evaluateOneAssertion(element, assertImpl, itemValue, xpathContextExists, true);
+            if (assertError != null) {
+                reportAssertionsError(assertError);    
+            }
+        }
+        
+    } // evaluateAssertionOnSTListValue
+    
+    
+    /*
+     * Evaluate assertion on a simpleType with variety xs:union.
+     */
+    private void evaluateAssertionOnSTUnion(QName element, XSObjectList memberTypes, boolean isTypeDerivedFromUnion, XSAssertImpl assertImpl, String value) {
+        
+        if (memberTypes != null && memberTypes.getLength() > 0 && !isTypeDerivedFromUnion) {            
+            boolean isValidationFailedForUnion = isValidationFailedForUnion(memberTypes, element, value, false);
+            // only 1 error message is reported for assertion failures on "simpleType -> union", since it is hard 
+            // (perhaps impossible?) to determine statically that what all assertions can cause validation failure, 
+            // when participating in an XML schema union.
+            if (isValidationFailedForUnion) {                        
+                 fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", new Object[] { element.rawname, value } );   
+            } 
+         }
+         else if (isTypeDerivedFromUnion) {
+             // although Xerces XSModel treats this case as a simpleType with variety union, but from assertions perspective
+             // this is treated like a "simpleType -> restriction" case (which also appears to be syntactically true in every case?).
+             // REVISIT...
+             setValueOf$ValueForSTVarietyUnion(value, memberTypes);
+             AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
+             if (assertError != null) {
+                 reportAssertionsError(assertError);    
+             }
+         }
+        
+    } // evaluateAssertionOnSTUnion
     
     
     /*
@@ -530,13 +528,13 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                             XSAssertImpl assertImpl = (XSAssertImpl) iter.next();
                             try {
                                setTypedValueFor$value(value, memType, null);
-                               AssertionError assertError = evaluateAssertion(element, assertImpl, value, false, false);
+                               AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
                                if (assertError == null) {
                                    assertsSucceeded++;  
                                }
                             }
                             catch(Exception ex) {
-                               // An exception may occur if for example, a typed value cannot be constructed by PsychoPath
+                               // An exception may occur if for example a typed value cannot be constructed by PsychoPath
                                // XPath engine for a given "string value" (say a value '5' was attempted to be converted to a typed
                                // value xs:date).
                                // it's useful to report warning ... REVISIT
@@ -593,9 +591,9 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     
 
     /*
-     * Method to evaluate an assertion object.
+     * Method to evaluate an assertion object. Returns the evaluation error details in the AssertionError object.
      */
-    private AssertionError evaluateAssertion(QName element, XSAssertImpl assertImpl, String value, boolean xPathContextExists, boolean isList) {
+    private AssertionError evaluateOneAssertion(QName element, XSAssertImpl assertImpl, String value, boolean xPathContextExists, boolean isList) {
         
         AssertionError assertionError = null;
         
@@ -635,7 +633,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         
         return assertionError;
         
-    } // evaluateAssertion
+    } // evaluateOneAssertion
     
     
     /*
