@@ -398,7 +398,7 @@ public class XS11AllCM implements XSCMValidator, XS11CMRestriction.XS11CM {
                 return fWildcards[idx];
             }
         }
-        if (isOpenContentAllowed(s, sn)) {
+        if (idx == fNumTotal && isOpenContentAllowed(s, sn)) {
             index[0] = fNumTotal;
             return fOpenContent.fWildcard;
         }
