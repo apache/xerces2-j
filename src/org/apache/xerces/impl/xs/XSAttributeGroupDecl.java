@@ -267,6 +267,11 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                     }
 
                 }
+                
+                if (baseAttrUse.getInheritable() != attrUse.getInheritable()) {
+                    errorArgs = new Object[]{typeName, attrDecl.fName, "cos-content-act-restrict.5.3"};
+                    return errorArgs;  
+                }
             } else {
                 // No matching attribute in base - there should be a matching wildcard
 
