@@ -334,6 +334,9 @@ public final class Constants {
     /** Feature to ignore errors caused by type alternatives */
     public static final String TYPE_ALTERNATIVES_CHEKING_FEATURE = "validation/type-alternative-checking";
     
+    /** Feature to enable/prohibit XML Schema 1.1 assertion evaluations on each simpleType list item */
+    public static final String SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE = "validation/foldedSTlist-assertion-evaluation";
+    
     /** Feature to ignore errors caused by unparsed entities ("validation/unparsed-entity-checking") */
     public static final String UNPARSED_ENTITY_CHECKING_FEATURE = "validation/unparsed-entity-checking";
     

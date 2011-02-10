@@ -209,6 +209,10 @@ public class XMLSchemaValidator
     /** Feature identifier: whether to ignore type alternatives */
     protected static final String TYPE_ALTERNATIVES_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
+    
+    /** Feature identifier: whether to evaluate assertions on each simpleType list item */
+    protected static final String SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE;
 
     // property identifiers
 
@@ -1312,6 +1316,8 @@ public class XMLSchemaValidator
     private boolean fIDCChecking;
 
     private boolean fTypeAlternativesChecking;
+    
+    private boolean fSTFoldedSTListAssertionEvaluation;
 
     /** temporary validated info */
     private ValidatedInfo fValidatedInfo = new ValidatedInfo();
@@ -1501,9 +1507,7 @@ public class XMLSchemaValidator
             fAugPSVI = true;
         }
         try {
-            fSchemaType =
-                (String) componentManager.getProperty(
-                    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
+            fSchemaType = (String) componentManager.getProperty(Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
         } catch (XMLConfigurationException e) {
             fSchemaType = null;
         }
@@ -1602,6 +1606,13 @@ public class XMLSchemaValidator
         }
         catch (XMLConfigurationException e) {
             fTypeAlternativesChecking = true;
+        }
+        
+        try {
+            fSTFoldedSTListAssertionEvaluation = componentManager.getFeature(SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION);
+        }
+        catch (XMLConfigurationException e) {
+            fSTFoldedSTListAssertionEvaluation = false;
         }
         
         // get schema location properties
@@ -2161,8 +2172,7 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-            XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, 
-                                                                                    element, attributes);           
+            XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, element, attributes);           
            if (currentType != null) {
                fCurrentType = currentType;    
            }
@@ -2405,7 +2415,7 @@ public class XMLSchemaValidator
         
         // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            fAssertionValidator.handleStartElement(element, attributes);
+            fAssertionValidator.handleStartElement(element, attributes, fSTFoldedSTListAssertionEvaluation);
         }
 
         return augs;

@@ -82,7 +82,7 @@ public class XSDAssertionValidator {
     /*
      * Assertions processing interface during the XNI event, 'handleStartElement' in XMLSchemaValidator.
      */
-    public void handleStartElement(QName element, XMLAttributes attributes) {
+    public void handleStartElement(QName element, XMLAttributes attributes, boolean stFoldedListAssertionEvaluation) {
        
         // get list of assertions for processing
         List assertionList = getAssertsForEvaluation(element, attributes);
@@ -101,6 +101,7 @@ public class XSDAssertionValidator {
             
             Map assertProcessorParams = new HashMap();
             assertProcessorParams.put("XPATH2_NS_CONTEXT", xpathNamespaceContext);
+            assertProcessorParams.put("FOLDED_STLIST_ASSERT_FEATURE", Boolean.valueOf(stFoldedListAssertionEvaluation));
             // initialize the assertions processor
             initializeAssertProcessor(assertProcessorParams);
         }
@@ -109,7 +110,7 @@ public class XSDAssertionValidator {
         if (fAssertionProcessor != null) {
            // construct the augmentations object, for assertions
            AugmentationsImpl assertAugs = new AugmentationsImpl();
-           assertAugs.putItem("ASSERT", assertionList);
+           assertAugs.putItem("ASSERT", assertionList);           
            fAssertionProcessor.startElement(element, attributes, assertAugs);
         }
         

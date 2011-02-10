@@ -88,6 +88,9 @@ public class SourceValidator
     /** Generate synthetic schema annotations feature id (http://apache.org/xml/features/generate-synthetic-annotations). */
     protected static final String GENERATE_SYNTHETIC_ANNOTATIONS_ID = "http://apache.org/xml/features/generate-synthetic-annotations";
     
+    /** Enable/prohibit XML Schema 1.1 assertion evaluations on each simpleType list item */
+    protected static final String SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE = "http://apache.org/xml/features/validation/foldedSTlist-assertion-evaluation";
+    
     // property ids
     
     /** StAX support for reporting line and column numbers property id (javax.xml.stream.isSupportingLocationCoordinates). */
@@ -118,6 +121,9 @@ public class SourceValidator
     
     /** Default generate synthetic schema annotations (false). */
     protected static final boolean DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS = false;
+    
+    /** Default XML Schema 1.1 simpleType folded list assertion evaluation (false). */
+    protected static final boolean DEFAULT_SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION = false;
     
     /** Default memory usage report (false). */
     protected static final boolean DEFAULT_MEMORY_USAGE = false;
@@ -310,6 +316,7 @@ public class SourceValidator
         boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         boolean validateAnnotations = DEFAULT_VALIDATE_ANNOTATIONS;
         boolean generateSyntheticAnnotations = DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS;
+        boolean simpleTypeFoldedListAssertionEvaluation =  DEFAULT_SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION;
         boolean memoryUsage = DEFAULT_MEMORY_USAGE;
         
         // process arguments
@@ -401,6 +408,10 @@ public class SourceValidator
                 }
                 if (option.equalsIgnoreCase("m")) {
                     memoryUsage = option.equals("m");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("fL11")) {
+                    simpleTypeFoldedListAssertionEvaluation = option.equals("fL11");
                     continue;
                 }
                 if (option.equals("h")) {
@@ -511,6 +522,15 @@ public class SourceValidator
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Validator does not support feature ("+GENERATE_SYNTHETIC_ANNOTATIONS_ID+")");
             }
+            try {
+                validator.setFeature(SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE, simpleTypeFoldedListAssertionEvaluation);
+            }
+            catch (SAXNotRecognizedException e) {
+                System.err.println("warning: Validator does not recognize feature ("+SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE+")");
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Validator does not support feature ("+SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE+")");
+            }
 
             // Validate instance documents
             if (instances != null && instances.size() > 0) {
@@ -588,22 +608,24 @@ public class SourceValidator
         System.err.println();
         
         System.err.println("options:");
-        System.err.println("  -l name     Select schema language by name.");
-        System.err.println("  -x number   Select number of repetitions.");
-        System.err.println("  -a uri ...  Provide a list of schema documents");
-        System.err.println("  -i uri ...  Provide a list of instance documents to validate");
-        System.err.println("  -vs source  Select validation source (sax|dom|stax|stream)");
-        System.err.println("  -f  | -F    Turn on/off Schema full checking.");
-        System.err.println("              NOTE: Not supported by all schema factories and validators.");
-        System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
-        System.err.println("              NOTE: Not supported by all schema factories and validators.");
-        System.err.println("  -va | -VA   Turn on/off validation of schema annotations.");
-        System.err.println("              NOTE: Not supported by all schema factories and validators.");
-        System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
-        System.err.println("              NOTE: Not supported by all schema factories and validators.");
-        System.err.println("  -m  | -M    Turn on/off memory usage report");
-        System.err.println("  -xsd11      Turn on XSD 1.1 support.");
-        System.err.println("  -h          This help screen.");
+        System.err.println("  -l name         Select schema language by name.");
+        System.err.println("  -x number       Select number of repetitions.");
+        System.err.println("  -a uri ...      Provide a list of schema documents");
+        System.err.println("  -i uri ...      Provide a list of instance documents to validate");
+        System.err.println("  -vs source      Select validation source (sax|dom|stax|stream)");
+        System.err.println("  -f    | -F      Turn on/off Schema full checking.");
+        System.err.println("                  NOTE: Not supported by all schema factories and validators.");
+        System.err.println("  -hs   | -HS     Turn on/off honouring of all schema locations.");
+        System.err.println("                  NOTE: Not supported by all schema factories and validators.");
+        System.err.println("  -va   | -VA     Turn on/off validation of schema annotations.");
+        System.err.println("                  NOTE: Not supported by all schema factories and validators.");
+        System.err.println("  -ga   | -GA     Turn on/off generation of synthetic schema annotations.");
+        System.err.println("                  NOTE: Not supported by all schema factories and validators.");        
+        System.err.println("  -m    | -M      Turn on/off memory usage report");
+        System.err.println("  -xsd11          Turn on XSD 1.1 support.");
+        System.err.println("  -fL11           Turn on/off simpleType folded list XSD 1.1 assertion evaluation mode.");
+        System.err.println("                  NOTE: Not supported by all schema factories and validators.");
+        System.err.println("  -h              This help screen.");
         
         System.err.println();
         System.err.println("defaults:");
@@ -618,6 +640,8 @@ public class SourceValidator
         System.err.println(DEFAULT_VALIDATE_ANNOTATIONS ? "on" : "off");
         System.err.print("  Generate synthetic annotations:  ");
         System.err.println(DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS ? "on" : "off");
+        System.err.print("  Simple Type folded list XSD 1.1 assertion evaluation:  ");
+        System.err.println(DEFAULT_SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION ? "true" : "false");
         System.err.print("  Memory:                          ");
         System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
         
