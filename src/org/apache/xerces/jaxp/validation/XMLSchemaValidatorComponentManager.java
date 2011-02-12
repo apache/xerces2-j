@@ -87,10 +87,6 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     private static final String TYPE_ALTERNATIVES_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
     
-    /** Feature identifier: whether to evaluate assertions on each simpleType list item */
-    private static final String SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION =
-        Constants.XERCES_FEATURE_PREFIX + Constants.SIMPLETYPE_FOLDEDLIST_ASSERTION_FEATURE;
-    
     /** Feature identifier: disallow DOCTYPE declaration */
     private static final String DISALLOW_DOCTYPE_DECL_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
@@ -259,15 +255,13 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
                 DISALLOW_DOCTYPE_DECL_FEATURE,
                 NORMALIZE_DATA,
                 SCHEMA_ELEMENT_DEFAULT,
-                SCHEMA_AUGMENT_PSVI,
-                SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION
+                SCHEMA_AUGMENT_PSVI
         };
         addRecognizedFeatures(recognizedFeatures);
         fFeatures.put(DISALLOW_DOCTYPE_DECL_FEATURE, Boolean.FALSE);
         fFeatures.put(NORMALIZE_DATA, Boolean.FALSE);
         fFeatures.put(SCHEMA_ELEMENT_DEFAULT, Boolean.FALSE);
         fFeatures.put(SCHEMA_AUGMENT_PSVI, Boolean.TRUE);
-        fFeatures.put(SIMPLETYPE_FOLDEDLIST_ASSERTION_EVALUATION, Boolean.FALSE);
         
         addRecognizedParamsAndSetDefaults(fEntityManager, grammarContainer);
         addRecognizedParamsAndSetDefaults(fErrorReporter, grammarContainer);
@@ -292,7 +286,6 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         fFeatures.put(ID_IDREF_CHECKING, Boolean.TRUE);
         fFeatures.put(IDENTITY_CONSTRAINT_CHECKING, Boolean.TRUE);
         fFeatures.put(UNPARSED_ENTITY_CHECKING, Boolean.TRUE);
-        fFeatures.put(TYPE_ALTERNATIVES_CHECKING, Boolean.TRUE);
         fFeatures.put(TYPE_ALTERNATIVES_CHECKING, Boolean.TRUE);        
     }
 
