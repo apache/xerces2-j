@@ -468,7 +468,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
     
     /*
-     * Determine if an validation must fail due to assertions evaluation for "simpleType -> union" member types.
+     * Determine if an validation episode must fail due to assertions evaluation for "simpleType -> union" member types.
      */
     private boolean isValidationFailedForUnion(XSObjectList memberTypes, QName element, String value, boolean isAttribute) {
         
@@ -554,7 +554,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
 
     /*
-     * Method to evaluate an assertion object. Returns the evaluation error details in an AssertionError object.
+     * Method to evaluate an assertion. Returns the evaluation error details in an AssertionError object.
      */
     private AssertionError evaluateOneAssertion(QName element, XSAssertImpl assertImpl, String value, boolean xPathContextExists, boolean isList) {
         
@@ -609,7 +609,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
         if (listOrUnionType != null) {
             if (isTypeDerivedFromList) {
-                // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*).
+                // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*)
                 // tokenize the list value by a sequence of white spaces
                 StringTokenizer listStrTokens = new StringTokenizer(value, " \n\t\r");
                 List xdmItemList = new ArrayList();
@@ -758,7 +758,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
          
          boolean isxsd11Type = false;
          
-         // the below 'if else' clauses are written to process few special cases handling few of schema types within PsychoPath XPath engine.
+         // the below 'if else' clauses are written to process few special cases handling few of schema types within PsychoPath XPath engine
          final String elementTypeName = elementType.getName();
          if ("dayTimeDuration".equals(elementTypeName)) {
              typeCode = PsychoPathTypeHelper.DAYTIMEDURATION_DT;
@@ -930,4 +930,4 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
     } // class AssertionError
     
-} // class XMLAssertPsychopathImpl
+} // class XMLAssertPsychopathXPath2Impl

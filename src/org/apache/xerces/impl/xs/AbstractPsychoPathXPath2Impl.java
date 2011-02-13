@@ -69,7 +69,7 @@ public class AbstractPsychoPathXPath2Impl {
         
         fXpath2DynamicContext = new DefaultDynamicContext(schema, document);        
         
-        // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document.
+        // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
         while (currPrefixes.hasMoreElements()) {
@@ -171,4 +171,4 @@ public class AbstractPsychoPathXPath2Impl {
         
     } // reportError
     
-} // class AbstractPsychoPathImpl
+} // class AbstractPsychoPathXPath2Impl
