@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.impl.xpath.XPath20;
-import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
+import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
  * @author Mukul Gandhi IBM
  * @version $Id$
  */
-public class Test extends AbstractPsychoPathImpl {
+public class Test extends AbstractPsychoPathXPath2Impl {
 
 	/** The type alternative to which the test belongs */
     protected final XSTypeAlternativeImpl fTypeAlternative;

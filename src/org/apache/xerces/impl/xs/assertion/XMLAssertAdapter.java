@@ -26,7 +26,7 @@ import org.apache.xerces.xni.XMLString;
 
 /**
  * A convenience implementation of the assertions interface. All compliant assertions
- * processors (using a specific XPath 2.0 engine), should extend this class.
+ * processors (using a specific XPath 2.0 engine) should extend this class.
  * 
  * @xerces.internal
  * 
@@ -35,12 +35,10 @@ import org.apache.xerces.xni.XMLString;
  */
 public class XMLAssertAdapter implements XMLAssertHandler {
     
-    // this hashtable contains any implementation specific
-    // properties
+    // this hashtable contains any implementation specific properties
     private Hashtable properties = null;
 
-    public void startElement(QName element, XMLAttributes attributes,
-                                            Augmentations augs) {
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs) {
         // TODO Auto-generated method stub
 
     }
@@ -56,13 +54,11 @@ public class XMLAssertAdapter implements XMLAssertHandler {
     }
     
     /**
-     * Allows the user to set specific properties on the underlying 
-     * implementation.
+     * Allows the user to set specific properties on the underlying implementation.
      * @param name    name of property
      * @param value   null means to remove property
      */
-    public void setProperty(String name, Object value)
-                     throws IllegalArgumentException {
+    public void setProperty(String name, Object value) throws IllegalArgumentException {
         // this handles removal of properties
         if (value == null) {
           if (properties != null) {

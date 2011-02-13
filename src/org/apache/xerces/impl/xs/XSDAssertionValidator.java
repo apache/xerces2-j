@@ -378,7 +378,7 @@ public class XSDAssertionValidator {
         if (assertProcessorProp == null || assertProcessorProp.length() == 0) {
             // if assertion processor is not specified via a system property, initialize it to the
             // "PsychoPath XPath 2.0" processor.
-            fAssertionProcessor = new XMLAssertPsychopathImpl(assertParams);
+            fAssertionProcessor = new XMLAssertPsychopathXPath2Impl(assertParams);
         } 
         else {
             try {

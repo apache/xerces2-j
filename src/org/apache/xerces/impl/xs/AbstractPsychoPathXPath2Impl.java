@@ -49,15 +49,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class providing common services for XPath expression evaluation, with 
- * 'PsychoPath XPath 2.0' engine.
+ * A base class providing common services for XPath expression evaluation, with 'PsychoPath XPath 2.0' engine.
  * 
  * @xerces.internal
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public class AbstractPsychoPathImpl {
+public class AbstractPsychoPathXPath2Impl {
     
     private DynamicContext fXpath2DynamicContext = null;
     private Document domDoc = null;
@@ -134,9 +133,10 @@ public class AbstractPsychoPathImpl {
     
     
     /*
-     * Compile an XPath string, and return the compiled XPath expression.
+     * Compile an XPath string and return the compiled XPath expression.
      */
     protected XPath compileXPathStr(String xpathStr, XSAssertImpl assertImpl, XSDHandler fSchemaHandler) {        
+        
         XPathParser xpp = new JFlexCupParser();
         XPath xp = null;
         
@@ -156,6 +156,7 @@ public class AbstractPsychoPathImpl {
      * Method to report error messages.
      */
     private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler) {
+        
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
         String typeString = "";
         

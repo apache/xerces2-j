@@ -80,12 +80,12 @@ import org.w3c.dom.NodeList;
  * 
  * @version $Id$
  */
-public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
+public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
 
     // class variable declarations
     private DynamicContext fXpath2DynamicContext;
     private XSModel fSchema = null;
-    private AbstractPsychoPathImpl fAbstrPsychopathImpl = null;
+    private AbstractPsychoPathXPath2Impl fAbstrPsychopathImpl = null;
 
     // the DOM root of assertions tree
     private Document fAssertDocument = null;
@@ -112,7 +112,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
     /*
      * Class constructor.
      */
-    public XMLAssertPsychopathImpl(Map assertParams) {        
+    public XMLAssertPsychopathXPath2Impl(Map assertParams) {        
         // initializing the class variables
         this.fAssertDocument = new PSVIDocumentImpl();        
         this.fAssertRootStack = new Stack();
@@ -126,7 +126,7 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
      */
     private void initXPathProcessor() throws Exception {        
         fValidator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
-        fAbstrPsychopathImpl = new AbstractPsychoPathImpl();
+        fAbstrPsychopathImpl = new AbstractPsychoPathXPath2Impl();
         fXpath2DynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchema, fAssertDocument, fAssertParams);        
     } // initXPathProcessor
     
@@ -829,12 +829,12 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         String value = assertError.getValue();
         
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();        
-        String typeString = "";        
+        String typeNameStrAnnotation = "";        
         if (typeDef != null) {
-            typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
+            typeNameStrAnnotation = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
         }
         else {
-            typeString = "#anonymous"; 
+            typeNameStrAnnotation = "#anonymous"; 
         }
         
         String elemErrorAnnotation = element.rawname;
@@ -845,10 +845,10 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
         String listAssertErrMessage = "";        
         if (isList) {
            if (assertError.getIsTypeDerivedFromList()) {
-              listAssertErrMessage =  "Assertion failed for xs:list instance '" + assertError.getValue() + "'.";  
+               listAssertErrMessage =  "Assertion failed for xs:list instance '" + assertError.getValue() + "'.";  
            }
            else {
-              listAssertErrMessage =  "Assertion failed for an xs:list member value '" + assertError.getValue() + "'.";
+               listAssertErrMessage =  "Assertion failed for an xs:list member value '" + assertError.getValue() + "'.";
            }
         }
             
@@ -863,15 +863,15 @@ public class XMLAssertPsychopathImpl extends XMLAssertAdapter {
                message = message + ".";    
            }
            if (key.equals("cvc-assertion.4.3.15.3")) {
-               message = "Assertion failed (undefined context) for schema type '" + typeString + "'. " + message;   
+               message = "Assertion failed (undefined context) for schema type '" + typeNameStrAnnotation + "'. " + message;   
            }
            else {
-               message = "Assertion failed for schema type '" + typeString + "'. " + message; 
+               message = "Assertion failed for schema type '" + typeNameStrAnnotation + "'. " + message; 
            }           
            fValidator.reportSchemaError("cvc-assertion.failure", new Object[] {message, listAssertErrMessage});    
         }
         else {
-           fValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeString, listAssertErrMessage});
+           fValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStrAnnotation, listAssertErrMessage});
         }
         
     } // reportAssertionsError

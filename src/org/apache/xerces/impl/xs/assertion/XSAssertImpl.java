@@ -17,7 +17,7 @@
 
 package org.apache.xerces.impl.xs.assertion;
 
-import org.apache.xerces.impl.xs.AbstractPsychoPathImpl;
+import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.NamespaceSupport;
@@ -35,7 +35,7 @@ import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public class XSAssertImpl extends AbstractPsychoPathImpl implements XSAssert {
+public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAssert {
 
     // The kind of assertion this is
     private short fAssertKind = XSConstants.ASSERTION;
