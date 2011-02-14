@@ -97,13 +97,16 @@ public class ValidationState implements ValidationContext {
         String key;
         while (iter.hasNext()) {
             key = (String) iter.next();
-            if (!fIdTable.containsKey(key)) {
+            if (!containsID(key)) {
                   return key;
             }
         }
         return null;
     }
 
+    protected boolean containsID(String name) {
+        return fIdTable.containsKey(name);
+    }
     public void reset () {
         fExtraChecking = true;
         fFacetChecking = true;

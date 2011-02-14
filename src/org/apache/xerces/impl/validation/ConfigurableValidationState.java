@@ -26,12 +26,12 @@ package org.apache.xerces.impl.validation;
  * @author Peter McCracken, IBM
  * @version $Id$
  */
-public final class ConfigurableValidationState extends ValidationState {
+public class ConfigurableValidationState extends ValidationState {
     
     /**
      * Whether to check for ID/IDREF errors
      */
-    private boolean fIdIdrefChecking;
+    protected boolean fIdIdrefChecking;
     
     /**
      * Whether to check for unparsed entity errors
@@ -54,7 +54,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * @param setting true to turn on error checking,
      *                 false to turn off error checking
      */
-    public void setIdIdrefChecking(boolean setting) {
+    public final void setIdIdrefChecking(boolean setting) {
         fIdIdrefChecking = setting;
     }
     
@@ -63,7 +63,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * @param setting true to turn on error checking,
      *                 false to turn off error checking
      */
-    public void setUnparsedEntityChecking(boolean setting) {
+    public final void setUnparsedEntityChecking(boolean setting) {
         fUnparsedEntityChecking = setting;
     }
     
@@ -72,7 +72,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * @return null, if ID/IDREF checking is turned off
      *         otherwise, returns the value of the super implementation
      */
-    public String checkIDRefID() {
+    public final String checkIDRefID() {
         return (fIdIdrefChecking) ? super.checkIDRefID() : null;
     }
     
@@ -90,7 +90,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * @return true, if unparsed entity checking is turned off
      *         otherwise, returns the value of the super implementation
      */
-    public boolean isEntityDeclared(String name) {
+    public final boolean isEntityDeclared(String name) {
         return (fUnparsedEntityChecking) ? super.isEntityDeclared(name) : true;
     }
     
@@ -99,7 +99,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * @return true, if unparsed entity checking is turned off
      *         otherwise, returns the value of the super implementation
      */
-    public boolean isEntityUnparsed(String name) {
+    public final boolean isEntityUnparsed(String name) {
         return (fUnparsedEntityChecking) ? super.isEntityUnparsed(name) : true;
     }
     
@@ -117,7 +117,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * Adds the IDREF, if ID/IDREF checking is enabled.
      * @param name the IDREF to add
      */
-    public void addIdRef(String name) {
+    public final void addIdRef(String name) {
         if (fIdIdrefChecking) {
             super.addIdRef(name);
         }

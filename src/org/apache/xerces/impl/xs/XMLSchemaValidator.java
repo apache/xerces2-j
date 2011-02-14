@@ -38,7 +38,6 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
-import org.apache.xerces.impl.validation.ConfigurableValidationState;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.identity.Field;
@@ -405,7 +404,9 @@ public class XMLSchemaValidator
      * While parsing a document, keep the location of the document.
      */
     private XMLLocator fLocator;
-       
+    
+    private IDContext fIDContext = null;
+
     /**
      * A wrapper of the standard error reporter. We'll store all schema errors
      * in this wrapper object, so that we can get all errors (error codes) of
@@ -524,7 +525,7 @@ public class XMLSchemaValidator
 
     // updated during reset
     protected ValidationManager fValidationManager = null;
-    protected ConfigurableValidationState fValidationState = new ConfigurableValidationState();
+    protected XSValidationState fValidationState = new XSValidationState();
     protected XMLGrammarPool fGrammarPool;
 
     // schema location property values
@@ -642,6 +643,15 @@ public class XMLSchemaValidator
             fSchemaLoader.setSchemaVersion((String)value);
             fSchemaVersion = fSchemaLoader.getSchemaVersion();
             fXSConstraints = fSchemaLoader.getXSConstraints();
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                if (fIDContext == null) {
+                    fIDContext = new IDContext();
+                }
+                fValidationState.setIDContext(fIDContext);
+            }
+            else {
+                fValidationState.setIDContext(null);
+            }
         }
     } // setProperty(String,Object)
 
@@ -1516,6 +1526,11 @@ public class XMLSchemaValidator
         }
 
         fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);
+        
+        // reset ID Context
+        if (fIDContext != null) {
+            fIDContext.clear();
+        }
 
         final TypeValidatorHelper typeValidatorHelper = TypeValidatorHelper.getInstance(fSchemaVersion);
         
@@ -2369,11 +2384,23 @@ public class XMLSchemaValidator
             }
         }
         
+        // Push the ID context
+        // attributes of type ID identifies the current element 
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fIDContext.pushContext();
+        }
+        
         processAttributes(element, attributes, attrGrp);
 
         // add default attributes
         if (attrGrp != null) {
             addDefaultAttributes(element, attributes, attrGrp);
+        }
+        
+        // Set ID scope to parent
+        // simple content of an element identifies the parent of the element
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fIDContext.setCurrentScopeToParent();
         }
         
         // delegate to 'type alternative' validator subcomponent
@@ -2473,6 +2500,11 @@ public class XMLSchemaValidator
 
         // now validate the content of the element
         processElementContent(element);
+        
+        // Pop the ID context
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fIDContext.popContext();
+        }
 
         if (fIDCChecking) {
             // Element Locally Valid (Element)
