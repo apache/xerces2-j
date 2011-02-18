@@ -53,7 +53,6 @@ import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSNotationDeclaration;
 import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.xs.datatypes.ObjectList;
