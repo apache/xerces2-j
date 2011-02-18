@@ -190,7 +190,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
             ((PSVIElementNSImpl) fCurrentAssertDomNode).setPSVI(elemPSVI);
             
-            // handling default values of elements (adding them as 'text' node in the assertion tree)
+            // handling default values of elements (adding them as 'text' node in the assertion XDM tree)
             XSElementDecl elemDecl = (XSElementDecl) elemPSVI.getElementDeclaration();
             if (elemDecl != null && elemDecl.fDefault != null && fCurrentAssertDomNode.getChildNodes().getLength() == 0) {
                 String normalizedDefaultValue = elemDecl.fDefault.normalizedValue;
@@ -199,8 +199,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             
             if (!fAssertRootStack.empty() && (fCurrentAssertDomNode == fAssertRootStack.peek())) {               
                  // get XSModel instance                
-                 fSchema =  ((PSVIElementNSImpl) fCurrentAssertDomNode).getSchemaInformation();
-                 
+                 fSchema =  ((PSVIElementNSImpl) fCurrentAssertDomNode).getSchemaInformation();                 
                  // pop the stack to go one level up
                  fAssertRootStack.pop();
                  // get assertions and go one level up on the stack
@@ -257,7 +256,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         StringBuffer textValueContents = new StringBuffer();
         final int childListLength = childList.getLength();
         int textChildCount = 0;
-        // we are only interested in text & element nodes. Store count of them in this variable.
+        // we are only interested in text & element nodes. store count of them in this variable.
         int effectiveChildNodeCount = 0;
         for (int childNodeIndex = 0; childNodeIndex < childListLength; childNodeIndex++) {
             Node node = childList.item(childNodeIndex);
@@ -409,7 +408,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
     
     /*
-     * Evaluate assertion on a simpleType xs:list value. Assertion is evaluated on each list item.
+     * Evaluate assertion on a simpleType xs:list value.
      */
     private void evaluateAssertionOnSTListValue(QName element, String listStrValue, XSAssertImpl assertImpl, boolean xpathContextExists,
                                                 XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList) throws Exception {
@@ -638,7 +637,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                   setValueOf$valueForCTWithSimpleContent(value, (XSComplexTypeDefinition) typeDef);
               }
               else if (typeDef instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition) typeDef).getSimpleType() == null) {
-                  // assign an empty XPath2 sequence to xpath context variable $value
+                  // set xpath context variable $value to an empty sequence
                   fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), getXPath2ResultSequence(new ArrayList())); 
               }
               else {
