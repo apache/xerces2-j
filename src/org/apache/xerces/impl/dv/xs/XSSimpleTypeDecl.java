@@ -243,6 +243,13 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public TypeValidatorHelper getTypeValidatorHelper() {
             return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
         }
+        public boolean getIsSchema11Context() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        public void setIsSchema11Context(boolean isSchema11Type) {
+            // TODO Auto-generated method stub            
+        }
     };
 
     protected static TypeValidator[] getGDVs() {
@@ -817,7 +824,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      */
     void applyFacets(XSFacets facets, int presentFacet, int fixedFacet, short patternType, ValidationContext context)
     throws InvalidDatatypeFacetException {
-
+        
         // if the object is immutable, should not apply facets...
         if(fIsImmutable) return;
         ValidatedInfo tempInfo = new ValidatedInfo();
@@ -2046,8 +2053,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     //we can still return object for internal use.
     private Object getActualValue(Object content, ValidationContext context,
             ValidatedInfo validatedInfo, boolean needNormalize)
-    throws InvalidDatatypeValueException{
-
+    throws InvalidDatatypeValueException{        
         String nvalue;
         if (needNormalize) {
             nvalue = normalize(content, fWhiteSpace);
@@ -2092,7 +2098,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 }
             }
 
-            validatedInfo.normalizedValue = nvalue;
+            validatedInfo.normalizedValue = nvalue;            
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
             validatedInfo.actualValue = avalue;
             validatedInfo.actualValueType = fBuiltInKind;
@@ -3155,6 +3161,15 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public TypeValidatorHelper getTypeValidatorHelper() {
             return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
         }
+
+        public boolean getIsSchema11Context() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        public void setIsSchema11Context(boolean isSchema11Type) {
+            // TODO Auto-generated method stub            
+        }
     };
 
     private boolean fAnonymous = false;
@@ -3230,6 +3245,15 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         
         public TypeValidatorHelper getTypeValidatorHelper() {
             return fExternal.getTypeValidatorHelper();
+        }
+
+        public boolean getIsSchema11Context() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        public void setIsSchema11Context(boolean isSchema11Type) {
+            // TODO Auto-generated method stub            
         }
     }
 

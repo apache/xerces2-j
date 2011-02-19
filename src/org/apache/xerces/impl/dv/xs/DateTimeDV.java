@@ -37,8 +37,11 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class DateTimeDV extends AbstractDateTimeDV {
 
+    private boolean fIsSchema11Context = false; 
+    
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
+            fIsSchema11Context = context.getIsSchema11Context();
             return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "dateTime"});
@@ -73,7 +76,7 @@ public class DateTimeDV extends AbstractDateTimeDV {
         //validate and normalize
 
         //REVISIT: do we need SchemaDateTimeException?
-        validateDateTime(date);
+        validateDateTime(date, fIsSchema11Context);
 
         //save unnormalized values
         saveUnnormalized(date);
@@ -82,6 +85,10 @@ public class DateTimeDV extends AbstractDateTimeDV {
             normalize(date);
         }
         return date;
+    }
+    
+    protected void setIsSchema11Context(boolean isSchema11Context) {
+        fIsSchema11Context = isSchema11Context; 
     }
     
     protected XMLGregorianCalendar getXMLGregorianCalendar(DateTimeData date) {

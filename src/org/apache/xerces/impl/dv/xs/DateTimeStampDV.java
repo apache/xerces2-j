@@ -36,11 +36,16 @@ public class DateTimeStampDV extends DateTimeDV {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "dateTimeStamp"});
         }
     }
-      
-    protected void validateDateTime (DateTimeData data){
-        super.validateDateTime(data);
-        if (data.utc == 0)
+    
+    protected DateTimeData parse(String str) throws SchemaDateTimeException {
+        setIsSchema11Context(true);        
+        DateTimeData parsedDateTime = super.parse(str);
+        if (parsedDateTime.utc == 0) {
             throw new RuntimeException("dateTimeStamp must have timezone");
+        }
+        else {
+            return parsedDateTime;
+        }
     }
     
 }

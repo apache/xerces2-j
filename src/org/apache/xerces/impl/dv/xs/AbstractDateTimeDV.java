@@ -413,14 +413,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		//REVISIT: should we throw an exception for not valid dates
 		//          or reporting an error message should be sufficient?
 		
-		/**
-		 * XML Schema 1.1 - RQ-123: Allow year 0000 in date related types.
-		 */
-		if (!Constants.SCHEMA_1_1_SUPPORT && data.year==0 ) {
-			throw new RuntimeException("The year \"0000\" is an illegal year value");
-			
-		}
-		
 		if ( data.month<1 || data.month>12 ) {
 			throw new RuntimeException("The month must have values 1 to 12");
 			
@@ -475,6 +467,18 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 				throw new RuntimeException("Minute must have values 0-59");
 		}
 		
+	}
+	
+	protected void validateDateTime (DateTimeData data, boolean isSchema11Type) {	    
+	    /**
+         * XML Schema 1.1: Allow year 0000 in date related types.
+         */
+        if (isSchema11Type) {
+            validateDateTime(data);                        
+        }
+        else if (!isSchema11Type && data.year==0) {
+            throw new RuntimeException("The year \"0000\" is an illegal year value");
+        }        
 	}
 	
 	/**

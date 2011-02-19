@@ -56,6 +56,8 @@ public class ValidationState implements ValidationContext {
     private final static Object fNullValue = new Object();
     
     private TypeValidatorHelper fTypeValidatorHelper = null;
+    
+    private boolean fIsSchema11Context = false;
 
     //
     // public methods
@@ -214,5 +216,13 @@ public class ValidationState implements ValidationContext {
 
     public TypeValidatorHelper getTypeValidatorHelper() {
         return fTypeValidatorHelper;
+    }
+
+    public boolean getIsSchema11Context() {
+        return fIsSchema11Context;
+    }
+
+    public void setIsSchema11Context(boolean isSchema11Context) {
+        fIsSchema11Context = isSchema11Context;         
     }
 }
