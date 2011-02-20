@@ -31,8 +31,7 @@ import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSConstants;
 
 /**
- * Bare minimal XPath 2.0 implementation for schema
- * type alternatives.
+ * Bare minimal XPath 2.0 implementation for schema type alternatives.
  *
  * @author Hiranya Jayathilaka, University of Moratuwa
  * @version $Id$
@@ -44,8 +43,7 @@ public class XPath20 {
 
     private XPathSyntaxTreeNode fRootNode;
 
-    public XPath20(String xpath, SymbolTable symbolTable,
-            NamespaceContext context) throws XPathException {
+    public XPath20(String xpath, SymbolTable symbolTable, NamespaceContext context) throws XPathException {
         fExpression = xpath;
         fContext = context;
         
@@ -56,8 +54,7 @@ public class XPath20 {
     }
 
     /**
-     * Evaluate the test XPath expression using the attribute information and 
-     * element information.
+     * Evaluate the test XPath expression using the attribute information and element information.
      * 
      * @param element QName of the current element
      * @param attributes attributes collection of the current element
@@ -153,8 +150,7 @@ class ConjunctionNode extends XPathSyntaxTreeNode {
     public static final int OR = 0;
     public static final int AND = 1;
 
-    public ConjunctionNode(int conjunction, XPathSyntaxTreeNode child1,
-            XPathSyntaxTreeNode child2) {
+    public ConjunctionNode(int conjunction, XPathSyntaxTreeNode child1, XPathSyntaxTreeNode child2) {
         this.conjunction = conjunction;
         this.child1 = child1;
         this.child2 = child2;
@@ -430,15 +426,13 @@ class FunctionNode extends XPathSyntaxTreeNode {
 
 class DataMatcher {
 
-    public static boolean compareActualValues(Object value1, Object value2, int comparator,
-            XSSimpleTypeDecl type) {
+    public static boolean compareActualValues(Object value1, Object value2, int comparator, XSSimpleTypeDecl type) {
 
         TypeValidator typeValidator = type.getTypeValidator();
         short ordered = type.getOrdered();
 
         if (ordered == XSSimpleTypeDecl.ORDERED_FALSE) {
-            //if the type is not ordered then only equality can be tested
-            //delegate the test to the type
+            //if the type is not ordered then only equality can be tested. delegate the test to the type.
             if (comparator == CompNode.EQ) {
                 return type.isEqual(value1, value2);
             }
@@ -451,26 +445,25 @@ class DataMatcher {
             }
         }
 
-        //if the type is ordered then the corresponding TypeValidator should
-        //know how to compare the values
+        //if the type is ordered then the corresponding TypeValidator should know how to compare the values
         switch (comparator) {
-
-        case CompNode.EQ: return typeValidator.compare(value1, value2) == 0;
-        case CompNode.NE: return typeValidator.compare(value1, value2) != 0;
-        case CompNode.GT: return typeValidator.compare(value1, value2) > 0;
-        case CompNode.GE: return typeValidator.compare(value1, value2) >= 0;
-        case CompNode.LT: return typeValidator.compare(value1, value2) < 0;
-        case CompNode.LE: return typeValidator.compare(value1, value2) <= 0;
+           case CompNode.EQ: return typeValidator.compare(value1, value2) == 0;
+           case CompNode.NE: return typeValidator.compare(value1, value2) != 0;
+           case CompNode.GT: return typeValidator.compare(value1, value2) > 0;
+           case CompNode.GE: return typeValidator.compare(value1, value2) >= 0;
+           case CompNode.LT: return typeValidator.compare(value1, value2) < 0;
+           case CompNode.LE: return typeValidator.compare(value1, value2) <= 0;
         }
+        
         return false;
+        
     }
 
     /**
      * Checks whether two specified data types are comparable. The types passed
      * into this method should be defined in XSConstants as *_DT values.
      */
-    public static boolean isComparable(short type1, short type2,
-            ShortList typeList1, ShortList typeList2) {
+    public static boolean isComparable(short type1, short type2, ShortList typeList1, ShortList typeList2) {
 
         short primitiveType1 = convertToPrimitiveKind(type1);
         short primitiveType2 = convertToPrimitiveKind(type2);
@@ -516,6 +509,7 @@ class DataMatcher {
         // Other types
         return valueType;
     }
-}
+    
+} // class XPath20
 
 

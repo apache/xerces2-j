@@ -58,8 +58,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     protected final NamespaceSupport fXPath2NamespaceContext;
 
     /** Constructs a "test" for type alternatives */
-    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative,
-            NamespaceSupport namespaceContext) {
+    public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
         fXPath = xpath;
         fXPathPsychoPath = null;
         fTypeAlternative = typeAlternative;
@@ -97,7 +96,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
     
     /** Evaluate the test expression with respect to the specified element and its attributes */
-    public boolean evaluateTest(QName element, XMLAttributes attributes) {
+    public boolean evaluateTest(QName element, XMLAttributes attributes) {        
         if (fXPath != null) {
             return fXPath.evaluateTest(element, attributes);
         } else if (fXPathPsychoPath != null) {
@@ -105,7 +104,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
         }
         else {
             return false;
-        }
+        }        
     }
 
     public String toString() {
@@ -117,47 +116,45 @@ public class Test extends AbstractPsychoPathXPath2Impl {
      * and its attributes. Uses PsychoPath XPath 2.0 engine for the evaluation. 
      */
     private boolean evaluateTestExprWithPsychoPath(QName element, XMLAttributes attributes) {
-       boolean result = false;
+        
+        boolean evaluationResult = false;
+
+        try {
+            // construct a DOM document (used by psychopath engine as XPath XDM instance). 
+            // A PSVI DOM is constructed to comply to PsychoPath design. This doesn't seem to 
+            // affect CTA psychopath evaluations. CTA spec doesn't require a typed XDM tree.
+            // REVISIT ...
+            Document document = new PSVIDocumentImpl();
+            Element elem = document.createElementNS(element.uri, element.rawname);
+            for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
+                PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)document, attributes.getURI(attrIndx), attributes.getQName(attrIndx));
+                attrNode.setNodeValue(attributes.getValue(attrIndx));
+                elem.setAttributeNode(attrNode);
+            }
+
+            document.appendChild(elem);
+
+            // construct parameter values for psychopath xpath processor
+            Map psychoPathParams = new HashMap();
+            psychoPathParams.put("XPATH2_NS_CONTEXT", fXPath2NamespaceContext);
+            DynamicContext xpath2DynamicContext = initDynamicContext(null, document, psychoPathParams);
+            if (fTypeAlternative.fXPathDefaultNamespace != null) {
+                xpath2DynamicContext.add_namespace(null, fTypeAlternative.fXPathDefaultNamespace);  
+            }
+            evaluationResult = evaluateXPathExpr(fXPathPsychoPath, elem);
+        } 
+        catch (StaticError ex) {
+            evaluationResult = false; 
+        } 
+        catch(DynamicError ex) {
+            evaluationResult = false;
+        }
+        catch(Exception ex) {
+            evaluationResult = false;  
+        }
+
+        return evaluationResult;
        
-       try {
-         // construct a DOM document (used by psychopath engine as XPath XDM instance). 
-         // A PSVI DOM is constructed to comply to PsychoPath design. This doesn't seem to 
-         // affect CTA psychopath evaluations. CTA spec doesn't require a typed XDM tree.
-         // REVISIT ...
-         Document document = new PSVIDocumentImpl();
-         
-         Element elem = document.createElementNS(element.uri, element.rawname);
-         for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
-            PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)document,
-                                                          attributes.getURI(attrIndx),
-                                                          attributes.getQName(attrIndx));
-            attrNode.setNodeValue(attributes.getValue(attrIndx));
-            elem.setAttributeNode(attrNode);
-         }
-       
-         document.appendChild(elem);
-         
-         // construct parameter values for psychopath processor
-         Map psychoPathParams = new HashMap();
-         psychoPathParams.put("XPATH2_NS_CONTEXT", fXPath2NamespaceContext);
-         DynamicContext xpath2DynamicContext = initDynamicContext(null, document, psychoPathParams);
-         if (fTypeAlternative.fXPathDefaultNamespace != null) {
-             xpath2DynamicContext.add_namespace(null, fTypeAlternative.fXPathDefaultNamespace);  
-         }
-         result = evaluateXPathExpr(fXPathPsychoPath, elem);
-       } 
-       catch (StaticError ex) {
-           result = false; 
-       } 
-       catch(DynamicError ex) {
-           result = false;
-       }
-       catch(Exception ex) {
-           result = false;  
-       }
-       
-       return result;
-       
-    } // evaluateTestWithPsychoPath
+    } // evaluateTestExprWithPsychoPath
     
 }

@@ -44,7 +44,7 @@ public class XSDTypeAlternativeValidator {
     // a Vector list storing inheritable attributes
     private Vector fInheritableAttrList = new Vector();
     
-    // a Stack, storing inheritable attribute count for the elements
+    // a Stack storing inheritable attribute count for the elements
     private IntStack fInhrAttrCountStack = new IntStack();
     
     // temporary qname
@@ -67,16 +67,16 @@ public class XSDTypeAlternativeValidator {
         XSTypeDefinition currentType = null;        
         boolean typeSelected = false;
         
-        XSTypeAlternativeImpl[] alternatives = currentElemDecl.getTypeAlternatives();
+        XSTypeAlternativeImpl[] typeAlternatives = currentElemDecl.getTypeAlternatives();
         
-        if (alternatives != null) {              
+        if (typeAlternatives != null) {              
             // Construct a list of attributes needed for CTA processing. This includes inherited attributes as well.
             XMLAttributes ctaAttributes = getAttributesForCTA(attributes);
             
-            for (int i = 0; i < alternatives.length; i++) {
-                Test test = alternatives[i].getTest();
+            for (int typeAltIdx = 0; typeAltIdx < typeAlternatives.length; typeAltIdx++) {
+                Test test = typeAlternatives[typeAltIdx].getTest();
                 if (test != null && test.evaluateTest(element, ctaAttributes)) {
-                    currentType = alternatives[i].getTypeDefinition();
+                    currentType = typeAlternatives[typeAltIdx].getTypeDefinition();
                     typeSelected = true;
                     break;
                 }
@@ -131,28 +131,27 @@ public class XSDTypeAlternativeValidator {
      */
     private XMLAttributes getAttributesForCTA(XMLAttributes attributes) {
 
-      // copy attributes from the original list of attributes
-      XMLAttributes ctaAttributes = new XMLAttributesImpl();
-      for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
-         QName qName = new QName();
-         attributes.getName(attrIndx, qName);
-         ctaAttributes.addAttribute(qName, attributes.getType(attrIndx), attributes.getValue(attrIndx));   
-      }
-      
-      // Traverse up the XML tree, to find inheritable attributes. Attributes only from the nearest ancestor,
-      // are added to the list (since there is recursive inclusion of inheritable attributes in an XML tree).
-      for (int elemIndx = fInheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
-         InheritableAttribute inhAttr = (InheritableAttribute) fInheritableAttrList.elementAt(elemIndx);
-         // if an inheritable attribute doesn't already exist in the attributes list, add it to the list
-         if (!attributeExists(ctaAttributes, inhAttr)) {
-            String rawName = "".equals(inhAttr.getPrefix()) ? inhAttr.getLocalName() : inhAttr.getPrefix() + ":" + 
-                                       inhAttr.getLocalName(); 
-            fTempQName.setValues(inhAttr.getPrefix(), inhAttr.getLocalName(), rawName, inhAttr.getUri());
-            ctaAttributes.addAttribute(fTempQName, inhAttr.getType(), inhAttr.getValue());
-         }
-      }
-      
-      return ctaAttributes;
+        // copy attributes from the original list of attributes
+        XMLAttributes ctaAttributes = new XMLAttributesImpl();
+        for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
+            QName qName = new QName();
+            attributes.getName(attrIndx, qName);
+            ctaAttributes.addAttribute(qName, attributes.getType(attrIndx), attributes.getValue(attrIndx));   
+        }
+
+        // Traverse up the XML tree, to find inheritable attributes. Attributes only from the nearest ancestor,
+        // are added to the list (since there is recursive inclusion of inheritable attributes in an XML tree).
+        for (int elemIndx = fInheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
+            InheritableAttribute inhAttr = (InheritableAttribute) fInheritableAttrList.elementAt(elemIndx);
+            // if an inheritable attribute doesn't already exist in the attributes list, add it to the list
+            if (!attributeExists(ctaAttributes, inhAttr)) {
+                String rawName = "".equals(inhAttr.getPrefix()) ? inhAttr.getLocalName() : inhAttr.getPrefix() + ":" + inhAttr.getLocalName(); 
+                fTempQName.setValues(inhAttr.getPrefix(), inhAttr.getLocalName(), rawName, inhAttr.getUri());
+                ctaAttributes.addAttribute(fTempQName, inhAttr.getType(), inhAttr.getValue());
+            }
+        }
+
+        return ctaAttributes;
       
     } // getAttributesForCTA
     
@@ -163,31 +162,30 @@ public class XSDTypeAlternativeValidator {
      */
     private void saveInheritableAttributes(XSElementDecl currentElemDecl, XMLAttributes attributes) {
        
-       if (currentElemDecl != null && currentElemDecl.fType instanceof XSComplexTypeDecl) {
-          XSComplexTypeDecl currentComplexType = (XSComplexTypeDecl) currentElemDecl.fType;
-          XSObjectListImpl attributeUses = (XSObjectListImpl) currentComplexType.getAttributeUses();           
-          
-          // iterate all the attributes, being passed to this method        
-          for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
-             String attrName = attributes.getLocalName(attrIndx);
-             String attrUri = attributes.getURI(attrIndx);            
-             // iterate all the attribute declarations of a complex type, for the current element
-             for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
-                XSAttributeUseImpl attrUseImpl = (XSAttributeUseImpl) attributeUses.get(attrUsesIndx);
-                XSAttributeDeclaration attrDecl = attrUseImpl.getAttrDeclaration();              
-                // the current element, has an inheritable attribute
-                if (attrName.equals(attrDecl.getName()) && XSTypeHelper.isURIEqual(attrUri, attrDecl.getNamespace()) &&    
-                                                                                       attrUseImpl.getInheritable()) {                   
-                    InheritableAttribute inhrAttr = new InheritableAttribute(attributes.getLocalName(attrIndx),
-                                                                             attributes.getPrefix(attrIndx),
-                                                                             attributes.getURI(attrIndx),
-                                                                             attributes.getValue(attrIndx),
-                                                                             attributes.getType(attrIndx)) ;
-                    fInheritableAttrList.add(inhrAttr);                   
-               }
-            }
-          }          
-       }
+        if (currentElemDecl != null && currentElemDecl.fType instanceof XSComplexTypeDecl) {
+            XSComplexTypeDecl currentComplexType = (XSComplexTypeDecl) currentElemDecl.fType;
+            XSObjectListImpl attributeUses = (XSObjectListImpl) currentComplexType.getAttributeUses();           
+
+            // iterate all the attributes, being passed to this method        
+            for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
+                String attrName = attributes.getLocalName(attrIndx);
+                String attrUri = attributes.getURI(attrIndx);            
+                // iterate all the attribute declarations of a complex type, for the current element
+                for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
+                    XSAttributeUseImpl attrUseImpl = (XSAttributeUseImpl) attributeUses.get(attrUsesIndx);
+                    XSAttributeDeclaration attrDecl = attrUseImpl.getAttrDeclaration();              
+                    // the current element, has an inheritable attribute
+                    if (attrName.equals(attrDecl.getName()) && XSTypeHelper.isURIEqual(attrUri, attrDecl.getNamespace()) && attrUseImpl.getInheritable()) {                   
+                        InheritableAttribute inhrAttr = new InheritableAttribute(attributes.getLocalName(attrIndx),
+                                                                                 attributes.getPrefix(attrIndx),
+                                                                                 attributes.getURI(attrIndx),
+                                                                                 attributes.getValue(attrIndx),
+                                                                                 attributes.getType(attrIndx)) ;
+                        fInheritableAttrList.add(inhrAttr);                   
+                    }
+                }
+            }          
+        }
        
     } // saveInheritableAttributes
     
@@ -197,18 +195,18 @@ public class XSDTypeAlternativeValidator {
      */
     private boolean attributeExists(XMLAttributes attributes, InheritableAttribute inhAttr) {
       
-      boolean attrExists = false;
-      
-      for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
-          String localName = attributes.getLocalName(attrIndx);
-          String uri = attributes.getURI(attrIndx);          
-          if (localName.equals(inhAttr.getLocalName()) && XSTypeHelper.isURIEqual(uri, inhAttr.getUri())) {              
-             attrExists = true;
-             break;
-          }
-      }
-      
-      return attrExists;
+        boolean attrExists = false;
+
+        for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
+            String localName = attributes.getLocalName(attrIndx);
+            String uri = attributes.getURI(attrIndx);          
+            if (localName.equals(inhAttr.getLocalName()) && XSTypeHelper.isURIEqual(uri, inhAttr.getUri())) {              
+                attrExists = true;
+                break;
+            }
+        }
+
+        return attrExists;
       
     } // attributeExists
     
@@ -219,40 +217,39 @@ public class XSDTypeAlternativeValidator {
      */
     final class InheritableAttribute {       
        
-       private final String localName;
-       private final String prefix;
-       private final String uri;
-       private final String value;
-       private final String type;
-      
-       public InheritableAttribute(String localName, String prefix, String uri, 
-                                   String value, String type) {
-         this.localName = localName;
-         this.prefix = prefix;
-         this.uri = uri;
-         this.value = value;
-         this.type = type;
-       }
-       
-       public String getLocalName() {
-          return localName;
-       }
-       
-       public String getPrefix() {
-          return prefix;
-       }
-       
-       public String getUri() {
-          return uri;
-       }
-       
-       public String getValue() {
-          return value;
-       }
-       
-       public String getType() {
-          return type; 
-       }
+        private final String localName;
+        private final String prefix;
+        private final String uri;
+        private final String value;
+        private final String type;
+
+        public InheritableAttribute(String localName, String prefix, String uri, String value, String type) {
+            this.localName = localName;
+            this.prefix = prefix;
+            this.uri = uri;
+            this.value = value;
+            this.type = type;
+        }
+
+        public String getLocalName() {
+            return localName;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getType() {
+            return type; 
+        }
        
     } // class InheritableAttribute
     
