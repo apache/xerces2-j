@@ -1361,7 +1361,7 @@ public class XMLSchemaValidator
     
     // variable to track validity of simple content for union types. if a member type of union in XML Schema namespace, can
     // successfully validate (in a preprocess step in this class) an atomic value, we don't process assertions for such union types.
-    private boolean fisAssertProcessingNeededForUnion = true;
+    private boolean fisAssertProcessingNeededForSTUnion = true;
     
     // 'type alternative' validator subcomponent
     private XSDTypeAlternativeValidator fTypeAlternativeValidator = null;
@@ -2574,8 +2574,8 @@ public class XMLSchemaValidator
         // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fAssertionValidator.handleEndElement(element, fCurrentElemDecl, fCurrentType, fNotation, 
-                                                 fGrammarBucket, fisAssertProcessingNeededForUnion);
-            fisAssertProcessingNeededForUnion = true;
+                                                 fGrammarBucket, fisAssertProcessingNeededForSTUnion);
+            fisAssertProcessingNeededForSTUnion = true;
         }
 
         // Check if we should modify the xsi:type ignore depth
@@ -3256,11 +3256,11 @@ public class XMLSchemaValidator
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
             
-            // additional check for assertions processing, for simple type having variety 'union'.
+            // additional check for assertions processing, for simple type having variety 'union'
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
                                       ((XSSimpleType) attDV.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
                 if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), attrValue, null)) {
-                    fisAssertProcessingNeededForUnion = false; 
+                    fisAssertProcessingNeededForSTUnion = false; 
                 }
             }
             
@@ -3286,7 +3286,7 @@ public class XMLSchemaValidator
             }
         } 
         catch (InvalidDatatypeValueException idve) {
-            fisAssertProcessingNeededForUnion = false;
+            fisAssertProcessingNeededForSTUnion = false;
             reportSchemaError(idve.getKey(), idve.getArgs());
             reportSchemaError(
                 "cvc-attribute.3",
@@ -3410,16 +3410,16 @@ public class XMLSchemaValidator
                     fValidationState.setFacetChecking(false);
                     attDV.validate(fValidationState, defaultValue);
                     
-                    // additional check for assertions processing, for simple type having variety 'union'.
+                    // additional check for assertions processing, for simple type having variety 'union'
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
                                               ((XSSimpleType) attDV.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
                         if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), null, defaultValue)) {
-                            fisAssertProcessingNeededForUnion = false; 
+                            fisAssertProcessingNeededForSTUnion = false; 
                         }
                     }
                 } 
                 catch (InvalidDatatypeValueException idve) {
-                    fisAssertProcessingNeededForUnion = false;
+                    fisAssertProcessingNeededForSTUnion = false;
                     reportSchemaError(idve.getKey(), idve.getArgs());
                 }
                 fValidationState.setFacetChecking(facetChecking);
@@ -3622,15 +3622,15 @@ public class XMLSchemaValidator
                     }
                     retValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     
-                    // additional check for assertions processing, for simple type having variety 'union'.
+                    // additional check for assertions processing, for simple type having variety 'union'
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
                                               ((XSSimpleType) dv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
                         if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), String.valueOf(textContent), null)) {
-                            fisAssertProcessingNeededForUnion = false; 
+                            fisAssertProcessingNeededForSTUnion = false; 
                         }
                     }
                 } catch (InvalidDatatypeValueException e) {
-                    fisAssertProcessingNeededForUnion = false;
+                    fisAssertProcessingNeededForSTUnion = false;
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError(
                         "cvc-type.3.1.3",
@@ -3670,15 +3670,15 @@ public class XMLSchemaValidator
                     }
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     
-                    // additional check for assertions processing, for simple type having variety 'union'.
+                    // additional check for assertions processing, for simple type having variety 'union'
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
                                               ((XSSimpleType) dv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
                         if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), String.valueOf(textContent), null)) {
-                            fisAssertProcessingNeededForUnion = false; 
+                            fisAssertProcessingNeededForSTUnion = false; 
                         }
                     }
                 } catch (InvalidDatatypeValueException e) {
-                    fisAssertProcessingNeededForUnion = false;
+                    fisAssertProcessingNeededForSTUnion = false;
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-complex-type.2.2", new Object[] { element.rawname });
                 }
