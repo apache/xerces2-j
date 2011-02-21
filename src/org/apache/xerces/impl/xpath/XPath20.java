@@ -39,13 +39,13 @@ import org.apache.xerces.xs.XSConstants;
 public class XPath20 {
 
     protected final String fExpression;
-    protected final NamespaceContext fContext;
+    protected final NamespaceContext fNsContext;
 
     private XPathSyntaxTreeNode fRootNode;
 
-    public XPath20(String xpath, SymbolTable symbolTable, NamespaceContext context) throws XPathException {
+    public XPath20(String xpath, SymbolTable symbolTable, NamespaceContext nsContext) throws XPathException {
         fExpression = xpath;
-        fContext = context;
+        fNsContext = nsContext;
         
         //The parser expects '\n' at the end of the expression. So insert it.
         StringReader reader = new StringReader(fExpression + "\n");
@@ -62,7 +62,7 @@ public class XPath20 {
      */
     public boolean evaluateTest(QName element, XMLAttributes attributes) {
         try {
-            return fRootNode.evaluate(element, attributes);
+            return fRootNode.evaluate(element, attributes, fNsContext);
         } catch (Exception e) {
             return false;
         }
@@ -85,9 +85,9 @@ abstract class XPathSyntaxTreeNode {
         dvFactory = SchemaDVFactory.getInstance(SCHEMA11_FACTORY_CLASS);
     }
 
-    public abstract boolean evaluate(QName element, XMLAttributes attributes) throws Exception;
+    public abstract boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception;
     
-    public Object getValue(XMLAttributes attributes) throws Exception {
+    public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
         return null;
     }
     
@@ -113,8 +113,8 @@ class LiteralNode extends XPathSyntaxTreeNode {
         this.isNumeric = isNumeric;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes) throws Exception {
-        Object obj = getValue(attributes);
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
+        Object obj = getValue(attributes, nsContext);
         if (isNumeric) {
             return obj != null && 0.0 != ((Double) obj).doubleValue();
         } 
@@ -123,7 +123,7 @@ class LiteralNode extends XPathSyntaxTreeNode {
         }
     }
 
-    public Object getValue(XMLAttributes attributes) throws Exception {
+    public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
         XSSimpleType type;
         if (isNumeric) {
             type = dvFactory.getBuiltInType("double");
@@ -156,9 +156,9 @@ class ConjunctionNode extends XPathSyntaxTreeNode {
         this.child2 = child2;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes) throws Exception {
-        boolean lhs = child1.evaluate(element, attributes);
-        boolean rhs = child2.evaluate(element, attributes);
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
+        boolean lhs = child1.evaluate(element, attributes, nsContext);
+        boolean rhs = child2.evaluate(element, attributes, nsContext);
         if (conjunction == OR) {
             return lhs || rhs;
         } else {
@@ -174,7 +174,7 @@ class AttrNode extends XPathSyntaxTreeNode {
         this.name = name;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes) throws Exception {
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
         String attrValue = attributes.getValue(name);
         if (attrValue == null || attrValue.length() == 0) {
             return false;
@@ -182,8 +182,11 @@ class AttrNode extends XPathSyntaxTreeNode {
         return true;
     }
 
-    public Object getValue(XMLAttributes attributes) throws Exception {
-        String attrValue = attributes.getValue(name);
+    public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
+        int qNamePrfxIdx = name.indexOf(':');
+        String attrPrefix = (qNamePrfxIdx != -1) ? name.substring(0, qNamePrfxIdx) : "";   
+        String attrLocalName = (qNamePrfxIdx != -1) ? name.substring(qNamePrfxIdx + 1) : name;
+        String attrValue = attributes.getValue(nsContext.getURI(attrPrefix.intern()), attrLocalName);
         if (attrValue == null) {
             throw new XPathException("Attribute value is null");
         }
@@ -214,7 +217,7 @@ class CompNode extends XPathSyntaxTreeNode {
         this.child2 = child2;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes) throws Exception {
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
         int type1 = child1.getType();
         int type2 = child2.getType();
         Object obj1, obj2;
@@ -222,44 +225,44 @@ class CompNode extends XPathSyntaxTreeNode {
 
         if (type1 == TYPE_UNTYPED && type2 == TYPE_DOUBLE) {
             // attribute and numeral
-            String attrValue = child1.getValue(attributes).toString();
+            String attrValue = child1.getValue(attributes, nsContext).toString();
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("double");
             //cast the attribute value into double as per the XPath 2.0 general comparison rules
             obj1 = simpleType.validate(attrValue, null, null);
-            obj2 = child2.getValue(attributes);
+            obj2 = child2.getValue(attributes, nsContext);
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_UNTYPED && type2 == TYPE_STRING) {
             // attribute and string
-            String attrValue = child1.getValue(attributes).toString();
+            String attrValue = child1.getValue(attributes, nsContext).toString();
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             //cast the attribute value into string as per the XPath 2.0 general comparison rules
             obj1 = simpleType.validate(attrValue, null, null);
-            obj2 = child2.getValue(attributes);
+            obj2 = child2.getValue(attributes, nsContext);
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_DOUBLE && type2 == TYPE_UNTYPED) {
             // numeral and attribute
-            String attrValue = child2.getValue(attributes).toString();
+            String attrValue = child2.getValue(attributes, nsContext).toString();
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("double");
-            obj1 = child1.getValue(attributes);
+            obj1 = child1.getValue(attributes, nsContext);
             //cast the attribute value into double as per the XPath 2.0 general comparison rules
             obj2 = simpleType.validate(attrValue, null, null);
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_STRING && type2 == TYPE_UNTYPED) {
             // string and attribute
-            String attrValue = child2.getValue(attributes).toString();
+            String attrValue = child2.getValue(attributes, nsContext).toString();
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
-            obj1 = child1.getValue(attributes);
+            obj1 = child1.getValue(attributes, nsContext);
             //cast the attribute value into string as per the XPath 2.0 general comparison rules
             obj2 = simpleType.validate(attrValue, null, null);
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_UNTYPED && type2 == TYPE_UNTYPED) {
             // attr and attr
-            String attrVal1 = child1.getValue(attributes).toString();
-            String attrVal2 = child2.getValue(attributes).toString();
+            String attrVal1 = child1.getValue(attributes, nsContext).toString();
+            String attrVal2 = child2.getValue(attributes, nsContext).toString();
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             //cast the both attribute values into string as per the XPath 2.0 general comparison rules
             obj1 = simpleType.validate(attrVal1, null, null);
@@ -269,7 +272,7 @@ class CompNode extends XPathSyntaxTreeNode {
         } else if (type1 == TYPE_UNTYPED && type2 == TYPE_OTHER) {
             // attr and cast expr
             String type = child2.getTypeName();
-            String attrVal = child1.getValue(attributes).toString();
+            String attrVal = child1.getValue(attributes, nsContext).toString();
             
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
             if (simpleType == null) {
@@ -277,19 +280,19 @@ class CompNode extends XPathSyntaxTreeNode {
             }
             //try to cast the attribute value into the type of the cast expression
             obj1 = simpleType.validate(attrVal, null, null);
-            obj2 = child2.getValue(attributes);
+            obj2 = child2.getValue(attributes, nsContext);
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_OTHER && type2 == TYPE_UNTYPED) {
             // cast expr and attr
             String type = child1.getTypeName();
-            String attrVal = child2.getValue(attributes).toString();
+            String attrVal = child2.getValue(attributes, nsContext).toString();
             
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
-            obj1 = child1.getValue(attributes);
+            obj1 = child1.getValue(attributes, nsContext);
             //try to cast the attribute value into the type of the cast expression
             obj2 = simpleType.validate(attrVal, null, null);
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
@@ -313,8 +316,8 @@ class CompNode extends XPathSyntaxTreeNode {
             
             // check whether the two types are comparable
             if (DataMatcher.isComparable(dt1, dt2, null, null)) {
-                obj1 = simpleType.validate(child1.getValue(attributes), null, null);
-                obj2 = child2.getValue(attributes);
+                obj1 = simpleType.validate(child1.getValue(attributes, nsContext), null, null);
+                obj2 = child2.getValue(attributes, nsContext);
                 return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             } else {
                 throw new XPathException("Invalid comparison between incompatible types");
@@ -322,15 +325,15 @@ class CompNode extends XPathSyntaxTreeNode {
             
         } else if (type1 == TYPE_DOUBLE && type2 == TYPE_DOUBLE) {
             // numeric and numeric
-            obj1 = child1.getValue(attributes);
-            obj2 = child2.getValue(attributes);
+            obj1 = child1.getValue(attributes, nsContext);
+            obj2 = child2.getValue(attributes, nsContext);
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("double");
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
         } else if (type1 == TYPE_STRING && type2 == TYPE_STRING) {
             // string and string
-            obj1 = child1.getValue(attributes);
-            obj2 = child2.getValue(attributes);
+            obj1 = child1.getValue(attributes, nsContext);
+            obj2 = child2.getValue(attributes, nsContext);
             simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType("string");
             return DataMatcher.compareActualValues(obj1, obj2, comp, simpleType);
             
@@ -350,8 +353,8 @@ class CastNode extends XPathSyntaxTreeNode {
         this.castedType = castedType;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes) throws Exception {
-        Object obj = getValue(attributes);
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
+        Object obj = getValue(attributes, nsContext);
         XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(getTypeName());
         if (simpleType.getNumeric()) {
             return obj != null && 0.0 != ((Double) obj).doubleValue();
@@ -361,7 +364,7 @@ class CastNode extends XPathSyntaxTreeNode {
         }
     }
 
-    public Object getValue(XMLAttributes attributes) throws Exception {
+    public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
         XSSimpleType type = dvFactory.getBuiltInType(getTypeName());
         if (type == null) {
             throw new XPathException("Casted type is not a built-in type");
@@ -370,7 +373,7 @@ class CastNode extends XPathSyntaxTreeNode {
         Object obj;
         if (child.getType() == TYPE_UNTYPED) {
             //attribute cast
-            String attrValue = child.getValue(attributes).toString();
+            String attrValue = child.getValue(attributes, nsContext).toString();
             obj = type.validate(attrValue, null, null);
         } else {
             //literal cast (perform using the string value of the literal node)
@@ -415,7 +418,7 @@ class FunctionNode extends XPathSyntaxTreeNode {
         this.child = child;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes) {
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) {
         return false;
     }
 
