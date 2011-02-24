@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.util.Vector;
+
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
@@ -27,7 +29,9 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
@@ -63,8 +67,7 @@ public class XSTypeHelper {
             if (isURIEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
                 // if targetNamespace of types are same, then check for  equality of type names and of the base type
                 if ((type1Name == null && type2Name == null) ||
-                    (type1Name != null && type1Name.equals(type2Name))
-                          && (isSchemaTypesIdentical(typeDefn1.getBaseType(), typeDefn2.getBaseType()))) {
+                    (type1Name != null && type1Name.equals(type2Name)) && (isSchemaTypesIdentical(typeDefn1.getBaseType(), typeDefn2.getBaseType()))) {
                      typesIdentical = true;   
                 }
             }
@@ -74,12 +77,14 @@ public class XSTypeHelper {
         
     } // isSchemaTypesIdentical
     
+    
     /*
      * Check if two URI values are equal.
      */
     public static boolean isURIEqual(String uri1, String uri2) {
         return (uri1 == uri2 || (uri1 != null && uri1.equals(uri2)));
-    } // isURIEqual   
+    } // isURIEqual  
+    
     
     /*
      * Determine if an atomic value is valid with respect to any of the union's member types (those that are in XML Schema namespace). 
@@ -165,5 +170,25 @@ public class XSTypeHelper {
         }
         
     } // validateQNameValue
+    
+    
+    /*
+     * Get assertions list of a simpleType definition.
+     */
+    public static Vector getAssertsFromSimpleType(XSSimpleTypeDefinition simplType) {
+
+        Vector simpleTypeAsserts = new Vector();
+        
+        XSObjectListImpl facetList = (XSObjectListImpl) simplType.getMultiValueFacets();         
+        for (int facetIdx = 0; facetIdx < facetList.getLength(); facetIdx++) {
+            XSMultiValueFacet facet = (XSMultiValueFacet) facetList.item(facetIdx);
+            if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
+                simpleTypeAsserts = facet.getAsserts();
+            }
+        }
+        
+        return simpleTypeAsserts;
+        
+    } // getAssertsFromSimpleType
     
 } // class XSTypeHelper

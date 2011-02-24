@@ -321,29 +321,33 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             if (assertImpl.getType() == XSConstants.ASSERTION) {
                 // not an assertion facet
                 xpathContextExists = true;   
-            }
-            
+            }            
             if (assertImpl.getAttrName() != null) {
                 // evaluate assertion from an attribute
                 value = assertImpl.getAttrValue();
-                XSSimpleTypeDefinition assertSimpleType = (XSSimpleTypeDefinition) assertImpl.getTypeDefinition();                                
+                XSSimpleTypeDefinition attrSimpleType = (XSSimpleTypeDefinition) assertImpl.getTypeDefinition();
+                final boolean isTypeDerivedFromList = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+                final boolean isTypeDerivedFromUnion = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
                 if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
                     // evaluating assertions for "simpleType -> restriction" (not derived by union)
-                    setTypedValueFor$value(value, null, assertSimpleType, false);
+                    setTypedValueFor$value(value, null, attrSimpleType, false);
                     AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, xpathContextExists, false);
                     if (assertError != null) {
                         reportAssertionsError(assertError);    
                     }
                 }
                 else if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
-                    // evaluating assertions for "simpleType -> list"
-                    final boolean isTypeDerivedFromList = ((XSSimpleType) assertSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
-                    evaluateAssertionOnSTListValue(element, value, assertImpl, xpathContextExists, assertSimpleType, isTypeDerivedFromList);
+                    // evaluating assertions for "simpleType -> list"                    
+                    evaluateAssertionOnSTListValue(element, value, assertImpl, xpathContextExists, attrSimpleType, isTypeDerivedFromList);
                 }
                 else {
-                    // evaluating assertions for "simpleType -> union"
-                    final boolean isTypeDerivedFromUnion = ((XSSimpleType) assertSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
-                    evaluateAssertionOnSTUnion(element, assertSimpleType.getMemberTypes(), isTypeDerivedFromUnion, assertImpl, value);
+                    // evaluating assertions for "simpleType -> union"                    
+                    evaluateAssertionOnSTUnion(element, attrSimpleType.getMemberTypes(), isTypeDerivedFromUnion, assertImpl, value);
+                }                
+                // evaluate assertions on itemType of xs:list
+                XSSimpleTypeDefinition attrItemType = attrSimpleType.getItemType();
+                if (isTypeDerivedFromList && attrItemType != null) {
+                    evaluateAssertsFromItemTypeOfSTList(element, attrItemType, value);
                 }
             }
             else {
@@ -354,6 +358,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 }  
             }
         }
+       
         
     } // evaluateAssertionsFromAComplexType
 
@@ -374,10 +379,11 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             }
         }
         
+        final boolean isTypeDerivedFromList = ((XSSimpleType) elemPSVI.getTypeDefinition().getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+        final boolean isTypeDerivedFromUnion = ((XSSimpleType) elemPSVI.getTypeDefinition().getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
         // process assertions from a simple type definition           
         Vector assertList = (Vector) assertions;
-        final int assertListLength = assertList.size();
-        
+        final int assertListLength = assertList.size();        
         for (int assertIdx = 0; assertIdx < assertListLength; assertIdx++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(assertIdx);
             String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace(); 
@@ -393,18 +399,47 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 }    
             }
             else if (itemType != null) {
-               // evaluating assertions for "simpleType -> list"
-               final boolean isTypeDerivedFromList = ((XSSimpleType) elemPSVI.getTypeDefinition().getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+               // evaluating assertions for "simpleType -> list"               
                evaluateAssertionOnSTListValue(element, value, assertImpl, false, itemType, isTypeDerivedFromList);
             }            
             else {
-               // evaluating assertions for "simpleType -> union"
-               final boolean isTypeDerivedFromUnion = ((XSSimpleType) elemPSVI.getTypeDefinition().getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
+               // evaluating assertions for "simpleType -> union"               
                evaluateAssertionOnSTUnion(element, memberTypes, isTypeDerivedFromUnion, assertImpl, value);
             }
         }
         
+        // evaluate assertions on itemType of xs:list
+        if (isTypeDerivedFromList && itemType != null) {
+            evaluateAssertsFromItemTypeOfSTList(element, itemType, value); 
+        }
+        
     } // evaluateAssertionsFromASimpleType
+    
+    
+    /*
+     * Evaluate assertions from itemType (having variety 'atomic') of xs:list. This method is used to evaluate assertions from elements
+     * with simple content, and simpleType definitions from attributes.
+     */
+    private void evaluateAssertsFromItemTypeOfSTList(QName element, XSSimpleTypeDefinition listItemType, String value) throws Exception{
+        
+        Vector itemTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(listItemType);
+        if (listItemType.getVariety() ==  XSSimpleTypeDefinition.VARIETY_ATOMIC && itemTypeAsserts.size() > 0) {
+            for (int assertIdx = 0; assertIdx < itemTypeAsserts.size(); assertIdx++) {
+                XSAssertImpl itemTypeAssert = (XSAssertImpl) itemTypeAsserts.get(assertIdx);
+                StringTokenizer listStrTokens = new StringTokenizer(value, " \n\t\r");
+                while (listStrTokens.hasMoreTokens()) {
+                    String listItemStrValue = listStrTokens.nextToken();
+                    setValueOf$valueForSTVarietyList(listItemStrValue, listItemType, false);                        
+                    AssertionError assertError = evaluateOneAssertion(element, itemTypeAssert, listItemStrValue, false, true);                        
+                    if (assertError != null) {
+                        assertError.setIsTypeDerivedFromList(false);
+                        reportAssertionsError(assertError);    
+                    }
+                }
+            }
+        }
+        
+    } // evaluateAssertsFromItemTypeOfSTList
     
     
     /*
@@ -413,13 +448,15 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private void evaluateAssertionOnSTListValue(QName element, String listStrValue, XSAssertImpl assertImpl, boolean xpathContextExists,
                                                 XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList) throws Exception {
         
+        AssertionError assertError = null;
+        
         if (isTypeDerivedFromList) {
             setValueOf$valueForSTVarietyList(listStrValue, itemType, isTypeDerivedFromList);
-            AssertionError assertError = evaluateOneAssertion(element, assertImpl, listStrValue, xpathContextExists, true);
+            assertError = evaluateOneAssertion(element, assertImpl, listStrValue, xpathContextExists, true);
             if (assertError != null) {
                 assertError.setIsTypeDerivedFromList(isTypeDerivedFromList);
                 reportAssertionsError(assertError);    
-            }
+            }            
         }
         else {
             // evaluate assertion on all of list items
@@ -428,7 +465,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             while (listStrTokens.hasMoreTokens()) {
                 String listItemStrValue = listStrTokens.nextToken();
                 setValueOf$valueForSTVarietyList(listItemStrValue, itemType, isTypeDerivedFromList);                        
-                AssertionError assertError = evaluateOneAssertion(element, assertImpl, listItemStrValue, xpathContextExists, true);
+                assertError = evaluateOneAssertion(element, assertImpl, listItemStrValue, xpathContextExists, true);
                 if (assertError != null) {
                     reportAssertionsError(assertError);    
                 }
@@ -660,20 +697,19 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
     
     /*
-     * Set a typed value of XPath2 context variable $value if an atomic value on which assertion is been evaluated, is an item
-     * of schema component xs:list.
+     * Set a typed value of XPath2 context variable $value, if the simpleType context is xs:list.
      */
-    private void setValueOf$valueForSTVarietyList(String listItemStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList) throws Exception {
+    private void setValueOf$valueForSTVarietyList(String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList) throws Exception {
         
         XSObjectList memberTypes = itemType.getMemberTypes();
         if (memberTypes.getLength() > 0) {
             // the list's item type has variety 'union'
-            XSSimpleTypeDefinition actualListItemType = getActualListItemTypeForVarietyUnion(memberTypes, listItemStrValue);
+            XSSimpleTypeDefinition actualListItemType = getActualListItemTypeForVarietyUnion(memberTypes, listStrValue);
             // set a schema 'typed value' to variable $value
-            setTypedValueFor$value(listItemStrValue, actualListItemType, null, false);
+            setTypedValueFor$value(listStrValue, actualListItemType, null, false);
         } 
         else {
-            setTypedValueFor$value(listItemStrValue, itemType, null, isTypeDerivedFromList); 
+            setTypedValueFor$value(listStrValue, itemType, null, isTypeDerivedFromList); 
         }
 
     } // setValueOf$valueForSTVarietyList
