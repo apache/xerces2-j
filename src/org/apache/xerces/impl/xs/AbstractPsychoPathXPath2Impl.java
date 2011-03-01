@@ -60,7 +60,7 @@ public class AbstractPsychoPathXPath2Impl {
     
     private DynamicContext fXpath2DynamicContext = null;
     private Document domDoc = null;
-    
+    private static final String XPATH_EXPR_COMPILE_ERR_MESG_1 = "Expression starts with / or //";
     
     /*
      * Initialize the 'PsychoPath XPath 2' dynamic context.
@@ -88,7 +88,7 @@ public class AbstractPsychoPathXPath2Impl {
     
     
     /*
-     * Evaluate XPath expression with PsychoPath engine.
+     * Evaluate XPath expression with PsychoPath XPath2 engine.
      */
     protected boolean evaluateXPathExpr(XPath xp, Element contextNode) throws StaticError, DynamicError, Exception {
         
@@ -99,9 +99,9 @@ public class AbstractPsychoPathXPath2Impl {
         if (contextNode != null) {
            eval = new DefaultEvaluator(fXpath2DynamicContext, domDoc);           
            // change focus to the top most element
-           ResultSequence nodeEvalRS = ResultSequenceFactory.create_new();
-           nodeEvalRS.add(new ElementType(contextNode, fXpath2DynamicContext.node_position(contextNode)));           
-           fXpath2DynamicContext.set_focus(new Focus(nodeEvalRS));
+           ResultSequence contextNodeResultSet = ResultSequenceFactory.create_new();
+           contextNodeResultSet.add(new ElementType(contextNode, fXpath2DynamicContext.node_position(contextNode)));           
+           fXpath2DynamicContext.set_focus(new Focus(contextNodeResultSet));
         }
         else {           
            eval = new DefaultEvaluator(fXpath2DynamicContext, null);
@@ -135,16 +135,21 @@ public class AbstractPsychoPathXPath2Impl {
     /*
      * Compile an XPath string and return the compiled XPath expression.
      */
-    protected XPath compileXPathStr(String xpathStr, XSAssertImpl assertImpl, XSDHandler fSchemaHandler) {        
+    protected XPath compileXPathStr(String xpathStr, XSAssertImpl assertImpl, XSDHandler fSchemaHandler, Element schemaContextElem) {        
         
         XPathParser xpp = new JFlexCupParser();
         XPath xp = null;
         
         try {
-            xp = xpp.parse("boolean(" + xpathStr + ")");
+            xp = xpp.parse("boolean(" + xpathStr + ")", true);
         } catch (XPathParserException ex) {
             // error compiling XPath expression
-            reportError("cvc-xpath.3.13.4.2", assertImpl, fSchemaHandler);
+            if (XPATH_EXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {
+               reportError("cvc-xpath.3.13.4.2b", assertImpl, fSchemaHandler, schemaContextElem); 
+            }
+            else {
+               reportError("cvc-xpath.3.13.4.2a", assertImpl, fSchemaHandler, schemaContextElem);
+            }
         }  
         
         return xp;
@@ -155,7 +160,7 @@ public class AbstractPsychoPathXPath2Impl {
     /*
      * Method to report error messages.
      */
-    private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler) {
+    private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler, Element schemaContextElem) {
         
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
         String typeString = "";
@@ -167,7 +172,7 @@ public class AbstractPsychoPathXPath2Impl {
            typeString = "#anonymous"; 
         }
         
-        fSchemaHandler.reportSchemaError(key, new Object[] {assertImpl.getTest().getXPath().toString(), typeString }, null);
+        fSchemaHandler.reportSchemaError(key, new Object[] {assertImpl.getTest().getXPath().toString(), typeString}, schemaContextElem);
         
     } // reportError
     

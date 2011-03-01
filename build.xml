@@ -69,7 +69,7 @@ Authors:
     <property name='jar.resolver' value='resolver.jar'/>
     <property name='jar.serializer' value='serializer.jar'/>
     <property name='jar.charnormalizer' value='icu4j.jar'/>
-    <property name='jar.psychopath' value='org.eclipse.wst.xml.xpath2.processor_1.1.0.jar'/>
+    <property name='jar.psychopath' value='org.eclipse.wst.xml.xpath2.processor_1.2.0.jar'/>
     <property name='jar.cup' value='cupv10k-runtime.jar'/>
     <property name='jar.junit' value='junit.jar'/>
     <property name='jar.ant' value='ant.jar'/>
@@ -584,7 +584,7 @@ Authors:
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
     <copy file="LICENSE.cupv10k-runtime.txt" tofile="${distsrc.dir}/LICENSE.cupv10k-runtime.txt"/>
-    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html"/>
+    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.2.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.2.0.html"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
@@ -683,7 +683,7 @@ Authors:
     <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
     <copy file="LICENSE.icu4j.html" tofile="${distsrc.dir}/LICENSE.icu4j.html"/>
     <copy file="LICENSE.cupv10k-runtime.txt" tofile="${distsrc.dir}/LICENSE.cupv10k-runtime.txt"/>
-    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html"/>
+    <copy file="LICENSE.org.eclipse.wst.xml.xpath2.processor_1.2.0.html" tofile="${distsrc.dir}/LICENSE.org.eclipse.wst.xml.xpath2.processor_1.2.0.html"/>
     <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
 
     <copy file="${build.dir}/${jar.samples}" tofile="${distbin.dir}/${jar.samples}"/>

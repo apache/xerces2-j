@@ -485,9 +485,8 @@ abstract class XSDAbstractTraverser {
                         childNode = DOMUtil.getNextSiblingElement(childNode);
                         
                         if (childNode != null) {
-                         // it's an error to have something after the annotation, in an assertion
-                          reportSchemaError("s4s-elt-invalid-content.1", new Object[]{DOMUtil.getLocalName(content), 
-                                    DOMUtil.getLocalName(childNode)}, childNode);
+                          // it's an error to have something after the annotation, in an assertion
+                          reportSchemaError("s4s-elt-invalid-content.1", new Object[]{DOMUtil.getLocalName(content), DOMUtil.getLocalName(childNode)}, childNode);
                         }
                     } else {
                         String text = DOMUtil.getSyntheticAnnotation(childNode);
@@ -508,20 +507,13 @@ abstract class XSDAbstractTraverser {
                     }
                     
                     // create an assertion object
-                    XSAssertImpl assertImpl = new XSAssertImpl(typeDef,
-                                                           annotations,
-                                                           fSchemaHandler);
-                    Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, 
-                                             new SchemaNamespaceSupport(schemaDoc.
-                                             fNamespaceSupport)), assertImpl);                 
+                    XSAssertImpl assertImpl = new XSAssertImpl(typeDef, annotations, fSchemaHandler);
+                    Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport)), assertImpl);                 
                     assertImpl.setAssertKind(XSConstants.ASSERTION_FACET);
-                    assertImpl.setTest(testExpr);
+                    assertImpl.setTest(testExpr, content);
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
-                    assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport
-                                                     (schemaDoc.fNamespaceSupport));
-                    String assertMessage = XMLChar.trim(content.getAttributeNS(
-                                                SchemaSymbols.URI_XERCES_EXTENSIONS,
-                                                SchemaSymbols.ATT_ASSERT_MESSAGE));
+                    assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport));
+                    String assertMessage = XMLChar.trim(content.getAttributeNS(SchemaSymbols.URI_XERCES_EXTENSIONS, SchemaSymbols.ATT_ASSERT_MESSAGE));
                     if (!"".equals(assertMessage)) {
                        assertImpl.setMessage(assertMessage);
                     }

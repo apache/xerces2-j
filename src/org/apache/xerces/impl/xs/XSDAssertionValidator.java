@@ -383,7 +383,7 @@ public class XSDAssertionValidator {
     private void copyAssertAttributes(XSAssertImpl assertA, XSAssertImpl assertB) {
         
         assertB.setAssertKind(assertA.getAssertKind());
-        assertB.setTest(assertA.getTest());
+        assertB.setTest(assertA.getTest(), null);
         assertB.setCompiledExpr(assertA.getCompiledXPath());
         assertB.setXPathDefaultNamespace(assertA.getXPathDefaultNamespace());
         assertB.setXPath2NamespaceContext(assertA.getXPath2NamespaceContext());

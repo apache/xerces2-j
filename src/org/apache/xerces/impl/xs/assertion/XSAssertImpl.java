@@ -26,6 +26,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
+import org.w3c.dom.Element;
 
 /**
  * XML Schema 1.1 'assertion' component.
@@ -86,11 +87,11 @@ public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAsse
         fAnnotations = annotations;
     }
     
-    public void setTest(Test expr) {
+    public void setTest(Test expr, Element schemaContextElem) {
         fTestExpr = expr;        
         // compile the XPath string, and keep compiled representation into this object for later use (this helps us to
         // optimize assertions evaluations).
-        setCompiledExpr(compileXPathStr(expr.toString(), this, fSchemaHandler));
+        setCompiledExpr(compileXPathStr(expr.toString(), this, fSchemaHandler, schemaContextElem));
     }
     
     public void setCompiledExpr(XPath compiledXPathExpr) {

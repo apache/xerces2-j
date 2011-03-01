@@ -1666,9 +1666,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     /*
      * Traversal support for XML Schema 1.1, 'assertions'.
      */
-    private void traverseAsserts(Element assertElement, XSDocumentInfo schemaDoc,
-                                 SchemaGrammar grammar, XSComplexTypeDecl 
-                                 enclosingCT) throws ComplexTypeRecoverableError {
+    private void traverseAsserts(Element assertElement, XSDocumentInfo schemaDoc, SchemaGrammar grammar, XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
 
         Object[] attrValues = fAttrChecker.checkAttributes(assertElement,
                                                            false, schemaDoc);
@@ -1688,8 +1686,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (childNode != null
                     && DOMUtil.getLocalName(childNode).equals(
                             SchemaSymbols.ELT_ANNOTATION)) {
-                annotation = traverseAnnotationDecl(childNode, attrValues,
-                        false, schemaDoc);
+                annotation = traverseAnnotationDecl(childNode, attrValues, false, schemaDoc);
                 // now move on to the next child element
                 childNode = DOMUtil.getNextSiblingElement(childNode);
 
@@ -1718,19 +1715,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             
             // create an assertion object            
-            XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT,
-                                                       annotations,
-                                                       fSchemaHandler);
-            Test testExpr = new Test(new XPath20Assert(test, fSymbolTable,
-                                     new SchemaNamespaceSupport(schemaDoc.
-                                     fNamespaceSupport)), assertImpl);
-            assertImpl.setTest(testExpr);
+            XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations, fSchemaHandler);
+            Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport)), assertImpl);
+            assertImpl.setTest(testExpr, assertElement);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
-            assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport
-                                            (schemaDoc.fNamespaceSupport));
-            String assertMessage = XMLChar.trim(assertElement.getAttributeNS(
-                                          SchemaSymbols.URI_XERCES_EXTENSIONS, 
-                                          SchemaSymbols.ATT_ASSERT_MESSAGE));
+            assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport));
+            String assertMessage = XMLChar.trim(assertElement.getAttributeNS(SchemaSymbols.URI_XERCES_EXTENSIONS, SchemaSymbols.ATT_ASSERT_MESSAGE));
             if (!"".equals(assertMessage)) {
                assertImpl.setMessage(assertMessage);
             }
