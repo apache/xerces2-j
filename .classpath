@@ -22,7 +22,7 @@
 	<classpathentry kind="lib" path="tools/xml-apis.jar"/>
 	<classpathentry kind="lib" path="tools/serializer.jar"/>
 	<classpathentry kind="lib" path="tools/icu4j.jar"/>
-	<classpathentry kind="lib" path="tools/org.eclipse.wst.xml.xpath2.processor_1.1.0.jar"/>
+	<classpathentry kind="lib" path="tools/org.eclipse.wst.xml.xpath2.processor_1.2.0.jar"/>
 	<classpathentry kind="lib" path="tools/cupv10k-runtime.jar"/>
 	<classpathentry kind="lib" path="tools/resolver.jar"/>
 	<classpathentry kind="lib" path="tools/junit.jar"/>
