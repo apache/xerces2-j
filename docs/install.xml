@@ -53,7 +53,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License file for ICU4J 4.2</td>
    </tr>
    <tr>
-    <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html</td>
+    <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.2.0.html</td>
     <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
@@ -97,7 +97,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Jar file containing ICU4J 4.2</td>
    </tr>
    <tr>
-    <td>org.eclipse.wst.xml.xpath2.processor_1.1.0.jar</td>
+    <td>org.eclipse.wst.xml.xpath2.processor_1.2.0.jar</td>
     <td>Jar file containing the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
@@ -176,7 +176,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License file for ICU4J 4.2</td>
    </tr>
    <tr>
-    <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.1.0.html</td>
+    <td>LICENSE.org.eclipse.wst.xml.xpath2.processor_1.2.0.html</td>
     <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
@@ -297,11 +297,11 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for JUnit 3.8.1</td>
    </tr>
    <tr>
-    <td>org.eclipse.wst.xml.xpath2.processor_1.1.0.jar</td>
+    <td>org.eclipse.wst.xml.xpath2.processor_1.2.0.jar</td>
     <td>Jar file containing the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
-    <td>org.eclipse.wst.xml.xpath2.processor_1.1.0.LICENSE.html</td>
+    <td>org.eclipse.wst.xml.xpath2.processor_1.2.0.LICENSE.html</td>
     <td>License for the Eclipse PsychoPath XPath 2.0 Processor</td>
    </tr>
    <tr>
