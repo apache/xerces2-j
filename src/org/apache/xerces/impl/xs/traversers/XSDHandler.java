@@ -674,6 +674,10 @@ public class XSDHandler {
         // second phase:  fill global registries.
         buildGlobalNameRegistries();
         
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            buildDefaultAttributes();
+        }
+        
         // third phase:  call traversers
         ArrayList annotationInfo = fValidateAnnotations ? new ArrayList() : null;
         traverseSchemas(annotationInfo);
@@ -1447,7 +1451,33 @@ public class XSDHandler {
         } // while
 
     } // end buildGlobalNameRegistries
-    
+
+    protected void buildDefaultAttributes() {
+        Stack schemasToProcess = new Stack();
+
+        setSchemasVisible(fRoot);
+        schemasToProcess.push(fRoot);
+        while (!schemasToProcess.empty()) {
+            XSDocumentInfo currSchemaDoc =
+                (XSDocumentInfo)schemasToProcess.pop();
+            final Element currDoc = currSchemaDoc.fSchemaElement;
+
+            // Check that we have a 'defaultAttributes' and that we have not already processed it
+            if (currSchemaDoc.fDefaultAttributes != null && currSchemaDoc.fDefaultAGroup == null) {
+                currSchemaDoc.fDefaultAGroup = (XSAttributeGroupDecl) getGlobalDecl(
+                        currSchemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, currSchemaDoc.fDefaultAttributes, currDoc);
+            }
+            // now we're done with this one!
+            // now we're done with this one!
+            DOMUtil.setHidden(currDoc, fHiddenNodes);
+            // now add the schemas this guy depends on
+            Vector currSchemaDepends = (Vector)fDependencyMap.get(currSchemaDoc);
+            for (int i = 0; i < currSchemaDepends.size(); i++) {
+                schemasToProcess.push(currSchemaDepends.elementAt(i));
+            }
+        } // while
+    } // end buildDefaultAttributes
+
     // Beginning at the first schema processing was requested for
     // (fRoot), this method
     // examines each child (global schema information item) of each
@@ -1480,15 +1510,6 @@ public class XSDHandler {
             }
             Element currRoot = currDoc;
             boolean sawAnnotation = false;
-
-            // if XML Schema 1.1, set default attribute group 
-            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                // Check that we have a 'defaultAttributes' and that we have not already processed it
-                if (currSchemaDoc.fDefaultAttributes != null && currSchemaDoc.fDefaultAGroup == null) {
-                    currSchemaDoc.fDefaultAGroup = (XSAttributeGroupDecl) getGlobalDecl(
-                            currSchemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, currSchemaDoc.fDefaultAttributes, currRoot);
-                }
-            }
 
             // traverse this schema's global decls
             for (Element globalComp =
