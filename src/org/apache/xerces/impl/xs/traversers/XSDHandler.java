@@ -1461,6 +1461,11 @@ public class XSDHandler {
             XSDocumentInfo currSchemaDoc =
                 (XSDocumentInfo)schemasToProcess.pop();
             final Element currDoc = currSchemaDoc.fSchemaElement;
+            
+            if(DOMUtil.isHidden(currDoc, fHiddenNodes)) {
+                // must have processed this already!
+                continue;
+            }
 
             // Check that we have a 'defaultAttributes' and that we have not already processed it
             if (currSchemaDoc.fDefaultAttributes != null && currSchemaDoc.fDefaultAGroup == null) {
