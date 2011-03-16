@@ -487,13 +487,13 @@ public class XSDHandler {
     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
 
     // global decls: map from decl name to decl object
-    SymbolHash fGlobalAttrDecls = new SymbolHash();
-    SymbolHash fGlobalAttrGrpDecls = new SymbolHash();
-    SymbolHash fGlobalElemDecls = new SymbolHash();
-    SymbolHash fGlobalGroupDecls = new SymbolHash();
-    SymbolHash fGlobalNotationDecls = new SymbolHash();
-    SymbolHash fGlobalIDConstraintDecls = new SymbolHash();
-    SymbolHash fGlobalTypeDecls = new SymbolHash();
+    SymbolHash fGlobalAttrDecls = new SymbolHash(12);
+    SymbolHash fGlobalAttrGrpDecls = new SymbolHash(5);
+    SymbolHash fGlobalElemDecls = new SymbolHash(25);
+    SymbolHash fGlobalGroupDecls = new SymbolHash(5);
+    SymbolHash fGlobalNotationDecls = new SymbolHash(1);
+    SymbolHash fGlobalIDConstraintDecls = new SymbolHash(3);
+    SymbolHash fGlobalTypeDecls = new SymbolHash(25);
 
     // these data members are needed for the deferred traversal
     // of referral identity constraints.

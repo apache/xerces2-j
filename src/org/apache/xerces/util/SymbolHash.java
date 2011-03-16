@@ -17,7 +17,6 @@
 
 package org.apache.xerces.util;
 
-
 /**
  * This class is an unsynchronized hash table primary used for String
  * to Object mapping.
@@ -78,7 +77,8 @@ public class SymbolHash {
      * @param value 
      */
     public void put(Object key, Object value) {
-        int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
+        final int hash = hash(key);
+        int bucket = hash % fTableSize;
         Entry entry = search(key, bucket);
 
         // replace old value
@@ -87,6 +87,12 @@ public class SymbolHash {
         }
         // create new entry
         else {
+            if (fNum >= fTableSize) {
+                // Rehash the table if the number of entries
+                // would exceed the number of buckets.
+                rehash();
+                bucket = hash % fTableSize;
+            }
             entry = new Entry(key, value, fBuckets[bucket]);
             fBuckets[bucket] = entry;
             fNum++;
@@ -100,7 +106,7 @@ public class SymbolHash {
      * @return the value associated with the given key.
      */
     public Object get(Object key) {
-        int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
+        int bucket = hash(key) % fTableSize;
         Entry entry = search(key, bucket);
         if (entry != null) {
             return entry.value;
@@ -156,14 +162,15 @@ public class SymbolHash {
         SymbolHash newTable = new SymbolHash(fTableSize);
         newTable.fNum = fNum;
         for (int i = 0; i < fTableSize; i++) {
-            if (fBuckets[i] != null)
+            if (fBuckets[i] != null) {
                 newTable.fBuckets[i] = fBuckets[i].makeClone();
+            }
         }
         return newTable;
     }
     
     /**
-     * Remove all key/value assocaition. This tries to save a bit of GC'ing
+     * Remove all key/value association. This tries to save a bit of GC'ing
      * by at least keeping the fBuckets array around.
      */
     public void clear() {
@@ -180,6 +187,44 @@ public class SymbolHash {
                 return entry;
         }
         return null;
+    }
+    
+    /**
+     * Returns a hashcode value for the specified key.
+     *
+     * @param key The key to hash.
+     */
+    protected int hash(Object key) {
+        return key.hashCode() & 0x7FFFFFFF;
+    }
+    
+    /**
+     * Increases the capacity of and internally reorganizes this 
+     * SymbolHash, in order to accommodate and access its entries more 
+     * efficiently.  This method is called automatically when the 
+     * number of keys in the SymbolHash exceeds its number of buckets.
+     */
+    protected void rehash() {
+
+        final int oldCapacity = fBuckets.length;
+        final Entry[] oldTable = fBuckets;
+
+        final int newCapacity = (oldCapacity << 1) + 1;
+        final Entry[] newTable = new Entry[newCapacity];
+
+        fBuckets = newTable;
+        fTableSize = fBuckets.length;
+
+        for (int i = oldCapacity; i-- > 0;) {
+            for (Entry old = oldTable[i]; old != null; ) {
+                Entry e = old;
+                old = old.next;
+
+                int index = hash(e.key) % newCapacity;
+                e.next = newTable[index];
+                newTable[index] = e;
+            }
+        }
     }
     
     //
