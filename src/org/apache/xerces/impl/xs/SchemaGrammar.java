@@ -143,35 +143,39 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         fGrammarDescription = grammarDesc;
         fSymbolTable = symbolTable;
 
-        // REVISIT: do we know the numbers of the following global decls
-        // when creating this grammar? If so, we can pass the numbers in,
-        // and use that number to initialize the following hashtables.
-        fGlobalAttrDecls  = new SymbolHash();
-        fGlobalAttrGrpDecls = new SymbolHash();
-        fGlobalElemDecls = new SymbolHash();
-        fGlobalGroupDecls = new SymbolHash();
-        fGlobalNotationDecls = new SymbolHash();
-        fGlobalIDConstraintDecls = new SymbolHash();
+        // REVISIT: the initial sizes being chosen for each SymbolHash
+        // may not be ideal and could still be tuned. They were chosen
+        // somewhat arbitrarily to reduce the initial footprint of
+        // SymbolHash buckets from 1,515 to 177 (about 12% of the 
+        // default size).
+        fGlobalAttrDecls  = new SymbolHash(12);
+        fGlobalAttrGrpDecls = new SymbolHash(5);
+        fGlobalElemDecls = new SymbolHash(25);
+        fGlobalGroupDecls = new SymbolHash(5);
+        fGlobalNotationDecls = new SymbolHash(1);
+        fGlobalIDConstraintDecls = new SymbolHash(3);
 
         // Extended tables
-        fGlobalAttrDeclsExt  = new SymbolHash();
-        fGlobalAttrGrpDeclsExt = new SymbolHash();
-        fGlobalElemDeclsExt = new SymbolHash();
-        fGlobalGroupDeclsExt = new SymbolHash();
-        fGlobalNotationDeclsExt = new SymbolHash();
-        fGlobalIDConstraintDeclsExt = new SymbolHash();
-        fGlobalTypeDeclsExt = new SymbolHash();
+        fGlobalAttrDeclsExt  = new SymbolHash(12);
+        fGlobalAttrGrpDeclsExt = new SymbolHash(5);
+        fGlobalElemDeclsExt = new SymbolHash(25);
+        fGlobalGroupDeclsExt = new SymbolHash(5);
+        fGlobalNotationDeclsExt = new SymbolHash(1);
+        fGlobalIDConstraintDeclsExt = new SymbolHash(3);
+        fGlobalTypeDeclsExt = new SymbolHash(25);
         
         // All global elements table
-        fAllGlobalElemDecls = new SymbolHash();
+        fAllGlobalElemDecls = new SymbolHash(25);
 
         // if we are parsing S4S, put built-in types in first
         // they might get overwritten by the types from S4S, but that's
         // considered what the application wants to do.
-        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA)
+        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
             fGlobalTypeDecls = SG_SchemaNS.fGlobalTypeDecls.makeClone();
-        else
-            fGlobalTypeDecls = new SymbolHash();
+        }
+        else {
+            fGlobalTypeDecls = new SymbolHash(25);
+        }
     } // <init>(String, XSDDescription)
     
     // Clone an existing schema grammar
