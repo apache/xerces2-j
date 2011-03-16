@@ -3255,12 +3255,9 @@ public class XMLSchemaValidator
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
             
-            // additional check for assertions processing, for simple type having variety 'union'
-            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
-                                      ((XSSimpleType) attDV.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-                if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), attrValue, null)) {
-                    fIsAssertProcessingNeededForSTUnion = false; 
-                }
+            // additional check for assertions processing, for simple type having variety 'union'            
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                extraCheckForSTUnionAsserts(attDV, attrValue, fValidatedInfo);
             }
             
             // store the normalized value
@@ -3409,12 +3406,9 @@ public class XMLSchemaValidator
                     fValidationState.setFacetChecking(false);
                     attDV.validate(fValidationState, defaultValue);
                     
-                    // additional check for assertions processing, for simple type having variety 'union'
-                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && attDV.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
-                                              ((XSSimpleType) attDV.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (XSTypeHelper.isAtomicValueValidForAnUnion(attDV.getMemberTypes(), null, defaultValue)) {
-                            fIsAssertProcessingNeededForSTUnion = false; 
-                        }
+                    // additional check for assertions processing, for simple type having variety 'union'                    
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                        extraCheckForSTUnionAsserts(attDV, defaultValue.stringValue(), defaultValue);
                     }
                 } 
                 catch (InvalidDatatypeValueException idve) {
@@ -3621,12 +3615,9 @@ public class XMLSchemaValidator
                     }
                     retValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     
-                    // additional check for assertions processing, for simple type having variety 'union'
-                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
-                                              ((XSSimpleType) dv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), String.valueOf(textContent), null)) {
-                            fIsAssertProcessingNeededForSTUnion = false; 
-                        }
+                    // additional check for assertions processing, for simple type having variety 'union'                    
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                        extraCheckForSTUnionAsserts(dv, String.valueOf(textContent), fValidatedInfo);
                     }
                 } catch (InvalidDatatypeValueException e) {
                     fIsAssertProcessingNeededForSTUnion = false;
@@ -3669,12 +3660,9 @@ public class XMLSchemaValidator
                     }
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     
-                    // additional check for assertions processing, for simple type having variety 'union'
-                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && dv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && 
-                                              ((XSSimpleType) dv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-                        if (XSTypeHelper.isAtomicValueValidForAnUnion(dv.getMemberTypes(), String.valueOf(textContent), null)) {
-                            fIsAssertProcessingNeededForSTUnion = false; 
-                        }
+                    // additional check for assertions processing, for simple type having variety 'union'                    
+                    if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                        extraCheckForSTUnionAsserts(dv, String.valueOf(textContent), fValidatedInfo);
                     }
                 } catch (InvalidDatatypeValueException e) {
                     fIsAssertProcessingNeededForSTUnion = false;
@@ -4833,6 +4821,17 @@ public class XMLSchemaValidator
                 fData = newdata;
             }
         }
-    }    
+    }
+    
+    /*
+     * Preprocessing checks for assertion evaluations for simpleType's with variety union.
+     */
+    private void extraCheckForSTUnionAsserts(XSSimpleType simpleTypeDv, String content, ValidatedInfo validatedInfo) {
+        if (simpleTypeDv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) simpleTypeDv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
+            if (XSTypeHelper.isAtomicValueValidForSTUnion(simpleTypeDv.getMemberTypes(), content, validatedInfo)) {
+                fIsAssertProcessingNeededForSTUnion = false; 
+            }
+        }
+    } // extraCheckForSTUnionAsserts
     
 } // class XMLSchemaValidator

@@ -481,18 +481,12 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private void evaluateAssertionOnSTUnion(QName element, XSObjectList memberTypes, boolean isTypeDerivedFromUnion, XSAssertImpl assertImpl, String value) {
         
         if (memberTypes != null && memberTypes.getLength() > 0 && !isTypeDerivedFromUnion) {            
-            boolean isValidationFailedForUnion = isValidationFailedForUnion(memberTypes, element, value, false);
-            // only 1 error message is reported for assertion failures on "simpleType -> union", since it is hard 
-            // (perhaps impossible?) to determine statically that what all assertions can cause validation failure, 
-            // when participating in an XML schema union.
+            boolean isValidationFailedForUnion = isValidationFailedForSTUnion(memberTypes, element, value, false);
             if (isValidationFailedForUnion) {                        
                  fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", new Object[] {element.rawname, value});   
             } 
          }
          else if (isTypeDerivedFromUnion) {
-             // although Xerces XSModel treats this case as a simpleType with variety union, but from assertions perspective
-             // this is treated like a "simpleType -> restriction" case (which also appears to be syntactically true in every case?).
-             // REVISIT...
              setValueOf$valueForSTVarietyUnion(value, memberTypes);
              AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
              if (assertError != null) {
@@ -506,7 +500,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     /*
      * Determine if an validation episode must fail due to assertions evaluation for "simpleType -> union" member types.
      */
-    private boolean isValidationFailedForUnion(XSObjectList memberTypes, QName element, String value, boolean isAttribute) {
+    private boolean isValidationFailedForSTUnion(XSObjectList memberTypes, QName element, String value, boolean isAttribute) {
         
         boolean isValidationFailedForUnion = true;
         final int memberTypesLength = memberTypes.getLength();
@@ -551,7 +545,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
         return isValidationFailedForUnion;
         
-    } // isValidationFailedForUnion
+    } // isValidationFailedForSTUnion
     
     
     /*

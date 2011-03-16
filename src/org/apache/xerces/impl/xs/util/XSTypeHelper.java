@@ -87,10 +87,10 @@ public class XSTypeHelper {
     
     
     /*
-     * Determine if an atomic value is valid with respect to any of the union's member types (those that are in XML Schema namespace). 
+     * Determine if an atomic value is valid with respect to any of the simpleType -> union's member types (those that are in XML Schema namespace). 
      * If this method returns 'true', then the value is valid with respect to entire union schema component. 
      */
-    public static boolean isAtomicValueValidForAnUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo) {
+    public static boolean isAtomicValueValidForSTUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo) {
         
         boolean isValueValid = false;
         
@@ -98,16 +98,16 @@ public class XSTypeHelper {
         // to the 1st available type in union's member type collection, is sufficient to achieve the objective of this method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
-            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && 
-                    XSTypeHelper.isValueValidForASimpleType(content, simpleTypeDv)) {
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && XSTypeHelper.isValueValidForASimpleType(content, simpleTypeDv)) {
                 isValueValid = true;
+                validatedInfo.memberType = simpleTypeDv; 
                 break;  
             }
         }
         
         return isValueValid;
         
-    } // isAtomicValueValidForAnUnion
+    } // isAtomicValueValidForSTUnion
     
     
     /*
