@@ -249,7 +249,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fRedefinedGroupDecls = new XSGroupDecl[grammar.fRedefinedGroupDecls.length];
             fRGLocators = new SimpleLocator[grammar.fRGLocators.length];
             System.arraycopy(grammar.fRedefinedGroupDecls, 0, fRedefinedGroupDecls, 0, fRGCount);
-            System.arraycopy(grammar.fRGLocators, 0, fRGLocators, 0, fRGCount);
+            System.arraycopy(grammar.fRGLocators, 0, fRGLocators, 0, fRGCount/2);
         }
 
         // List of imported grammars
