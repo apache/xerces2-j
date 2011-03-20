@@ -38,7 +38,7 @@ public class XMLAssertAdapter implements XMLAssertHandler {
     // this hashtable contains any implementation specific properties
     private Hashtable properties = null;
 
-    public void startElement(QName element, XMLAttributes attributes, Augmentations augs) {
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs) throws Exception {
         // TODO Auto-generated method stub
 
     }

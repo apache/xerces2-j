@@ -1358,7 +1358,7 @@ public class XMLSchemaValidator
     
     // assertion validator subcomponent
     private XSDAssertionValidator fAssertionValidator = null;
-    
+
     // variable to track validity of simple content for union types. if a member type of union in XML Schema namespace, can
     // successfully validate (in a preprocess step in this class) an atomic value, we don't process assertions for such union types.
     private boolean fIsAssertProcessingNeededForSTUnion = true;
@@ -2432,7 +2432,12 @@ public class XMLSchemaValidator
         
         // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            fAssertionValidator.handleStartElement(element, attributes);
+            try {
+               fAssertionValidator.handleStartElement(element, attributes);
+            }
+            catch(Exception ex) {
+                throw new XNIException(ex.getMessage(), ex); 
+            }
         }
 
         return augs;
@@ -2572,8 +2577,20 @@ public class XMLSchemaValidator
         
         // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            fAssertionValidator.handleEndElement(element, fCurrentElemDecl, fCurrentType, fNotation, 
-                                                 fGrammarBucket, fIsAssertProcessingNeededForSTUnion);
+            // initialize augmentations to be passed to assertions processor
+            Augmentations assertAugs = new AugmentationsImpl();
+            ElementPSVImpl assertElemPSVI = new ElementPSVImpl();
+            assertElemPSVI.fDeclaration = fCurrentElemDecl;
+            assertElemPSVI.fTypeDecl = fCurrentType;
+            assertElemPSVI.fNotation = fNotation;
+            assertElemPSVI.fGrammars = fGrammarBucket.getGrammars();
+            assertAugs.putItem(Constants.ELEMENT_PSVI, assertElemPSVI);
+            assertAugs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));            
+            fAssertionValidator.handleEndElement(element, assertAugs);            
+            if (fAugPSVI && fIsAssertProcessingNeededForSTUnion) {
+                // update PSVI
+                fValidatedInfo.memberType = ((ElementPSVImpl) assertAugs.getItem(Constants.ELEMENT_PSVI)).fValue.memberType;                
+            } 
             fIsAssertProcessingNeededForSTUnion = true;
         }
 
@@ -3256,8 +3273,9 @@ public class XMLSchemaValidator
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
             
             // additional check for assertions processing, for simple type having variety 'union'            
-            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                extraCheckForSTUnionAsserts(attDV, attrValue, fValidatedInfo);
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) { 
+                extraCheckForSTUnionAsserts(attDV, attrValue, fValidatedInfo, attributes.getAugmentations(index));
+                fIsAssertProcessingNeededForSTUnion = true;
             }
             
             // store the normalized value
@@ -3408,7 +3426,8 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having variety 'union'                    
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        extraCheckForSTUnionAsserts(attDV, defaultValue.stringValue(), defaultValue);
+                        extraCheckForSTUnionAsserts(attDV, defaultValue.stringValue(), defaultValue, attributes.getAugmentations(i));
+                        fIsAssertProcessingNeededForSTUnion = true;
                     }
                 } 
                 catch (InvalidDatatypeValueException idve) {
@@ -3617,7 +3636,7 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having variety 'union'                    
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        extraCheckForSTUnionAsserts(dv, String.valueOf(textContent), fValidatedInfo);
+                        extraCheckForSTUnionAsserts(dv, String.valueOf(textContent), fValidatedInfo, null);
                     }
                 } catch (InvalidDatatypeValueException e) {
                     fIsAssertProcessingNeededForSTUnion = false;
@@ -3662,7 +3681,7 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having variety 'union'                    
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        extraCheckForSTUnionAsserts(dv, String.valueOf(textContent), fValidatedInfo);
+                        extraCheckForSTUnionAsserts(dv, String.valueOf(textContent), fValidatedInfo, null);
                     }
                 } catch (InvalidDatatypeValueException e) {
                     fIsAssertProcessingNeededForSTUnion = false;
@@ -4823,13 +4842,24 @@ public class XMLSchemaValidator
         }
     }
     
+    /**
+     * @return the fAssertionValidator
+     */
+    public XSDAssertionValidator getAssertionValidator() {
+        return fAssertionValidator;
+    }
+    
     /*
      * Preprocessing checks for assertion evaluations for simpleType's with variety union.
      */
-    private void extraCheckForSTUnionAsserts(XSSimpleType simpleTypeDv, String content, ValidatedInfo validatedInfo) {
+    private void extraCheckForSTUnionAsserts(XSSimpleType simpleTypeDv, String content, ValidatedInfo validatedInfo, Augmentations augs) {
         if (simpleTypeDv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) simpleTypeDv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
             if (XSTypeHelper.isAtomicValueValidForSTUnion(simpleTypeDv.getMemberTypes(), content, validatedInfo)) {
-                fIsAssertProcessingNeededForSTUnion = false; 
+                fIsAssertProcessingNeededForSTUnion = false;
+            }
+            if (augs != null) {
+                // set value for an attribute
+                augs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));                
             }
         }
     } // extraCheckForSTUnionAsserts

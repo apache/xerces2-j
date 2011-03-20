@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -56,20 +58,16 @@ public class XSTypeHelper {
         String type1Name = typeDefn1.getName();
         String type2Name = typeDefn2.getName();
         
-        if (("anyType".equals(type1Name) && 
-             "anyType".equals(type2Name)) ||
-            ("anySimpleType".equals(type1Name) && 
-             "anySimpleType".equals(type2Name))) {
+        if (("anyType".equals(type1Name) && "anyType".equals(type2Name)) ||
+            ("anySimpleType".equals(type1Name) && "anySimpleType".equals(type2Name))) {
                typesIdentical = true;  
         }
         
-        if (!typesIdentical) {                        
-            if (isURIEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {
-                // if targetNamespace of types are same, then check for  equality of type names and of the base type
-                if ((type1Name == null && type2Name == null) ||
+        if (!typesIdentical && isURIEqual(typeDefn1.getNamespace(), typeDefn2.getNamespace())) {                        
+            // if targetNamespace of types are same, then check for  equality of type names and of the base type
+            if ((type1Name == null && type2Name == null) ||
                     (type1Name != null && type1Name.equals(type2Name)) && (isSchemaTypesIdentical(typeDefn1.getBaseType(), typeDefn2.getBaseType()))) {
-                     typesIdentical = true;   
-                }
+                typesIdentical = true;   
             }
         }
         
@@ -190,5 +188,22 @@ public class XSTypeHelper {
         return simpleTypeAsserts;
         
     } // getAssertsFromSimpleType
+    
+    
+    /*
+     * Find if a list contains a specified schema type.
+     */
+    public static boolean isListContainsType(List typeList, XSTypeDefinition targetType) {
+        
+        boolean typeExists = false;
+        for (Iterator iter = typeList.iterator(); iter.hasNext();) {
+            if (XSTypeHelper.isSchemaTypesIdentical((XSTypeDefinition) iter.next(), targetType)) {
+                typeExists = true;
+                break;
+            }
+        }
+        return typeExists;
+        
+    } // isListContainsType
     
 } // class XSTypeHelper

@@ -48,7 +48,7 @@ public interface XMLAssertHandler {
      * @param augs
      *             Augmentations object                                    
      */
-    public void startElement(QName element, XMLAttributes attributes, Augmentations augs);
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs) throws Exception;
     
     /*
      * A callback method triggered during endElement method call in, XMLSchemaValidator

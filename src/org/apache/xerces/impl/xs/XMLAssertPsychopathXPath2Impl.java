@@ -31,6 +31,7 @@ import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.assertion.XMLAssertAdapter;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
@@ -40,6 +41,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
@@ -100,7 +102,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private Stack fAssertListStack = null;
 
     // XMLSchemaValidator reference. set from the XMLSchemaValidator object itself
-    private XMLSchemaValidator fValidator = null;
+    private XMLSchemaValidator fXmlSchemaValidator = null;
     
     // parameters to pass to PsychoPath engine (like, the XML namespace bindings)
     private Map fAssertParams = null;
@@ -125,7 +127,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      * Initialize the PsychoPath XPath processor.
      */
     private void initXPathProcessor() throws Exception {        
-        fValidator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
+        fXmlSchemaValidator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
         fAbstrPsychopathImpl = new AbstractPsychoPathXPath2Impl();
         fXpath2DynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchema, fAssertDocument, fAssertParams);        
     } // initXPathProcessor
@@ -137,45 +139,100 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      *      (org.apache.xerces.xni.QName, org.apache.xerces.xni.XMLAttributes, 
      *       org.apache.xerces.xni.Augmentations)
      */
-    public void startElement(QName element, XMLAttributes attributes, Augmentations augs) {
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs) throws Exception {
         
         if (fCurrentAssertDomNode == null) {
-           fCurrentAssertDomNode = new PSVIElementNSImpl((CoreDocumentImpl) fAssertDocument, element.uri, element.rawname);
-           fAssertDocument.appendChild(fCurrentAssertDomNode);
+            fCurrentAssertDomNode = new PSVIElementNSImpl((CoreDocumentImpl) fAssertDocument, element.uri, element.rawname);
+            fAssertDocument.appendChild(fCurrentAssertDomNode);
         } else {
             Element elem = new PSVIElementNSImpl((CoreDocumentImpl) fAssertDocument, element.uri, element.rawname);
             fCurrentAssertDomNode.appendChild(elem);
             fCurrentAssertDomNode = elem;
         }
-        
+
         // add attribute nodes to DOM element node
-        final int attributesLength = attributes.getLength();
-        for (int attIndex = 0; attIndex < attributesLength; attIndex++) {
+        for (int attIndex = 0; attIndex < attributes.getLength(); attIndex++) {
             String attrUri = attributes.getURI(attIndex);
             String attQName = attributes.getQName(attIndex);
             String attrLocalName = attributes.getLocalName(attIndex);
             String attValue = attributes.getValue(attIndex);             
-            
+
             PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)fAssertDocument, attrUri, attQName, attrLocalName);
             attrNode.setNodeValue(attValue);
-            
+
             // set PSVI information for the attribute
             Augmentations attrAugs = attributes.getAugmentations(attIndex);
             AttributePSVImpl attrPSVI = (AttributePSVImpl) attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
             attrNode.setPSVI(attrPSVI);
-            
+
             fCurrentAssertDomNode.setAttributeNode(attrNode);
         }
 
-        List assertionList = (List) augs.getItem("ASSERT");
-        
         // if we have assertions applicable to this element, store the element reference and the assertions on it on the runtime stacks
+        List assertionList = (List) augs.getItem("ASSERT");
         if (assertionList != null) {
             fAssertRootStack.push(fCurrentAssertDomNode);
             fAssertListStack.push(assertionList);
+            initXPathProcessor();
+        }
+
+        // evaluate assertions from attributes. evaluation of assertions on attributes in startElement call, helps us setting the PSVI results
+        // for attributes appropriately.
+        if (((Boolean)augs.getItem("ATTRIBUTES-HAVE-ASSERTS")).booleanValue()) {
+            evaluateAssertsFromAttributes(element, attributes);
         }
         
     } // startElement
+    
+    
+    /*
+     * Evaluate assertions from attributes.
+     */
+    private void evaluateAssertsFromAttributes(QName element, XMLAttributes attributes) throws Exception {
+        
+        for (int attrIdx = 0; attrIdx < attributes.getLength(); attrIdx++) {
+            QName attrQname = new QName();
+            attributes.getName(attrIdx, attrQname);            
+            String attrValue = attributes.getValue(attrIdx);
+            Augmentations attrAugs = attributes.getAugmentations(attrIdx);
+            AttributePSVImpl attrPsvi = (AttributePSVImpl)attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
+            XSSimpleTypeDefinition attrSimpleType = (XSSimpleTypeDefinition) attrPsvi.getTypeDefinition();
+            final boolean isTypeDerivedFromList = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+            final boolean isTypeDerivedFromUnion = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;            
+            List attrAssertList = fXmlSchemaValidator.getAssertionValidator().getAssertsFromSimpleType(attrSimpleType);
+            if (attrAssertList != null) {                
+                for (int assertIdx = 0; assertIdx < attrAssertList.size(); assertIdx++) {
+                    XSAssertImpl assertImpl = (XSAssertImpl)attrAssertList.get(assertIdx);
+                    assertImpl.setAttrName(attrQname.localpart);
+                    if (attrSimpleType.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
+                        // evaluating assertions for "simpleType -> restriction" (not derived by union)
+                        setTypedValueFor$value(attrValue, null, attrSimpleType, false);
+                        AssertionError assertError = evaluateOneAssertion(element, assertImpl, attrValue, false, false);
+                        if (assertError != null) {
+                            reportAssertionsError(assertError);    
+                        }                         
+                    }
+                    else if (attrSimpleType.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
+                        // evaluating assertions for "simpleType -> list"                    
+                        evaluateAssertionOnSTListValue(element, attrValue, assertImpl, false, attrSimpleType.getItemType(), isTypeDerivedFromList); 
+                    }
+                    else if (((Boolean)attrAugs.getItem("ASSERT_PROC_NEEDED_FOR_UNION")).booleanValue()) {
+                        // evaluating assertions for "simpleType -> union" 
+                        boolean isAttrValidWithAssertions = evaluateAssertionOnSTUnion(element, attrSimpleType, isTypeDerivedFromUnion, assertImpl, attrValue, attrAugs);
+                        if (!isAttrValidWithAssertions) {                            
+                            fXmlSchemaValidator.reportSchemaError("cvc-attribute.3", new Object[] {element.rawname, attrQname.localpart, attrValue, ((XSSimpleTypeDecl)attrSimpleType).getTypeName()});   
+                        }
+                    }
+                    // evaluate assertions on itemType of xs:list
+                    XSSimpleTypeDefinition attrItemType = attrSimpleType.getItemType();
+                    if (isTypeDerivedFromList && attrItemType != null) {
+                        evaluateAssertsFromItemTypeOfSTList(element, attrItemType, attrValue);
+                    }
+                }                
+            }
+        }
+        
+    } // evaluateAssertsFromAttributes
     
 
     /*
@@ -188,7 +245,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         if (fCurrentAssertDomNode != null) {            
             // set PSVI information on the element
             ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
-            ((PSVIElementNSImpl) fCurrentAssertDomNode).setPSVI(elemPSVI);
+            ((PSVIElementNSImpl) fCurrentAssertDomNode).setPSVI((ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI));
             
             // handling default values of elements (adding them as 'text' node in the assertion XDM tree)
             XSElementDecl elemDecl = (XSElementDecl) elemPSVI.getElementDeclaration();
@@ -200,17 +257,10 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             if (!fAssertRootStack.empty() && (fCurrentAssertDomNode == fAssertRootStack.peek())) {               
                  // get XSModel instance                
                  fSchema =  ((PSVIElementNSImpl) fCurrentAssertDomNode).getSchemaInformation();                 
-                 // pop the stack to go one level up
+                 // pop the assertion root stack to go one level up
                  fAssertRootStack.pop();
-                 // get assertions and go one level up on the stack
-                 List assertions = (List) fAssertListStack.pop(); 
-                 Boolean isAssertProcessingNeeded = (Boolean) augs.getItem("ASSERT_PROC_NEEDED_FOR_UNION");
-                 if (isAssertProcessingNeeded.booleanValue()) {
-                    // if in a pre-processing step in XMLSchemaValidator, a member type of union in XML Schema namespace successfully 
-                    // validated an atomic value, we don't process assertions on such union types. For all other use-cases (non union
-                    // simple types or complex types, applicable assertions would always be processed.
-                    processAllAssertionsOnElement(element, assertions, elemPSVI);
-                 }
+                 // get assertions from the stack, and pass on to the assertions evaluator
+                 processAllAssertionsOnElement(element, (List) fAssertListStack.pop(), augs);
             }
 
             if (fCurrentAssertDomNode.getParentNode() instanceof Element) {
@@ -225,23 +275,23 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      * Method to evaluate all of XML schema 1.1 assertions for an element tree. This is the root method which evaluates
      * all XML schema assertions in an XML instance validation episode.
      */
-    private void processAllAssertionsOnElement(QName element, List assertions, ElementPSVI elemPSVI) throws Exception {
-         
-         // initialize the XPath engine
-         initXPathProcessor();
-         
-         // determine "string value" of XPath2 context variable $value
-         String value = getStringValueOf$value(elemPSVI);
+    private void processAllAssertionsOnElement(QName element, List assertions, Augmentations augs) throws Exception {
+        
+        // initialize the XPath engine
+        initXPathProcessor();
 
-         // evaluate assertions
-         if (assertions instanceof XSObjectList) {
+        // determine "string value" of XPath2 context variable $value
+        String value = getStringValueOf$value((ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI));
+
+        // evaluate assertions
+        if (assertions instanceof XSObjectList) {
             // assertions from a "complex type" definition             
-            evaluateAssertionsFromAComplexType(element, assertions, value);            
-         }
-         else if (assertions instanceof Vector) {            
+            evaluateAssertionsFromAComplexType(element, assertions, value, augs);            
+        }
+        else if (assertions instanceof Vector) {            
             // assertions from a "simple type" definition
-            evaluateAssertionsFromASimpleType(element, assertions, value, elemPSVI);            
-         }
+            evaluateAssertionsFromASimpleType(element, assertions, value, augs);            
+        }
          
     } // processAllAssertionsOnElement
 
@@ -299,7 +349,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     /*
      * Evaluate assertions on a "complex type".
      */
-    private void evaluateAssertionsFromAComplexType(QName element, List assertions, String value) throws Exception {
+    private void evaluateAssertionsFromAComplexType(QName element, List assertions, String value, Augmentations augs) throws Exception {
         
         if (value != null) {
             // complex type with simple content
@@ -310,53 +360,57 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
-        final int assertListSize = assertList.size();
-        for (int assertIdx = 0; assertIdx < assertListSize; assertIdx++) {
+        for (int assertIdx = 0; assertIdx < assertList.size(); assertIdx++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(assertIdx);
             String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace();             
             if (xPathDefaultNamespace != null) {
                 fXpath2DynamicContext.add_namespace(null, xPathDefaultNamespace);  
             }
-            boolean xpathContextExists = false;
+            // NOTE: asserts from attributes are not evaluated here. they are evaluated in method startElement -> evaluateAssertsFromAttributes.  
             if (assertImpl.getType() == XSConstants.ASSERTION) {
-                // not an assertion facet
-                xpathContextExists = true;   
-            }            
-            if (assertImpl.getAttrName() != null) {
-                // evaluate assertion from an attribute
-                value = assertImpl.getAttrValue();
-                XSSimpleTypeDefinition attrSimpleType = (XSSimpleTypeDefinition) assertImpl.getTypeDefinition();
-                final boolean isTypeDerivedFromList = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
-                final boolean isTypeDerivedFromUnion = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
-                if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
+                // is an xs:assert component
+                AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, true, false);
+                if (assertError != null) {
+                    reportAssertionsError(assertError);    
+                }   
+            } 
+            else if (assertImpl.getAttrName() == null) {
+                // complex type with simple content
+                XSSimpleTypeDefinition simpleTypeDefn = null;
+                XSTypeDefinition xsTypeDefn = assertImpl.getTypeDefinition();                
+                if (xsTypeDefn instanceof XSComplexTypeDefinition) {
+                    simpleTypeDefn = ((XSComplexTypeDefinition) xsTypeDefn).getSimpleType();   
+                }
+                else {
+                    simpleTypeDefn = (XSSimpleTypeDefinition) xsTypeDefn;  
+                }
+                final boolean isTypeDerivedFromList = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+                final boolean isTypeDerivedFromUnion = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
+                if (simpleTypeDefn.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
                     // evaluating assertions for "simpleType -> restriction" (not derived by union)
-                    setTypedValueFor$value(value, null, attrSimpleType, false);
-                    AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, xpathContextExists, false);
+                    setTypedValueFor$value(value, null, simpleTypeDefn, false);
+                    AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
                     if (assertError != null) {
                         reportAssertionsError(assertError);    
                     }
                 }
-                else if (assertImpl.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
+                else if (simpleTypeDefn.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
                     // evaluating assertions for "simpleType -> list"                    
-                    evaluateAssertionOnSTListValue(element, value, assertImpl, xpathContextExists, attrSimpleType, isTypeDerivedFromList);
+                    evaluateAssertionOnSTListValue(element, value, assertImpl, false, simpleTypeDefn, isTypeDerivedFromList);
                 }
-                else {
-                    // evaluating assertions for "simpleType -> union"                    
-                    evaluateAssertionOnSTUnion(element, attrSimpleType.getMemberTypes(), isTypeDerivedFromUnion, assertImpl, value);
+                else if (((Boolean) augs.getItem("ASSERT_PROC_NEEDED_FOR_UNION")).booleanValue()) {
+                    // evaluating assertions for "simpleType -> union" 
+                    boolean isElemValidWithAssertions = evaluateAssertionOnSTUnion(element, simpleTypeDefn, isTypeDerivedFromUnion, assertImpl, value, augs);
+                    if (!isElemValidWithAssertions) {
+                        fXmlSchemaValidator.reportSchemaError("cvc-type.3.1.3", new Object[] {element.rawname, value}); 
+                    }
                 }                
                 // evaluate assertions on itemType of xs:list
-                XSSimpleTypeDefinition attrItemType = attrSimpleType.getItemType();
+                XSSimpleTypeDefinition attrItemType = simpleTypeDefn.getItemType();
                 if (isTypeDerivedFromList && attrItemType != null) {
                     evaluateAssertsFromItemTypeOfSTList(element, attrItemType, value);
                 }
-            }
-            else {
-                // evaluate an assertion from other parts of complexType's content model (i.e not from attributes)
-                AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, xpathContextExists, false);
-                if (assertError != null) {
-                    reportAssertionsError(assertError);    
-                }  
-            }
+            }            
         }
        
         
@@ -364,15 +418,19 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
 
     
     /*
-     * Evaluate assertions on a "simple type".
+     * Evaluate assertions on a "simple type" on elements.
      */
-    private void evaluateAssertionsFromASimpleType(QName element, List assertions, String value, ElementPSVI elemPSVI) throws Exception {
+    private Augmentations evaluateAssertionsFromASimpleType(QName element, List assertions, String value, Augmentations augs) throws Exception {
+        
+        // initially PSVI object to be returned
+        ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
         
         // find the itemType and memberTypes of xs:list and xs:union respectively (only one of these will be applicable)        
         XSSimpleTypeDefinition itemType = null;               
-        XSObjectList memberTypes = null;        
+        XSObjectList memberTypes = null;
+        XSSimpleTypeDefinition simpleTypeDefn = null;
         if (elemPSVI.getTypeDefinition().getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-            XSSimpleTypeDefinition simpleTypeDefn = (XSSimpleTypeDefinition) elemPSVI.getTypeDefinition();
+            simpleTypeDefn = (XSSimpleTypeDefinition) elemPSVI.getTypeDefinition();
             itemType = simpleTypeDefn.getItemType();
             if (itemType == null) {
                 memberTypes = simpleTypeDefn.getMemberTypes();    
@@ -383,7 +441,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         final boolean isTypeDerivedFromUnion = ((XSSimpleType) elemPSVI.getTypeDefinition().getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
         // process assertions from a simple type definition           
         Vector assertList = (Vector) assertions;
-        final int assertListLength = assertList.size();        
+        final int assertListLength = assertList.size();
         for (int assertIdx = 0; assertIdx < assertListLength; assertIdx++) {
             XSAssertImpl assertImpl = (XSAssertImpl) assertList.get(assertIdx);
             String xPathDefaultNamespace = assertImpl.getXPathDefaultNamespace(); 
@@ -402,9 +460,12 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                // evaluating assertions for "simpleType -> list"               
                evaluateAssertionOnSTListValue(element, value, assertImpl, false, itemType, isTypeDerivedFromList);
             }            
-            else {
+            else if (((Boolean) augs.getItem("ASSERT_PROC_NEEDED_FOR_UNION")).booleanValue()) {
                // evaluating assertions for "simpleType -> union"               
-               evaluateAssertionOnSTUnion(element, memberTypes, isTypeDerivedFromUnion, assertImpl, value);
+               boolean isElemValidWithAssertions = evaluateAssertionOnSTUnion(element, simpleTypeDefn, isTypeDerivedFromUnion, assertImpl, value, augs);
+               if (!isElemValidWithAssertions) {
+                   fXmlSchemaValidator.reportSchemaError("cvc-type.3.1.3", new Object[] {element.rawname, value}); 
+               }
             }
         }
         
@@ -413,6 +474,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             evaluateAssertsFromItemTypeOfSTList(element, itemType, value); 
         }
         
+        return augs;
+        
     } // evaluateAssertionsFromASimpleType
     
     
@@ -420,7 +483,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      * Evaluate assertions from itemType (having variety 'atomic') of xs:list. This method is used to evaluate assertions from elements
      * with simple content, and simpleType definitions from attributes.
      */
-    private void evaluateAssertsFromItemTypeOfSTList(QName element, XSSimpleTypeDefinition listItemType, String value) throws Exception{
+    private void evaluateAssertsFromItemTypeOfSTList(QName element, XSSimpleTypeDefinition listItemType, String value) throws Exception {
         
         Vector itemTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(listItemType);
         if (listItemType.getVariety() ==  XSSimpleTypeDefinition.VARIETY_ATOMIC && itemTypeAsserts.size() > 0) {
@@ -478,21 +541,35 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     /*
      * Evaluate assertion on a simpleType with variety xs:union.
      */
-    private void evaluateAssertionOnSTUnion(QName element, XSObjectList memberTypes, boolean isTypeDerivedFromUnion, XSAssertImpl assertImpl, String value) {
+    private boolean evaluateAssertionOnSTUnion(QName element, XSSimpleTypeDefinition simpleTypeDefn, boolean isTypeDerivedFromUnion, XSAssertImpl assertImpl, String value, Augmentations augs) {
         
+        boolean isValueValid = true;
+        
+        XSObjectList memberTypes = simpleTypeDefn.getMemberTypes();
         if (memberTypes != null && memberTypes.getLength() > 0 && !isTypeDerivedFromUnion) {            
-            boolean isValidationFailedForUnion = isValidationFailedForSTUnion(memberTypes, element, value, false);
-            if (isValidationFailedForUnion) {                        
-                 fValidator.reportSchemaError("cvc-assertion.union.3.13.4.1", new Object[] {element.rawname, value});   
+            if (isValidationFailedForSTUnion(memberTypes, element, value, false, augs)) { 
+                isValueValid = false;
+                if (assertImpl.getAttrName() == null) {
+                    // assertion evaluation was for an element
+                    fXmlSchemaValidator.reportSchemaError("cvc-assertion.union-elem.3.13.4.1", new Object[] {value, element.rawname, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
+                }
+                else {
+                    // assertion evaluation was for an attribute
+                    fXmlSchemaValidator.reportSchemaError("cvc-assertion.union-attr.3.13.4.1", new Object[] {value, assertImpl.getAttrName(), element.rawname, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
+                }
+                fXmlSchemaValidator.reportSchemaError("cvc-datatype-valid.1.2.3", new Object[] {value, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
             } 
          }
          else if (isTypeDerivedFromUnion) {
              setValueOf$valueForSTVarietyUnion(value, memberTypes);
              AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
              if (assertError != null) {
+                 isValueValid = false;
                  reportAssertionsError(assertError);    
              }
          }
+        
+        return isValueValid;
         
     } // evaluateAssertionOnSTUnion
     
@@ -500,7 +577,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     /*
      * Determine if an validation episode must fail due to assertions evaluation for "simpleType -> union" member types.
      */
-    private boolean isValidationFailedForSTUnion(XSObjectList memberTypes, QName element, String value, boolean isAttribute) {
+    private boolean isValidationFailedForSTUnion(XSObjectList memberTypes, QName element, String value, boolean isAttribute, Augmentations augs) {
         
         boolean isValidationFailedForUnion = true;
         final int memberTypesLength = memberTypes.getLength();
@@ -536,6 +613,15 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                         if (assertsSucceeded == assertFacets.size()) {
                             // all assertions on a 'union' member type have evaluated to 'true', therefore validation with
                             // union has succeeded wrt assertions.
+                            // update memberType PSVI property
+                            ItemPSVI elemPSVI = (ItemPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                            ItemPSVI attrPSVI = (ItemPSVI)augs.getItem(Constants.ATTRIBUTE_PSVI);
+                            if (elemPSVI != null) {
+                               ((ElementPSVImpl) elemPSVI).fValue.memberType = (XSSimpleType) memType;
+                            }
+                            else {
+                                ((AttributePSVImpl) attrPSVI).fValue.memberType = (XSSimpleType) memType;
+                            }
                             return false;  
                         }
                     }
@@ -897,10 +983,10 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            else {
                message = "Assertion failed for schema type '" + typeNameStrAnnotation + "'. " + message; 
            }           
-           fValidator.reportSchemaError("cvc-assertion.failure", new Object[] {message, listAssertErrMessage});    
+           fXmlSchemaValidator.reportSchemaError("cvc-assertion.failure", new Object[] {message, listAssertErrMessage});    
         }
         else {
-           fValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStrAnnotation, listAssertErrMessage});
+           fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStrAnnotation, listAssertErrMessage});
         }
         
     } // reportAssertionsError
