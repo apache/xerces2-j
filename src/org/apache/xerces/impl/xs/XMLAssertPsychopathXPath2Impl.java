@@ -551,11 +551,11 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 isValueValid = false;
                 if (assertImpl.getAttrName() == null) {
                     // assertion evaluation was for an element
-                    fXmlSchemaValidator.reportSchemaError("cvc-assertion.union-elem.3.13.4.1", new Object[] {value, element.rawname, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
+                    fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid-union-elem", new Object[] {value, element.rawname, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
                 }
                 else {
                     // assertion evaluation was for an attribute
-                    fXmlSchemaValidator.reportSchemaError("cvc-assertion.union-attr.3.13.4.1", new Object[] {value, assertImpl.getAttrName(), element.rawname, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
+                    fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid-union-attr", new Object[] {value, assertImpl.getAttrName(), element.rawname, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
                 }
                 fXmlSchemaValidator.reportSchemaError("cvc-datatype-valid.1.2.3", new Object[] {value, ((XSSimpleTypeDecl)simpleTypeDefn).getTypeName()});
             } 
@@ -697,7 +697,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         catch (DynamicError ex) {
             if (ex.code().equals("XPDY0002")) {
                // ref: http://www.w3.org/TR/xpath20/#eval_context
-               assertionError = new AssertionError("cvc-assertion.4.3.15.3", element, assertImpl, value, isList);
+               assertionError = new AssertionError("cvc-assertions-valid-context", element, assertImpl, value, isList);
             }
             else {
                assertionError = new AssertionError("cvc-assertion.3.13.4.1", element, assertImpl, value, isList);
@@ -977,13 +977,13 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            if (!message.endsWith(".")) {
                message = message + ".";    
            }
-           if (key.equals("cvc-assertion.4.3.15.3")) {
+           if (key.equals("cvc-assertions-valid-context")) {
                message = "Assertion failed (undefined context) for schema type '" + typeNameStrAnnotation + "'. " + message;   
            }
            else {
                message = "Assertion failed for schema type '" + typeNameStrAnnotation + "'. " + message; 
            }           
-           fXmlSchemaValidator.reportSchemaError("cvc-assertion.failure", new Object[] {message, listAssertErrMessage});    
+           fXmlSchemaValidator.reportSchemaError("cvc-assertion.3.13.4.1-failure-mesg", new Object[] {message, listAssertErrMessage});    
         }
         else {
            fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStrAnnotation, listAssertErrMessage});
