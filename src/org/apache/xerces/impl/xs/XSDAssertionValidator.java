@@ -38,6 +38,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -183,20 +184,21 @@ public class XSDAssertionValidator {
 
         // add assertion facets from "complexType -> simpleContent -> restriction"
         XSSimpleTypeDefinition simpleContentType = complexTypeDef.getSimpleType();
-        if (simpleContentType != null) {            
+        if (simpleContentType != null && complexTypeDef.getDerivationMethod() == XSConstants.DERIVATION_RESTRICTION) {
             Vector simpleContentAsserts = XSTypeHelper.getAssertsFromSimpleType(simpleContentType);
             for (int assertIdx = 0; assertIdx < simpleContentAsserts.size(); assertIdx++) {
                 XSAssert simpleContentAssert = (XSAssert) simpleContentAsserts.get(assertIdx);
                 complexTypeAsserts.addXSObject(simpleContentAssert);
-            }
+            } 
         }
+        
 
         // find assertions from attributes of a complex type, and add them to the parent assertions list
         XSObjectListImpl attrAsserts = getAssertsFromAttributes(attributes);
         final int attrAssertCount = attrAsserts.getLength(); 
         for (int attrAssertIdx = 0; attrAssertIdx < attrAssertCount; attrAssertIdx++) {
             complexTypeAsserts.addXSObject(attrAsserts.item(attrAssertIdx)); 
-        }        
+        }
         if (attrAssertCount > 0) {
            fAttributesHaveAsserts = true;  
         }
