@@ -31,6 +31,8 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -205,5 +207,17 @@ public class XSTypeHelper {
         return typeExists;
         
     } // isListContainsType
+    
+    
+    /*
+     * Find if a complexType is derived by extension from a simpleType->list component.
+     */
+    public static boolean isComplexTypeDerivedFromSTListByExt(XSComplexTypeDefinition complexTypeDef) {
+        
+        return complexTypeDef.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION &&
+               complexTypeDef.getBaseType() instanceof XSSimpleTypeDefinition &&
+               ((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST;
+        
+    } // isComplexTypeDerivedFromSTListByExt
     
 } // class XSTypeHelper

@@ -384,6 +384,12 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 else {
                     simpleTypeDefn = (XSSimpleTypeDefinition) xsTypeDefn;  
                 }
+                ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+                XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition)elemPSVI.getTypeDefinition();
+                if (XSTypeHelper.isComplexTypeDerivedFromSTListByExt(complexTypeDef)) {
+                    // reassign value to simple type instance
+                    simpleTypeDefn = (XSSimpleTypeDefinition)complexTypeDef.getBaseType(); 
+                }
                 final boolean isTypeDerivedFromList = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
                 final boolean isTypeDerivedFromUnion = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
                 if (simpleTypeDefn.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
@@ -396,7 +402,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 }
                 else if (simpleTypeDefn.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
                     // evaluating assertions for "simpleType -> list"                    
-                    evaluateAssertionOnSTListValue(element, value, assertImpl, false, simpleTypeDefn, isTypeDerivedFromList);
+                    evaluateAssertionOnSTListValue(element, value, assertImpl, false, simpleTypeDefn.getItemType(), isTypeDerivedFromList);
                 }
                 else if (((Boolean) augs.getItem("ASSERT_PROC_NEEDED_FOR_UNION")).booleanValue()) {
                     // evaluating assertions for "simpleType -> union" 
@@ -406,9 +412,9 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                     }
                 }                
                 // evaluate assertions on itemType of xs:list
-                XSSimpleTypeDefinition attrItemType = simpleTypeDefn.getItemType();
-                if (isTypeDerivedFromList && attrItemType != null) {
-                    evaluateAssertsFromItemTypeOfSTList(element, attrItemType, value);
+                XSSimpleTypeDefinition listItemType = simpleTypeDefn.getItemType();
+                if (isTypeDerivedFromList && listItemType != null) {
+                    evaluateAssertsFromItemTypeOfSTList(element, listItemType, value);
                 }
             }            
         }
@@ -944,12 +950,12 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         String value = assertError.getValue();
         
         XSTypeDefinition typeDef = assertImpl.getTypeDefinition();        
-        String typeNameStrAnnotation = "";        
-        if (typeDef != null) {
-            typeNameStrAnnotation = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
+        String typeNameStr = "";
+        if (typeDef instanceof XSSimpleTypeDefinition) {
+            typeNameStr = ((XSSimpleTypeDecl)typeDef).getTypeName();
         }
         else {
-            typeNameStrAnnotation = "#anonymous"; 
+            typeNameStr = ((XSComplexTypeDecl)typeDef).getTypeName();
         }
         
         String elemErrorAnnotation = element.rawname;
@@ -978,15 +984,15 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                message = message + ".";    
            }
            if (key.equals("cvc-assertions-valid-context")) {
-               message = "Assertion failed (undefined context) for schema type '" + typeNameStrAnnotation + "'. " + message;   
+               message = "Assertion failed (undefined context) for schema type '" + typeNameStr + "'. " + message;   
            }
            else {
-               message = "Assertion failed for schema type '" + typeNameStrAnnotation + "'. " + message; 
+               message = "Assertion failed for schema type '" + typeNameStr + "'. " + message; 
            }           
            fXmlSchemaValidator.reportSchemaError("cvc-assertion.3.13.4.1-failure-mesg", new Object[] {message, listAssertErrMessage});    
         }
         else {
-           fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStrAnnotation, listAssertErrMessage});
+           fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});
         }
         
     } // reportAssertionsError

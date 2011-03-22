@@ -182,14 +182,24 @@ public class XSDAssertionValidator {
             }
         }
 
-        // add assertion facets from "complexType -> simpleContent -> restriction"
+        // add assertion facets from complexType -> simpleContent. few assertions are already available in complexType model object,
+        // and few others are retrieved here.
         XSSimpleTypeDefinition simpleContentType = complexTypeDef.getSimpleType();
-        if (simpleContentType != null && complexTypeDef.getDerivationMethod() == XSConstants.DERIVATION_RESTRICTION) {
-            Vector simpleContentAsserts = XSTypeHelper.getAssertsFromSimpleType(simpleContentType);
-            for (int assertIdx = 0; assertIdx < simpleContentAsserts.size(); assertIdx++) {
-                XSAssert simpleContentAssert = (XSAssert) simpleContentAsserts.get(assertIdx);
-                complexTypeAsserts.addXSObject(simpleContentAssert);
-            } 
+        if (simpleContentType != null) {                    
+            if (complexTypeDef.getDerivationMethod() == XSConstants.DERIVATION_RESTRICTION) {
+                // add assertions for complexType -> simpleContent -> restriction cases 
+                Vector simpleContentAsserts = XSTypeHelper.getAssertsFromSimpleType(simpleContentType);
+                for (int assertIdx = 0; assertIdx < simpleContentAsserts.size(); assertIdx++) {
+                    complexTypeAsserts.addXSObject((XSAssert) simpleContentAsserts.get(assertIdx));
+                }
+            }
+            else if (XSTypeHelper.isComplexTypeDerivedFromSTListByExt(complexTypeDef)) {
+                // add assertions from the list->itemType of base schema simple type
+                Vector baseItemTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getItemType());
+                for (int assertIdx = 0; assertIdx < baseItemTypeAsserts.size(); assertIdx++) {
+                    complexTypeAsserts.addXSObject((XSAssert) baseItemTypeAsserts.get(assertIdx)); 
+                }
+            }
         }
         
 
