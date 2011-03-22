@@ -948,15 +948,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         XSAssertImpl assertImpl = assertError.getAssertion();
         boolean isList = assertError.isList();
         String value = assertError.getValue();
-        
-        XSTypeDefinition typeDef = assertImpl.getTypeDefinition();        
-        String typeNameStr = "";
-        if (typeDef instanceof XSSimpleTypeDefinition) {
-            typeNameStr = ((XSSimpleTypeDecl)typeDef).getTypeName();
-        }
-        else {
-            typeNameStr = ((XSComplexTypeDecl)typeDef).getTypeName();
-        }
+               
+        String typeNameStr = XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition());
         
         String elemErrorAnnotation = element.rawname;
         if (assertImpl.getAttrName() != null) {

@@ -26,8 +26,10 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
@@ -219,5 +221,24 @@ public class XSTypeHelper {
                ((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST;
         
     } // isComplexTypeDerivedFromSTListByExt
+    
+    
+    /*
+     * Get string value of type name of an XML Schema type definition. This method is useful if XML Schema validator specific names,
+     * of anonymous types are also needed.
+     */
+    public static String getSchemaTypeName(XSTypeDefinition typeDefn) {
+        
+        String typeNameStr = "";
+        if (typeDefn instanceof XSSimpleTypeDefinition) {
+            typeNameStr = ((XSSimpleTypeDecl) typeDefn).getTypeName();
+        }
+        else {
+            typeNameStr = ((XSComplexTypeDecl) typeDefn).getTypeName();
+        }
+        
+        return typeNameStr;
+        
+    } // getSchemaTypeName
     
 } // class XSTypeHelper
