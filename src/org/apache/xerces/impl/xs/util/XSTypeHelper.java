@@ -38,6 +38,9 @@ import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.eclipse.wst.xml.xpath2.processor.ResultSequence;
+import org.eclipse.wst.xml.xpath2.processor.ResultSequenceFactory;
+import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
 
 /**
  * Class defining utility/helper methods related to XML schema types.
@@ -259,5 +262,21 @@ public class XSTypeHelper {
         return typeNameStr;
         
     } // getSchemaTypeName
+    
+    
+    /*
+     * Construct an PsychoPath XPath2 "result sequence" given a list of XDM items as input.
+     */
+    public static ResultSequence getXPath2ResultSequence(List xdmItems) {
+        
+        ResultSequence xpath2Seq = ResultSequenceFactory.create_new();
+        
+        for (Iterator iter = xdmItems.iterator(); iter.hasNext(); ) {
+            xpath2Seq.add((AnyType) iter.next()); 
+        }
+        
+        return xpath2Seq;
+        
+    } // getXPath2ResultSequence
     
 } // class XSTypeHelper

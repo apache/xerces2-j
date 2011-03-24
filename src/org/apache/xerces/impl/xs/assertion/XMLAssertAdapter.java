@@ -33,7 +33,7 @@ import org.apache.xerces.xni.XMLString;
  * @author: Mukul Gandhi, IBM
  * @version $Id$
  */
-public class XMLAssertAdapter implements XMLAssertHandler {
+public class XMLAssertAdapter extends XSAssertionXPath2ValueImpl implements XMLAssertHandler {
     
     // this hashtable contains any implementation specific properties
     private Hashtable properties = null;

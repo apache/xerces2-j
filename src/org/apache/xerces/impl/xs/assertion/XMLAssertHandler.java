@@ -23,11 +23,10 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 
 /**
- * The implementation of this interface will invoke an external XPath engine, that
- * would evaluate the XPath 2.0 expressions, for XML Schema 1.1 assertions.
- * This interface communicates with the XMLSchemaValidator, and accepts information
- * required by the external XPath engine. If assertions evaluation returns 'true',
- * validation would proceed further.
+ * The implementation of this interface will invoke an external XPath engine, that would evaluate the XPath 2.0 expressions
+ * for XML Schema 1.1 assertions. This interface communicates with the XMLSchemaValidator and accepts context information required 
+ * by the external XPath engine. If assertions evaluation would return 'true', validation would proceed further checking the
+ * remaining validation constraints.
  * 
  * @xerces.internal
  * 
@@ -36,7 +35,7 @@ import org.apache.xerces.xni.XMLString;
  * 
  * @version $Id$
  */
-public interface XMLAssertHandler {  
+public interface XMLAssertHandler extends XSAssertionXPath2Value {  
 
     /*
      * A callback method triggered during startElement method call in, XMLSchemaValidator
@@ -77,8 +76,7 @@ public interface XMLAssertHandler {
      * @exception IllegalArgumentException thrown if the underlying
      * implementation doesn't recognize the property.
      */
-    public void setProperty(String name, Object value)
-                throws IllegalArgumentException;
+    public void setProperty(String name, Object value) throws IllegalArgumentException;
     
     
     /**
@@ -89,7 +87,6 @@ public interface XMLAssertHandler {
      * @exception IllegalArgumentException thrown if the underlying
      * implementation doesn't recognize the property.
      */
-    public abstract Object getProperty(String name)
-                throws IllegalArgumentException;
+    public abstract Object getProperty(String name) throws IllegalArgumentException;
 
 }
