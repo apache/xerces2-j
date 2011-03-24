@@ -174,7 +174,7 @@ public class XSDAssertionValidator {
         
         XSObjectListImpl complexTypeAsserts = new XSObjectListImpl();
 
-        XSObjectList primaryAssertions = complexTypeDef.getAssertions();
+        XSObjectList primaryAssertions = complexTypeDef.getAssertions(); // assertions stored in the traverser layer
 
         if (primaryAssertions.getLength() > 0) {
             for (int assertIdx = 0; assertIdx < primaryAssertions.getLength(); assertIdx++) {
@@ -193,7 +193,7 @@ public class XSDAssertionValidator {
                     complexTypeAsserts.addXSObject((XSAssert) simpleContentAsserts.get(assertIdx));
                 }
             }
-            else if (XSTypeHelper.isComplexTypeDerivedFromSTListByExt(complexTypeDef)) {
+            else if (XSTypeHelper.isComplexTypeDerivedFromSTList(complexTypeDef, XSConstants.DERIVATION_EXTENSION)) {
                 // add assertions from the list->itemType of base schema simple type
                 Vector baseItemTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getItemType());
                 for (int assertIdx = 0; assertIdx < baseItemTypeAsserts.size(); assertIdx++) {
@@ -202,10 +202,9 @@ public class XSDAssertionValidator {
             }
         }
         
-
         // find assertions from attributes of a complex type, and add them to the parent assertions list
         XSObjectListImpl attrAsserts = getAssertsFromAttributes(attributes);
-        final int attrAssertCount = attrAsserts.getLength(); 
+        int attrAssertCount = attrAsserts.getLength(); 
         for (int attrAssertIdx = 0; attrAssertIdx < attrAssertCount; attrAssertIdx++) {
             complexTypeAsserts.addXSObject(attrAsserts.item(attrAssertIdx)); 
         }

@@ -34,7 +34,6 @@ import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
-import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -50,8 +49,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  */
 public class XSTypeHelper {
     
-    private static final String EMPTY_STRING = "".intern();
-    
+    private static final String EMPTY_STRING = "".intern();    
     
     /*
      * Checks if the two schema type components are identical.
@@ -195,6 +193,28 @@ public class XSTypeHelper {
     
     
     /*
+     * Check if a simple type has assertion facets.
+     */
+    public static boolean simpleTypeHasAsserts(XSSimpleTypeDefinition simpleType) {
+        
+        boolean simpleTypehasAsserts = false;
+        
+        XSObjectList simpleTypeFacets = simpleType.getMultiValueFacets();
+        final int simpleTypeFacetsLength = simpleTypeFacets.getLength();
+        for (int facetIdx = 0; facetIdx < simpleTypeFacetsLength; facetIdx++) {
+            XSMultiValueFacet facet = (XSMultiValueFacet) simpleTypeFacets.item(facetIdx);
+            if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT && facet.getAsserts().size() > 0) {
+                simpleTypehasAsserts = true;
+                break;
+            }
+        }
+        
+        return simpleTypehasAsserts;
+
+    } // simpleTypeHasAsserts
+    
+    
+    /*
      * Find if a list contains a specified schema type.
      */
     public static boolean isListContainsType(List typeList, XSTypeDefinition targetType) {
@@ -212,15 +232,14 @@ public class XSTypeHelper {
     
     
     /*
-     * Find if a complexType is derived by extension from a simpleType->list component.
+     * Find if a complexType is derived from a simpleType->list component.
      */
-    public static boolean isComplexTypeDerivedFromSTListByExt(XSComplexTypeDefinition complexTypeDef) {
+    public static boolean isComplexTypeDerivedFromSTList(XSComplexTypeDefinition complexTypeDef, short derivationMethod) {
         
-        return complexTypeDef.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION &&
-               complexTypeDef.getBaseType() instanceof XSSimpleTypeDefinition &&
+        return complexTypeDef.getDerivationMethod() == derivationMethod && complexTypeDef.getBaseType() instanceof XSSimpleTypeDefinition &&
                ((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST;
         
-    } // isComplexTypeDerivedFromSTListByExt
+    } // isComplexTypeDerivedFromSTList
     
     
     /*
