@@ -303,10 +303,10 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         if (simpleTypeDefn.getVariety() == XSSimpleTypeDefinition.VARIETY_ATOMIC) {
             // evaluating assertions for "simpleType -> restriction" (not derived by union)
             if (isAttribute) {
-                setXDMTypedValueFor$value(fCurrentAssertDomNode, value, null, simpleTypeDefn, false, fXpath2DynamicContext);
+                setXDMTypedValueOf$value(fCurrentAssertDomNode, value, null, simpleTypeDefn, false, fXpath2DynamicContext);
             }
             else {
-                setXDMTypedValueFor$value(fCurrentAssertDomNode, value, null, null, false, fXpath2DynamicContext);
+                setXDMTypedValueOf$value(fCurrentAssertDomNode, value, null, null, false, fXpath2DynamicContext);
             }
             AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
             if (assertError != null) {
@@ -345,7 +345,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 StringTokenizer listStrTokens = new StringTokenizer(value, " \n\t\r");
                 while (listStrTokens.hasMoreTokens()) {
                     String listItemStrValue = listStrTokens.nextToken();
-                    setValueOf$valueForSTVarietyList(fCurrentAssertDomNode, listItemStrValue, listItemType, false, fXpath2DynamicContext);                        
+                    setXDMTypedValueOf$valueForSTVarietyList(fCurrentAssertDomNode, listItemStrValue, listItemType, false, fXpath2DynamicContext);                        
                     AssertionError assertError = evaluateOneAssertion(element, itemTypeAssert, listItemStrValue, false, true);                        
                     if (assertError != null) {
                         assertError.setIsTypeDerivedFromList(false);
@@ -367,7 +367,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         AssertionError assertError = null;
         
         if (isTypeDerivedFromList) {
-            setValueOf$valueForSTVarietyList(fCurrentAssertDomNode, listStrValue, itemType, isTypeDerivedFromList, fXpath2DynamicContext);
+            setXDMTypedValueOf$valueForSTVarietyList(fCurrentAssertDomNode, listStrValue, itemType, isTypeDerivedFromList, fXpath2DynamicContext);
             assertError = evaluateOneAssertion(element, assertImpl, listStrValue, xpathContextExists, true);
             if (assertError != null) {
                 assertError.setIsTypeDerivedFromList(isTypeDerivedFromList);
@@ -380,7 +380,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             StringTokenizer listStrTokens = new StringTokenizer(listStrValue, " \n\t\r");
             while (listStrTokens.hasMoreTokens()) {
                 String listItemStrValue = listStrTokens.nextToken();
-                setValueOf$valueForSTVarietyList(fCurrentAssertDomNode, listItemStrValue, itemType, isTypeDerivedFromList, fXpath2DynamicContext);                        
+                setXDMTypedValueOf$valueForSTVarietyList(fCurrentAssertDomNode, listItemStrValue, itemType, isTypeDerivedFromList, fXpath2DynamicContext);                        
                 assertError = evaluateOneAssertion(element, assertImpl, listItemStrValue, xpathContextExists, true);
                 if (assertError != null) {
                     reportAssertionsError(assertError);    
@@ -414,7 +414,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             } 
          }
          else if (isTypeDerivedFromUnion) {
-             setValueOf$valueForSTVarietyUnion(value, memberTypes, fXpath2DynamicContext);
+             setXDMTypedValueOf$valueForSTVarietyUnion(value, memberTypes, fXpath2DynamicContext);
              AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
              if (assertError != null) {
                  isValueValid = false;
@@ -434,7 +434,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
         if (value != null) {
             // complex type with simple content
-            setXDMTypedValueFor$value(fCurrentAssertDomNode, value, null, null, false, fXpath2DynamicContext);
+            setXDMTypedValueOf$value(fCurrentAssertDomNode, value, null, null, false, fXpath2DynamicContext);
         } else {
             // complex type with complex content. set xpath context variable $value to an empty sequence.
             fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XSTypeHelper.getXPath2ResultSequence(new ArrayList()));
@@ -554,7 +554,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                         for (Iterator iter = assertFacets.iterator(); iter.hasNext(); ) {
                             XSAssertImpl assertImpl = (XSAssertImpl) iter.next();
                             try {
-                               setXDMTypedValueFor$value(fCurrentAssertDomNode, value, memType, null, false, fXpath2DynamicContext);
+                               setXDMTypedValueOf$value(fCurrentAssertDomNode, value, memType, null, false, fXpath2DynamicContext);
                                AssertionError assertError = evaluateOneAssertion(element, assertImpl, value, false, false);
                                if (assertError == null) {
                                    assertsSucceeded++;  

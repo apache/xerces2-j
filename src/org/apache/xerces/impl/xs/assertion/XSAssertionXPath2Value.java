@@ -43,21 +43,21 @@ public interface XSAssertionXPath2Value {
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context. This method may
      * delegate to other methods of this interface for doing its responsibilities.
      */
-    public void setXDMTypedValueFor$value(Element currentAssertDomRootElem, String value, XSSimpleTypeDefinition listOrUnionType, XSTypeDefinition attrType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
+    public void setXDMTypedValueOf$value(Element currentAssertDomRootElem, String value, XSSimpleTypeDefinition listOrUnionType, XSTypeDefinition attrType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
     
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety atomic. 
      */
-    public void setValueOf$valueForSTVarietyAtomic(String value, short xsdTypecode, DynamicContext xpath2DynamicContext);
+    public void setXDMTypedValueOf$valueForSTVarietyAtomic(String value, short xsdTypecode, DynamicContext xpath2DynamicContext);
     
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety list. 
      */
-    public void setValueOf$valueForSTVarietyList(Element currentAssertDomRootElem, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
+    public void setXDMTypedValueOf$valueForSTVarietyList(Element currentAssertDomRootElem, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
     
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety union. 
      */
-    public void setValueOf$valueForSTVarietyUnion(String value, XSObjectList memberTypes, DynamicContext xpath2DynamicContext);
+    public void setXDMTypedValueOf$valueForSTVarietyUnion(String value, XSObjectList memberTypes, DynamicContext xpath2DynamicContext);
 
 }
