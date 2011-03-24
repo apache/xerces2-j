@@ -75,9 +75,15 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
 
     // class fields declarations
     
+    // XSModel instance representing the schema information needed by PsychoPath XPath 2.0 engine 
+    private XSModel fSchemaXSmodel = null;
+    
+    // XPath 2.0 dynamic context reference
     private DynamicContext fXpath2DynamicContext;
-    private XSModel fSchema = null;
+    
+    // reference to the PsychoPath XPath evaluator
     private AbstractPsychoPathXPath2Impl fAbstrPsychopathImpl = null;
+    
     // the DOM root of assertions tree
     private Document fAssertDocument = null;
 
@@ -87,17 +93,14 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     // a stack holding the DOM roots for assertions evaluation
     private Stack fAssertRootStack = null;
 
-    // a stack parallel to 'assertRootStack' storing all assertions for a single XDM tree
+    // a stack parallel to 'fAssertRootStack' storing all assertions for a single XDM tree
     private Stack fAssertListStack = null;
 
-    // XMLSchemaValidator reference. set from the XMLSchemaValidator object itself
+    // XMLSchemaValidator reference. set from the XMLSchemaValidator object itself.
     private XMLSchemaValidator fXmlSchemaValidator = null;
     
-    // parameters to pass to PsychoPath engine (like, the XML namespace bindings)
+    // parameters to pass to PsychoPath XPath engine (for e.g, the XML namespace bindings)
     private Map fAssertParams = null;
-    
-    // a placeholder definition used for assertions error messages
-    private final String ERROR_PLACEHOLDER_REGEX = "\\{\\$value\\}";
 
     
     /*
@@ -118,7 +121,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private void initXPathProcessor() throws Exception {        
         fXmlSchemaValidator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
         fAbstrPsychopathImpl = new AbstractPsychoPathXPath2Impl();
-        fXpath2DynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchema, fAssertDocument, fAssertParams);        
+        fXpath2DynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchemaXSmodel, fAssertDocument, fAssertParams);        
     } // initXPathProcessor
     
 
@@ -227,7 +230,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             
             if (!fAssertRootStack.empty() && (fCurrentAssertDomNode == fAssertRootStack.peek())) {               
                  // get XSModel instance                
-                 fSchema =  ((PSVIElementNSImpl) fCurrentAssertDomNode).getSchemaInformation();                 
+                 fSchemaXSmodel =  ((PSVIElementNSImpl) fCurrentAssertDomNode).getSchemaInformation();                 
                  // pop the assertion root stack to go one level up
                  fAssertRootStack.pop();
                  // get assertions from the stack, and pass on to the assertions evaluator
@@ -243,8 +246,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
 
     /*
-     * Method to evaluate all of XML schema 1.1 assertions for an element tree. This is the root method which evaluates
-     * all XML schema assertions in an XML instance validation episode.
+     * Method to evaluate all of XML Schema 1.1 assertions for an element tree. This is the root method which evaluates
+     * all XML Schema assertions in an XML instance validation episode.
      */
     private void processAllAssertionsOnElement(QName element, List assertions, Augmentations augs) throws Exception {
         
@@ -493,16 +496,16 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         AssertionError assertionError = null;
         
         try {  
-            XPath xp = assertImpl.getCompiledXPath();
+            XPath xpathObject = assertImpl.getCompiledXPathExpr();
             
             boolean result;            
             if ((value == null) ||
                 (xPathContextExists == true)) {
-                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, fCurrentAssertDomNode);  
+                result = fAbstrPsychopathImpl.evaluateXPathExpr(xpathObject, fCurrentAssertDomNode);  
             } 
             else {
                 // XPath context is "undefined"
-                result = fAbstrPsychopathImpl.evaluateXPathExpr(xp, null); 
+                result = fAbstrPsychopathImpl.evaluateXPathExpr(xpathObject, null); 
             }
             
             if (!result) {
@@ -636,7 +639,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         if (message != null) {
            // substitute all placeholder macro instances of "{$value}" with atomic value stored in variable "value"
            if (value != null && !"".equals(value)) {
-               message = message.replaceAll(ERROR_PLACEHOLDER_REGEX, value);
+               message = message.replaceAll(SchemaSymbols.ASSERT_ERRORMSG_PLACEHOLDER_REGEX, value);
            }
            
            if (!message.endsWith(".")) {

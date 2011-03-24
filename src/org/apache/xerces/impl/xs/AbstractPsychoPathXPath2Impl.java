@@ -22,9 +22,9 @@ import java.util.Map;
 
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSModel;
-import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DefaultEvaluator;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
@@ -49,7 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A base class providing common services for XPath expression evaluation, with 'PsychoPath XPath 2.0' engine.
+ * A class providing common services for XPath expression evaluation, with 'PsychoPath XPath 2.0' engine.
  * 
  * @xerces.internal
  * 
@@ -59,11 +59,10 @@ import org.w3c.dom.Element;
 public class AbstractPsychoPathXPath2Impl {
     
     private DynamicContext fXpath2DynamicContext = null;
-    private Document domDoc = null;
-    private static final String XPATH_EXPR_COMPILE_ERR_MESG_1 = "Expression starts with / or //";
+    private Document fDomDoc = null;
     
     /*
-     * Initialize the 'PsychoPath XPath 2' dynamic context.
+     * Initialize the "PsychoPath XPath 2" dynamic context.
      */
     protected DynamicContext initDynamicContext(XSModel schema, Document document, Map psychoPathParams) {
         
@@ -76,11 +75,10 @@ public class AbstractPsychoPathXPath2Impl {
             String prefix = (String)currPrefixes.nextElement();
             String uri = xpath2NamespaceContext.getURI(prefix);
             fXpath2DynamicContext.add_namespace(prefix, uri);
-        }
-        
+        }        
         fXpath2DynamicContext.add_function_library(new FnFunctionLibrary());
         fXpath2DynamicContext.add_function_library(new XSCtrLibrary());        
-        domDoc = document;
+        fDomDoc = document;
         
         return fXpath2DynamicContext;
         
@@ -90,41 +88,37 @@ public class AbstractPsychoPathXPath2Impl {
     /*
      * Evaluate XPath expression with PsychoPath XPath2 engine.
      */
-    protected boolean evaluateXPathExpr(XPath xp, Element contextNode) throws StaticError, DynamicError, Exception {
+    protected boolean evaluateXPathExpr(XPath xpathObject, Element contextNode) throws StaticError, DynamicError, Exception {
         
         StaticChecker sc = new StaticNameResolver(fXpath2DynamicContext);
-        sc.check(xp);
-       
-        Evaluator eval = null;
+        sc.check(xpathObject);       
+        Evaluator xpath2Evaluator = null;
         if (contextNode != null) {
-           eval = new DefaultEvaluator(fXpath2DynamicContext, domDoc);           
-           // change focus to the top most element
-           ResultSequence contextNodeResultSet = ResultSequenceFactory.create_new();
-           contextNodeResultSet.add(new ElementType(contextNode, fXpath2DynamicContext.node_position(contextNode)));           
-           fXpath2DynamicContext.set_focus(new Focus(contextNodeResultSet));
+            xpath2Evaluator = new DefaultEvaluator(fXpath2DynamicContext, fDomDoc);           
+            // change focus to the top most element
+            ResultSequence contextNodeResultSet = ResultSequenceFactory.create_new();
+            contextNodeResultSet.add(new ElementType(contextNode, fXpath2DynamicContext.node_position(contextNode)));           
+            fXpath2DynamicContext.set_focus(new Focus(contextNodeResultSet));
         }
         else {           
-           eval = new DefaultEvaluator(fXpath2DynamicContext, null);
+           xpath2Evaluator = new DefaultEvaluator(fXpath2DynamicContext, null);
         }
         
-        ResultSequence rs = eval.evaluate(xp);
+        ResultSequence resultSeq = xpath2Evaluator.evaluate(xpathObject);
 
         boolean result = false;
-
-        if (rs == null) {
-           result = false;
+        if (resultSeq == null) {
+            result = false;
+        } else if (resultSeq.size() == 1) {
+            AnyType rsReturn = resultSeq.get(0);
+            if (rsReturn instanceof XSBoolean) {
+                XSBoolean returnResultBool = (XSBoolean) rsReturn;
+                result = returnResultBool.value();
+            } else {
+                result = false;
+            }
         } else {
-           if (rs.size() == 1) {
-              AnyType rsReturn = rs.get(0);
-              if (rsReturn instanceof XSBoolean) {
-                 XSBoolean returnResultBool = (XSBoolean) rsReturn;
-                 result = returnResultBool.value();
-              } else {
-                 result = false;
-              }
-           } else {
-              result = false;
-           }
+            result = false;
         }
         
         return result;
@@ -137,14 +131,14 @@ public class AbstractPsychoPathXPath2Impl {
      */
     protected XPath compileXPathStr(String xpathStr, XSAssertImpl assertImpl, XSDHandler fSchemaHandler, Element schemaContextElem) {        
         
-        XPathParser xpp = new JFlexCupParser();
-        XPath xp = null;
+        XPathParser xpathParser = new JFlexCupParser();
+        XPath xpathObject = null;
         
         try {
-            xp = xpp.parse("boolean(" + xpathStr + ")", true);
+            xpathObject = xpathParser.parse("boolean(" + xpathStr + ")", true);
         } catch (XPathParserException ex) {
             // error compiling XPath expression
-            if (XPATH_EXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {
+            if (SchemaSymbols.ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {
                reportError("cvc-xpath.3.13.4.2b", assertImpl, fSchemaHandler, schemaContextElem); 
             }
             else {
@@ -152,7 +146,7 @@ public class AbstractPsychoPathXPath2Impl {
             }
         }  
         
-        return xp;
+        return xpathObject;
         
     } // compileXPathStr
     
@@ -160,20 +154,8 @@ public class AbstractPsychoPathXPath2Impl {
     /*
      * Method to report error messages.
      */
-    private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler, Element schemaContextElem) {
-        
-        XSTypeDefinition typeDef = assertImpl.getTypeDefinition();
-        String typeString = "";
-        
-        if (typeDef != null) {
-           typeString = (typeDef.getName() != null) ? typeDef.getName() : "#anonymous";   
-        }
-        else {
-           typeString = "#anonymous"; 
-        }
-        
-        fSchemaHandler.reportSchemaError(key, new Object[] {assertImpl.getTest().getXPath().toString(), typeString}, schemaContextElem);
-        
+    private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler, Element schemaContextElem) {        
+        fSchemaHandler.reportSchemaError(key, new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);        
     } // reportError
     
 } // class AbstractPsychoPathXPath2Impl

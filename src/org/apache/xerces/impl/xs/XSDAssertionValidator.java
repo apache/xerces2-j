@@ -347,17 +347,4 @@ public class XSDAssertionValidator {
         
     } // initializeAssertProcessor
     
-    
-    /*
-     * Copy assertion attributes (from object assertA to assertB).
-     */
-    private void copyAssertAttributes(XSAssertImpl assertA, XSAssertImpl assertB) {        
-        assertB.setAssertKind(assertA.getAssertKind());
-        assertB.setTest(assertA.getTest(), null);
-        assertB.setCompiledExpr(assertA.getCompiledXPath());
-        assertB.setXPathDefaultNamespace(assertA.getXPathDefaultNamespace());
-        assertB.setXPath2NamespaceContext(assertA.getXPath2NamespaceContext());
-        assertB.setMessage(assertA.getMessage());        
-    } // copyAssertAttributes
-    
 } // class XSDAssertionValidator

@@ -149,7 +149,7 @@ public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAsse
         return fTestExpr.toString();
     }
     
-    public XPath getCompiledXPath() {
+    public XPath getCompiledXPathExpr() {
         return fCompiledXPathExpr;
     }
 

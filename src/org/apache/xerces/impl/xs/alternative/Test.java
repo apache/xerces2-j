@@ -51,7 +51,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     /** XPath 2.0 expression. Xerces-J native XPath 2.0 subset. */
     protected final XPath20 fXPath;
     
-    /** XPath 2.0 expression. PsychoPath XPath 2.0 expression. */
+    /** XPath 2.0 expression. PsychoPath XPath 2.0 expression object. */
     protected final XPath fXPathPsychoPath;
         
     /** XPath 2.0 namespace context. Derived from XSDocumentInfo in XSD traversers. */
@@ -79,10 +79,10 @@ public class Test extends AbstractPsychoPathXPath2Impl {
         return fTypeAlternative;
     }
 	
-     /*
-      * Returns the test XPath expression object. Return the native Xerces XPath object or the PsychoPath XPath object, 
-      * whichever is available. 
-      */
+    /*
+     * Returns the test XPath expression object. Return the native Xerces XPath object or the PsychoPath XPath object, 
+     * whichever is available. 
+     */
     public Object getXPath() {
         Object xpath = null;
         
@@ -100,7 +100,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
         if (fXPath != null) {
             return fXPath.evaluateTest(element, attributes);
         } else if (fXPathPsychoPath != null) {
-            return evaluateTestExprWithPsychoPath(element, attributes);  
+            return evaluateTestExprWithPsychoPathEngine(element, attributes);  
         }
         else {
             return false;
@@ -112,18 +112,17 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
     
     /*
-     * Evaluate the XPath "test" expression on an XDM instance, consisting of the specified element
-     * and its attributes. Uses PsychoPath XPath 2.0 engine for the evaluation. 
+     * Evaluate the XPath "test" expression on an XDM instance, consisting of the specified element and its attributes.
+     * Uses PsychoPath XPath 2.0 engine for the evaluation. 
      */
-    private boolean evaluateTestExprWithPsychoPath(QName element, XMLAttributes attributes) {
+    private boolean evaluateTestExprWithPsychoPathEngine(QName element, XMLAttributes attributes) {
         
         boolean evaluationResult = false;
 
         try {
-            // construct a DOM document (used by psychopath engine as XPath XDM instance). 
-            // A PSVI DOM is constructed to comply to PsychoPath design. This doesn't seem to 
-            // affect CTA psychopath evaluations. CTA spec doesn't require a typed XDM tree.
-            // REVISIT ...
+            // construct a DOM document (used by psychopath engine for XPath XDM instance). 
+            // A PSVI DOM is constructed to comply to PsychoPath engine design. This doesn't seem to affect CTA psychopath evaluations.
+            // CTA spec doesn't require a typed XDM tree. REVISIT ...
             Document document = new PSVIDocumentImpl();
             Element elem = document.createElementNS(element.uri, element.rawname);
             for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
@@ -131,7 +130,6 @@ public class Test extends AbstractPsychoPathXPath2Impl {
                 attrNode.setNodeValue(attributes.getValue(attrIndx));
                 elem.setAttributeNode(attrNode);
             }
-
             document.appendChild(elem);
 
             // construct parameter values for psychopath xpath processor
@@ -155,6 +153,6 @@ public class Test extends AbstractPsychoPathXPath2Impl {
 
         return evaluationResult;
        
-    } // evaluateTestExprWithPsychoPath
+    } // evaluateTestExprWithPsychoPathEngine
     
 }

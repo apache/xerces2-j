@@ -253,5 +253,11 @@ public final class SchemaSymbols {
     
     // maxOccurs = "unbounded"
     public static final int OCCURRENCE_UNBOUNDED = -1;
+    
+    // a placeholder definition used for assertions error messages
+    public static final String ASSERT_ERRORMSG_PLACEHOLDER_REGEX = "\\{\\$value\\}";
+    
+    // compile error message string when an assert XPath expression starts with tokens '/' or '//'. 
+    public static final String ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1 = "Expression starts with / or //";
 
 }
