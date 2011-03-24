@@ -510,7 +510,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             
             if (!result) {
                // assertion evaluation is false
-               assertionError = new AssertionError("cvc-assertion.3.13.4.1", element, assertImpl, value, isList); 
+               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList); 
             }
         }
         catch (DynamicError ex) {
@@ -519,14 +519,14 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                assertionError = new AssertionError("cvc-assertions-valid-context", element, assertImpl, value, isList);
             }
             else {
-               assertionError = new AssertionError("cvc-assertion.3.13.4.1", element, assertImpl, value, isList);
+               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);
             }
         }
         catch (StaticError ex) {
-            assertionError = new AssertionError("cvc-assertion.3.13.4.1", element, assertImpl, value, isList);
+            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);
         }
         catch(Exception ex) {
-            assertionError = new AssertionError("cvc-assertion.3.13.4.1", element, assertImpl, value, isList);   
+            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);   
         }
         
         return assertionError;
@@ -651,7 +651,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            else {
                message = "Assertion failed for schema type '" + typeNameStr + "'. " + message; 
            }           
-           fXmlSchemaValidator.reportSchemaError("cvc-assertion.3.13.4.1-failure-mesg", new Object[] {message, listAssertErrMessage});    
+           fXmlSchemaValidator.reportSchemaError("cvc-assertion-failure-mesg", new Object[] {message, listAssertErrMessage});    
         }
         else {
            fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});
