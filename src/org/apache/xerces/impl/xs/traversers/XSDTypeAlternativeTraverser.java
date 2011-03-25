@@ -29,6 +29,7 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSObjectList;
@@ -79,7 +80,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
 
         Object[] attrValues = fAttrChecker.checkAttributes(altElement, false, schemaDoc);
         QName typeAtt = (QName) attrValues[XSAttributeChecker.ATTIDX_TYPE];
-        String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
+        String testStr = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
         String xpathNS = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
 
         // get 'annotation'
@@ -167,7 +168,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(alternativeType, element.fType, block)) {
                 reportSchemaError(
                         "e-props-correct.7",
-                        new Object[] { element.getName(), alternativeType.getName(), element.fType.getName()},
+                        new Object[] {element.getName(), XSTypeHelper.getSchemaTypeName(alternativeType), XSTypeHelper.getSchemaTypeName(element.fType)},
                         altElement);
                 // fall back to element declaration's type
                 alternativeType = element.fType;
@@ -184,11 +185,11 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         XSTypeAlternativeImpl typeAlternative = new XSTypeAlternativeImpl(element.fName, alternativeType, annotations);
 
         // now look for other optional attributes like test and xpathDefaultNamespace
-        if (test != null) {
+        if (testStr != null) {
             Test testExpr = null;
             //set the test attribute value
             try {
-               testExpr = new Test(new XPath20(test, fSymbolTable, schemaDoc.fNamespaceSupport),
+               testExpr = new Test(new XPath20(testStr, fSymbolTable, schemaDoc.fNamespaceSupport),
                                        typeAlternative,
                                        schemaDoc.fNamespaceSupport);
             } 
@@ -196,10 +197,10 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                // fall back to full XPath 2.0 support, with PsychoPath engine
                try {
                   XPathParser xpp = new JFlexCupParser();
-                  XPath xp = xpp.parse("boolean(" + test + ")");
+                  XPath xp = xpp.parse("boolean(" + testStr + ")");
                   testExpr = new Test(xp, typeAlternative, schemaDoc.fNamespaceSupport);
                } catch(XPathParserException ex) {
-                  reportSchemaError("c-cta-xpath", new Object[] { test }, altElement);
+                  reportSchemaError("c-cta-xpath", new Object[] { testStr }, altElement);
                   //if the XPath is invalid, create a Test without an expression
                   testExpr = new Test((XPath20) null, typeAlternative,
                                        schemaDoc.fNamespaceSupport);
