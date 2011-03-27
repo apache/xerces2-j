@@ -133,29 +133,21 @@ public class AbstractPsychoPathXPath2Impl {
         
         XPathParser xpathParser = new JFlexCupParser();
         XPath xpathObject = null;
-        
+
         try {
             xpathObject = xpathParser.parse("boolean(" + xpathStr + ")", true);
         } catch (XPathParserException ex) {
             // error compiling XPath expression
-            if (SchemaSymbols.ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {
-               reportError("cvc-xpath.3.13.4.2b", assertImpl, fSchemaHandler, schemaContextElem); 
+            if (SchemaSymbols.ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {               
+                fSchemaHandler.reportSchemaError("cvc-xpath.3.13.4.2b", new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
             }
-            else {
-               reportError("cvc-xpath.3.13.4.2a", assertImpl, fSchemaHandler, schemaContextElem);
+            else {               
+                fSchemaHandler.reportSchemaError("cvc-xpath.3.13.4.2a", new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
             }
         }  
-        
+
         return xpathObject;
         
     } // compileXPathStr
-    
-    
-    /*
-     * Method to report error messages.
-     */
-    private void reportError(String key, XSAssertImpl assertImpl, XSDHandler fSchemaHandler, Element schemaContextElem) {        
-        fSchemaHandler.reportSchemaError(key, new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);        
-    } // reportError
     
 } // class AbstractPsychoPathXPath2Impl

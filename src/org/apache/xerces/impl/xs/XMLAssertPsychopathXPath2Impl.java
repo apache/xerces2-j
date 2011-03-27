@@ -50,7 +50,6 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
-import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -499,8 +498,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             XPath xpathObject = assertImpl.getCompiledXPathExpr();
             
             boolean result;            
-            if ((value == null) ||
-                (xPathContextExists == true)) {
+            if (value == null || xPathContextExists == true) {
                 result = fAbstrPsychopathImpl.evaluateXPathExpr(xpathObject, fCurrentAssertDomNode);  
             } 
             else {
@@ -514,16 +512,13 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             }
         }
         catch (DynamicError ex) {
-            if (ex.code().equals("XPDY0002")) {
+            if ("XPDY0002".equals(ex.code())) {
                // ref: http://www.w3.org/TR/xpath20/#eval_context
                assertionError = new AssertionError("cvc-assertions-valid-context", element, assertImpl, value, isList);
             }
             else {
                assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);
             }
-        }
-        catch (StaticError ex) {
-            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);
         }
         catch(Exception ex) {
             assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);   
@@ -620,18 +615,18 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                
         String typeNameStr = XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition());
         
-        String elemErrorAnnotation = element.rawname;
+        String elemNameAnnotation = element.rawname;
         if (assertImpl.getAttrName() != null) {
-            elemErrorAnnotation = element.rawname + " (attribute => " + assertImpl.getAttrName()+ ")";    
+            elemNameAnnotation = element.rawname + " (attribute => " + assertImpl.getAttrName()+ ")";    
         }                
         
         String listAssertErrMessage = "";        
         if (isList) {
            if (assertError.getIsTypeDerivedFromList()) {
-               listAssertErrMessage =  "Assertion failed for xs:list instance '" + assertError.getValue() + "'.";  
+               listAssertErrMessage =  "Assertion failed for xs:list instance '" + value + "'.";  
            }
            else {
-               listAssertErrMessage =  "Assertion failed for an xs:list member value '" + assertError.getValue() + "'.";
+               listAssertErrMessage =  "Assertion failed for an xs:list member value '" + value + "'.";
            }
         }
             
@@ -645,7 +640,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            if (!message.endsWith(".")) {
                message = message + ".";    
            }
-           if (key.equals("cvc-assertions-valid-context")) {
+           if ("cvc-assertions-valid-context".equals(key)) {
                message = "Assertion failed (undefined context) for schema type '" + typeNameStr + "'. " + message;   
            }
            else {
@@ -654,7 +649,15 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            fXmlSchemaValidator.reportSchemaError("cvc-assertion-failure-mesg", new Object[] {message, listAssertErrMessage});    
         }
         else {
-           fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemErrorAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});
+           if (assertImpl.getAssertKind() == XSConstants.ASSERTION) {
+              // error for xs:assert component
+              fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});
+           }
+           else {
+               // errors for xs:assertion facet
+               fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid", new Object[] {value, assertImpl.getTest().getXPath().toString()});
+               fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});  
+           }
         }
         
     } // reportAssertionsError

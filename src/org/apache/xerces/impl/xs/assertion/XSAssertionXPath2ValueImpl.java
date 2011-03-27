@@ -56,7 +56,7 @@ import org.w3c.dom.NodeList;
 public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
 
     /*
-     * Determine "string value" of XPath2 context variable $value.
+     * Determine "string value" of XPath 2.0 context variable $value.
      */
     public String computeStringValueOf$value(Element currentAssertDomRootElem, ElementPSVI pElemPSVI) throws DOMException {
         
