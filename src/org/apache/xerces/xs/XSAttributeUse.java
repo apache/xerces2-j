@@ -100,5 +100,8 @@ public interface XSAttributeUse extends XSObject {
      */
     public XSObjectList getAnnotations();
     
+    /**
+     * Tells whether this attribute is declared inheritable.
+     */
     public boolean getInheritable(); 
 }

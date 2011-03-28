@@ -48,7 +48,7 @@ public class XSAttributeUseImpl implements XSAttributeUse {
     public ValidatedInfo fDefault = null;
     // optional annotation
     public XSObjectList fAnnotations = null;
-    
+    // inheritable attribute flag
     public boolean fInheritable = false;
     
     public void reset(){
@@ -155,6 +155,9 @@ public class XSAttributeUseImpl implements XSAttributeUse {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
+    /**
+     * Tells whether this attribute is declared inheritable.
+     */
     public boolean getInheritable() {
         return fInheritable;
     }

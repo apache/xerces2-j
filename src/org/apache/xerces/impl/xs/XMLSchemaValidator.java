@@ -51,6 +51,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
@@ -81,6 +82,8 @@ import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -1365,6 +1368,12 @@ public class XMLSchemaValidator
     
     // 'type alternative' validator subcomponent
     private XSDTypeAlternativeValidator fTypeAlternativeValidator = null;
+    
+    // a Vector list storing inheritable attributes
+    private Vector fInheritableAttrList = new Vector();
+    
+    // a Stack storing inheritable attribute count for the elements
+    private IntStack fInhrAttrCountStack = new IntStack();
 
     //
     // Constructors
@@ -2177,7 +2186,7 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-           XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, element, attributes);           
+           XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, element, attributes, fInheritableAttrList);           
            if (currentType != null) {
                fCurrentType = currentType;    
            }
@@ -2403,9 +2412,19 @@ public class XMLSchemaValidator
             fIDContext.setCurrentScopeToParent();
         }
         
-        // delegate to 'type alternative' validator subcomponent
+        // inheritable attributes processing
+        XSAttributeUse[] inheritedAttributesPsvi = null; // for copying into the ElementPSVI
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-           fTypeAlternativeValidator.handleStartElement(fCurrentElemDecl, attributes);
+            fInhrAttrCountStack.push(fInheritableAttrList.size());
+            if (fInheritableAttrList.size() > 0) {
+                inheritedAttributesPsvi = new XSAttributeUse[fInheritableAttrList.size()]; 
+                for (int inhrAttrIdx = 0; inhrAttrIdx < fInheritableAttrList.size(); inhrAttrIdx++) {
+                    inheritedAttributesPsvi[inhrAttrIdx] = ((InheritableAttribute) fInheritableAttrList.get(inhrAttrIdx)).getAttributeUse();  
+                }
+            }
+            // find attributes among the attributes of the current element, which are declared inheritable and store them for later processing.
+            // one of the uses of inherited attributes is in type alternatives processing.
+            saveInheritableAttributes(fCurrentElemDecl, attributes);
         }
 
         // call all active identity constraints
@@ -2428,6 +2447,10 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = fNotation;
             // PSVI: add nil
             fCurrentPSVI.fNil = fNil;
+            if (inheritedAttributesPsvi != null) {
+               // PSVI: add inherited attributes
+               fCurrentPSVI.fInheritedAttributes = inheritedAttributesPsvi;
+            }
         }
         
         // delegate to assertions validator subcomponent
@@ -2456,9 +2479,9 @@ public class XMLSchemaValidator
             System.out.println("==>handleEndElement:" + element);
         }
         
-        // delegate to 'type alternative' validator subcomponent 
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            fTypeAlternativeValidator.handleEndElement();
+        // inheritable attributes processing
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && fInhrAttrCountStack.size() > 0) {
+            fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
         }
         
         // if we are skipping, return
@@ -4863,5 +4886,54 @@ public class XMLSchemaValidator
             }
         }
     } // extraCheckForSTUnionAsserts
+    
+    /*
+     * For the current element being handled by the XML Schema validator, find all inheritable attributes for this element.
+     * Save these inheritable attributes, into a global Vector list for later processing.
+     */
+    private void saveInheritableAttributes(XSElementDecl currentElemDecl, XMLAttributes attributes) {
+        
+        if (currentElemDecl != null && currentElemDecl.fType instanceof XSComplexTypeDecl) {
+            XSComplexTypeDecl complexTypeDecl = (XSComplexTypeDecl) currentElemDecl.fType;
+            XSObjectListImpl attributeUses = (XSObjectListImpl) complexTypeDecl.getAttributeUses();
+            // iterate all the attribute declarations of the complex type, for the current element
+            for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
+                XSAttributeUse attrUse = (XSAttributeUse) attributeUses.get(attrUsesIndx);                 
+                if (attrUse.getInheritable()) {                   
+                    // this is an inheritable attribute. copy this into an global Vector list.
+                    XSAttributeDeclaration attrDecl = (XSAttributeDeclaration) attrUse.getAttrDeclaration();
+                    String attrVal = attributes.getValue(attrDecl.getNamespace(), attrDecl.getName());
+                    if (attrVal != null) {
+                       fInheritableAttrList.add(new InheritableAttribute(attrUse, attrVal));
+                    }
+                }
+            }                      
+        }
+       
+    } // saveInheritableAttributes
+    
+    /*
+     * A class representing an inheritable attribute. An instance of this class is used as an intermediate storage,
+     * for inheritable attribute information.
+     */
+    final class InheritableAttribute {       
+       
+        private final XSAttributeUse attrUse;
+        private final String value;
+
+        public InheritableAttribute(XSAttributeUse attrUse, String value) {
+            this.attrUse = attrUse;
+            this.value = value;
+        }
+
+        public XSAttributeUse getAttributeUse() {
+            return attrUse; 
+        }
+        
+        public String getValue() {
+            return value;
+        }
+       
+    } // class InheritableAttribute
     
 } // class XMLSchemaValidator

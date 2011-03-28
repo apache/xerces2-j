@@ -23,6 +23,7 @@ import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNotationDeclaration;
@@ -88,6 +89,9 @@ public class ElementPSVImpl implements ElementPSVI {
     /** true if this object is immutable **/
     protected boolean fIsConstant;
     
+    /** inherited attributes **/
+    protected XSAttributeUse[] fInheritedAttributes = null; 
+    
     public ElementPSVImpl() {}
     
     public ElementPSVImpl(boolean isConstant, ElementPSVI elementPSVI) {
@@ -100,6 +104,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fValidationAttempted = elementPSVI.getValidationAttempted();
         fValidity = elementPSVI.getValidity();
         fValidationContext = elementPSVI.getValidationContext();
+        fInheritedAttributes = elementPSVI.getInheritedAttributes();
         if (elementPSVI instanceof ElementPSVImpl) {
             final ElementPSVImpl elementPSVIImpl = (ElementPSVImpl) elementPSVI;
             fErrors = (elementPSVIImpl.fErrors != null) ?
@@ -318,6 +323,15 @@ public class ElementPSVImpl implements ElementPSVI {
     }
     
     /**
+     * Inherited attributes.
+     * 
+     * @return  an array of inherited attribute, XSAttributeUse components. null if no inherited attributes were found.
+     */
+    public XSAttributeUse[] getInheritedAttributes() {
+       return fInheritedAttributes; 
+    }
+    
+    /**
      * Reset() should be called in validator startElement(..) method.
      */
     public void reset() {
@@ -331,6 +345,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fErrors = null;
         fValidationContext = null;
         fValue.reset();
+        fInheritedAttributes = null;
     }
     
     public void copySchemaInformationTo(ElementPSVImpl target) {

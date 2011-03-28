@@ -29,6 +29,7 @@ import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
@@ -105,6 +106,9 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
 
     /** the schema information property */
     protected XSModel fSchemaInformation = null;
+    
+    /** inherited attributes **/
+    protected XSAttributeUse[] fInheritedAttributes = null; 
     
     //
     // ElementPSVI methods
@@ -267,6 +271,15 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     }
     
     /**
+     * Inherited attributes.
+     * 
+     * @return  an array of inherited attribute, XSAttributeUse components. null if no inherited attributes were found.
+     */
+    public XSAttributeUse[] getInheritedAttributes() {
+        return fInheritedAttributes; 
+     }
+    
+    /**
      * Copy PSVI properties from another psvi item.
      * 
      * @param elem  the source of element PSVI items
@@ -291,6 +304,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         }
         this.fSpecified = elem.getIsSchemaSpecified();
         this.fNil = elem.getNil();
+        this.fInheritedAttributes = elem.getInheritedAttributes(); 
     }
 
     /* (non-Javadoc)

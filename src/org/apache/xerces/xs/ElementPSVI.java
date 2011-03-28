@@ -43,5 +43,10 @@ public interface ElementPSVI extends ItemPSVI {
      * validation root, <code>null</code> otherwise. 
      */
     public XSModel getSchemaInformation();
+    
+    /**
+     * [inherited attributes]: inherited attributes.
+     */
+    public XSAttributeUse[] getInheritedAttributes();
 
 }
