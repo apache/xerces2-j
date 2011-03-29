@@ -107,7 +107,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     /** the schema information property */
     protected XSModel fSchemaInformation = null;
     
-    /** inherited attributes **/
+    /** inherited attributes */
     protected XSAttributeUse[] fInheritedAttributes = null; 
     
     //
@@ -277,7 +277,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      */
     public XSAttributeUse[] getInheritedAttributes() {
         return fInheritedAttributes; 
-     }
+    }
     
     /**
      * Copy PSVI properties from another psvi item.
