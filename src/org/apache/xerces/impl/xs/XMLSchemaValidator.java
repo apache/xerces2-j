@@ -2410,28 +2410,20 @@ public class XMLSchemaValidator
         // simple content of an element identifies the parent of the element
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fIDContext.setCurrentScopeToParent();
-        }
-        
-        // inheritable attributes processing
-        XSAttributeUse[] inheritedAttributesPsvi = null; // for copying into the ElementPSVI
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            fInhrAttrCountStack.push(fInheritableAttrList.size());
-            if (fInheritableAttrList.size() > 0) {
-                inheritedAttributesPsvi = new XSAttributeUse[fInheritableAttrList.size()]; 
-                for (int inhrAttrIdx = 0; inhrAttrIdx < fInheritableAttrList.size(); inhrAttrIdx++) {
-                    inheritedAttributesPsvi[inhrAttrIdx] = ((InheritableAttribute) fInheritableAttrList.get(inhrAttrIdx)).getAttributeUse();  
-                }
-            }
-            // find attributes among the attributes of the current element, which are declared inheritable and store them for later processing.
-            // one of the uses of inherited attributes is in type alternatives processing.
-            saveInheritableAttributes(fCurrentElemDecl, attributes);
-        }
+        }                
 
         // call all active identity constraints
         int count = fMatcherStack.getMatcherCount();
         for (int i = 0; i < count; i++) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
             matcher.startElement( element, attributes);
+        }
+        
+        // inheritable attributes processing
+        XSAttributeUse[] inheritedAttributesForPsvi = null; 
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fInhrAttrCountStack.push(fInheritableAttrList.size());
+            inheritedAttributesForPsvi = getInheritedAttributesForPsvi();
         }
 
         if (fAugPSVI) {
@@ -2447,15 +2439,16 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = fNotation;
             // PSVI: add nil
             fCurrentPSVI.fNil = fNil;
-            if (inheritedAttributesPsvi != null) {
-               // PSVI: add inherited attributes
-               fCurrentPSVI.fInheritedAttributes = inheritedAttributesPsvi;
-            }
-        }
-        
-        // delegate to assertions validator subcomponent
+            // PSVI: add inherited attributes
+            fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;            
+        }                
+                
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            // find attributes among the attributes of the current element, which are declared inheritable and store them for later processing.
+            // one of the uses of inherited attributes is in type alternatives processing.
+            saveInheritableAttributes(fCurrentElemDecl, attributes);
             try {
+               // delegate to assertions validator subcomponent
                fAssertionValidator.handleStartElement(element, attributes);
             }
             catch(Exception ex) {
@@ -2477,11 +2470,6 @@ public class XMLSchemaValidator
         
         if (DEBUG) {
             System.out.println("==>handleEndElement:" + element);
-        }
-        
-        // inheritable attributes processing
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && fInhrAttrCountStack.size() > 0) {
-            fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
         }
         
         // if we are skipping, return
@@ -2614,7 +2602,7 @@ public class XMLSchemaValidator
                 // update PSVI
                 fValidatedInfo.memberType = ((ElementPSVImpl) assertAugs.getItem(Constants.ELEMENT_PSVI)).fValue.memberType;                
             } 
-            fIsAssertProcessingNeededForSTUnion = true;
+            fIsAssertProcessingNeededForSTUnion = true;            
         }
 
         // Check if we should modify the xsi:type ignore depth
@@ -2681,7 +2669,7 @@ public class XMLSchemaValidator
             fAppendBuffer = false;
             // same here.
             fUnionType = false;
-        }
+        }                
 
         return augs;
     } // handleEndElement(QName,boolean)*/
@@ -2700,6 +2688,12 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
             fCurrentPSVI.fNil = this.fNil;
+            XSAttributeUse[] inheritedAttributesForPsvi = null;
+            if (fInhrAttrCountStack.size() > 0) {
+                fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
+                inheritedAttributesForPsvi = getInheritedAttributesForPsvi();
+            }
+            fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;
             // PSVI: validation attempted
             // nothing below or at the same level has none or partial
             // (which means this level is strictly assessed, and all chidren
@@ -4935,5 +4929,19 @@ public class XMLSchemaValidator
         }
        
     } // class InheritableAttribute
+    
+    /*
+     * Get inherited attributes for copying into an element PSVI.
+     */
+    private XSAttributeUse[] getInheritedAttributesForPsvi() {        
+        XSAttributeUse[] inheritedAttributes = null; 
+        if (fInheritableAttrList.size() > 0) {
+            inheritedAttributes = new XSAttributeUse[fInheritableAttrList.size()]; 
+            for (int inhrAttrIdx = 0; inhrAttrIdx < fInheritableAttrList.size(); inhrAttrIdx++) {
+                inheritedAttributes[inhrAttrIdx] = ((InheritableAttribute) fInheritableAttrList.get(inhrAttrIdx)).getAttributeUse();  
+            }  
+        }
+        return inheritedAttributes; 
+    } // getInheritedAttributesForPsvi
     
 } // class XMLSchemaValidator

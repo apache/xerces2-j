@@ -58,7 +58,7 @@ public class XSDTypeAlternativeValidator {
         
         XSTypeAlternativeImpl[] typeAlternatives = currentElemDecl.getTypeAlternatives();        
         if (typeAlternatives != null) {              
-            // Construct a list of attributes needed for CTA processing. This includes inherited attributes as well.
+            // Construct a list of attributes needed for CTA processing. This includes inheritable attributes as well.
             XMLAttributes ctaAttributes = getAttributesForCTA(attributes, inheritableAttrList);
             for (int typeAltIdx = 0; typeAltIdx < typeAlternatives.length; typeAltIdx++) {
                 Test ctaTest = typeAlternatives[typeAltIdx].getTest();
@@ -82,7 +82,7 @@ public class XSDTypeAlternativeValidator {
     
 
     /*
-     * Construct a list of attributes, needed for CTA processing. This includes inherited attributes as well.  
+     * Construct a list of attributes, needed for CTA processing. This includes inheritable attributes as well.  
      */
     private XMLAttributes getAttributesForCTA(XMLAttributes attributes, Vector inheritableAttrList) {
 
@@ -94,7 +94,7 @@ public class XSDTypeAlternativeValidator {
             ctaAttributes.addAttribute(attrQName, attributes.getType(attrIndx), attributes.getValue(attrIndx));   
         }
 
-        // Add inherited attributes to the CTA attributes list
+        // add inherited attributes to the CTA attributes list
         for (int elemIndx = inheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
             InheritableAttribute inhAttr = (InheritableAttribute) inheritableAttrList.elementAt(elemIndx);
             XSAttributeDeclaration inhrAttrDecl = inhAttr.getAttributeUse().getAttrDeclaration();
