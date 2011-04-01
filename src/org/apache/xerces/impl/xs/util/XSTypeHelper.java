@@ -145,7 +145,7 @@ public class XSTypeHelper {
     public static void validateQNameValue(String qNameStr, NamespaceContext namespaceContext, XMLErrorReporter errorReporter) {
         
         String prefix, localpart;
-        int colonptr = qNameStr.indexOf(":");
+        int colonptr = qNameStr.indexOf(':');
         if (colonptr > 0) {
             prefix = qNameStr.substring(0, colonptr);
             localpart = qNameStr.substring(colonptr + 1);
