@@ -402,7 +402,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
         XSObjectList memberTypes = simpleTypeDefn.getMemberTypes();
         if (memberTypes != null && memberTypes.getLength() > 0 && !isTypeDerivedFromUnion) {            
-            if (isValidationFailedForSTUnion(memberTypes, element, value, false, augs)) { 
+            if (isValidationFailedForSTUnion(memberTypes, element, value, augs)) { 
                 isValueValid = false;
                 if (assertImpl.getAttrName() == null) {
                     // assertion evaluation was for an element
@@ -532,7 +532,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     /*
      * Determine if an validation episode must fail due to assertions evaluation for "simpleType -> union" member types.
      */
-    private boolean isValidationFailedForSTUnion(XSObjectList memberTypes, QName element, String value, boolean isAttribute, Augmentations augs) {
+    private boolean isValidationFailedForSTUnion(XSObjectList memberTypes, QName element, String value, Augmentations augs) {
         
         boolean isValidationFailedForUnion = true;
         final int memberTypesLength = memberTypes.getLength();
