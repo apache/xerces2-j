@@ -1189,10 +1189,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fParticle = getErrorContent();
         // REVISIT: do we need to remove all attribute uses already added into
         // the attribute group? maybe it's ok to leave them there. -SG
-        fAttrGrp.fAttributeWC = getErrorWildcard();
-        
-        return;
-        
+        fAttrGrp.fAttributeWC = getErrorWildcard();        
     }
     
     private void contentBackup() {
