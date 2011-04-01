@@ -1716,7 +1716,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             
             // create an assertion object            
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations, fSchemaHandler);
-            Test testExpr = new Test(new XPath20Assert(test, fSymbolTable, new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport)), assertImpl);
+            Test testExpr = new Test(new XPath20Assert(test, new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport)), assertImpl);
             assertImpl.setTest(testExpr, assertElement);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
             assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport));

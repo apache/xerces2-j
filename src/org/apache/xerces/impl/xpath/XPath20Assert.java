@@ -17,7 +17,6 @@
 
 package org.apache.xerces.impl.xpath;
 
-import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 
 /**
@@ -28,16 +27,15 @@ import org.apache.xerces.xni.NamespaceContext;
  */
 public class XPath20Assert {
     
-    protected final String fExpression;
-    protected final NamespaceContext fContext;
+    protected final String fExpressionStr;
+    protected final NamespaceContext fNsContext;
     
-    public XPath20Assert(String xpath, SymbolTable symbolTable,
-                         NamespaceContext context) {
-        fExpression = xpath;
-        fContext = context;
+    public XPath20Assert(String xpathStr, NamespaceContext nsContext) {
+        fExpressionStr = xpathStr;
+        fNsContext = nsContext;
     }
 
     public String toString() {
-        return fExpression;
+        return fExpressionStr;
     }
 }
