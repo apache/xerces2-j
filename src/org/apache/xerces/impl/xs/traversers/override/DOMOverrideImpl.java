@@ -78,7 +78,7 @@ public final class DOMOverrideImpl extends OverrideTransformer {
         } catch (IllegalAccessException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        };
+        }
     }      
 
     public void clearState(){
