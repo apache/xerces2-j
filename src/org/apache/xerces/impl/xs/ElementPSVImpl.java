@@ -19,11 +19,11 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.xni.XMLAttribute;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
-import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNotationDeclaration;
@@ -90,7 +90,7 @@ public class ElementPSVImpl implements ElementPSVI {
     protected boolean fIsConstant;
     
     /** inherited attributes **/
-    protected XSAttributeUse[] fInheritedAttributes = null; 
+    protected XMLAttribute[] fInheritedAttributes = null; 
     
     public ElementPSVImpl() {}
     
@@ -325,9 +325,9 @@ public class ElementPSVImpl implements ElementPSVI {
     /**
      * Inherited attributes.
      * 
-     * @return  an array of inherited attribute, XSAttributeUse components. null if no inherited attributes were found.
+     * @return  an array of inherited attributes. null if no inherited attributes were found.
      */
-    public XSAttributeUse[] getInheritedAttributes() {
+    public XMLAttribute[] getInheritedAttributes() {
        return fInheritedAttributes; 
     }
     

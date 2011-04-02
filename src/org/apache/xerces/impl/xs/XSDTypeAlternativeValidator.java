@@ -19,12 +19,12 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
-import org.apache.xerces.impl.xs.XMLSchemaValidator.InheritableAttribute;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttribute;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -96,13 +96,13 @@ public class XSDTypeAlternativeValidator {
 
         // add inherited attributes to the CTA attributes list
         for (int elemIndx = inheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
-            InheritableAttribute inhAttr = (InheritableAttribute) inheritableAttrList.elementAt(elemIndx);
-            XSAttributeDeclaration inhrAttrDecl = inhAttr.getAttributeUse().getAttrDeclaration();
+            XMLAttribute inhAttr = (XMLAttribute) inheritableAttrList.elementAt(elemIndx);
+            XSAttributeDeclaration inhrAttrDecl = inhAttr.getAttrDecl();
             // if an inherited attribute is not overridden by the current element, add it to the CTA attributes list
             if (!isInheritedAttributeOverridden(ctaAttributes, inhrAttrDecl)) {                
                 QName attrQName = new QName();
                 attrQName.setValues(null, inhrAttrDecl.getName(), inhrAttrDecl.getName(), inhrAttrDecl.getNamespace());
-                ctaAttributes.addAttribute(attrQName, null, inhAttr.getValue());
+                ctaAttributes.addAttribute(attrQName, null, inhAttr.getAttrValue());
             }
         }
 

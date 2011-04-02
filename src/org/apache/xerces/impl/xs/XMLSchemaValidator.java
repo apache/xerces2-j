@@ -63,6 +63,7 @@ import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttribute;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;
@@ -2420,7 +2421,7 @@ public class XMLSchemaValidator
         }
         
         // inheritable attributes processing
-        XSAttributeUse[] inheritedAttributesForPsvi = null; 
+        XMLAttribute[] inheritedAttributesForPsvi = null; 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fInhrAttrCountStack.push(fInheritableAttrList.size());
             inheritedAttributesForPsvi = getInheritedAttributesForPsvi();
@@ -2688,7 +2689,7 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
             fCurrentPSVI.fNil = this.fNil;
-            XSAttributeUse[] inheritedAttributesForPsvi = null;
+            XMLAttribute[] inheritedAttributesForPsvi = null;
             if (fInhrAttrCountStack.size() > 0) {
                 fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
                 inheritedAttributesForPsvi = getInheritedAttributesForPsvi();
@@ -4898,7 +4899,7 @@ public class XMLSchemaValidator
                     XSAttributeDeclaration attrDecl = (XSAttributeDeclaration) attrUse.getAttrDeclaration();
                     String attrVal = attributes.getValue(attrDecl.getNamespace(), attrDecl.getName());
                     if (attrVal != null) {
-                       fInheritableAttrList.add(new InheritableAttribute(attrUse, attrVal));
+                       fInheritableAttrList.add(new XMLAttribute(attrDecl, attrVal));
                     }
                 }
             }                      
@@ -4907,38 +4908,14 @@ public class XMLSchemaValidator
     } // saveInheritableAttributes
     
     /*
-     * A class representing an inheritable attribute. An instance of this class is used as an intermediate storage,
-     * for inheritable attribute information.
-     */
-    final class InheritableAttribute {       
-       
-        private final XSAttributeUse attrUse;
-        private final String value;
-
-        public InheritableAttribute(XSAttributeUse attrUse, String value) {
-            this.attrUse = attrUse;
-            this.value = value;
-        }
-
-        public XSAttributeUse getAttributeUse() {
-            return attrUse; 
-        }
-        
-        public String getValue() {
-            return value;
-        }
-       
-    } // class InheritableAttribute
-    
-    /*
      * Get inherited attributes for copying into an element PSVI.
      */
-    private XSAttributeUse[] getInheritedAttributesForPsvi() {        
-        XSAttributeUse[] inheritedAttributes = null; 
+    private XMLAttribute[] getInheritedAttributesForPsvi() {        
+        XMLAttribute[] inheritedAttributes = null; 
         if (fInheritableAttrList.size() > 0) {
-            inheritedAttributes = new XSAttributeUse[fInheritableAttrList.size()]; 
+            inheritedAttributes = new XMLAttribute[fInheritableAttrList.size()]; 
             for (int inhrAttrIdx = 0; inhrAttrIdx < fInheritableAttrList.size(); inhrAttrIdx++) {
-                inheritedAttributes[inhrAttrIdx] = ((InheritableAttribute) fInheritableAttrList.get(inhrAttrIdx)).getAttributeUse();  
+                inheritedAttributes[inhrAttrIdx] = (XMLAttribute) fInheritableAttrList.get(inhrAttrIdx);  
             }  
         }
         return inheritedAttributes; 
