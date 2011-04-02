@@ -156,7 +156,7 @@ abstract class XSDAbstractTraverser {
         // optimize for case where there are no local attributes
         if(annotationLocalAttrs != null && !annotationLocalAttrs.isEmpty()) {
             StringBuffer localStrBuffer = new StringBuffer(64);
-            localStrBuffer.append(" ");
+            localStrBuffer.append(' ');
             // Vector should contain rawname value pairs
             int i = 0;
             while (i < annotationLocalAttrs.size()) {
@@ -219,7 +219,7 @@ abstract class XSDAbstractTraverser {
         // optimize for case where there are no local attributes
         if (annotationLocalAttrs != null && !annotationLocalAttrs.isEmpty()) {
             StringBuffer localStrBuffer = new StringBuffer(64);
-            localStrBuffer.append(" ");
+            localStrBuffer.append(' ');
             // Vector should contain rawname value pairs
             int i = 0;
             while (i < annotationLocalAttrs.size()) {
@@ -436,7 +436,7 @@ abstract class XSDAbstractTraverser {
                     // ---------------------------------------------
                     //datatypes: 5.2.4 pattern: src-multiple-pattern
                     // ---------------------------------------------
-                    fPattern.append("|");
+                    fPattern.append('|');
                     fPattern.append(patternVal);
                 }
                 Element child = DOMUtil.getFirstChildElement( content );
