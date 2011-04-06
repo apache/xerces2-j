@@ -512,13 +512,6 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, null); 
             }
         }
-        /*
-        catch (DynamicError ex) {
-            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);
-        }
-        catch (StaticError ex) {
-            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);  
-        } */
         catch(Exception ex) {
             assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);   
         }
