@@ -69,8 +69,8 @@ import org.apache.xerces.util.StAXInputSource;
 import org.apache.xerces.util.StAXLocationWrapper;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
@@ -561,10 +561,27 @@ public class XSDHandler {
         } //is instanceof XMLInputSource
 
         if (schemaRoot == null) {
-            // something went wrong right off the hop
             if (is instanceof XSInputSource) {
-                return fGrammarBucket.getGrammar(desc.getTargetNamespace());
+                // Need to return a grammar. If the XSInputSource has a list
+                // of grammar objects, then get the first one and return it.
+                // If it has a list of components, then get the grammar that
+                // contains the first component and return it.
+                // If we return null, the XMLSchemaLoader will think nothing
+                // was loaded, and will not try to put the grammar objects
+                // into the grammar pool.
+                XSInputSource xsinput = (XSInputSource)is;
+                SchemaGrammar[] grammars = xsinput.getGrammars();
+                if (grammars != null && grammars.length > 0) {
+                    grammar = fGrammarBucket.getGrammar(grammars[0].getTargetNamespace());
+                }
+                else {
+                    XSObject[] components = xsinput.getComponents();
+                    if (components != null && components.length > 0) {
+                        grammar = fGrammarBucket.getGrammar(components[0].getNamespace());
+                    }
+                }
             }
+            // something went wrong right off the hop
             return grammar;
         }
 
@@ -2686,16 +2703,31 @@ public class XSDHandler {
     }
 
     private void addNewImportedGrammars(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
-        final Vector igs1 = srcGrammar.getImportedGrammars();
-        if (igs1 != null) {
-            Vector igs2 = dstGrammar.getImportedGrammars();
-            
-            if (igs2 == null) {
-                igs2 = ((Vector) igs1.clone());
-                dstGrammar.setImportedGrammars(igs2);
+        final Vector src = srcGrammar.getImportedGrammars();
+        if (src != null) {
+            Vector dst = dstGrammar.getImportedGrammars();
+            if (dst == null) {
+                dst = new Vector();
+                dstGrammar.setImportedGrammars(dst);
             }
-            else {
-                updateImportList(igs1, igs2);
+            final int size = src.size();
+            for (int i=0; i<size; i++) {
+                SchemaGrammar sg = (SchemaGrammar) src.elementAt(i);
+                // Can't use the object from the source import list directly.
+                // It's possible there is already a grammar with the same
+                // namespace in the bucket but a different object.
+                // This can happen if the bucket has grammar A1, and we try
+                // to add B and A2, where A2 imports B. When B is added, we
+                // create a new object B' and store it in the bucket. Then we
+                // try to merge A2 and A1. We can't use B. Need to get B' from
+                // the bucket and store it in A's import list.
+                SchemaGrammar sg1 = fGrammarBucket.getGrammar(sg.getTargetNamespace());
+                if (sg1 != null) {
+                    sg = sg1;
+                }
+                if (!containedImportedGrammar(dst, sg)) {
+                    dst.add(sg);
+                }
             }
         }
     }
