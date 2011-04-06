@@ -50,6 +50,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.DynamicError;
+import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -508,20 +509,23 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             
             if (!result) {
                // assertion evaluation is false
-               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList); 
+               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, null); 
             }
         }
         catch (DynamicError ex) {
             if ("XPDY0002".equals(ex.code())) {
                // ref: http://www.w3.org/TR/xpath20/#eval_context
-               assertionError = new AssertionError("cvc-assertions-valid-context", element, assertImpl, value, isList);
+               assertionError = new AssertionError("cvc-assertions-valid-context", element, assertImpl, value, isList, ex);
             }
             else {
-               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);
+               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);
             }
         }
+        catch (StaticError ex) {
+            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);  
+        }
         catch(Exception ex) {
-            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList);   
+            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);   
         }
         
         return assertionError;
@@ -612,6 +616,19 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         XSAssertImpl assertImpl = assertError.getAssertion();
         boolean isList = assertError.isList();
         String value = assertError.getValue();
+        
+        // construct the message fragment in case of XPath DynamicError or StaticError  
+        String exceptionMesg = "";
+        Exception exception = assertError.getException();        
+        if (exception instanceof DynamicError) {
+            exceptionMesg = ((DynamicError) exception).code() + " - " + ((DynamicError) exception).getMessage();   
+        }
+        else if (exception instanceof StaticError) {
+            exceptionMesg = ((StaticError) exception).code() + " - " + ((StaticError) exception).getMessage();
+        }
+        if (!"".equals(exceptionMesg) && !exceptionMesg.endsWith(".")) {
+            exceptionMesg = exceptionMesg + ".";  
+        }
                
         String typeNameStr = XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition());
         
@@ -630,33 +647,34 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            }
         }
             
-        String message = assertImpl.getMessage();
-        if (message != null) {
+        String mesgSuffix = "".equals(listAssertErrMessage) ? exceptionMesg : (listAssertErrMessage + ("".equals(exceptionMesg) ? "" : " " + exceptionMesg));
+        String userDefinedMessage = assertImpl.getMessage();
+        if (userDefinedMessage != null) {
            // substitute all placeholder macro instances of "{$value}" with atomic value stored in variable "value"
            if (value != null && !"".equals(value)) {
-               message = message.replaceAll(SchemaSymbols.ASSERT_ERRORMSG_PLACEHOLDER_REGEX, value);
+               userDefinedMessage = userDefinedMessage.replaceAll(SchemaSymbols.ASSERT_ERRORMSG_PLACEHOLDER_REGEX, value);
            }
            
-           if (!message.endsWith(".")) {
-               message = message + ".";    
+           if (!userDefinedMessage.endsWith(".")) {
+               userDefinedMessage = userDefinedMessage + ".";    
            }
            if ("cvc-assertions-valid-context".equals(key)) {
-               message = "Assertion failed (undefined context) for schema type '" + typeNameStr + "'. " + message;   
+               userDefinedMessage = "Assertion failed (undefined context) for schema type '" + typeNameStr + "'. " + userDefinedMessage;   
            }
            else {
-               message = "Assertion failed for schema type '" + typeNameStr + "'. " + message; 
+               userDefinedMessage = "Assertion failed for schema type '" + typeNameStr + "'. " + userDefinedMessage;
            }           
-           fXmlSchemaValidator.reportSchemaError("cvc-assertion-failure-mesg", new Object[] {message, listAssertErrMessage});    
+           fXmlSchemaValidator.reportSchemaError("cvc-assertion-failure-mesg", new Object[] {userDefinedMessage, mesgSuffix});    
         }
         else {
            if (assertImpl.getAssertKind() == XSConstants.ASSERTION) {
               // error for xs:assert component
-              fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});
+              fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, mesgSuffix});
            }
            else {
                // errors for xs:assertion facet
-               fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid", new Object[] {value, assertImpl.getTest().getXPath().toString()});
-               fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, listAssertErrMessage});  
+               fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid", new Object[] {value, assertImpl.getTest().getXPath().toString(), exceptionMesg});
+               fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, mesgSuffix});  
            }
         }
         
@@ -675,15 +693,17 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         private final String value;
         // does this error concerns "simpleType -> list"
         private final boolean isList;
-        private boolean isTypeDerivedFromList = false; 
+        private boolean isTypeDerivedFromList = false;
+        Exception ex = null;
         
         // class constructor
-        public AssertionError(String errorCode, QName element, XSAssertImpl assertImpl, String value, boolean isList) {
+        public AssertionError(String errorCode, QName element, XSAssertImpl assertImpl, String value, boolean isList, Exception ex) {
            this.errorCode = errorCode;
            this.element = element;
            this.assertImpl = assertImpl;
            this.value = value;
            this.isList = isList;
+           this.ex = ex;
         }
         
         public void setIsTypeDerivedFromList(boolean isTypeDerivedFromList) {
@@ -712,6 +732,10 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
         public boolean getIsTypeDerivedFromList() {
            return isTypeDerivedFromList; 
+        }
+        
+        public Exception getException() {
+            return ex;
         }
         
     } // class AssertionError
