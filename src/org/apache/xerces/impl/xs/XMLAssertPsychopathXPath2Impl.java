@@ -512,18 +512,13 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, null); 
             }
         }
+        /*
         catch (DynamicError ex) {
-            if ("XPDY0002".equals(ex.code())) {
-               // ref: http://www.w3.org/TR/xpath20/#eval_context
-               assertionError = new AssertionError("cvc-assertions-valid-context", element, assertImpl, value, isList, ex);
-            }
-            else {
-               assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);
-            }
+            assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);
         }
         catch (StaticError ex) {
             assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);  
-        }
+        } */
         catch(Exception ex) {
             assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);   
         }
@@ -658,12 +653,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
            if (!userDefinedMessage.endsWith(".")) {
                userDefinedMessage = userDefinedMessage + ".";    
            }
-           if ("cvc-assertions-valid-context".equals(key)) {
-               userDefinedMessage = "Assertion failed (undefined context) for schema type '" + typeNameStr + "'. " + userDefinedMessage;   
-           }
-           else {
-               userDefinedMessage = "Assertion failed for schema type '" + typeNameStr + "'. " + userDefinedMessage;
-           }           
+           userDefinedMessage = "Assertion failed for schema type '" + typeNameStr + "'. " + userDefinedMessage;          
            fXmlSchemaValidator.reportSchemaError("cvc-assertion-failure-mesg", new Object[] {userDefinedMessage, mesgSuffix});    
         }
         else {
