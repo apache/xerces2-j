@@ -329,10 +329,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             if (fDepth > -1) {
                 // perform conditional exclusion checks for schema versioning
                 // namespace.
-                boolean ignoreElement = checkVersionControlAttributes(element,
-                                                                   attributes);
+                boolean vcExclude = checkVersionControlAttributes(element, attributes);
                 if (fIgnoreDepth > -1) {
-                    if (ignoreElement) {
+                    if (vcExclude) {
                        fIgnoreDepth--;   
                     }
                     return;
@@ -608,12 +607,12 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     
     
     /*
-     *  Method to check if any of attributes of schema versioning namespace should cause exclusion
-     *  of a schema component along with it's descendant instructions.
+     *  Method to check if any of attributes of schema versioning namespace should cause exclusion of a schema component along 
+     *  with it's descendant instructions.
      */
     private boolean checkVersionControlAttributes(QName element, XMLAttributes attributes) {             
         
-        boolean ignoreSchemaComponent = false;
+        boolean isIgnoreSchemaComponent = false;
 
         // variables holding schema versioning attribute values
         BigDecimal minVer = null;
@@ -622,25 +621,19 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         List typeUnavailableList = null;
         List facetAvailableList = null;
         List facetUnavailableList = null;
-        
+
         // iterate all attributes of an element, and get values of schema versioning attributes.
-        final int length = attributes.getLength();
-        
-        for (int attrIdx = 0; attrIdx < length; ++attrIdx) {
-            String uri = attributes.getURI(attrIdx);
-            
-            if (uri != null && SchemaSymbols.URI_SCHEMAVERSION.equals(uri)) {
+        for (int attrIdx = 0; attrIdx < attributes.getLength(); ++attrIdx) {
+            if (SchemaSymbols.URI_SCHEMAVERSION.equals(attributes.getURI(attrIdx))) {
                 String attrLocalName = attributes.getLocalName(attrIdx);
                 String attrValue = attributes.getValue(attrIdx);
-                
                 if (SchemaSymbols.ATT_MINVERSION.equals(attrLocalName)) {
                     try {
                         minVer = new BigDecimal(attrValue);                    
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "s4s-att-invalid-value",
-                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, 
-                                                   XMLErrorReporter.SEVERITY_ERROR);
+                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
@@ -649,12 +642,11 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "s4s-att-invalid-value",
-                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, 
-                                                   XMLErrorReporter.SEVERITY_ERROR);
+                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
-                   typeAvailableList = tokenizeQNameListString(attrValue);
+                    typeAvailableList = tokenizeQNameListString(attrValue);
                 }
                 else if (SchemaSymbols.ATT_TYPEUNAVAILABLE.equals(attrLocalName)) {
                     typeUnavailableList = tokenizeQNameListString(attrValue);
@@ -667,37 +659,34 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
                 else {
                     // report a warning
-                    fErrorReporter.reportError(fLocator, XSMessageFormatter.SCHEMA_DOMAIN, "src-cip.1", new Object[]{ attrLocalName }, 
-                                               XMLErrorReporter.SEVERITY_WARNING);
+                    fErrorReporter.reportError(fLocator, XSMessageFormatter.SCHEMA_DOMAIN, "src-cip.1", new Object[]{attrLocalName}, XMLErrorReporter.SEVERITY_WARNING);
                 }
             }
-            
         }
-                             
-        // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable, vc:typeUnavailable, 
-        // vc:facetAvailable & vc:facetUnavailable.
-        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? false : schemaLangVersionAllowsExclude(minVer, maxVer);
-        boolean typeAvlAllowsIgnore = (typeAvailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
-                                                                                  typeAvailableList, Constants.IS_TYPE,
-                                                                                  Constants.TYPE_AND_FACET_AVAILABILITY);
-        boolean typeUnavlAllowsIgnore = (typeUnavailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
-                                                                                  typeUnavailableList, Constants.IS_TYPE,
-                                                                                  Constants.TYPE_AND_FACET_UNAVAILABILITY);
-        boolean facetAvlAllowsIgnore = (facetAvailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
-                                                                                  facetAvailableList,Constants.IS_FACET,
-                                                                                  Constants.TYPE_AND_FACET_AVAILABILITY);
-        boolean facetUnavlAllowsIgnore = (facetUnavailableList == null) ? false : typeAndFacetAvailableAllowsExclude(
-                                                                                     facetUnavailableList, Constants.IS_FACET,
-                                                                                     Constants.TYPE_AND_FACET_UNAVAILABILITY);
-        
+
+        // perform checks for attributes vc:minVersion, vc:maxVersion, vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable & vc:facetUnavailable
+        boolean minMaxSchemaVerAllowsIgnore = (minVer == null && maxVer == null) ? false : isSchemaLangVersionAllowsExclude(minVer, maxVer);
+        boolean typeAvlAllowsIgnore = (typeAvailableList == null) ? false : isTypeAndFacetAvailableAllowsExclude(
+                                                                                 typeAvailableList, Constants.IS_TYPE,
+                                                                                 Constants.TYPE_AND_FACET_AVAILABILITY);
+        boolean typeUnavlAllowsIgnore = (typeUnavailableList == null) ? false : isTypeAndFacetAvailableAllowsExclude(
+                                                                                 typeUnavailableList, Constants.IS_TYPE,
+                                                                                 Constants.TYPE_AND_FACET_UNAVAILABILITY);
+        boolean facetAvlAllowsIgnore = (facetAvailableList == null) ? false : isTypeAndFacetAvailableAllowsExclude(
+                                                                                 facetAvailableList,Constants.IS_FACET,
+                                                                                 Constants.TYPE_AND_FACET_AVAILABILITY);
+        boolean facetUnavlAllowsIgnore = (facetUnavailableList == null) ? false : isTypeAndFacetAvailableAllowsExclude(
+                                                                                 facetUnavailableList, Constants.IS_FACET,
+                                                                                 Constants.TYPE_AND_FACET_UNAVAILABILITY);
+
         if (minMaxSchemaVerAllowsIgnore || typeAvlAllowsIgnore || typeUnavlAllowsIgnore || facetAvlAllowsIgnore || facetUnavlAllowsIgnore) {
-            ignoreSchemaComponent =  true;  
+            isIgnoreSchemaComponent =  true;  
         }
         else {
-            ignoreSchemaComponent = false; 
+            isIgnoreSchemaComponent = false; 
         }
-        
-        return ignoreSchemaComponent;
+
+        return isIgnoreSchemaComponent;
         
     } // checkVersionControlAttributes
     
@@ -707,7 +696,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * from schema processing, depending on the values of vc:minVersion & vc:maxVersion attributes from
      * schema versioning namespace.
     */
-    private boolean schemaLangVersionAllowsExclude(BigDecimal minVer, BigDecimal maxVer) {
+    private boolean isSchemaLangVersionAllowsExclude(BigDecimal minVer, BigDecimal maxVer) {
         
         boolean minMaxSchemaVerAllowsIgnore = false;
         
@@ -739,80 +728,74 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         
         return minMaxSchemaVerAllowsIgnore;
         
-    } // schemaVersionAllowsExclude
+    } // isSchemaLangVersionAllowsExclude
     
 
     /* 
-     * Method to determine whether a schema component and it's descendant instructions should be excluded
-     * from schema processing, depending on values of vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable
-     * and vc:facetUnavailable attributes from schema versioning namespace. 
+     * Method to determine whether a schema component and it's descendant instructions should be excluded from schema processing, 
+     * depending on values of vc:typeAvailable, vc:typeUnavailable, vc:facetAvailable and vc:facetUnavailable attributes from 
+     * schema versioning namespace. 
     */
-    private boolean typeAndFacetAvailableAllowsExclude(List typeOrFacetList, short typeOrFacet, short availaibilityUnavlCheck) {
+    private boolean isTypeAndFacetAvailableAllowsExclude(List typeOrFacetList, short typeOrFacet, short availaibilityUnavlCheck) {
         
-        // either of the following boolean values would be returned from this method, depending on whether
-        // availability or unavailability check is asked for.
+        // either of the following boolean values would be returned from this method, depending on whether availability or 
+        // unavailability check is asked for.
         boolean typeOrFacetAvlAllowsIgnore = false;        
         boolean typeOrFacetUnavlAllowsIgnore = true;
-        
+
         // iterate all the items of type/facet list
         for (Iterator iter = typeOrFacetList.iterator(); iter.hasNext(); ) {           
-           String typeOrFacetRawValue = (String) iter.next();
-           String typeOrFacetLocalName = null;
-           String typeOrFacetUri = null;
-           if (typeOrFacetRawValue.indexOf(':') != -1) {              
-              typeOrFacetLocalName = typeOrFacetRawValue.substring(typeOrFacetRawValue.indexOf(':') + 1);
-              String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, typeOrFacetRawValue.indexOf(':'));
-              typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix.intern());
-           }
-           else {
-               typeOrFacetLocalName = typeOrFacetRawValue;    
-           }
-           
-           if (typeOrFacet == Constants.IS_TYPE) {
-              // check for availability of schema types
-              if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
-                                                  !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName, typeOrFacetUri)) {
-                  fIgnoreDepth++;
-                  typeOrFacetAvlAllowsIgnore = true;
-                  break;             
-              }
-              else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && 
-                                                  !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName, typeOrFacetUri)) {
-                  typeOrFacetUnavlAllowsIgnore = false;
-                  break;
-              }
-           } 
-           else if (typeOrFacet == Constants.IS_FACET) {
-               // check for availability of schema facets
-               if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && 
-                                                  !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName, typeOrFacetUri)) {
-                   fIgnoreDepth++;
-                   typeOrFacetAvlAllowsIgnore = true;
-                   break;             
-               }
-               else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY &&
-                                                  !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName, typeOrFacetUri)) {
-                   typeOrFacetUnavlAllowsIgnore = false;
-                   break;
-               }
-           }
-           
+            String typeOrFacetRawValue = (String) iter.next();
+            String typeOrFacetLocalName = null;
+            String typeOrFacetUri = null;
+            if (typeOrFacetRawValue.indexOf(':') != -1) {              
+                typeOrFacetLocalName = typeOrFacetRawValue.substring(typeOrFacetRawValue.indexOf(':') + 1);
+                String typeOrFacetPrefix = typeOrFacetRawValue.substring(0, typeOrFacetRawValue.indexOf(':'));
+                typeOrFacetUri = fNamespaceContext.getURI(typeOrFacetPrefix.intern());
+            }
+            else {
+                typeOrFacetLocalName = typeOrFacetRawValue;    
+            }
+
+            if (typeOrFacet == Constants.IS_TYPE) {
+                // check for availability of schema types
+                if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName, typeOrFacetUri)) {
+                    typeOrFacetAvlAllowsIgnore = true;
+                    break;             
+                }
+                else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && !schemaCondlInclHelper.isTypeSupported(typeOrFacetLocalName, typeOrFacetUri)) {
+                    typeOrFacetUnavlAllowsIgnore = false;
+                    break;
+                }
+            } 
+            else if (typeOrFacet == Constants.IS_FACET) {
+                // check for availability of schema facets
+                if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY && !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName, typeOrFacetUri)) {
+                    typeOrFacetAvlAllowsIgnore = true;
+                    break;             
+                }
+                else if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_UNAVAILABILITY && !schemaCondlInclHelper.isFacetSupported(typeOrFacetLocalName, typeOrFacetUri)) {
+                    typeOrFacetUnavlAllowsIgnore = false;
+                    break;
+                }
+            }
+
         }
-        
+
         if (availaibilityUnavlCheck == Constants.TYPE_AND_FACET_AVAILABILITY) {
-           if (typeOrFacetAvlAllowsIgnore) {
-              fIgnoreDepth++;   
-           }           
-           return typeOrFacetAvlAllowsIgnore;
+            if (typeOrFacetAvlAllowsIgnore) {
+                fIgnoreDepth++;   
+            }           
+            return typeOrFacetAvlAllowsIgnore;
         }
         else {
-           if (typeOrFacetUnavlAllowsIgnore) {
-              fIgnoreDepth++;   
-           }
-           return typeOrFacetUnavlAllowsIgnore;    
+            if (typeOrFacetUnavlAllowsIgnore) {
+                fIgnoreDepth++;   
+            }
+            return typeOrFacetUnavlAllowsIgnore;    
         }
         
-    } // typeAndFacetAvailableAllowsExclude
+    } // isTypeAndFacetAvailableAllowsExclude
 
     
     /*
@@ -823,13 +806,13 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         
         StringTokenizer st = new StringTokenizer(strValue, " \n\t\r");
         List stringTokens = new ArrayList(st.countTokens());
-        
+
         while (st.hasMoreTokens()) {
-           String QNameStr = st.nextToken();
-           XSTypeHelper.validateQNameValue(QNameStr, fNamespaceContext, fErrorReporter);          
-           stringTokens.add(QNameStr);
+            String QNameStr = st.nextToken();
+            XSTypeHelper.validateQNameValue(QNameStr, fNamespaceContext, fErrorReporter);          
+            stringTokens.add(QNameStr);
         }
-        
+
         return stringTokens;
         
     } // tokenizeQNameListString
