@@ -144,19 +144,13 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
 
         // add attribute nodes to DOM element node
         for (int attIndex = 0; attIndex < attributes.getLength(); attIndex++) {
-            String attrUri = attributes.getURI(attIndex);
-            String attQName = attributes.getQName(attIndex);
-            String attrLocalName = attributes.getLocalName(attIndex);
-            String attValue = attributes.getValue(attIndex);             
-
-            PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)fAssertDocument, attrUri, attQName, attrLocalName);
-            attrNode.setNodeValue(attValue);
-
+            PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)fAssertDocument, attributes.getURI(attIndex), attributes.getQName(attIndex), attributes.getLocalName(attIndex));
+            attrNode.setNodeValue(attributes.getValue(attIndex));
             // set PSVI information for the attribute
-            Augmentations attrAugs = attributes.getAugmentations(attIndex);
-            AttributePSVImpl attrPSVI = (AttributePSVImpl) attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
-            attrNode.setPSVI(attrPSVI);
-
+            AttributePSVImpl attrPSVI = (AttributePSVImpl) (attributes.getAugmentations(attIndex)).getItem(Constants.ATTRIBUTE_PSVI);
+            if (attrPSVI != null) {
+               attrNode.setPSVI(attrPSVI);
+            }
             fCurrentAssertDomNode.setAttributeNode(attrNode);
         }
 
@@ -219,13 +213,12 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         if (fCurrentAssertDomNode != null) {            
             // set PSVI information on the element
             ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
-            ((PSVIElementNSImpl) fCurrentAssertDomNode).setPSVI((ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI));
+            ((PSVIElementNSImpl) fCurrentAssertDomNode).setPSVI(elemPSVI);
             
             // handling default values of elements (adding them as 'text' node in the assertion XDM tree)
             XSElementDecl elemDecl = (XSElementDecl) elemPSVI.getElementDeclaration();
-            if (elemDecl != null && elemDecl.fDefault != null && fCurrentAssertDomNode.getChildNodes().getLength() == 0) {
-                String normalizedDefaultValue = elemDecl.fDefault.normalizedValue;
-                fCurrentAssertDomNode.appendChild(fAssertDocument.createTextNode(normalizedDefaultValue));
+            if (elemDecl != null && elemDecl.fDefault != null && !fCurrentAssertDomNode.hasChildNodes()) {
+                fCurrentAssertDomNode.appendChild(fAssertDocument.createTextNode(elemDecl.fDefault.normalizedValue));
             }               
             
             if (!fAssertRootStack.empty() && (fCurrentAssertDomNode == fAssertRootStack.peek())) {               

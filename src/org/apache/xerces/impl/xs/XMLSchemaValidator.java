@@ -2021,6 +2021,9 @@ public class XMLSchemaValidator
             fElementDepth++;
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                assertionValidatorStartElementDelegate(element, attributes);                        
+            }
             return augs;
         }
 
@@ -2134,11 +2137,14 @@ public class XMLSchemaValidator
             }
         }
 
-        // if the wildcard is skip, then return
+        // if the wildcard is skip
         if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.PC_SKIP) {
             fSkipValidationDepth = fElementDepth;
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                assertionValidatorStartElementDelegate(element, attributes);                        
+            }
             return augs;
         }
         
@@ -2424,12 +2430,12 @@ public class XMLSchemaValidator
         XMLAttribute[] inheritedAttributesForPsvi = null; 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fInhrAttrCountStack.push(fInheritableAttrList.size());
-            inheritedAttributesForPsvi = getInheritedAttributesForPsvi();
+            inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
         }
 
         if (fAugPSVI) {
             augs = getEmptyAugs(augs);
-            
+
             // PSVI: add validation context
             fCurrentPSVI.fValidationContext = fValidationRoot;
             // PSVI: add element declaration
@@ -2446,21 +2452,26 @@ public class XMLSchemaValidator
                 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             // find attributes among the attributes of the current element, which are declared inheritable and store them for later processing.
-            // one of the uses of inherited attributes is in type alternatives processing.
+            // one of the uses of inheritable attributes is in type alternatives processing.
             saveInheritableAttributes(fCurrentElemDecl, attributes);
-            try {
-               // delegate to assertions validator subcomponent
-               fAssertionValidator.handleStartElement(element, attributes);
-            }
-            catch(Exception ex) {
-                throw new XNIException(ex.getMessage(), ex); 
-            }
+            assertionValidatorStartElementDelegate(element, attributes);                       
         }
 
         return augs;
 
     } // handleStartElement(QName,XMLAttributes,boolean)
     
+    /*
+     * Delegate to assertions validator startElement handler.
+     */
+    private void assertionValidatorStartElementDelegate(QName element, XMLAttributes attributes) {
+        try {
+            fAssertionValidator.handleStartElement(element, attributes);
+         }
+         catch(Exception ex) {
+             throw new XNIException(ex.getMessage(), ex); 
+         } 
+    } // assertionValidatorStartElementDelegate
 
     /**
      *  Handle end element. If there is not text content, and there is a
@@ -2512,6 +2523,26 @@ public class XMLSchemaValidator
 
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
+            
+            // delegate to assertions validator subcomponent
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                // initialize augmentations to be passed to assertions processor
+                Augmentations assertAugs = new AugmentationsImpl();
+                ElementPSVImpl assertElemPSVI = new ElementPSVImpl();
+                assertElemPSVI.fDeclaration = fCurrentElemDecl;
+                assertElemPSVI.fTypeDecl = fCurrentType;
+                assertElemPSVI.fNotation = fNotation;
+                assertElemPSVI.fGrammars = fGrammarBucket.getGrammars();
+                assertAugs.putItem(Constants.ELEMENT_PSVI, assertElemPSVI);
+                assertAugs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));            
+                fAssertionValidator.handleEndElement(element, assertAugs);            
+                if (fAugPSVI && fIsAssertProcessingNeededForSTUnion) {
+                    // update PSVI
+                    fValidatedInfo.memberType = ((ElementPSVImpl) assertAugs.getItem(Constants.ELEMENT_PSVI)).fValue.memberType;                
+                } 
+                fIsAssertProcessingNeededForSTUnion = true;            
+            }
+            
             return augs;
         }
 
@@ -2692,7 +2723,7 @@ public class XMLSchemaValidator
             XMLAttribute[] inheritedAttributesForPsvi = null;
             if (fInhrAttrCountStack.size() > 0) {
                 fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
-                inheritedAttributesForPsvi = getInheritedAttributesForPsvi();
+                inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
             }
             fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;
             // PSVI: validation attempted
@@ -4876,7 +4907,7 @@ public class XMLSchemaValidator
                 fIsAssertProcessingNeededForSTUnion = false;
             }
             if (augs != null) {
-                // set value for an attribute
+                // set augmentation information for an attribute
                 augs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));                
             }
         }
@@ -4910,7 +4941,7 @@ public class XMLSchemaValidator
     /*
      * Get inherited attributes for copying into an element PSVI.
      */
-    private XMLAttribute[] getInheritedAttributesForPsvi() {        
+    private XMLAttribute[] getInheritedAttributesForPSVI() {        
         XMLAttribute[] inheritedAttributes = null; 
         if (fInheritableAttrList.size() > 0) {
             inheritedAttributes = new XMLAttribute[fInheritableAttrList.size()]; 
@@ -4919,6 +4950,6 @@ public class XMLSchemaValidator
             }  
         }
         return inheritedAttributes; 
-    } // getInheritedAttributesForPsvi
+    } // getInheritedAttributesForPSVI
     
 } // class XMLSchemaValidator

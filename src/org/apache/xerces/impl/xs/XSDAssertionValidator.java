@@ -146,20 +146,22 @@ public class XSDAssertionValidator {
      * for the current context. Return the assertions list.
      */
     private List getAssertsForEvaluation(QName element, XMLAttributes attributes) {
-        
-       XSTypeDefinition typeDefn = fXmlSchemaValidator.fCurrentPSVI.getTypeDefinition();
-
-       List assertionList = null;            
-       if (typeDefn.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-           // if element's schema type is a "complex type"               
-           XSObjectListImpl complexTypeAsserts = getAssertsFromComplexType((XSComplexTypeDefinition) typeDefn, attributes);
-           if (complexTypeAsserts.size() > 0) {
-               assertionList = complexTypeAsserts;             
+       
+       List assertionList = null;
+       
+       XSTypeDefinition typeDefn = fXmlSchemaValidator.fCurrentPSVI.getTypeDefinition();       
+       if (typeDefn != null) {
+           if (typeDefn.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+               // if element's schema type is a "complex type"               
+               XSObjectListImpl complexTypeAsserts = getAssertsFromComplexType((XSComplexTypeDefinition) typeDefn, attributes);
+               if (complexTypeAsserts.size() > 0) {
+                   assertionList = complexTypeAsserts;             
+               }
            }
-       }
-       else if (typeDefn.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-           // if element's schema type is a "simple type"
-           assertionList = getAssertsFromSimpleType((XSSimpleTypeDefinition) typeDefn);            
+           else {
+               // if element's schema type is a "simple type"
+               assertionList = getAssertsFromSimpleType((XSSimpleTypeDefinition) typeDefn);            
+           }
        }
                
        return assertionList;
