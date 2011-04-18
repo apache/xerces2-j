@@ -1818,8 +1818,13 @@ public class XMLSchemaValidator
     // returns the normalized string if possible, otherwise the original string
     XMLString handleCharacters(XMLString text) {
 
-        if (fSkipValidationDepth >= 0)
+        if (fSkipValidationDepth >= 0) {
+            // delegate to assertions validator subcomponent
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                fAssertionValidator.characterDataHandler(text);
+            }
             return text;
+        }
 
         fSawText = fSawText || text.length > 0;
 
