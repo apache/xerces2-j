@@ -2085,8 +2085,8 @@ public class XMLSchemaValidator
                         final int maxOccurs = occurenceInfo[1];
                         final int count = occurenceInfo[2];
                         // Check if this is a violation of maxOccurs
-                        if (count >= maxOccurs && maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-                            reportSchemaError("cvc-complex-type.2.4.f", new Object[] { element.rawname, Integer.toString(maxOccurs) });
+                        if (count >= maxOccurs && maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {                            
+                            reportSchemaError("cvc-complex-type.2.4.f", new Object[] { fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(maxOccurs) });
                         }
                         else {
                             reportSchemaError("cvc-complex-type.2.4.d", new Object[] { element.rawname });
