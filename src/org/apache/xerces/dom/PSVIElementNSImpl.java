@@ -25,7 +25,6 @@ import java.io.ObjectOutputStream;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.ElementPSVImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.xni.XMLAttribute;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
 import org.apache.xerces.xs.ShortList;
@@ -37,6 +36,7 @@ import org.apache.xerces.xs.XSNotationDeclaration;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSValue;
+import org.apache.xerces.xs.datatypes.ObjectList;
 
 /**
  * Element namespace implementation; stores PSVI element items.
@@ -108,7 +108,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     protected XSModel fSchemaInformation = null;
     
     /** inherited attributes */
-    protected XMLAttribute[] fInheritedAttributes = null; 
+    protected ObjectList fInheritedAttributes = null; 
     
     //
     // ElementPSVI methods
@@ -273,9 +273,9 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     /**
      * Inherited attributes.
      * 
-     * @return  an array of inherited attributes. null if no inherited attributes were found.
+     * @return  inherited attributes list. null if no inherited attributes were found.
      */
-    public XMLAttribute[] getInheritedAttributes() {
+    public ObjectList getInheritedAttributes() {
         return fInheritedAttributes; 
     }
     

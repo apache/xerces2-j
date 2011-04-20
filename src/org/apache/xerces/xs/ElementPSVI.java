@@ -17,7 +17,7 @@
 
 package org.apache.xerces.xs;
 
-import org.apache.xerces.xni.XMLAttribute;
+import org.apache.xerces.xs.datatypes.ObjectList;
 
 /**
  *  Represents a PSVI item for one element information item. 
@@ -49,6 +49,6 @@ public interface ElementPSVI extends ItemPSVI {
     /**
      * [inherited attributes]: inherited attributes.
      */
-    public XMLAttribute[] getInheritedAttributes();
+    public ObjectList getInheritedAttributes();
 
 }

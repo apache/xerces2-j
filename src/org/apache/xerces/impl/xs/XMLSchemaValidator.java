@@ -51,6 +51,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
@@ -63,7 +64,6 @@ import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLAttribute;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;
@@ -89,6 +89,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.datatypes.ObjectList;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
@@ -2432,7 +2433,7 @@ public class XMLSchemaValidator
         }
         
         // inheritable attributes processing
-        XMLAttribute[] inheritedAttributesForPsvi = null; 
+        ObjectList inheritedAttributesForPsvi = null; 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             fInhrAttrCountStack.push(fInheritableAttrList.size());
             inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
@@ -2725,7 +2726,7 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
             fCurrentPSVI.fNil = this.fNil;
-            XMLAttribute[] inheritedAttributesForPsvi = null;
+            ObjectList inheritedAttributesForPsvi = null;
             if (fInhrAttrCountStack.size() > 0) {
                 fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
                 inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
@@ -4931,11 +4932,11 @@ public class XMLSchemaValidator
             for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
                 XSAttributeUse attrUse = (XSAttributeUse) attributeUses.get(attrUsesIndx);                 
                 if (attrUse.getInheritable()) {                   
-                    // this is an inheritable attribute. copy this into an global Vector list.
+                    // this is an inheritable attribute. copy into an global Vector list.
                     XSAttributeDeclaration attrDecl = (XSAttributeDeclaration) attrUse.getAttrDeclaration();
-                    String attrVal = attributes.getValue(attrDecl.getNamespace(), attrDecl.getName());
-                    if (attrVal != null) {
-                       fInheritableAttrList.add(new XMLAttribute(attrDecl, attrVal));
+                    Augmentations attrAugs = attributes.getAugmentations(attrDecl.getNamespace(), attrDecl.getName());
+                    if (attrAugs != null) {
+                       fInheritableAttrList.add((AttributePSVI)attrAugs.getItem(Constants.ATTRIBUTE_PSVI));
                     }
                 }
             }                      
@@ -4946,15 +4947,20 @@ public class XMLSchemaValidator
     /*
      * Get inherited attributes for copying into an element PSVI.
      */
-    private XMLAttribute[] getInheritedAttributesForPSVI() {        
-        XMLAttribute[] inheritedAttributes = null; 
+    private ObjectList getInheritedAttributesForPSVI() {
+        
+        ObjectList inheritedAttributesList = null;
+        
         if (fInheritableAttrList.size() > 0) {
-            inheritedAttributes = new XMLAttribute[fInheritableAttrList.size()]; 
+            Object[] inheritedAttributesArray = new Object[fInheritableAttrList.size()]; 
             for (int inhrAttrIdx = 0; inhrAttrIdx < fInheritableAttrList.size(); inhrAttrIdx++) {
-                inheritedAttributes[inhrAttrIdx] = (XMLAttribute) fInheritableAttrList.get(inhrAttrIdx);  
+                inheritedAttributesArray[inhrAttrIdx] = fInheritableAttrList.get(inhrAttrIdx);  
             }  
-        }
-        return inheritedAttributes; 
+            inheritedAttributesList = new ObjectListImpl(inheritedAttributesArray, inheritedAttributesArray.length); 
+        } 
+        
+        return inheritedAttributesList;
+        
     } // getInheritedAttributesForPSVI
     
 } // class XMLSchemaValidator

@@ -24,8 +24,8 @@ import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLAttribute;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -58,7 +58,7 @@ public class XSDTypeAlternativeValidator {
         
         XSTypeAlternativeImpl[] typeAlternatives = currentElemDecl.getTypeAlternatives();        
         if (typeAlternatives != null) {              
-            // Construct a list of attributes needed for CTA processing. This includes inheritable attributes as well.
+            // Construct a list of attributes needed for CTA processing. This includes inherited attributes as well.
             XMLAttributes ctaAttributes = getAttributesForCTA(attributes, inheritableAttrList);
             for (int typeAltIdx = 0; typeAltIdx < typeAlternatives.length; typeAltIdx++) {
                 Test ctaTest = typeAlternatives[typeAltIdx].getTest();
@@ -82,12 +82,13 @@ public class XSDTypeAlternativeValidator {
     
 
     /*
-     * Construct a list of attributes, needed for CTA processing. This includes inheritable attributes as well.  
+     * Construct a list of attributes, needed for CTA processing. This includes inherited attributes as well.  
      */
     private XMLAttributes getAttributesForCTA(XMLAttributes attributes, Vector inheritableAttrList) {
 
-        // copy attributes from the original list of attributes
         XMLAttributes ctaAttributes = new XMLAttributesImpl();
+        
+        // copy attributes from the original list of attributes        
         for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {
             QName attrQName = new QName();
             attributes.getName(attrIndx, attrQName);
@@ -96,13 +97,13 @@ public class XSDTypeAlternativeValidator {
 
         // add inherited attributes to the CTA attributes list
         for (int elemIndx = inheritableAttrList.size() - 1; elemIndx > -1; elemIndx--) {        
-            XMLAttribute inhAttr = (XMLAttribute) inheritableAttrList.elementAt(elemIndx);
-            XSAttributeDeclaration inhrAttrDecl = inhAttr.getAttrDecl();
+            AttributePSVI inhAttrPsvi = (AttributePSVI) inheritableAttrList.elementAt(elemIndx);
+            XSAttributeDeclaration inhrAttrDecl = inhAttrPsvi.getAttributeDeclaration();
             // if an inherited attribute is not overridden by the current element, add it to the CTA attributes list
             if (!isInheritedAttributeOverridden(ctaAttributes, inhrAttrDecl)) {                
                 QName attrQName = new QName();
-                attrQName.setValues(null, inhrAttrDecl.getName(), inhrAttrDecl.getName(), inhrAttrDecl.getNamespace());
-                ctaAttributes.addAttribute(attrQName, null, inhAttr.getAttrValue());
+                attrQName.setValues(null, inhrAttrDecl.getName(), inhrAttrDecl.getName(), inhrAttrDecl.getNamespace());                
+                ctaAttributes.addAttribute(attrQName, null, inhAttrPsvi.getSchemaValue().getNormalizedValue());
             }
         }
 
@@ -114,19 +115,15 @@ public class XSDTypeAlternativeValidator {
     /*
      * Check if an inherited attribute already exists in the current attributes list.
      */
-    private boolean isInheritedAttributeOverridden(XMLAttributes attributes, XSAttributeDeclaration inhrAttrDecl) {
-      
+    private boolean isInheritedAttributeOverridden(XMLAttributes attributes, XSAttributeDeclaration inhrAttrDecl) {      
         boolean attrExists = false;
-
         for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {        
             if ((attributes.getLocalName(attrIndx)).equals(inhrAttrDecl.getName()) && XSTypeHelper.isURIEqual(attributes.getURI(attrIndx), inhrAttrDecl.getNamespace())) {              
                 attrExists = true;
                 break;
             }
         }
-
-        return attrExists;
-      
+        return attrExists;      
     } // isInheritedAttributeOverridden
     
 } // class XSDTypeAlternativeValidator
