@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
@@ -325,10 +326,14 @@ public class ElementPSVImpl implements ElementPSVI {
     /**
      * Inherited attributes.
      * 
-     * @return  inherited attributes list. null if no inherited attributes were found.
+     * @return inherited attributes list, or an empty list 
+     * if there are no inherited attributes.
      */
     public ObjectList getInheritedAttributes() {
-       return fInheritedAttributes; 
+        if (fInheritedAttributes != null) {
+            return fInheritedAttributes;
+        }
+        return ObjectListImpl.EMPTY_LIST;
     }
     
     /**
