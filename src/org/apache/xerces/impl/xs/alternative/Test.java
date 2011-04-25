@@ -28,8 +28,6 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
-import org.eclipse.wst.xml.xpath2.processor.DynamicError;
-import org.eclipse.wst.xml.xpath2.processor.StaticError;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -119,10 +117,8 @@ public class Test extends AbstractPsychoPathXPath2Impl {
         
         boolean evaluationResult = false;
 
-        try {
-            // construct a DOM document (used by psychopath engine for XPath XDM instance). 
-            // A PSVI DOM is constructed to comply to PsychoPath engine design. This doesn't seem to affect CTA psychopath evaluations.
-            // CTA spec doesn't require a typed XDM tree. REVISIT ...
+        try { 
+            // an untyped PSVI DOM tree is constructed, to provide to PsychoPath engine for evaluation.
             Document document = new PSVIDocumentImpl();
             Element elem = document.createElementNS(element.uri, element.rawname);
             for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
@@ -141,12 +137,6 @@ public class Test extends AbstractPsychoPathXPath2Impl {
             }
             evaluationResult = evaluateXPathExpr(fXPathPsychoPath, elem);
         } 
-        catch (StaticError ex) {
-            evaluationResult = false; 
-        } 
-        catch(DynamicError ex) {
-            evaluationResult = false;
-        }
         catch(Exception ex) {
             evaluationResult = false;  
         }
