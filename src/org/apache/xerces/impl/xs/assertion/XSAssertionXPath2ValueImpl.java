@@ -58,9 +58,9 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
     /*
      * Determine "string value" of XPath 2.0 context variable $value.
      */
-    public String computeStringValueOf$value(Element currentAssertDomRootElem, ElementPSVI pElemPSVI) throws DOMException {
+    public String computeStringValueOf$value(Element rootNodeOfAssertTree, ElementPSVI pElemPSVI) throws DOMException {
         
-        NodeList childNodeList = currentAssertDomRootElem.getChildNodes();
+        NodeList childNodeList = rootNodeOfAssertTree.getChildNodes();
         // there could be adjacent text nodes in the DOM tree. merge them to get the value.
         StringBuffer textValueContents = new StringBuffer();
         final int childListLength = childNodeList.getLength();
@@ -108,7 +108,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context. This method delegates
      * to other methods of interface XSAssertionXPath2Value to carry some of it's tasks.
      */
-    public void setXDMTypedValueOf$value(Element currentAssertDomRootElem, String value, XSSimpleTypeDefinition listOrUnionType, XSTypeDefinition attrType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception {
+    public void setXDMTypedValueOf$value(Element rootNodeOfAssertTree, String value, XSSimpleTypeDefinition listOrUnionType, XSTypeDefinition attrType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception {
         
         // dummy schema short code initializer
         short xsdTypecode = -100;
@@ -138,8 +138,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
            }
            else {
               // is "simple type" value of an element
-              PSVIElementNSImpl currentAssertPSVINode = (PSVIElementNSImpl) currentAssertDomRootElem;
-              XSTypeDefinition typeDef = currentAssertPSVINode.getTypeDefinition();
+              XSTypeDefinition typeDef = ((PSVIElementNSImpl) rootNodeOfAssertTree).getTypeDefinition();
               if (typeDef instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition) typeDef).getSimpleType() != null) {
                   setXDMValueOf$valueForCTWithSimpleContent(value, (XSComplexTypeDefinition) typeDef, xpath2DynamicContext);
               }
@@ -169,17 +168,17 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety list. 
      */
-    public void setXDMTypedValueOf$valueForSTVarietyList(Element currentAssertDomRootElem, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception {
+    public void setXDMTypedValueOf$valueForSTVarietyList(Element rootNodeOfAssertTree, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception {
         
         XSObjectList memberTypes = itemType.getMemberTypes();
         if (memberTypes.getLength() > 0) {
             // the list's item type has variety 'union'
             XSSimpleTypeDefinition actualListItemType = getActualListItemTypeForVarietyUnion(memberTypes, listStrValue);
             // set a schema 'typed value' to variable $value
-            setXDMTypedValueOf$value(currentAssertDomRootElem, listStrValue, actualListItemType, null, false, xpath2DynamicContext);
+            setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, actualListItemType, null, false, xpath2DynamicContext);
         } 
         else {
-            setXDMTypedValueOf$value(currentAssertDomRootElem, listStrValue, itemType, null, isTypeDerivedFromList, xpath2DynamicContext); 
+            setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, itemType, null, isTypeDerivedFromList, xpath2DynamicContext); 
         }
 
     } // setXDMTypedValueOf$valueForSTVarietyList

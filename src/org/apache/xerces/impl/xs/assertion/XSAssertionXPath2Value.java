@@ -37,13 +37,13 @@ public interface XSAssertionXPath2Value {
     /*
      * Determine "string value" of XPath 2.0 context variable $value.
      */
-    public String computeStringValueOf$value(Element currentAssertDomRootElem, ElementPSVI pElemPSVI) throws DOMException;
+    public String computeStringValueOf$value(Element rootNodeOfAssertTree, ElementPSVI pElemPSVI) throws DOMException;
     
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context. This method may
      * delegate to other methods of this interface for doing its responsibilities.
      */
-    public void setXDMTypedValueOf$value(Element currentAssertDomRootElem, String value, XSSimpleTypeDefinition listOrUnionType, XSTypeDefinition attrType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
+    public void setXDMTypedValueOf$value(Element rootNodeOfAssertTree, String value, XSSimpleTypeDefinition listOrUnionType, XSTypeDefinition attrType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
     
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety atomic. 
@@ -53,7 +53,7 @@ public interface XSAssertionXPath2Value {
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety list. 
      */
-    public void setXDMTypedValueOf$valueForSTVarietyList(Element currentAssertDomRootElem, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
+    public void setXDMTypedValueOf$valueForSTVarietyList(Element rootNodeOfAssertTree, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception;
     
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety union. 
