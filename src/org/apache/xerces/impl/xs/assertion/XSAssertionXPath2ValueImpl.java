@@ -173,7 +173,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         XSObjectList memberTypes = itemType.getMemberTypes();
         if (memberTypes.getLength() > 0) {
             // the list's item type has variety 'union'
-            XSSimpleTypeDefinition actualListItemType = getActualListItemTypeForVarietyUnion(memberTypes, listStrValue);
+            XSSimpleTypeDefinition actualListItemType = getActualXDMItemTypeForSTVarietyUnion(memberTypes, listStrValue);
             // set a schema 'typed value' to variable $value
             setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, actualListItemType, null, false, xpath2DynamicContext);
         } 
@@ -219,7 +219,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
                // itemType of xs:list has variety 'union'. here list items may have different types which are determined below.
                while (values.hasMoreTokens()) {
                    String itemValue = values.nextToken();
-                   XSSimpleTypeDefinition listItemTypeForUnion = getActualListItemTypeForVarietyUnion(memberTypes, itemValue);
+                   XSSimpleTypeDefinition listItemTypeForUnion = getActualXDMItemTypeForSTVarietyUnion(memberTypes, itemValue);
                    xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue(listItemTypeForUnion.getBuiltInKind(), itemValue));
                }                                  
             }
@@ -236,9 +236,10 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         }
         else if (complexTypeSimplContentType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
             // simple content type has variety xs:union
-            XSSimpleTypeDefinition simpleContentTypeForUnion = getActualListItemTypeForVarietyUnion(complexTypeSimplContentType.getMemberTypes(), value);
-            xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), 
-                                              SchemaTypeValueFactory.newSchemaTypeValue(simpleContentTypeForUnion.getBuiltInKind(), value));
+            XSSimpleTypeDefinition simpleContentTypeForUnion = getActualXDMItemTypeForSTVarietyUnion(complexTypeSimplContentType.getMemberTypes(), value);
+            if (simpleContentTypeForUnion != null) {
+                xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), SchemaTypeValueFactory.newSchemaTypeValue(simpleContentTypeForUnion.getBuiltInKind(), value));
+            }
         }
         else {
             // simple content type has variety atomic
@@ -280,25 +281,25 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
     
     
     /*
-     * Find the actual schema type of "list item" instance if the "item type" of list has variety union. 
+     * Find the actual schema type of XDM item instance, if source schema type is simpleType with variety union. 
      */
-    private XSSimpleTypeDefinition getActualListItemTypeForVarietyUnion(XSObjectList memberTypes, String listItemStrValue) {
+    private XSSimpleTypeDefinition getActualXDMItemTypeForSTVarietyUnion(XSObjectList memberTypes, String xdmItemStrValue) {
 
-        XSSimpleTypeDefinition listItemType = null;
+        XSSimpleTypeDefinition xdmItemType = null;
         
         // iterate the member types of union in order, to find that which schema type can successfully validate an atomic value first
         final int memberTypesLength = memberTypes.getLength();
         for (int memTypeIdx = 0; memTypeIdx < memberTypesLength; memTypeIdx++) {
            XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item(memTypeIdx);
-           if (XSTypeHelper.isValueValidForASimpleType(listItemStrValue, memSimpleType)) {
+           if (XSTypeHelper.isValueValidForASimpleType(xdmItemStrValue, memSimpleType)) {
               // no more memberTypes need to be checked
-              listItemType = memSimpleType; 
+              xdmItemType = memSimpleType; 
               break; 
            }
         }
         
-        return listItemType;
+        return xdmItemType;
         
-    } // getActualListItemTypeForVarietyUnion
+    } // getActualXDMItemTypeForSTVarietyUnion
 
 } // class XSAssertionXPath2ValueImpl
