@@ -121,7 +121,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private void initXPathProcessor() throws Exception {        
         fXmlSchemaValidator = (XMLSchemaValidator) getProperty("http://apache.org/xml/properties/assert/validator");        
         fAbstrPsychopathImpl = new AbstractPsychoPathXPath2Impl();
-        fXpath2DynamicContext = fAbstrPsychopathImpl.initDynamicContext(fSchemaXSmodel, fAssertDocument, fAssertParams);        
+        fXpath2DynamicContext = fAbstrPsychopathImpl.initXPath2DynamicContext(fSchemaXSmodel, fAssertDocument, fAssertParams);        
     } // initXPathProcessor
     
 

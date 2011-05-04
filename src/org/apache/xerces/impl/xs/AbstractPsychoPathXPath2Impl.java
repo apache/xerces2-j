@@ -62,9 +62,9 @@ public class AbstractPsychoPathXPath2Impl {
     private Document fDomDoc = null;
     
     /*
-     * Initialize the "PsychoPath XPath 2" dynamic context.
+     * Initialize the PsychoPath engine XPath 2.0 dynamic context.
      */
-    protected DynamicContext initDynamicContext(XSModel schema, Document document, Map psychoPathParams) {
+    protected DynamicContext initXPath2DynamicContext(XSModel schema, Document document, Map psychoPathParams) {
         
         fXpath2DynamicContext = new DefaultDynamicContext(schema, document);        
         
@@ -73,8 +73,7 @@ public class AbstractPsychoPathXPath2Impl {
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
         while (currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
-            String uri = xpath2NamespaceContext.getURI(prefix);
-            fXpath2DynamicContext.add_namespace(prefix, uri);
+            addNamespaceBindingToXPath2DynamicContext(prefix, xpath2NamespaceContext.getURI(prefix));
         }        
         fXpath2DynamicContext.add_function_library(new FnFunctionLibrary());
         fXpath2DynamicContext.add_function_library(new XSCtrLibrary());        
@@ -82,13 +81,21 @@ public class AbstractPsychoPathXPath2Impl {
         
         return fXpath2DynamicContext;
         
-    } // initDynamicContext
+    } // initXPath2DynamicContext
+    
+    
+    /*
+     * Add namespace binding to XPath 2.0 dynamic context.
+     */
+    protected void addNamespaceBindingToXPath2DynamicContext(String prefix, String uri) {
+        fXpath2DynamicContext.add_namespace(prefix, uri);
+    } // addNamespaceBindingToXPath2DynamicContext
     
     
     /*
      * Evaluate XPath expression with PsychoPath XPath2 engine.
      */
-    protected boolean evaluateXPathExpr(XPath xpathObject, Element contextNode) throws StaticError, DynamicError, Exception {
+    protected boolean evaluateXPathExpr(XPath xpathObject, Element contextNode) throws Exception {
         
         StaticChecker sc = new StaticNameResolver(fXpath2DynamicContext);
         sc.check(xpathObject);       
