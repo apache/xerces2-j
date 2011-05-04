@@ -302,6 +302,11 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 return null;
             }
         }
+        
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && list && baseValidator != null && isSpecialSimpleType(baseValidator)) {
+            reportSchemaError("st-props-correct.1", new Object[0], child);  
+        }
+        
         // get types from "memberTypes" attribute
         ArrayList dTValidators = null;
         XSSimpleType dv = null;
@@ -315,6 +320,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 dv = findDTValidator(child, name, (QName)memberTypes.elementAt(i),
                         XSConstants.DERIVATION_UNION, schemaDoc);
                 if (dv != null) {
+                    if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && isSpecialSimpleType(dv)) {
+                        reportSchemaError("st-props-correct.1", new Object[0], child);  
+                    }
                     // if it's a union, expand it
                     // In XML Schema 1.1, we do not expand
                     if (dv.getVariety() == XSSimpleType.VARIETY_UNION &&
@@ -575,5 +583,16 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         
         return null;
     }
+    
+    /*
+     * Check if a simpleType definition is one of special types (i.e xs:anyAtomicType or xs:anySimpleType).
+     */
+    private boolean isSpecialSimpleType(XSSimpleType simpleType) {        
+        boolean isSpecialSimpleType = false;        
+        if (Constants.NS_XMLSCHEMA.equals(simpleType.getNamespace()) && (SchemaSymbols.ATTVAL_ANYATOMICTYPE.equals(simpleType.getName()) || SchemaSymbols.ATTVAL_ANYSIMPLETYPE.equals(simpleType.getName()))) {
+            isSpecialSimpleType = true; 
+        }        
+        return isSpecialSimpleType;        
+    } // isSpecialSimpleType
     
 }//class XSDSimpleTypeTraverser
