@@ -29,6 +29,7 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
@@ -303,26 +304,22 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
         
-        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && list && baseValidator != null && isSpecialSimpleType(baseValidator)) {
-            reportSchemaError("st-props-correct.1", new Object[0], child);  
-        }
-        
         // get types from "memberTypes" attribute
         ArrayList dTValidators = null;
         XSSimpleType dv = null;
+        XSSimpleType[] memberTypeDvList = null;
         XSObjectList dvs;
         if (union && memberTypes != null && memberTypes.size() > 0) {
             int size = memberTypes.size();
+            memberTypeDvList = new XSSimpleType[size]; 
             dTValidators = new ArrayList(size);
             // for each qname in the list
             for (int i = 0; i < size; i++) {
                 // get the type decl
                 dv = findDTValidator(child, name, (QName)memberTypes.elementAt(i),
                         XSConstants.DERIVATION_UNION, schemaDoc);
+                memberTypeDvList[i] = dv;
                 if (dv != null) {
-                    if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && isSpecialSimpleType(dv)) {
-                        reportSchemaError("st-props-correct.1", new Object[0], child);  
-                    }
                     // if it's a union, expand it
                     // In XML Schema 1.1, we do not expand
                     if (dv.getVariety() == XSSimpleType.VARIETY_UNION &&
@@ -451,6 +448,19 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 // Recreate the type, ignoring the facets
                 newDecl = fSchemaHandler.fDVFactory.createTypeRestriction(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator, 
                         annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
+            }
+        }
+        
+        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            if (list && baseValidator != null && XSTypeHelper.isSpecialSimpleType(baseValidator)) {
+               reportSchemaError("st-props-correct.1", new Object[] {((XSSimpleTypeDecl)newDecl).getTypeName(), "xs:list"}, child);
+            }
+            if (union && memberTypeDvList != null) {
+               for (int memTypeIdx = 0; memTypeIdx < memberTypeDvList.length; memTypeIdx++) {
+                   if (XSTypeHelper.isSpecialSimpleType(memberTypeDvList[memTypeIdx])) {
+                       reportSchemaError("st-props-correct.1", new Object[] {((XSSimpleTypeDecl)newDecl).getTypeName(), "xs:union"}, child);  
+                   }
+               }
             }
         }
         
@@ -583,16 +593,5 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         
         return null;
     }
-    
-    /*
-     * Check if a simpleType definition is one of special types (i.e xs:anyAtomicType or xs:anySimpleType).
-     */
-    private boolean isSpecialSimpleType(XSSimpleType simpleType) {        
-        boolean isSpecialSimpleType = false;        
-        if (Constants.NS_XMLSCHEMA.equals(simpleType.getNamespace()) && (SchemaSymbols.ATTVAL_ANYATOMICTYPE.equals(simpleType.getName()) || SchemaSymbols.ATTVAL_ANYSIMPLETYPE.equals(simpleType.getName()))) {
-            isSpecialSimpleType = true; 
-        }        
-        return isSpecialSimpleType;        
-    } // isSpecialSimpleType
     
 }//class XSDSimpleTypeTraverser

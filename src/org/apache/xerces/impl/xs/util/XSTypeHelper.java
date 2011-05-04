@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
@@ -262,6 +263,18 @@ public class XSTypeHelper {
         return typeNameStr;
         
     } // getSchemaTypeName
+    
+    
+    /*
+     * Check if a simpleType definition is one of special types (i.e xs:anyAtomicType or xs:anySimpleType).
+     */
+    public static boolean isSpecialSimpleType(XSSimpleType simpleType) {        
+        boolean isSpecialSimpleType = false;        
+        if (Constants.NS_XMLSCHEMA.equals(simpleType.getNamespace()) && (SchemaSymbols.ATTVAL_ANYATOMICTYPE.equals(simpleType.getName()) || SchemaSymbols.ATTVAL_ANYSIMPLETYPE.equals(simpleType.getName()))) {
+            isSpecialSimpleType = true; 
+        }        
+        return isSpecialSimpleType;        
+    } // isSpecialSimpleType
     
     
     /*
