@@ -455,7 +455,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (list && baseValidator != null && XSTypeHelper.isSpecialSimpleType(baseValidator)) {
                reportSchemaError("st-props-correct.1", new Object[] {((XSSimpleTypeDecl)newDecl).getTypeName(), "xs:list"}, child);
             }
-            if (union && memberTypeDvList != null) {
+            else if (union && memberTypeDvList != null) {
                for (int memTypeIdx = 0; memTypeIdx < memberTypeDvList.length; memTypeIdx++) {
                    if (XSTypeHelper.isSpecialSimpleType(memberTypeDvList[memTypeIdx])) {
                        reportSchemaError("st-props-correct.1", new Object[] {((XSSimpleTypeDecl)newDecl).getTypeName(), "xs:union"}, child);  
