@@ -23,10 +23,12 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
@@ -537,12 +539,76 @@ public abstract class XSConstraints {
 
             if (elem.fType != existingElem.fType) {
                 // Types are not the same
-                throw new XMLSchemaException("cos-element-consistent",
-                        new Object[] {type.fName, elem.fName});
-
+                throw new XMLSchemaException("cos-element-consistent", new Object[] {type.fName, elem.fName});
+            }
+            else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && !isTypeTablesEquivalent(elem, existingElem)) {
+                // Type tables are not equivalent
+                throw new XMLSchemaException("cos-element-consistent.4", new Object[] {type.fName, elem.fName});  
             }
         }
     }
+    
+    /*
+     * Check if two type tables are equivalent.
+     */
+    private boolean isTypeTablesEquivalent(XSElementDecl elementDecl1, XSElementDecl elementDecl2) {
+        
+        boolean isTypeTablesEquivalent = true;
+        
+        XSTypeAlternativeImpl[] typeTable1 = elementDecl1.getTypeAlternatives();
+        XSTypeAlternativeImpl[] typeTable2 = elementDecl2.getTypeAlternatives();
+        
+        if (typeTable1 != null && typeTable2 != null) {
+            if (typeTable1.length != typeTable2.length) {
+                isTypeTablesEquivalent = false; 
+            }
+            else {
+                for (int typeAltIdx = 0; typeAltIdx < typeTable1.length; typeAltIdx++) {
+                    XSTypeAlternativeImpl typeAlt1 = typeTable1[typeAltIdx];
+                    XSTypeAlternativeImpl typeAlt2 = typeTable2[typeAltIdx];
+                    if (!isTypeAlternativesEquivalent(typeAlt1, typeAlt2)) {
+                        isTypeTablesEquivalent = false;
+                        break;
+                    }
+                }
+            }
+            if (isTypeTablesEquivalent && !isTypeAlternativesEquivalent(elementDecl1.getDefaultTypeDefinition(), elementDecl2.getDefaultTypeDefinition())) {
+                isTypeTablesEquivalent = false; 
+            }
+        }
+        else if ((typeTable1 != null && typeTable2 == null) || (typeTable1 == null && typeTable2 != null)) {
+            isTypeTablesEquivalent = false;  
+        }
+        
+        return isTypeTablesEquivalent;
+        
+    } // isTypeTablesEquivalent
+    
+    /*
+     * Check if two type alternative components are equivalent.
+     */
+    private boolean isTypeAlternativesEquivalent(XSTypeAlternativeImpl typeAlt1, XSTypeAlternativeImpl typeAlt2) {
+        
+        boolean isTypeAlternativesEquivalent = false;
+        
+        String defNamespace1 = typeAlt1.getXPathDefaultNamespace();
+        String defNamespace2 = typeAlt2.getXPathDefaultNamespace();
+        String testStr1 = (typeAlt1.getTest() == null) ? null : typeAlt1.getTest().toString();
+        String testStr2 = (typeAlt2.getTest() == null) ? null : typeAlt2.getTest().toString();
+        XSTypeDefinition typeDefn1 = typeAlt1.getTypeDefinition();
+        XSTypeDefinition typeDefn2 = typeAlt2.getTypeDefinition();
+        
+        if (((defNamespace1 == null && defNamespace2 == null) || (defNamespace1 != null && defNamespace2 != null && defNamespace1.equals(defNamespace2))) &&
+            ((testStr1 == null && testStr2 == null) || (testStr1 != null && testStr2 != null && (testStr1.trim()).equals(testStr2.trim()))) &&
+            (XSTypeHelper.isSchemaTypesIdentical(typeDefn1, typeDefn2))) {
+              isTypeAlternativesEquivalent = true;
+        }
+        
+        // TO DO: equivalence check for namespace bindings and base URI
+        
+        return isTypeAlternativesEquivalent;
+        
+    } // isTypeAlternativesEquivalent
 
     // to check whether two element overlap, as defined in constraint UPA
     protected boolean overlapUPA(XSElementDecl element1,

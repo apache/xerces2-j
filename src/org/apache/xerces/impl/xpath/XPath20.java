@@ -67,6 +67,10 @@ public class XPath20 {
             return false;
         }
     }
+    
+    public String getXPathStrValue() {
+       return fExpression; 
+    }
 
 }
 

@@ -27,7 +27,6 @@ import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -106,7 +105,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
 
     public String toString() {
-        return fXPath.toString();
+        return fXPath.getXPathStrValue();
     }
     
     /*
