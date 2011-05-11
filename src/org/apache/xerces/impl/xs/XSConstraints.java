@@ -29,6 +29,7 @@ import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
@@ -598,13 +599,43 @@ public abstract class XSConstraints {
         XSTypeDefinition typeDefn1 = typeAlt1.getTypeDefinition();
         XSTypeDefinition typeDefn2 = typeAlt2.getTypeDefinition();
         
+        // check equivalence of defaultNamespace, test expression & type definition
         if (((defNamespace1 == null && defNamespace2 == null) || (defNamespace1 != null && defNamespace2 != null && defNamespace1.equals(defNamespace2))) &&
             ((testStr1 == null && testStr2 == null) || (testStr1 != null && testStr2 != null && (testStr1.trim()).equals(testStr2.trim()))) &&
             (XSTypeHelper.isSchemaTypesIdentical(typeDefn1, typeDefn2))) {
               isTypeAlternativesEquivalent = true;
         }
         
-        // TO DO: equivalence check for namespace bindings and base URI
+        // check equivalence of namespace bindings
+        if (isTypeAlternativesEquivalent) {
+            NamespaceSupport typeAlt1NamespaceContext = typeAlt1.getNamespaceContext();
+            NamespaceSupport typeAlt2NamespaceContext = typeAlt2.getNamespaceContext();
+            int nsDeclPrefixCount1 = typeAlt1NamespaceContext.getDeclaredPrefixCount();
+            if (nsDeclPrefixCount1 == typeAlt2NamespaceContext.getDeclaredPrefixCount()) {
+                for (int prefIdx1 = 0; prefIdx1 < nsDeclPrefixCount1; prefIdx1++) {
+                    String prefix1 = typeAlt1NamespaceContext.getDeclaredPrefixAt(prefIdx1);
+                    if (!(typeAlt2NamespaceContext.containsPrefix(prefix1) && (typeAlt1NamespaceContext.getURI(prefix1) == typeAlt2NamespaceContext.getURI(prefix1)))) {
+                        isTypeAlternativesEquivalent = false;
+                        break;
+                    }
+                }
+            }
+            else {
+                isTypeAlternativesEquivalent = false;  
+            }
+        }
+        
+        // check equivalence of base URIs
+        if (isTypeAlternativesEquivalent) {
+            String baseURI1 = typeAlt1.getBaseURI();
+            String baseURI2 = typeAlt2.getBaseURI();
+            if ((baseURI1 == null && baseURI2 != null) || (baseURI2 == null && baseURI1 != null)) {
+                isTypeAlternativesEquivalent = false; 
+            }
+            else if ((baseURI1 == null && baseURI2 == null) || baseURI1.equals(baseURI2)) {
+                isTypeAlternativesEquivalent = true;
+            }
+        }
         
         return isTypeAlternativesEquivalent;
         

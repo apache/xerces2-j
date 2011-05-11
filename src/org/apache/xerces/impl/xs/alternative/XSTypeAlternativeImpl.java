@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.alternative;
 
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
@@ -47,6 +48,10 @@ public class XSTypeAlternativeImpl implements XSTypeAlternative {
 
     /** Default XPath namespace */
     protected String fXPathDefaultNamespace = null;
+    
+    protected NamespaceSupport fNamespaceContext = null;
+    
+    protected String fBaseURI = null;
 
     /** Constructor */
     public XSTypeAlternativeImpl(String elementName, XSTypeDefinition type, XSObjectList annotations) {
@@ -67,6 +72,26 @@ public class XSTypeAlternativeImpl implements XSTypeAlternative {
 
     public void setXPathDefauleNamespace(String namespace) {
         fXPathDefaultNamespace = namespace;
+    }
+    
+    public void setNamespaceContext(NamespaceSupport namespaceContext) {
+        fNamespaceContext = namespaceContext;
+    }
+    
+    public void setBaseURI(String baseUri) {
+       fBaseURI = baseUri;  
+    }
+    
+    public NamespaceSupport getNamespaceContext() {        
+        NamespaceSupport namespaceContext = fNamespaceContext;        
+        if (namespaceContext == null && fTestExpr != null) {
+            namespaceContext = fTestExpr.getNamespaceContext();  
+        }        
+        return namespaceContext;        
+    } // getNamespaceContext
+    
+    public String getBaseURI() {
+       return fBaseURI; 
     }
 
     //gets the name of the owning element
@@ -141,4 +166,5 @@ public class XSTypeAlternativeImpl implements XSTypeAlternative {
     public short getType() {
         return XSConstants.TYPE_ALTERNATIVE;
     }
+
 }

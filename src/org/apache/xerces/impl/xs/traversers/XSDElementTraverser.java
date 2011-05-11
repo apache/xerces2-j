@@ -32,6 +32,7 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
@@ -438,6 +439,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                     		reportSchemaError("src-element.5", new Object[]{nameAtt}, elmDecl);
                     	}
                     	element.setDefaultTypeDefinition();
+                    	if (element.getDefaultTypeDefinition() != null) {
+                    	    element.getDefaultTypeDefinition().setNamespaceContext(new NamespaceSupport(schemaDoc.fNamespaceSupport));
+                    	}
                     	break;
                     }
                 }                

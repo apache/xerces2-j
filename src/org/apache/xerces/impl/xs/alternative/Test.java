@@ -72,6 +72,10 @@ public class Test extends AbstractPsychoPathXPath2Impl {
         fXPath2NamespaceContext = namespaceContext;
     }
 
+    public NamespaceSupport getNamespaceContext() {
+        return fXPath2NamespaceContext;
+    }
+    
     public XSTypeAlternativeImpl getTypeAlternative() {
         return fTypeAlternative;
     }

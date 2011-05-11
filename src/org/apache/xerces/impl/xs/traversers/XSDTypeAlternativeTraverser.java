@@ -31,6 +31,7 @@ import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -75,8 +76,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
      * schema grammar. Validate the content of the type alternative
      * element.
      */
-    public void traverse(Element altElement, XSElementDecl element,
-            XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
+    public void traverse(Element altElement, XSElementDecl element, XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
 
         Object[] attrValues = fAttrChecker.checkAttributes(altElement, false, schemaDoc);
         QName typeAtt = (QName) attrValues[XSAttributeChecker.ATTIDX_TYPE];
@@ -189,9 +189,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             Test testExpr = null;
             //set the test attribute value
             try {
-               testExpr = new Test(new XPath20(testStr, fSymbolTable, schemaDoc.fNamespaceSupport),
-                                       typeAlternative,
-                                       schemaDoc.fNamespaceSupport);
+               testExpr = new Test(new XPath20(testStr, fSymbolTable, new NamespaceSupport(schemaDoc.fNamespaceSupport)), typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
             } 
             catch (XPathException e) {
                // fall back to full XPath 2.0 support, with PsychoPath engine
@@ -202,12 +200,16 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                } catch(XPathParserException ex) {
                   reportSchemaError("c-cta-xpath", new Object[] { testStr }, altElement);
                   //if the XPath is invalid, create a Test without an expression
-                  testExpr = new Test((XPath20) null, typeAlternative,
-                                       schemaDoc.fNamespaceSupport);
+                  testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
                }                
             }            
             typeAlternative.setTest(testExpr);
         }
+        else {
+            typeAlternative.setNamespaceContext(new NamespaceSupport(schemaDoc.fNamespaceSupport)); 
+        }
+        
+        typeAlternative.setBaseURI(altElement.getBaseURI());
 
         if (xpathNS != null) {
             //set the xpathDefaultNamespace attribute value
