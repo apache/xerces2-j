@@ -4589,6 +4589,10 @@ public class XSDHandler {
         }
         fSchemaParser.setSupportedVersion(fSupportedVersion);
     }
+    
+    public String getDocumentURI() {
+        return fSchemaParser.getDocument().getDocumentURI();
+    }
 
     public short getSchemaVersion() {
         return fSchemaVersion;

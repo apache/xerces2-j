@@ -61,14 +61,16 @@ import org.w3c.dom.Element;
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
     
     private static final XSSimpleType fErrorType;
+    private XSDHandler fXsdHandler = null;
+    
     static {
         SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_1);
         fErrorType = (XSSimpleType)grammar.getGlobalTypeDecl("error");
     }
 
-    XSDTypeAlternativeTraverser (XSDHandler handler,
-            XSAttributeChecker attrChecker) {
+    XSDTypeAlternativeTraverser (XSDHandler handler, XSAttributeChecker attrChecker) {
         super(handler, attrChecker);
+        fXsdHandler = handler;
     }
 
     /**
@@ -209,7 +211,8 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             typeAlternative.setNamespaceContext(new NamespaceSupport(schemaDoc.fNamespaceSupport)); 
         }
         
-        typeAlternative.setBaseURI(altElement.getBaseURI());
+        // REVISIT : is using Document.getDocumentURI() correct to retrieve base URI in every case, for type alternatives? 
+        typeAlternative.setBaseURI(fXsdHandler.getDocumentURI());
 
         if (xpathNS != null) {
             //set the xpathDefaultNamespace attribute value
@@ -218,5 +221,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         
         grammar.addTypeAlternative(element, typeAlternative);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-    }
-}
+        
+    } // traverse
+    
+} // class XSDTypeAlternativeTraverser

@@ -635,6 +635,9 @@ public abstract class XSConstraints {
             else if ((baseURI1 == null && baseURI2 == null) || baseURI1.equals(baseURI2)) {
                 isTypeAlternativesEquivalent = true;
             }
+            else {
+                isTypeAlternativesEquivalent = false;
+            }
         }
         
         return isTypeAlternativesEquivalent;
