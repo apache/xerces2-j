@@ -502,6 +502,9 @@ public abstract class ParentNode
 
         // notify document
         ownerDocument.removingNode(this, oldInternal, replace);
+        
+        // Save previous sibling for normalization checking.
+        final ChildNode oldPreviousSibling = oldInternal.previousSibling();
 
         // update cached length if we have any
         if (fNodeListCache != null) {
@@ -513,7 +516,7 @@ public abstract class ParentNode
                 // move the cache to its (soon former) previous sibling
                 if (fNodeListCache.fChild == oldInternal) {
                     fNodeListCache.fChildIndex--;
-                    fNodeListCache.fChild = oldInternal.previousSibling();
+                    fNodeListCache.fChild = oldPreviousSibling;
                 } else {
                     // otherwise just invalidate the cache
                     fNodeListCache.fChildIndex = -1;
@@ -543,9 +546,6 @@ public abstract class ParentNode
                 next.previousSibling = prev;
             }
         }
-
-        // Save previous sibling for normalization checking.
-        ChildNode oldPreviousSibling = oldInternal.previousSibling();
 
         // Remove oldInternal's references to tree
         oldInternal.ownerNode       = ownerDocument;
