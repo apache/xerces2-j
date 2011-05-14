@@ -24,7 +24,7 @@ import java.lang.ref.SoftReference;
  * This symbol table uses SoftReferences to its String entries, which means that table entries
  * that have no references to them can be garbage collected when memory is needed.  Thus, in
  * documents with very very large numbers of unique strings, using this SymbolTable will prevent
- * an out of memory error from occuring.
+ * an out of memory error from occurring.
  * 
  * @see SymbolTable
  *
