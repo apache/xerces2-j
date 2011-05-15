@@ -1668,11 +1668,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
      */
     private void traverseAsserts(Element assertElement, XSDocumentInfo schemaDoc, SchemaGrammar grammar, XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
 
-        Object[] attrValues = fAttrChecker.checkAttributes(assertElement,
-                                                           false, schemaDoc);
+        Object[] attrValues = fAttrChecker.checkAttributes(assertElement, false, schemaDoc);
         String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
-        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.
-                                                           ATTIDX_XPATHDEFAULTNS];
+        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
         if (xpathDefaultNamespace == null) {
            xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;    
         }

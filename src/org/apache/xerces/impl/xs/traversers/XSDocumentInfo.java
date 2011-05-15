@@ -28,7 +28,9 @@ import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -120,6 +122,10 @@ class XSDocumentInfo {
             fValidationContext.setSymbolTable(symbolTable);
             fValidationContext.setTypeValidatorHelper(typeValidatorHelper);
             
+            fTargetNamespace = XMLChar.trim(DOMUtil.getAttrValue(root, SchemaSymbols.ATT_TARGETNAMESPACE));
+            if (!"".equals(fTargetNamespace)) {
+                fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
+            }
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element
             // throw an exception, but we don't know the document systemId,
@@ -134,12 +140,7 @@ class XSDocumentInfo {
             fBlockDefault =
                 ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).shortValue();
             fFinalDefault =
-                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
-            fTargetNamespace =
-                (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-            if (fTargetNamespace != null)
-                fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
-            
+                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();            
             fXpathDefaultNamespace = 
                 (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS]; 
 
