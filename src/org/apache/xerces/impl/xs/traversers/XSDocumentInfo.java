@@ -126,6 +126,10 @@ class XSDocumentInfo {
             if (!"".equals(fTargetNamespace)) {
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
             }
+            else {
+                fTargetNamespace = null; 
+            }
+                        
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element
             // throw an exception, but we don't know the document systemId,
