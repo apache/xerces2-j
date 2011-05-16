@@ -122,12 +122,11 @@ class XSDocumentInfo {
             fValidationContext.setSymbolTable(symbolTable);
             fValidationContext.setTypeValidatorHelper(typeValidatorHelper);
             
-            fTargetNamespace = XMLChar.trim(DOMUtil.getAttrValue(root, SchemaSymbols.ATT_TARGETNAMESPACE));
-            if (!"".equals(fTargetNamespace)) {
-                fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
-            }
-            else {
-                fTargetNamespace = null; 
+            if (DOMUtil.getAttr(root, SchemaSymbols.ATT_TARGETNAMESPACE) != null) {
+                fTargetNamespace = XMLChar.trim(DOMUtil.getAttrValue(root, SchemaSymbols.ATT_TARGETNAMESPACE));
+                if (!"".equals(fTargetNamespace)) {
+                    fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
+                }
             }
                         
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
