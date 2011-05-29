@@ -1272,6 +1272,9 @@ public class XMLSchemaValidator
 
     /** Current type. */
     private XSTypeDefinition fCurrentType;
+    
+    /** Failed assertions. */
+    private ObjectList fFailedAssertions;
 
     /** type stack. */
     private XSTypeDefinition[] fTypeStack = new XSTypeDefinition[INITIAL_STACK_SIZE];
@@ -2028,7 +2031,7 @@ public class XMLSchemaValidator
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                assertionValidatorStartElementDelegate(element, attributes);                        
+                assertionValidatorStartElementDelegate(element, attributes, augs);                        
             }
             return augs;
         }
@@ -2149,7 +2152,7 @@ public class XMLSchemaValidator
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                assertionValidatorStartElementDelegate(element, attributes);                        
+                assertionValidatorStartElementDelegate(element, attributes, augs);                        
             }
             return augs;
         }
@@ -2432,13 +2435,6 @@ public class XMLSchemaValidator
             matcher.startElement( element, attributes);
         }
         
-        // inheritable attributes processing
-        ObjectList inheritedAttributesForPsvi = null; 
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            fInhrAttrCountStack.push(fInheritableAttrList.size());
-            inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
-        }
-
         if (fAugPSVI) {
             augs = getEmptyAugs(augs);
 
@@ -2452,15 +2448,20 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = fNotation;
             // PSVI: add nil
             fCurrentPSVI.fNil = fNil;
-            // PSVI: add inherited attributes
-            fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;            
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+               // PSVI: add inherited attributes
+               fInhrAttrCountStack.push(fInheritableAttrList.size());
+               fCurrentPSVI.fInheritedAttributes = getInheritedAttributesForPSVI();               
+               // PSVI: add failed assertions
+               fCurrentPSVI.fFailedAssertions = fFailedAssertions;
+            }
         }                
                 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             // find attributes among the attributes of the current element, which are declared inheritable and store them for later processing.
             // one of the uses of inheritable attributes is in type alternatives processing.
             saveInheritableAttributes(fCurrentElemDecl, attributes);
-            assertionValidatorStartElementDelegate(element, attributes);                       
+            assertionValidatorStartElementDelegate(element, attributes, augs);             
         }
 
         return augs;
@@ -2470,13 +2471,13 @@ public class XMLSchemaValidator
     /*
      * Delegate to assertions validator startElement handler.
      */
-    private void assertionValidatorStartElementDelegate(QName element, XMLAttributes attributes) {
+    private void assertionValidatorStartElementDelegate(QName element, XMLAttributes attributes, Augmentations augs) {
         try {
             fAssertionValidator.handleStartElement(element, attributes);
-         }
-         catch(Exception ex) {
-             throw new XNIException(ex.getMessage(), ex); 
-         } 
+        }
+        catch(Exception ex) {
+            throw new XNIException(ex.getMessage(), ex); 
+        } 
     } // assertionValidatorStartElementDelegate
 
     /**
@@ -2532,21 +2533,7 @@ public class XMLSchemaValidator
             
             // delegate to assertions validator subcomponent
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                // initialize augmentations to be passed to assertions processor
-                Augmentations assertAugs = new AugmentationsImpl();
-                ElementPSVImpl assertElemPSVI = new ElementPSVImpl();
-                assertElemPSVI.fDeclaration = fCurrentElemDecl;
-                assertElemPSVI.fTypeDecl = fCurrentType;
-                assertElemPSVI.fNotation = fNotation;
-                assertElemPSVI.fGrammars = fGrammarBucket.getGrammars();
-                assertAugs.putItem(Constants.ELEMENT_PSVI, assertElemPSVI);
-                assertAugs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));            
-                fAssertionValidator.handleEndElement(element, assertAugs);            
-                if (fAugPSVI && fIsAssertProcessingNeededForSTUnion) {
-                    // update PSVI
-                    fValidatedInfo.memberType = ((ElementPSVImpl) assertAugs.getItem(Constants.ELEMENT_PSVI)).fValue.memberType;                
-                } 
-                fIsAssertProcessingNeededForSTUnion = true;            
+                assertionValidatorEndElementDelegate(element);            
             }
             
             return augs;
@@ -2626,21 +2613,7 @@ public class XMLSchemaValidator
         
         // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            // initialize augmentations to be passed to assertions processor
-            Augmentations assertAugs = new AugmentationsImpl();
-            ElementPSVImpl assertElemPSVI = new ElementPSVImpl();
-            assertElemPSVI.fDeclaration = fCurrentElemDecl;
-            assertElemPSVI.fTypeDecl = fCurrentType;
-            assertElemPSVI.fNotation = fNotation;
-            assertElemPSVI.fGrammars = fGrammarBucket.getGrammars();
-            assertAugs.putItem(Constants.ELEMENT_PSVI, assertElemPSVI);
-            assertAugs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));            
-            fAssertionValidator.handleEndElement(element, assertAugs);            
-            if (fAugPSVI && fIsAssertProcessingNeededForSTUnion) {
-                // update PSVI
-                fValidatedInfo.memberType = ((ElementPSVImpl) assertAugs.getItem(Constants.ELEMENT_PSVI)).fValue.memberType;                
-            } 
-            fIsAssertProcessingNeededForSTUnion = true;            
+            assertionValidatorEndElementDelegate(element);            
         }
 
         // Check if we should modify the xsi:type ignore depth
@@ -2712,6 +2685,30 @@ public class XMLSchemaValidator
         return augs;
     } // handleEndElement(QName,boolean)*/
 
+    /*
+     * Delegate to assertions validator endElement handler.
+     */
+    private void assertionValidatorEndElementDelegate(QName element) {
+        
+        // initialize augmentation information to be passed to assertions processor
+        Augmentations assertAugs = new AugmentationsImpl();
+        ElementPSVImpl assertElemPSVI = new ElementPSVImpl();
+        assertElemPSVI.fDeclaration = fCurrentElemDecl;
+        assertElemPSVI.fTypeDecl = fCurrentType;
+        assertElemPSVI.fNotation = fNotation;
+        assertElemPSVI.fGrammars = fGrammarBucket.getGrammars();
+        assertAugs.putItem(Constants.ELEMENT_PSVI, assertElemPSVI);
+        assertAugs.putItem("ASSERT_PROC_NEEDED_FOR_UNION", Boolean.valueOf(fIsAssertProcessingNeededForSTUnion));            
+        fAssertionValidator.handleEndElement(element, assertAugs);
+        fFailedAssertions = assertElemPSVI.fFailedAssertions;
+        if (fAugPSVI && fIsAssertProcessingNeededForSTUnion) {
+            // update PSVI
+            fValidatedInfo.memberType = assertElemPSVI.fValue.memberType;                
+        } 
+        fIsAssertProcessingNeededForSTUnion = true;
+        
+    } // assertionValidatorEndElementDelegate
+
     final Augmentations endElementPSVI(
         boolean root,
         SchemaGrammar[] grammars,
@@ -2732,6 +2729,7 @@ public class XMLSchemaValidator
                 inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
             }
             fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;
+            fCurrentPSVI.fFailedAssertions = this.fFailedAssertions;
             // PSVI: validation attempted
             // nothing below or at the same level has none or partial
             // (which means this level is strictly assessed, and all chidren

@@ -91,7 +91,10 @@ public class ElementPSVImpl implements ElementPSVI {
     protected boolean fIsConstant;
     
     /** inherited attributes **/
-    protected ObjectList fInheritedAttributes = null; 
+    protected ObjectList fInheritedAttributes = null;
+    
+    /** failed assertions **/
+    protected ObjectList fFailedAssertions = null;
     
     public ElementPSVImpl() {}
     
@@ -106,6 +109,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fValidity = elementPSVI.getValidity();
         fValidationContext = elementPSVI.getValidationContext();
         fInheritedAttributes = elementPSVI.getInheritedAttributes();
+        fFailedAssertions = elementPSVI.getFailedAssertions(); 
         if (elementPSVI instanceof ElementPSVImpl) {
             final ElementPSVImpl elementPSVIImpl = (ElementPSVImpl) elementPSVI;
             fErrors = (elementPSVIImpl.fErrors != null) ?
@@ -337,6 +341,19 @@ public class ElementPSVImpl implements ElementPSVI {
     }
     
     /**
+     * Failed assertions.
+     * 
+     * @return failed assertions list, or an empty list 
+     * if none of assertions failed.
+     */
+    public ObjectList getFailedAssertions() {
+        if (fFailedAssertions != null) {
+            return fFailedAssertions;
+        }
+        return ObjectListImpl.EMPTY_LIST;
+    }
+    
+    /**
      * Reset() should be called in validator startElement(..) method.
      */
     public void reset() {
@@ -351,6 +368,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fValidationContext = null;
         fValue.reset();
         fInheritedAttributes = null;
+        fFailedAssertions = null;
     }
     
     public void copySchemaInformationTo(ElementPSVImpl target) {

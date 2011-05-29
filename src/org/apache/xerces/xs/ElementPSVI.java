@@ -50,5 +50,10 @@ public interface ElementPSVI extends ItemPSVI {
      * [inherited attributes]: inherited attributes.
      */
     public ObjectList getInheritedAttributes();
+    
+    /**
+     * [failed assertions]: failed assertions.
+     */
+    public ObjectList getFailedAssertions();
 
 }

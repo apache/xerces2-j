@@ -33,7 +33,9 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.assertion.XMLAssertAdapter;
+import org.apache.xerces.impl.xs.assertion.XSAssert;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -101,7 +103,10 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
     // parameters to pass to PsychoPath XPath engine (for e.g, the XML namespace bindings)
     private Map fAssertParams = null;
-
+    
+    // failed assertions for an "element information item"
+    private XSAssert[] fFailedAssertions = null;
+    
     
     /*
      * Class constructor.
@@ -228,6 +233,11 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                  fAssertRootStack.pop();
                  // get assertions from the stack, and pass on to the assertions evaluator
                  processAllAssertionsOnElement(element, (List) fAssertListStack.pop(), augs);
+                 // set value of [failed assertions] PSVI property
+                 if (fFailedAssertions != null && elemPSVI != null) {
+                     setFailedAssertionsPSVIResult(elemPSVI);
+                     fFailedAssertions = null;
+                 }                 
             }
 
             if (fCurrentAssertDomNode.getParentNode() instanceof Element) {
@@ -236,6 +246,16 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         }
         
     } // endElement
+    
+    
+    /*
+     * set value of [failed assertions] PSVI property.
+     */
+    private void setFailedAssertionsPSVIResult(ElementPSVI elemPSVI) {
+        XSAssert[] tempArray = new XSAssert[fFailedAssertions.length];
+        System.arraycopy(fFailedAssertions, 0, tempArray, 0, fFailedAssertions.length);
+        ((ElementPSVImpl)elemPSVI).fFailedAssertions = new ObjectListImpl(tempArray, tempArray.length);
+    } // setFailedAssertionsPSVIResult
     
 
     /*
@@ -507,6 +527,20 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         }
         catch(Exception ex) {
             assertionError = new AssertionError("cvc-assertion", element, assertImpl, value, isList, ex);   
+        }
+        
+        // if an assertion failed, add reference of that assertion to the failed assertions list.
+        // NOTE: [failed assertions] property need to be set only for "element information items" and not for attributes.
+        if (assertionError != null && assertImpl.getAttrName() == null) {
+            if (fFailedAssertions == null) {
+                fFailedAssertions = new XSAssertImpl[1];  
+            }
+            else {
+                XSAssertImpl [] tempArray = new XSAssertImpl[fFailedAssertions.length + 1];
+                System.arraycopy(fFailedAssertions, 0, tempArray, 0, fFailedAssertions.length);
+                fFailedAssertions = tempArray;
+            }
+            fFailedAssertions[fFailedAssertions.length-1] = (XSAssert) assertImpl;
         }
         
         return assertionError;

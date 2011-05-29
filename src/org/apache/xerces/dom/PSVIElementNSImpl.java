@@ -109,7 +109,10 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     protected XSModel fSchemaInformation = null;
     
     /** inherited attributes */
-    protected ObjectList fInheritedAttributes = null; 
+    protected ObjectList fInheritedAttributes = null;
+    
+    /** failed assertions */
+    protected ObjectList fFailedAssertions = null;
     
     //
     // ElementPSVI methods
@@ -285,6 +288,19 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     }
     
     /**
+     * Failed assertions.
+     * 
+     * @return failed assertions list, or an empty list 
+     * if none of assertions failed.
+     */
+    public ObjectList getFailedAssertions() {
+        if (fFailedAssertions != null) {
+            return fFailedAssertions;
+        }
+        return ObjectListImpl.EMPTY_LIST;
+    }
+    
+    /**
      * Copy PSVI properties from another psvi item.
      * 
      * @param elem  the source of element PSVI items
@@ -309,7 +325,8 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         }
         this.fSpecified = elem.getIsSchemaSpecified();
         this.fNil = elem.getNil();
-        this.fInheritedAttributes = elem.getInheritedAttributes(); 
+        this.fInheritedAttributes = elem.getInheritedAttributes();
+        this.fFailedAssertions = elem.getFailedAssertions();
     }
 
     /* (non-Javadoc)
