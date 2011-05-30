@@ -379,12 +379,8 @@ class ParserForXMLSchema extends RegexParser {
             ranges2.put("xml:isSpace", Token.complementRanges(tok));
 
             tok = Token.createRange();
-            setupRange(tok, DIGITS);
-            ranges.put("xml:isDigit", tok);
-            ranges2.put("xml:isDigit", Token.complementRanges(tok));
-
-            tok = Token.createRange();
-            setupRange(tok, DIGITS);
+//            setupRange(tok, DIGITS);
+            setupRange(tok, DIGITS_INTS);
             ranges.put("xml:isDigit", tok);
             ranges2.put("xml:isDigit", Token.complementRanges(tok));
 
@@ -415,6 +411,12 @@ class ParserForXMLSchema extends RegexParser {
         int len = src.length();
         for (int i = 0;  i < len;  i += 2)
             range.addRange(src.charAt(i), src.charAt(i+1));
+    }
+
+    static void setupRange(Token range, int[] src) {
+        int len = src.length;
+        for (int i = 0;  i < len;  i += 2)
+            range.addRange(src[i], src[i+1]);
     }
 
     private static final String SPACES = "\t\n\r\r  ";
@@ -496,4 +498,12 @@ class ParserForXMLSchema extends RegexParser {
         "\u0030\u0039\u0660\u0669\u06F0\u06F9\u0966\u096F\u09E6\u09EF\u0A66\u0A6F\u0AE6\u0AEF"
         +"\u0B66\u0B6F\u0BE7\u0BEF\u0C66\u0C6F\u0CE6\u0CEF\u0D66\u0D6F\u0E50\u0E59\u0ED0\u0ED9"
         +"\u0F20\u0F29";
+    private static final int[] DIGITS_INTS = {
+        0x0030, 0x0039, 0x0660, 0x0669, 0x06F0, 0x06F9, 0x0966, 0x096F,
+        0x09E6, 0x09EF, 0x0A66, 0x0A6F, 0x0AE6, 0x0AEF, 0x0B66, 0x0B6F,
+        0x0BE7, 0x0BEF, 0x0C66, 0x0C6F, 0x0CE6, 0x0CEF, 0x0D66, 0x0D6F,
+        0x0E50, 0x0E59, 0x0ED0, 0x0ED9, 0x0F20, 0x0F29, 0x1040, 0x1049,
+        0x1369, 0x1371, 0x17E0, 0x17E9, 0x1810, 0x1819, 0xFF10, 0xFF19,
+        0x1D7CE, 0x1D7FF
+    };
 }
