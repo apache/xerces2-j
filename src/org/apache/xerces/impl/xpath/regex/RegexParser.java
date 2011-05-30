@@ -128,6 +128,9 @@ class RegexParser {
         Token ret = this.parseRegex();
         if (this.offset != this.regexlen)
             throw ex("parser.parse.1", this.offset);
+        if (this.read() != T_EOF) {
+            throw ex("parser.parse.1", this.offset-1);
+        }
         if (this.references != null) {
             for (int i = 0;  i < this.references.size();  i ++) {
                 ReferencePosition position = (ReferencePosition)this.references.elementAt(i);
