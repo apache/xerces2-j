@@ -249,7 +249,7 @@ class ParserForXMLSchema extends RegexParser {
                     if (c == ']')  throw this.ex("parser.cc.7", this.offset-2);
                     if (c == '-' && this.chardata != ']' && !firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
                 }
-                if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && firstloop) { // Here is no '-'.
+                if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && !wasDecoded && firstloop) { // Here is no '-'.
                     if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
                         tok.addRange(c, c);
                     }
