@@ -287,6 +287,7 @@ abstract class XSDAbstractTraverser {
         Vector enumNSDecls = hasQName ? new Vector() : null;       
         int currentFacet = 0;
         xsFacets.reset();
+        boolean seenPattern = false;
         while (content != null) {           
             // General Attribute Checking
             Object[] attrs = null;
@@ -369,6 +370,7 @@ abstract class XSDAbstractTraverser {
                     continue;
                 }
                 
+                seenPattern = true;
                 if (fPattern.length() == 0) {
                     fPattern.append(patternVal);
                 } else {
@@ -559,7 +561,7 @@ abstract class XSDAbstractTraverser {
             xsFacets.enumNSDecls = enumNSDecls;
             xsFacets.enumAnnotations = enumAnnotations;
         }
-        if (fPattern.length() != 0) {
+        if (seenPattern) {
             facetsPresent |= XSSimpleType.FACET_PATTERN;
             xsFacets.pattern = fPattern.toString();
             xsFacets.patternAnnotations = patternAnnotations;
