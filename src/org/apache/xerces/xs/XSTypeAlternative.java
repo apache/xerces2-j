@@ -19,12 +19,12 @@ package org.apache.xerces.xs;
 
 /**
  * This interface represents the XML schema type alternative
- * component. Tyepe alternative component was first introduced
+ * component. Type alternative component was first introduced
  * in the XML schema structures 1.1 specification as a means
  * of implementing conditional type assignment.
  *  
  * @author Hiranya Jayathilaka, University of Moratuwa
- * @version $Id:$
+ * @version $Id$
  */
 public interface XSTypeAlternative extends XSObject {
 

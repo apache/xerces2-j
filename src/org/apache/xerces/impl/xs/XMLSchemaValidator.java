@@ -88,6 +88,7 @@ import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeAlternative;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.datatypes.ObjectList;
 import org.xml.sax.SAXNotRecognizedException;
@@ -1275,6 +1276,9 @@ public class XMLSchemaValidator
     
     /** Failed assertions. */
     private ObjectList fFailedAssertions;
+    
+    /** Type Alternative augmentation information. */
+    private XSTypeAlternative fTypeAlternative;
 
     /** type stack. */
     private XSTypeDefinition[] fTypeStack = new XSTypeDefinition[INITIAL_STACK_SIZE];
@@ -2202,10 +2206,12 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-           XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, element, attributes, fInheritableAttrList);           
+           Augmentations typeAltAugs = new AugmentationsImpl();
+           XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, element, attributes, fInheritableAttrList, typeAltAugs);           
            if (currentType != null) {
                fCurrentType = currentType;    
            }
+           fTypeAlternative = (XSTypeAlternative)typeAltAugs.getItem(Constants.TYPE_ALTERNATIVE);
         }
 
         // check if we should be ignoring xsi:type on this element
@@ -2449,11 +2455,13 @@ public class XMLSchemaValidator
             // PSVI: add nil
             fCurrentPSVI.fNil = fNil;
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+               // PSVI: add type alternative
+               fCurrentPSVI.fTypeAlternative = fTypeAlternative;
                // PSVI: add inherited attributes
                fInhrAttrCountStack.push(fInheritableAttrList.size());
                fCurrentPSVI.fInheritedAttributes = getInheritedAttributesForPSVI();               
                // PSVI: add failed assertions
-               fCurrentPSVI.fFailedAssertions = fFailedAssertions;
+               fCurrentPSVI.fFailedAssertions = fFailedAssertions;               
             }
         }                
                 
@@ -2723,13 +2731,16 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
             fCurrentPSVI.fNil = this.fNil;
-            ObjectList inheritedAttributesForPsvi = null;
-            if (fInhrAttrCountStack.size() > 0) {
-                fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
-                inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                fCurrentPSVI.fTypeAlternative = this.fTypeAlternative;
+                ObjectList inheritedAttributesForPsvi = null;
+                if (fInhrAttrCountStack.size() > 0) {
+                    fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
+                    inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
+                }
+                fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;
+                fCurrentPSVI.fFailedAssertions = this.fFailedAssertions;
             }
-            fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;
-            fCurrentPSVI.fFailedAssertions = this.fFailedAssertions;
             // PSVI: validation attempted
             // nothing below or at the same level has none or partial
             // (which means this level is strictly assessed, and all chidren

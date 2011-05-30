@@ -28,6 +28,7 @@ import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNotationDeclaration;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeAlternative;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSValue;
 import org.apache.xerces.xs.datatypes.ObjectList;
@@ -96,6 +97,9 @@ public class ElementPSVImpl implements ElementPSVI {
     /** failed assertions **/
     protected ObjectList fFailedAssertions = null;
     
+    /** type alternative **/
+    protected XSTypeAlternative fTypeAlternative = null;
+    
     public ElementPSVImpl() {}
     
     public ElementPSVImpl(boolean isConstant, ElementPSVI elementPSVI) {
@@ -108,8 +112,9 @@ public class ElementPSVImpl implements ElementPSVI {
         fValidationAttempted = elementPSVI.getValidationAttempted();
         fValidity = elementPSVI.getValidity();
         fValidationContext = elementPSVI.getValidationContext();
+        fTypeAlternative = elementPSVI.getTypeAlternative();
         fInheritedAttributes = elementPSVI.getInheritedAttributes();
-        fFailedAssertions = elementPSVI.getFailedAssertions(); 
+        fFailedAssertions = elementPSVI.getFailedAssertions();         
         if (elementPSVI instanceof ElementPSVImpl) {
             final ElementPSVImpl elementPSVIImpl = (ElementPSVImpl) elementPSVI;
             fErrors = (elementPSVIImpl.fErrors != null) ?
@@ -353,6 +358,14 @@ public class ElementPSVImpl implements ElementPSVI {
         return ObjectListImpl.EMPTY_LIST;
     }
     
+    /*
+     * (non-Javadoc)
+     * @see org.apache.xerces.xs.ElementPSVI#getTypeAlternative()
+     */
+    public XSTypeAlternative getTypeAlternative() {
+        return fTypeAlternative;
+    }
+    
     /**
      * Reset() should be called in validator startElement(..) method.
      */
@@ -367,8 +380,9 @@ public class ElementPSVImpl implements ElementPSVI {
         fErrors = null;
         fValidationContext = null;
         fValue.reset();
+        fTypeAlternative = null;
         fInheritedAttributes = null;
-        fFailedAssertions = null;
+        fFailedAssertions = null;        
     }
     
     public void copySchemaInformationTo(ElementPSVImpl target) {

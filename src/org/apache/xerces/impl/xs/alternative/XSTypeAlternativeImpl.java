@@ -25,7 +25,7 @@ import org.apache.xerces.xs.XSTypeAlternative;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
- * XML schema type alternative component
+ * XML schema type alternative component.
  * 
  * @xerces.internal
  * 

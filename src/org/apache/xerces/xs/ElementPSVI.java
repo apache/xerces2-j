@@ -55,5 +55,10 @@ public interface ElementPSVI extends ItemPSVI {
      * [failed assertions]: failed assertions.
      */
     public ObjectList getFailedAssertions();
+    
+    /**
+     * [type alternative]: type alternative.
+     */
+    public XSTypeAlternative getTypeAlternative();
 
 }

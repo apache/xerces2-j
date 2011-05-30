@@ -35,6 +35,7 @@ import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNotationDeclaration;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeAlternative;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSValue;
 import org.apache.xerces.xs.datatypes.ObjectList;
@@ -113,6 +114,9 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     
     /** failed assertions */
     protected ObjectList fFailedAssertions = null;
+    
+    /** type alternative **/
+    protected XSTypeAlternative fTypeAlternative = null;
     
     //
     // ElementPSVI methods
@@ -300,6 +304,14 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         return ObjectListImpl.EMPTY_LIST;
     }
     
+    /*
+     * (non-Javadoc)
+     * @see org.apache.xerces.xs.ElementPSVI#getTypeAlternative()
+     */
+    public XSTypeAlternative getTypeAlternative() {
+        return fTypeAlternative;
+    }
+    
     /**
      * Copy PSVI properties from another psvi item.
      * 
@@ -325,8 +337,9 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         }
         this.fSpecified = elem.getIsSchemaSpecified();
         this.fNil = elem.getNil();
+        this.fTypeAlternative = elem.getTypeAlternative();
         this.fInheritedAttributes = elem.getInheritedAttributes();
-        this.fFailedAssertions = elem.getFailedAssertions();
+        this.fFailedAssertions = elem.getFailedAssertions();        
     }
 
     /* (non-Javadoc)
