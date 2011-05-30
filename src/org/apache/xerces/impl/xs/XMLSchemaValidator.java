@@ -2611,7 +2611,9 @@ public class XMLSchemaValidator
                             && id.getCategory() == IdentityConstraint.IC_KEYREF) {
                         ValueStoreBase values =
                             fValueStoreCache.getValueStoreFor(id, selMatcher.getInitialDepth());
-                        if (values != null) // nothing to do if nothing matched!
+                        // nothing to do if nothing matched, or if not all
+                        // fields are present.
+                        if (values != null && values.fValuesCount == values.fFieldCount)
                             values.endDocumentFragment();
                     }
                 }
