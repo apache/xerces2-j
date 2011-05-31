@@ -19,18 +19,15 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
-import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSTypeAlternative;
-import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * An XML Schema validator subcomponent handling "type alternative" processing.
@@ -53,12 +50,11 @@ public class XSDTypeAlternativeValidator {
     
     
     /*
-     * Determine the schema type applicable for an element declaration, using type alternative information.
+     * Determine the schema type applicable (represented as XSTypeAlternative component) for an element declaration, using type alternative information.
      */
-    public XSTypeDefinition getCurrentType(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes, Vector inheritableAttrList, Augmentations typeAltAugs) {
+    public XSTypeAlternative getTypeAlternative(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes, Vector inheritableAttrList) {
         
-        XSTypeDefinition currentType = null; 
-        XSTypeAlternative typeAlternativeAugmentation = null;
+        XSTypeAlternative selectedTypeAlternative = null; 
         
         XSTypeAlternativeImpl[] typeAlternatives = currentElemDecl.getTypeAlternatives();        
         if (typeAlternatives != null) {              
@@ -67,28 +63,19 @@ public class XSDTypeAlternativeValidator {
             for (int typeAltIdx = 0; typeAltIdx < typeAlternatives.length; typeAltIdx++) {
                 Test ctaTest = typeAlternatives[typeAltIdx].getTest();
                 if (ctaTest != null && ctaTest.evaluateTest(element, ctaAttributes)) {
-                    currentType = typeAlternatives[typeAltIdx].getTypeDefinition();
-                    typeAlternativeAugmentation = typeAlternatives[typeAltIdx]; 
+                    selectedTypeAlternative = typeAlternatives[typeAltIdx]; 
                     break;
                 }
             }
-            //if a type is not selected by xs:alternative components, try to assign the default type
-            if (currentType == null) {
-                XSTypeAlternativeImpl defType = currentElemDecl.getDefaultTypeDefinition();
-                if (defType != null) {
-                    currentType = defType.getTypeDefinition();
-                    if (typeAlternativeAugmentation == null) {
-                        typeAlternativeAugmentation = defType;  
-                    }
-                }
+            //if a type alternative is not selected by xs:alternative components, try to assign the default type
+            if (selectedTypeAlternative == null) {
+                selectedTypeAlternative = currentElemDecl.getDefaultTypeDefinition();
             }
         }
         
-        typeAltAugs.putItem(Constants.TYPE_ALTERNATIVE, typeAlternativeAugmentation);
+        return selectedTypeAlternative;
         
-        return currentType;
-        
-    } // getCurrentType
+    } // getTypeAlternative
     
 
     /*

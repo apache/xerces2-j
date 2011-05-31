@@ -450,9 +450,6 @@ public final class Constants {
     /** Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
     public final static String ATTRIBUTE_PSVI = "ATTRIBUTE_PSVI";
     
-    /** [type alternative] PSVI is stored in augmentations using string "TYPE_ALTERNATIVE" */
-    public final static String TYPE_ALTERNATIVE = "TYPE_ALTERNATIVE";
-    
     /** 
      * Boolean indicating whether an attribute is declared in the DTD is stored 
      * in augmentations using the string "ATTRIBUTE_DECLARED". The absence of this

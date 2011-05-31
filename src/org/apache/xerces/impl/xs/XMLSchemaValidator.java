@@ -2206,12 +2206,10 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-           Augmentations typeAltAugs = new AugmentationsImpl();
-           XSTypeDefinition currentType = fTypeAlternativeValidator.getCurrentType(fCurrentElemDecl, element, attributes, fInheritableAttrList, typeAltAugs);           
-           if (currentType != null) {
-               fCurrentType = currentType;    
+           fTypeAlternative = fTypeAlternativeValidator.getTypeAlternative(fCurrentElemDecl, element, attributes, fInheritableAttrList);           
+           if (fTypeAlternative != null) {
+               fCurrentType = fTypeAlternative.getTypeDefinition();
            }
-           fTypeAlternative = (XSTypeAlternative)typeAltAugs.getItem(Constants.TYPE_ALTERNATIVE);
         }
 
         // check if we should be ignoring xsi:type on this element
