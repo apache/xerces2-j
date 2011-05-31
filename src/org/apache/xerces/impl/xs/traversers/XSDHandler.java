@@ -434,9 +434,9 @@ public class XSDHandler {
     XSDKeyrefTraverser fKeyrefTraverser;
     XSDNotationTraverser fNotationTraverser;
     XSDSimpleTypeTraverser fSimpleTypeTraverser;
-    XSDTypeAlternativeTraverser fTypeAlternativeTraverser;
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
+    XSDTypeAlternativeTraverser fTypeAlternativeTraverser;
     
     SchemaDVFactory fDVFactory;
     SchemaDOMParser fSchemaParser;
@@ -3633,10 +3633,13 @@ public class XSDHandler {
         fKeyrefTraverser = new XSDKeyrefTraverser(this, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this, fAttributeChecker);
         fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this, fAttributeChecker);
-        fTypeAlternativeTraverser = new XSDTypeAlternativeTraverser(this, fAttributeChecker);
         fUniqueOrKeyTraverser = new XSDUniqueOrKeyTraverser(this, fAttributeChecker);
         fWildCardTraverser = new XSDWildcardTraverser(this, fAttributeChecker);
     } // createTraversers()
+    
+    private void createXSD11Traversers() {
+        fTypeAlternativeTraverser = new XSDTypeAlternativeTraverser(this, fAttributeChecker);
+    } // createXSD11Traversers()
     
     // before parsing a schema, need to clear registries associated with
     // parsing schemas
@@ -3710,6 +3713,10 @@ public class XSDHandler {
         if (fAttributeChecker == null) {
             createTraversers();
         }
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 &&
+            fTypeAlternativeTraverser == null) {
+            createXSD11Traversers();
+        }
         
         // reset traversers
         Locale locale = fErrorReporter.getLocale();
@@ -3722,9 +3729,11 @@ public class XSDHandler {
         fKeyrefTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
         fNotationTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
         fSimpleTypeTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
-        fTypeAlternativeTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
         fUniqueOrKeyTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
         fWildCardTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
+        if (fTypeAlternativeTraverser != null) {
+            fTypeAlternativeTraverser.reset(fSymbolTable, fValidateAnnotations, locale);
+        }
         
         fRedefinedRestrictedAttributeGroupRegistry.clear();
         fRedefinedRestrictedGroupRegistry.clear();
