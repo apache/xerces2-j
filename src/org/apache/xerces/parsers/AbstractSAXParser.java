@@ -336,8 +336,8 @@ public abstract class AbstractSAXParser
         }
 
         // is there a DeclHandler?
-        if(fDeclHandler != null) {
-            fDeclaredAttrs = new SymbolHash();
+        if (fDeclHandler != null) {
+            fDeclaredAttrs = new SymbolHash(25);
         }
 
     } // doctypeDecl(String,String,String)
