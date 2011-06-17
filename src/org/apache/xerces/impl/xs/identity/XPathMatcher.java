@@ -92,6 +92,9 @@ public class XPathMatcher {
 
     /** The matching string. */
     protected Object fMatchedString;
+    
+    /** XPath default namespace. */
+    protected String fXpathDefaultNamespace;
 
     /** Integer stack of step indexes. */
     private final IntStack[] fStepIndexes;
@@ -275,6 +278,10 @@ public class XPathMatcher {
                 steps[fCurrentStep[i]].axis.type == XPath.Axis.CHILD) {
                 XPath.Step step = steps[fCurrentStep[i]];
                 XPath.NodeTest nodeTest = step.nodeTest;
+                // set xpathDefaultNamespace if applicable. for XML Schema 1.1
+                if (nodeTest.name.uri == null) {
+                    nodeTest.name.uri = fXpathDefaultNamespace;
+                }
                 if (DEBUG_MATCH) {
                     System.out.println(toString()+" [CHILD] before");
                 }
@@ -314,7 +321,10 @@ public class XPathMatcher {
                 int attrCount = attributes.getLength();
                 if (attrCount > 0) {
                     XPath.NodeTest nodeTest = steps[fCurrentStep[i]].nodeTest;
-
+                    // set xpathDefaultNamespace if applicable. for XML Schema 1.1
+                    if (nodeTest.name.uri == null) {
+                        nodeTest.name.uri = fXpathDefaultNamespace;
+                    }
                     for (int aIndex = 0; aIndex < attrCount; aIndex++) {
                         attributes.getName(aIndex, fQName);
                         if (matches(nodeTest, fQName)) {
@@ -444,6 +454,13 @@ public class XPathMatcher {
         }
         return str.toString();
     } // toString():String
+    
+    /*
+     * Sets the value of XPath default namespace.
+     */
+    public void setXPathDefaultNamespace(String xpathDefaultNamespace) {
+        fXpathDefaultNamespace = xpathDefaultNamespace;   
+    }
 
     //
     // Private methods

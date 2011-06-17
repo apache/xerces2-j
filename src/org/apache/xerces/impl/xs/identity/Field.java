@@ -47,16 +47,19 @@ public class Field {
 
     /** Identity constraint. */
     protected final IdentityConstraint fIdentityConstraint;
+    
+    /** XPath default namespace. */
+    protected String fXpathDefaultNamespace;
 
     //
     // Constructors
     //
 
     /** Constructs a field. */
-    public Field(Field.XPath xpath, 
-                 IdentityConstraint identityConstraint) {
+    public Field(Field.XPath xpath, IdentityConstraint identityConstraint, String xpathDefaultNamespace) {
         fXPath = xpath;
         fIdentityConstraint = identityConstraint;
+        fXpathDefaultNamespace = xpathDefaultNamespace;
     } // <init>(Field.XPath,IdentityConstraint)
 
     //
@@ -88,6 +91,11 @@ public class Field {
     public String toString() {
         return fXPath.toString();
     } // toString():String
+    
+    /** Return value of xpathDefaultNamespace. */
+    public String getXPathDefaultNamespace() {
+        return fXpathDefaultNamespace;
+    }
 
     //
     // Classes

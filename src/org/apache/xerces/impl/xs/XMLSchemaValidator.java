@@ -1709,6 +1709,9 @@ public class XMLSchemaValidator
         ValueStore valueStore =
             fValueStoreCache.getValueStoreFor(field.getIdentityConstraint(), initialDepth);
         XPathMatcher matcher = field.createMatcher(valueStore);
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            matcher.setXPathDefaultNamespace(field.getXPathDefaultNamespace());
+        }
         fMatcherStack.addMatcher(matcher);
         matcher.startDocumentFragment();
         return matcher;
@@ -1734,6 +1737,9 @@ public class XMLSchemaValidator
         if (selector == null)
             return;
         XPathMatcher matcher = selector.createMatcher(activator, fElementDepth);
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            matcher.setXPathDefaultNamespace(selector.getXPathDefaultNamespace());
+        }
         fMatcherStack.addMatcher(matcher);
         matcher.startDocumentFragment();
     }

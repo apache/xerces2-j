@@ -114,11 +114,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         sText = XMLChar.trim(sText);
         
-        Selector.XPath sXpath = null;
+        Selector.XPath sXpath = null; 
         try {
-            sXpath = new Selector.XPath(sText, fSymbolTable,
-                    schemaDoc.fNamespaceSupport);
-            Selector selector = new Selector(sXpath, ic);
+            sXpath = new Selector.XPath(sText, fSymbolTable, schemaDoc.fNamespaceSupport);
+            Selector selector = new Selector(sXpath, ic, getXPathDefaultNamespace(attrValues, schemaDoc));
             ic.setSelector(selector);
         }
         catch (XPathException e) {
@@ -172,10 +171,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 return false;
             }
             fText = XMLChar.trim(fText);
+            
             try {
-                Field.XPath fXpath = new Field.XPath(fText, fSymbolTable,
-                        schemaDoc.fNamespaceSupport);
-                Field field = new Field(fXpath, ic);
+                Field.XPath fXpath = new Field.XPath(fText, fSymbolTable, schemaDoc.fNamespaceSupport);
+                Field field = new Field(fXpath, ic, getXPathDefaultNamespace(attrValues, schemaDoc));
                 ic.addField(field);
             }
             catch (XPathException e) {
@@ -191,6 +190,17 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         
         return ic.getFieldCount() > 0;
     } // traverseIdentityConstraint(IdentityConstraint,Element, XSDocumentInfo)
+    
+    /*
+     * Get the value of xpathDefaultNamespace attribute for xs:selector or xs:field
+     */
+    private String getXPathDefaultNamespace(Object[] attrValues, XSDocumentInfo schemaDoc) {
+        String xpathDefaultNamespace = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS]); 
+        if (xpathDefaultNamespace == null) {
+            xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;   
+        }
+        return xpathDefaultNamespace;
+    } // getXPathDefaultNamespace
     
     void traverseIdentityConstraintReferral(Element icElem, XSElementDecl element, 
             XSDocumentInfo schemaDoc, SchemaGrammar grammar) {

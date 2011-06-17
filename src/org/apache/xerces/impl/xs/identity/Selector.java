@@ -49,16 +49,19 @@ public class Selector {
     // the Identity constraint we're the matcher for.  Only
     // used for selectors!
     protected IdentityConstraint fIDConstraint;
+    
+    /** XPath default namespace. */
+    protected String fXpathDefaultNamespace;
 
     //
     // Constructors
     //
 
     /** Constructs a selector. */
-    public Selector(Selector.XPath xpath, 
-                    IdentityConstraint identityConstraint) {
+    public Selector(Selector.XPath xpath, IdentityConstraint identityConstraint, String xpathDefaultNamespace) {
         fXPath = xpath;
         fIdentityConstraint = identityConstraint;
+        fXpathDefaultNamespace = xpathDefaultNamespace; 
     } // <init>(Selector.XPath,IdentityConstraint)
 
     //
@@ -94,6 +97,11 @@ public class Selector {
     public String toString() {
         return fXPath.toString();
     } // toString():String
+    
+    /** Return value of xpathDefaultNamespace. */
+    public String getXPathDefaultNamespace() {
+        return fXpathDefaultNamespace;
+    }
 
     //
     // Classes
