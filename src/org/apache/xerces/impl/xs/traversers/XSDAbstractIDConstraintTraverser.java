@@ -192,7 +192,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
     } // traverseIdentityConstraint(IdentityConstraint,Element, XSDocumentInfo)
     
     /*
-     * Get the value of xpathDefaultNamespace attribute for xs:selector or xs:field
+     * Get the value of xpathDefaultNamespace attribute for xs:selector or xs:field.
      */
     private String getXPathDefaultNamespace(Object[] attrValues, XSDocumentInfo schemaDoc) {
         String xpathDefaultNamespace = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS]); 
