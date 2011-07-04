@@ -83,7 +83,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(altElement, false, schemaDoc);
         QName typeAtt = (QName) attrValues[XSAttributeChecker.ATTIDX_TYPE];
         String testStr = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
-        String xpathNS = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+        String xpathDefaultNS = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
 
         // get 'annotation'
         Element childNode = DOMUtil.getFirstChildElement(altElement);
@@ -183,7 +183,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-elt-must-match.1", new Object[]{"type alternative", "(annotation?, (simpleType | complexType)?)", DOMUtil.getLocalName(childNode)}, childNode);
         }
 
-        // create type alternative
+        // create type alternative component
         XSTypeAlternativeImpl typeAlternative = new XSTypeAlternativeImpl(element.fName, alternativeType, annotations);
 
         // now look for other optional attributes like test and xpathDefaultNamespace
@@ -214,9 +214,12 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         // REVISIT : is using Document.getDocumentURI() correct to retrieve base URI in every case, for type alternatives? 
         typeAlternative.setBaseURI(fXsdHandler.getDocumentURI());
 
-        if (xpathNS != null) {
+        if (xpathDefaultNS == null) {
+            xpathDefaultNS = schemaDoc.fXpathDefaultNamespace;   
+        }
+        if (xpathDefaultNS != null) {
             //set the xpathDefaultNamespace attribute value
-            typeAlternative.setXPathDefauleNamespace(xpathNS);
+            typeAlternative.setXPathDefauleNamespace(xpathDefaultNS);
         }
         
         grammar.addTypeAlternative(element, typeAlternative);
