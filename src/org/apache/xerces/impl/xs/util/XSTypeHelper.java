@@ -32,6 +32,7 @@ import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -42,6 +43,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.ResultSequence;
 import org.eclipse.wst.xml.xpath2.processor.ResultSequenceFactory;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
+import org.w3c.dom.Element;
 
 /**
  * Class defining utility/helper methods related to XML schema types.
@@ -291,5 +293,31 @@ public class XSTypeHelper {
         return xpath2Seq;
         
     } // getXPath2ResultSequence
+    
+    
+    /*
+     * Resolve the reference '##defaultNamespace' (currently used for "type alternative" component).
+     */
+    public static String getDefaultNamespace(Element localElement, Element schemaElement) {
+        
+        String defaultNamespace = null;
+        
+        if (DOMUtil.getAttr(localElement, SchemaSymbols.ATT_XPATH_DEFAULT_NS) != null) {
+            defaultNamespace = XMLChar.trim(DOMUtil.getAttrValue(localElement, SchemaSymbols.ATT_XPATH_DEFAULT_NS));            
+            if (SchemaSymbols.ATTVAL_TWOPOUNDDEFAULTNS.equals(defaultNamespace)) {                 
+                defaultNamespace = DOMUtil.getDefaultNamespace(localElement);
+            }
+        }
+        else if (DOMUtil.getAttr(schemaElement, SchemaSymbols.ATT_XPATH_DEFAULT_NS) != null) {
+            defaultNamespace = XMLChar.trim(DOMUtil.getAttrValue(schemaElement, SchemaSymbols.ATT_XPATH_DEFAULT_NS));
+            if (SchemaSymbols.ATTVAL_TWOPOUNDDEFAULTNS.equals(defaultNamespace)) {                 
+                defaultNamespace = DOMUtil.getDefaultNamespace(localElement);
+            }
+        }
+        
+        return defaultNamespace;
+        
+    } // getDefaultNamespace
+    
     
 } // class XSTypeHelper

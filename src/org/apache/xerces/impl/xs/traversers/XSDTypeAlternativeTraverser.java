@@ -215,7 +215,11 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         typeAlternative.setBaseURI(fXsdHandler.getDocumentURI());
 
         if (xpathDefaultNS == null) {
-            xpathDefaultNS = schemaDoc.fXpathDefaultNamespace;   
+            xpathDefaultNS = schemaDoc.fXpathDefaultNamespace;
+            if (xpathDefaultNS == null) {
+                // try to find value of xpathDefaultNamespace by resolving '##defaultNamespace'
+                xpathDefaultNS = XSTypeHelper.getDefaultNamespace(altElement, schemaDoc.fSchemaElement);
+            }            
         }
         if (xpathDefaultNS != null) {
             //set the xpathDefaultNamespace attribute value
