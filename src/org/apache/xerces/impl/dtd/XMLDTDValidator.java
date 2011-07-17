@@ -332,7 +332,7 @@ public class XMLDTDValidator
     // temporary variables
 
     /** Temporary element declaration. */
-    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+    private final XMLElementDecl fTempElementDecl = new XMLElementDecl();
 
     /** Temporary atribute declaration. */
     private final XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
