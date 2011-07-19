@@ -77,6 +77,7 @@ import org.apache.xerces.util.StAXLocationWrapper;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI.MalformedURIException;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
@@ -1380,6 +1381,7 @@ public class XSDHandler {
                         String qName = currSchemaDoc.fTargetNamespace == null ?
                                 ","+lName:
                                     currSchemaDoc.fTargetNamespace +","+lName;
+                        qName = XMLChar.trim(qName);
                         String componentType = DOMUtil.getLocalName(redefineComp);
                         if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                             checkForDuplicateNames(qName, ATTRIBUTEGROUP_TYPE, fUnparsedAttributeGroupRegistry, fUnparsedAttributeGroupRegistrySub, redefineComp, currSchemaDoc);
@@ -1436,6 +1438,7 @@ public class XSDHandler {
                     String qName = currSchemaDoc.fTargetNamespace == null?
                             ","+lName:
                                 currSchemaDoc.fTargetNamespace +","+lName;
+                    qName = XMLChar.trim(qName);
                     if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                         checkForDuplicateNames(qName, ATTRIBUTE_TYPE, fUnparsedAttributeRegistry, fUnparsedAttributeRegistrySub, globalComp, currSchemaDoc);
                     }
