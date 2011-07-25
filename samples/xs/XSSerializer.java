@@ -187,8 +187,8 @@ public class XSSerializer {
         DocumentBuilder dBuilder = dbf.newDocumentBuilder();
         Document document = dBuilder.newDocument();
 
-        Element schemaDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI, XSD_LANGUAGE_PREFIX + SchemaSymbols.ELT_SCHEMA);     
-
+        Element schemaDeclDomNode = document.createElementNS(XSD_LANGUAGE_URI, XSD_LANGUAGE_PREFIX + SchemaSymbols.ELT_SCHEMA);
+        
         document.appendChild(schemaDeclDomNode);
 
         // process global element declarations
@@ -253,9 +253,10 @@ public class XSSerializer {
                 addAttributeToSchemaComponent(document, attrGpDomNode, attrDecl, constraintName, constraintVal, requiredVal);
             }
 
+            // possible serialization of <anyAttribute/>
             XSWildcard attrWildCard = attrGpDecl.getAttributeWildcard();
             if (attrWildCard != null) {
-                addWildcardToSchemaComponent(document, attrGpDomNode, (XSWildcardDecl) attrWildCard, SchemaSymbols.ELT_ANYATTRIBUTE);
+                addWildcardToSchemaComponent(document, attrGpDomNode, (XSWildcardDecl) attrWildCard, SchemaSymbols.ELT_ANYATTRIBUTE, null, null);
             }
 
             schemaDeclDomNode.appendChild(attrGpDomNode);
@@ -446,7 +447,7 @@ public class XSSerializer {
      */
     private void processGlobalComplexTypeDecl(XSNamedMap globalComplexTypeDecls, Document document, Element schemaDeclDomNode) throws DOMException {
 
-        // iterating global complex types in the Schema
+        // iterating global complex type definitions in the Schema.
         // leaving out built-in Schema type, "anyType" from iteration        
         for (int ctIdx = 0; ctIdx < globalComplexTypeDecls.size() - 1; ctIdx++) {
             XSComplexTypeDecl complexTypeDecl = (XSComplexTypeDecl) globalComplexTypeDecls.item(ctIdx);
@@ -701,7 +702,7 @@ public class XSSerializer {
 
 
     /*
-     * Add child content to complex type declaration.
+     * Add child content to complex type definition.
      */
     private void addChildrenToComplexType(Document document, Element parentDomNode, XSComplexTypeDecl complexTypeDecl, Element complexTypeDomNode) throws DOMException {
 
@@ -890,6 +891,12 @@ public class XSSerializer {
                 addAttributeToSchemaComponent(document, parentDomNode, attrDecl, constraintName, constraintVal, requiredVal); 
             }
         }
+        
+        // possible serialization of <anyAttribute/>
+        XSWildcard attrWildCard = complexTypeDecl.getAttributeWildcard();
+        if (attrWildCard != null) {            
+            addWildcardToSchemaComponent(document, parentDomNode, (XSWildcardDecl) attrWildCard, SchemaSymbols.ELT_ANYATTRIBUTE, null, null);
+        }
 
     } // addAttributesToComplexType    
 
@@ -955,7 +962,7 @@ public class XSSerializer {
                 }
             }
             else if (partclTerm instanceof XSWildcard) {
-                addWildcardToSchemaComponent(document, compositorDomNode, (XSWildcardDecl) partclTerm, SchemaSymbols.ELT_ANY);   
+                addWildcardToSchemaComponent(document, compositorDomNode, (XSWildcardDecl) partclTerm, SchemaSymbols.ELT_ANY, minOccursParticle, maxOccursParticle);   
             }
         }
 
@@ -989,7 +996,7 @@ public class XSSerializer {
             }
             else if (partclTerm instanceof XSWildcard) {
                 XSWildcardDecl wildCardDecl = (XSWildcardDecl) partclTerm;
-                addWildcardToSchemaComponent(document, allDeclDomNode, wildCardDecl, SchemaSymbols.ELT_ANY);                                        
+                addWildcardToSchemaComponent(document, allDeclDomNode, wildCardDecl, SchemaSymbols.ELT_ANY, minOccursParticle, maxOccursParticle);                                        
             }
         }
 
@@ -1001,11 +1008,17 @@ public class XSSerializer {
     /*
      * Adding wild-card to a Schema component.
      */
-    private void addWildcardToSchemaComponent(Document document, Element parentNode, XSWildcardDecl wildCardDecl, String wildCardType) {        
+    private void addWildcardToSchemaComponent(Document document, Element parentNode, XSWildcardDecl wildCardDecl, String wildCardType, String minOccurs, String maxOccurs) {        
         Element wildCardDomNode = document.createElementNS(XSD_LANGUAGE_URI, XSD_LANGUAGE_PREFIX + wildCardType);
         String processContentsVal = wildCardDecl.getProcessContentsAsString();
         if (!processContentsVal.equals(SchemaSymbols.ATTVAL_STRICT)) {
             wildCardDomNode.setAttributeNS(null, SchemaSymbols.ATT_PROCESSCONTENTS, processContentsVal);
+        }
+        if (minOccurs != null) {
+            wildCardDomNode.setAttributeNS(null, SchemaSymbols.ATT_MINOCCURS, minOccurs);
+        }
+        if (maxOccurs != null) {
+            wildCardDomNode.setAttributeNS(null, SchemaSymbols.ATT_MAXOCCURS, maxOccurs);
         }
         parentNode.appendChild(wildCardDomNode);                
     } // addWildcardToSchemaComponent
