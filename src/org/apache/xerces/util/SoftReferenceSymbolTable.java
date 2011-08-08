@@ -65,9 +65,12 @@ public class SoftReferenceSymbolTable extends SymbolTable {
      */
     public SoftReferenceSymbolTable(int initialCapacity, float loadFactor) {
         /*
-         * Not calling super() because we don't want to initialize the Entry buckets
-         * used by the base class.
+         * The Entry buckets in the base class are not used by this class.
+         * We call super() with 1 as the initial capacity to minimize the
+         * memory used by the field in the base class.
          */
+        super(1, loadFactor);
+        
         if (initialCapacity < 0) {
             throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
         }
