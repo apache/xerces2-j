@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.models;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -227,6 +228,17 @@ public class XSAllCM implements XSCMValidator {
 
     public boolean isCompactedForUPA() {
         return false;
+    }
+    
+    public XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
+        for (int i = 1; i < fNumElements; i++) {
+            final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i], Constants.SCHEMA_VERSION_1_0);
+            if (matchingDecl != null) {
+                return matchingDecl;
+            }
+        }
+
+        return null;
     }
 } // class XSAllCM
 

@@ -162,7 +162,7 @@ public class XS11AllCM implements XSCMValidator, XS11CMRestriction.XS11CM {
     }
 
     // convenient method: to find a matching element decl 
-    XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
+    public XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
         for (int i = 1; i < fNumElements; i++) {
             final XSElementDecl matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fElements[i], Constants.SCHEMA_VERSION_1_1);
             if (matchingDecl != null) {

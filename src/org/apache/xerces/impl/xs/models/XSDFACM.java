@@ -457,7 +457,7 @@ public class XSDFACM
         return matchingDecl;
     } // findMatchingDecl(QName, int[], SubstitutionGroupHandler, int): Object
 
-    XSElementDecl findMatchingElemDecl(QName curElem, SubstitutionGroupHandler subGroupHandler) {
+    public XSElementDecl findMatchingElemDecl(QName curElem, SubstitutionGroupHandler subGroupHandler) {
         XSElementDecl matchingDecl = null;
 
         for (int elemIndex = 0; elemIndex < fNumElements; elemIndex++) {

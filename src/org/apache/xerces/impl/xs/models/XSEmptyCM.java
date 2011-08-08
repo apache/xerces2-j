@@ -208,4 +208,8 @@ public class XSEmptyCM implements XSCMValidator, XS11CMRestriction.XS11CM {
     public XSOpenContentDecl getOpenContent() {
         return fOpenContent;
     }
+    
+    public XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
+        return null;
+    }
 } // class XSEmptyCM

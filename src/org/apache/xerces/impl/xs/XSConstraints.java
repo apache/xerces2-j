@@ -544,7 +544,7 @@ public abstract class XSConstraints {
             }
             else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && !isTypeTablesEquivalent(elem, existingElem)) {
                 // Type tables are not equivalent
-                throw new XMLSchemaException("cos-element-consistent.4", new Object[] {type.fName, elem.fName});  
+                throw new XMLSchemaException("cos-element-consistent.4.b", new Object[] {type.fName, elem.fName});  
             }
         }
     }

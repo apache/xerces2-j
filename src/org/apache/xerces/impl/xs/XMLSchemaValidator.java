@@ -410,7 +410,9 @@ public class XMLSchemaValidator
      * While parsing a document, keep the location of the document.
      */
     private XMLLocator fLocator;
-    
+
+    private ArrayList fXSITypeErrors = new ArrayList(4);
+
     private IDContext fIDContext = null;
 
     /**
@@ -2230,6 +2232,8 @@ public class XMLSchemaValidator
         }
         
         // if no decl/type found for the current element
+        final boolean isSchema11 = (fSchemaVersion == Constants.SCHEMA_VERSION_1_1);
+        boolean needToPushErrorContext = false;
         if (fCurrentType == null && xsiType == null) {
             // if this is the validation root, report an error, because
             // we can't find eith decl or type for this element
@@ -2289,17 +2293,35 @@ public class XMLSchemaValidator
             // push error reporter context: record the current position
             // This has to happen after we process skip contents,
             // otherwise push and pop won't be correctly paired.
-            fXSIErrorReporter.pushContext();
+            if (isSchema11) {
+                needToPushErrorContext = true;
+            }
+            else {
+                fXSIErrorReporter.pushContext();
+            }
         } else {
             // push error reporter context: record the current position
             // This has to happen after we process skip contents,
             // otherwise push and pop won't be correctly paired.
-            fXSIErrorReporter.pushContext();
+            if (isSchema11) {
+                needToPushErrorContext = true;
+            }
+            else {
+                fXSIErrorReporter.pushContext();
+            }
 
             // get xsi:type
             if (xsiType != null) {
                 XSTypeDefinition oldType = fCurrentType;
-                fCurrentType = getAndCheckXsiType(element, xsiType, attributes);
+                if (isSchema11) {
+                    if (fXSITypeErrors.size() > 0) {
+                        fXSITypeErrors.clear();
+                    }
+                    fCurrentType = getAndCheckXsiType(element, xsiType, attributes, fXSITypeErrors);
+                }
+                else {
+                    fCurrentType = getAndCheckXsiType(element, xsiType, attributes);
+                }
                 // If it fails, use the old type. Use anyType if ther is no old type.
                 if (fCurrentType == null) {
                     if (oldType == null)
@@ -2322,6 +2344,39 @@ public class XMLSchemaValidator
                 // if the type is simple content complex type, we need to append
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl) fCurrentType;
                 fAppendBuffer = (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE);
+            }
+        }
+
+        // EDC rule
+        if (isSchema11) {
+            if (wildcard != null && fCurrentCM != null) {
+                XSElementDecl elemDecl = fCurrentCM.findMatchingElemDecl(element, fSubGroupHandler);
+                if (elemDecl != null) {
+                    final XSTypeDefinition elemType = elemDecl.getTypeDefinition();
+                    // types need to be equivalent
+                    if (fCurrentType != elemType) {
+                        short block = elemDecl.fBlock;
+                        if (elemType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+                            block |= ((XSComplexTypeDecl) elemType).fBlock;
+                        }
+                        if (!fXSConstraints.checkTypeDerivationOk(fCurrentType, elemType, block)) {
+                            reportSchemaError(
+                                    "cvc-elt.4.cos-element-consistent.4.a",
+                                    new Object[] { element.rawname, fCurrentType, elemType.getName()});
+                        }
+                    }
+                }
+            }
+
+            if (needToPushErrorContext) {
+                fXSIErrorReporter.pushContext();
+                final int errorSize = fXSITypeErrors.size();
+                if (errorSize > 0) {
+                    for (int i=0; i<errorSize; ++i) {
+                        reportSchemaError((String)fXSITypeErrors.get(i), (Object[])fXSITypeErrors.get(++i));
+                    }
+                    fXSITypeErrors.clear();
+                }
             }
         }
 
@@ -3077,6 +3132,81 @@ public class XMLSchemaValidator
                 reportSchemaError(
                         "cvc-elt.4.3",
                         new Object[] { element.rawname, xsiType, fCurrentType.getName()});
+            }
+        }
+
+        return type;
+    } //getAndCheckXsiType
+    
+    XSTypeDefinition getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes,
+            ArrayList errorList) {
+        // This method also deals with clause 1.2.1.2 of the constraint
+        // Validation Rule: Schema-Validity Assessment (Element)
+
+        // Element Locally Valid (Element)
+        // 4 If there is an attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is type, then all of the following must be true:
+        // 4.1 The normalized value of that attribute information item must be valid with respect to the built-in QName simple type, as defined by String Valid (3.14.4);
+        QName typeName = null;
+        try {
+            typeName = (QName) fQNameDV.validate(xsiType, fValidationState, null);
+        } catch (InvalidDatatypeValueException e) {
+            errorList.add(e.getKey());
+            errorList.add(e.getArgs());
+            errorList.add("cvc-elt.4.1");
+            errorList.add(new Object[] {
+                    element.rawname,
+                    SchemaSymbols.URI_XSI + "," + SchemaSymbols.XSI_TYPE,
+                    xsiType });
+            return null;
+        }
+
+        // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
+        XSTypeDefinition type = null;
+        // if the namespace is schema namespace, first try built-in types
+        if (typeName.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+            if (isValidBuiltInTypeName(typeName.localpart)) {
+                SchemaGrammar s4s = SchemaGrammar.getS4SGrammar(fSchemaVersion);
+                type = s4s.getGlobalTypeDecl(typeName.localpart);
+            }
+        }
+        // if it's not schema built-in types, then try to get a grammar
+        if (type == null) {
+            //try to find schema grammar by different means....
+            SchemaGrammar grammar =
+                findSchemaGrammar(
+                    XSDDescription.CONTEXT_XSITYPE,
+                    typeName.uri,
+                    element,
+                    typeName,
+                    attributes);
+
+            if (grammar != null)
+                type = grammar.getGlobalTypeDecl(typeName.localpart);
+        }
+        // still couldn't find the type, report an error
+        if (type == null) {
+            errorList.add("cvc-elt.4.2");
+            errorList.add(new Object[] { element.rawname, xsiType });
+            return null;
+        }
+
+        // if there is no current type, set this one as current.
+        // and we don't need to do extra checking
+        if (fCurrentType != null) {
+            short block = XSConstants.DERIVATION_NONE;
+            // 4.3 The local type definition must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (3.14.6) (if it is a simple type definition).
+            // Note: It's possible to have fCurrentType be non-null and fCurrentElemDecl
+            // be null, if the current type is set using the property "root-type-definition".
+            // In that case, we don't disallow any substitutions. -PM
+            if (fCurrentElemDecl != null) {
+                block = fCurrentElemDecl.fBlock;
+            }
+            if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+                block |= ((XSComplexTypeDecl) fCurrentType).fBlock;
+            }
+            if (!fXSConstraints.checkTypeDerivationOk(type, fCurrentType, block)) {
+                errorList.add("cvc-elt.4.3");
+                errorList.add(new Object[] { element.rawname, xsiType, fCurrentType.getName()});
             }
         }
 

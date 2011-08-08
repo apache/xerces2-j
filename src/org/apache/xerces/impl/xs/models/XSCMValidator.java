@@ -22,6 +22,7 @@ import java.util.Vector;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSElementDeclHelper;
 import org.apache.xerces.xni.QName;
 
@@ -128,4 +129,6 @@ public interface XSCMValidator {
      * @return a boolean that says whether this content has been compacted for UPA
      */
     public boolean isCompactedForUPA();
+    
+    public XSElementDecl findMatchingElemDecl(QName elementName, SubstitutionGroupHandler subGroupHandler);
 } // XSCMValidator
