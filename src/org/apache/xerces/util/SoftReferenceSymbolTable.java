@@ -203,12 +203,26 @@ public class SoftReferenceSymbolTable extends SymbolTable {
      * and load factor. 
      */
     protected void rehash() {
-
-        int oldCapacity = fBuckets.length;
-        SREntry[] oldTable = fBuckets;
-
-        int newCapacity = oldCapacity * 2 + 1;
-        SREntry[] newTable = new SREntry[newCapacity];
+        rehashCommon(fBuckets.length * 2 + 1);
+    }
+    
+    /**
+     * Reduces the capacity of and internally reorganizes this 
+     * SymbolTable, in order to accommodate and access its entries in
+     * a more memory efficient way. This method is called automatically when 
+     * the number of keys in the SymbolTable drops below 25% of this
+     * hashtable's load factor (as a result of SoftReferences which have
+     * been cleared).
+     */
+    protected void compact() {
+        rehashCommon(((int) (fCount / fLoadFactor)) * 2 + 1);
+    }
+    
+    private void rehashCommon(final int newCapacity) {
+        
+        final int oldCapacity = fBuckets.length;
+        final SREntry[] oldTable = fBuckets;
+        final SREntry[] newTable = new SREntry[newCapacity];
 
         fThreshold = (int)(newCapacity * fLoadFactor);
         fBuckets = newTable;
@@ -321,9 +335,17 @@ public class SoftReferenceSymbolTable extends SymbolTable {
      */
     private void clean() {
         SREntry entry = (SREntry)fReferenceQueue.poll();
-        while (entry != null) {
-            removeEntry(entry);
-            entry = (SREntry)fReferenceQueue.poll();
+        if (entry != null) {
+            do {
+                removeEntry(entry);
+                entry = (SREntry)fReferenceQueue.poll();
+            }
+            while (entry != null);
+            // Reduce the number of buckets if the number of items
+            // in the table has dropped below 25% of the threshold.
+            if (fCount < (fThreshold >> 2)) {
+                compact();
+            }
         }
     }
         
