@@ -225,13 +225,16 @@ public class SoftReferenceSymbolTable extends SymbolTable {
                     if (newTable[index] != null) {
                         newTable[index].prev = e;
                     }
+                    e.bucket = index;
                     e.next = newTable[index];
-                    e.prev = null;
                     newTable[index] = e;
                 }
                 else {
-                    fCount--;
+                    e.bucket = -1;
+                    e.next = null;
+                    --fCount;
                 }
+                e.prev = null;
             }
         }
     }
@@ -298,16 +301,19 @@ public class SoftReferenceSymbolTable extends SymbolTable {
     } // containsSymbol(char[],int,int):boolean
 
     private void removeEntry(SREntry entry) {
-        if (entry.next != null) {
-            entry.next.prev = entry.prev;
+        final int bucket = entry.bucket;
+        if (bucket >= 0) {
+            if (entry.next != null) {
+                entry.next.prev = entry.prev;
+            }
+            if (entry.prev != null) {
+                entry.prev.next = entry.next;
+            }
+            else {
+                fBuckets[bucket] = entry.next;
+            }
+            --fCount;
         }
-        if (entry.prev != null) {
-            entry.prev.next = entry.next;
-        }
-        else {
-            fBuckets[entry.bucket] = entry.next;
-        }
-        fCount--;
     }
     
     /**
@@ -339,6 +345,7 @@ public class SoftReferenceSymbolTable extends SymbolTable {
         /** The previous entry. */
         public SREntry prev;
 
+        /** The bucket this entry is contained in; -1 if it has been removed from the table. */
         public int bucket;
         
         //
