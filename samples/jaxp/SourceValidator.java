@@ -602,7 +602,7 @@ public class SourceValidator
         System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -m  | -M    Turn on/off memory usage report");
-        System.err.println("  -xsd11      Turn on XSD 1.1 support.");
+        System.err.println("  -xsd11      Turn on/off XSD 1.1 support.");
         System.err.println("  -h          This help screen.");
         
         System.err.println();
