@@ -71,6 +71,10 @@ public abstract class TypeValidatorHelper {
         return fHelper1_1;
     }
 
+    public boolean isXMLSchema11() {
+        return false;
+    }
+
     public abstract int getAllowedFacets(short validationDV);
 
     // Constructor
@@ -184,6 +188,10 @@ public abstract class TypeValidatorHelper {
 
         public int getAllowedFacets(short validationDV) {
             return (validationDV < fAllowedFacets.length) ? fAllowedFacets[validationDV] : FACETS_GROUP1;
+        }
+        
+        public boolean isXMLSchema11() {
+            return true;
         }
     }
 }

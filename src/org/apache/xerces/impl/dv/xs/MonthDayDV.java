@@ -47,7 +47,7 @@ public class MonthDayDV extends AbstractDateTimeDV {
      */
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            return parse(content);
+            return parse(content, context.getTypeValidatorHelper().isXMLSchema11());
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gMonthDay"});
         }
@@ -61,7 +61,7 @@ public class MonthDayDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected DateTimeData parse(String str) throws SchemaDateTimeException{
+    protected DateTimeData parse(String str, boolean isXMLSchema11) throws SchemaDateTimeException{
         DateTimeData date = new DateTimeData(str, this);
         int len = str.length();
 
@@ -90,7 +90,7 @@ public class MonthDayDV extends AbstractDateTimeDV {
         }
         //validate and normalize
 
-        validateDateTime(date);
+        validateDateTime(date, isXMLSchema11);
         
         //save unnormalized values
         saveUnnormalized(date);

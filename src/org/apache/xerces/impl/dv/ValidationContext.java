@@ -64,9 +64,5 @@ public interface ValidationContext {
     public Locale getLocale();
     
     // TypeValidatorHelper
-    public TypeValidatorHelper getTypeValidatorHelper();
-    
-    // indicating XML Schema 1.1 support
-    public void setIsSchema11Context(boolean isSchema11Type);
-    public boolean getIsSchema11Context();
+    public TypeValidatorHelper getTypeValidatorHelper();    
 }

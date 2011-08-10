@@ -243,13 +243,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public TypeValidatorHelper getTypeValidatorHelper() {
             return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
         }
-        public boolean getIsSchema11Context() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-        public void setIsSchema11Context(boolean isSchema11Type) {
-            // TODO Auto-generated method stub            
-        }
     };
 
     protected static TypeValidator[] getGDVs() {
@@ -3161,15 +3154,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public TypeValidatorHelper getTypeValidatorHelper() {
             return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
         }
-
-        public boolean getIsSchema11Context() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        public void setIsSchema11Context(boolean isSchema11Type) {
-            // TODO Auto-generated method stub            
-        }
     };
 
     private boolean fAnonymous = false;
@@ -3245,15 +3229,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         
         public TypeValidatorHelper getTypeValidatorHelper() {
             return fExternal.getTypeValidatorHelper();
-        }
-
-        public boolean getIsSchema11Context() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        public void setIsSchema11Context(boolean isSchema11Type) {
-            // TODO Auto-generated method stub            
         }
     }
 

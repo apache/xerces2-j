@@ -756,8 +756,7 @@ public class XMLSchemaValidator
         Augmentations augs)
         throws XNIException {
 
-        fValidationState.setNamespaceSupport(namespaceContext);
-        fValidationState.setIsSchema11Context(fSchemaVersion == Constants.SCHEMA_VERSION_1_1);        
+        fValidationState.setNamespaceSupport(namespaceContext);        
         fState4XsiType.setNamespaceSupport(namespaceContext);
         fState4ApplyDefault.setNamespaceSupport(namespaceContext);
         fLocator = locator;

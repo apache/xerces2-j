@@ -31,15 +31,14 @@ public class DateTimeStampDV extends DateTimeDV {
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            return parse(content);
+            return parse(content, context.getTypeValidatorHelper().isXMLSchema11());
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "dateTimeStamp"});
         }
     }
     
-    protected DateTimeData parse(String str) throws SchemaDateTimeException {
-        setIsSchema11Context(true);        
-        DateTimeData parsedDateTime = super.parse(str);
+    protected DateTimeData parse(String str, boolean isXMLSchema11) throws SchemaDateTimeException {        
+        DateTimeData parsedDateTime = super.parse(str, isXMLSchema11);
         if (parsedDateTime.utc == 0) {
             throw new RuntimeException("dateTimeStamp must have timezone");
         }
