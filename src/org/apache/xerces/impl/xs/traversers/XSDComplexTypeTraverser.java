@@ -1251,24 +1251,48 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 }
             }
 
-            // If the wildcard element is not absent
-            if (fOpenContent != null) {
-                // 6.2 If the actual value of its mode [attribute] is 'none', then an absent {open content}
-                if (fOpenContent.fMode == XSOpenContentDecl.MODE_NONE) {
-                    fOpenContent = null;
-                }
-                // 6.3 If the {variety} is empty, then a Particle as follows:
+            // 6.1 If the wildcard element is absent or is present and has
+            // mode = 'none', then the explicit content type.
+            if (fOpenContent == null || fOpenContent.fMode == XSOpenContentDecl.MODE_NONE) {
+                fOpenContent = explicitOpenContent;
+            }
+            else {
+                // 6.2
+
+                // If the {variety} is empty, then a Particle as follows:
                 //   {min occurs} 1
                 //   {max occurs} 1
                 //   {term}       a model group whose {compositor} is sequence and whose {particles} is empty.
-                else if (fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
+                if (fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
                     fParticle = XSConstraints.getEmptySequence();
                     fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
                 }
-            }
-            // 6.1 If the wildcard element is absent, then the explicit open content.
-            else {
-                fOpenContent = explicitOpenContent;
+                
+                // An Open Content as follows:
+                // Property    Value
+                // {mode}      The actual value of the mode [attribute] of the
+                //             wildcard element, if present, otherwise
+                //             interleave.
+                //
+                // {wildcard}  Let W be the wildcard corresponding to the <any>
+                //             [child] of the wildcard element. If the
+                //             {open content} of the explicit content type is
+                //             absent, then W; otherwise a wildcard whose
+                //             {process contents} and {annotations} are those of
+                //             W, and whose {namespace constraint} is the
+                //             wildcard union of the {namespace constraint} of W
+                //             and of {open content}.{wildcard} of the explicit
+                //             content type, as defined in Attribute Wildcard
+                //             Union (3.10.6.3).
+
+                // If explicit open content is null, no need to make any changes
+                if (explicitOpenContent != null) {
+                    XSOpenContentDecl oc = new XSOpenContentDecl();
+                    oc.fMode = fOpenContent.fMode; // interleave by default
+                    oc.fWildcard = fSchemaHandler.fXSConstraints.performUnionWith(fOpenContent.fWildcard, explicitOpenContent.fWildcard, fOpenContent.fWildcard.fProcessContents);
+                    oc.fWildcard.fAnnotations = fOpenContent.fWildcard.fAnnotations;
+                    fOpenContent = oc;
+                }
             }
 
             if (fDerivedBy == XSConstants.DERIVATION_EXTENSION && baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
