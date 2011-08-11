@@ -2360,7 +2360,7 @@ public class XMLSchemaValidator
                         }
                         if (!fXSConstraints.checkTypeDerivationOk(fCurrentType, elemType, block)) {
                             reportSchemaError(
-                                    "cvc-elt.4.cos-element-consistent.4.a",
+                                    "cos-element-consistent.4.a",
                                     new Object[] { element.rawname, fCurrentType, elemType.getName()});
                         }
                     }
