@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.Vector;
 
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.xs.XSConstants;
@@ -1248,5 +1249,9 @@ class XS10Constraints extends XSConstraints {
             // didn't find a match.  Detect an error
             throw new XMLSchemaException("rcase-MapAndSum.1", null);
         }
+    }
+    
+    final protected boolean checkEmptyFacets(XSSimpleType baseType) {
+        return true;
     }
 }

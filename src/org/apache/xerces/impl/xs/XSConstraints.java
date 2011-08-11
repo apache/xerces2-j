@@ -192,12 +192,15 @@ public abstract class XSConstraints {
 
         // 2.2.4 B's {variety} is union and D is validly derived from a type definition in B's {member type definitions} given the subset, as defined by this constraint.
         if (base.getVariety() == XSSimpleType.VARIETY_UNION) {
-            XSObjectList subUnionMemberDV = base.getMemberTypes();
-            int subUnionSize = subUnionMemberDV.getLength();
-            for (int i=0; i<subUnionSize; i++) {
-                base = (XSSimpleType)subUnionMemberDV.item(i);
-                if (checkSimpleDerivation(derived, base, block))
-                    return true;
+            if (checkEmptyFacets(base)) {
+                XSObjectList subUnionMemberDV = base.getMemberTypes();
+                int subUnionSize = subUnionMemberDV.getLength();
+                for (int i=0; i<subUnionSize; i++) {
+                    base = (XSSimpleType)subUnionMemberDV.item(i);
+                    if (checkSimpleDerivation(derived, base, block)) {
+                        return true;
+                    }
+                }
             }
         }
 
@@ -829,6 +832,7 @@ public abstract class XSConstraints {
     public abstract boolean isSubsetOf(XSWildcardDecl wildcard, XSWildcardDecl superWildcard);
     public abstract XSWildcardDecl performUnionWith(XSWildcardDecl wildcard, XSWildcardDecl otherWildcard, short processContents);
     public abstract XSWildcardDecl performIntersectionWith(XSWildcardDecl wildcard, XSWildcardDecl otherWildcard, short processContents);
+    protected abstract boolean checkEmptyFacets(XSSimpleType baseType);
 
     // to check whether an element overlaps with a wildcard,
     // as defined in constraint UPA

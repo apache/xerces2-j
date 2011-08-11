@@ -19,10 +19,12 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XS11CMRestriction;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -421,5 +423,8 @@ class XS11Constraints extends XSConstraints {
                     new Object[]{dType.fName});
         }
     }
-    
+
+    final protected boolean checkEmptyFacets(XSSimpleType baseType) {
+        return baseType.getMultiValueFacets() == XSObjectListImpl.EMPTY_LIST;
+    }
 }
