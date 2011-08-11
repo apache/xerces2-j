@@ -185,14 +185,14 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         
     
     /*
-     * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType variety union. 
+     * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType with variety union. 
      */
     public void setXDMTypedValueOf$valueForSTVarietyUnion(String value, XSObjectList memberTypes, DynamicContext xpath2DynamicContext) {        
         // check member types of union in order to find that which member type can successfully validate the string value
-        // first, and set value of XPath2 context variable $value using the member type found as its type annotation.
+        // first, and set the type annotation of XPath2 context variable $value with this member type definition.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
-            if (XSTypeHelper.isValueValidForASimpleType(value, simpleTypeDv)) {
+            if (XSTypeHelper.isStrValueValidForASimpleType(value, simpleTypeDv, Constants.SCHEMA_VERSION_1_1)) {
                setXDMTypedValueOf$valueForSTVarietyAtomic(value, getXercesXSDTypeCodeFor$value(simpleTypeDv), xpath2DynamicContext);
                break;
             }            
@@ -291,7 +291,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         final int memberTypesLength = memberTypes.getLength();
         for (int memTypeIdx = 0; memTypeIdx < memberTypesLength; memTypeIdx++) {
            XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item(memTypeIdx);
-           if (XSTypeHelper.isValueValidForASimpleType(xdmItemStrValue, memSimpleType)) {
+           if (XSTypeHelper.isStrValueValidForASimpleType(xdmItemStrValue, memSimpleType, Constants.SCHEMA_VERSION_1_1)) {
               // no more memberTypes need to be checked
               xdmItemType = memSimpleType; 
               break; 

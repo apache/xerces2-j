@@ -5049,11 +5049,11 @@ public class XMLSchemaValidator
     }
     
     /*
-     * Preprocessing checks for assertion evaluations for simpleType's with variety union.
+     * Extra checks for assertion evaluations for simpleType definitions with variety union.
      */
     private void extraCheckForSTUnionAsserts(XSSimpleType simpleTypeDv, String content, ValidatedInfo validatedInfo, Augmentations augs) {
         if (simpleTypeDv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) simpleTypeDv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-            if (XSTypeHelper.isAtomicValueValidForSTUnion(simpleTypeDv.getMemberTypes(), content, validatedInfo)) {
+            if (XSTypeHelper.isAtomicStrValueValidForSTUnion(simpleTypeDv.getMemberTypes(), content, validatedInfo, Constants.SCHEMA_VERSION_1_1)) {
                 fIsAssertProcessingNeededForSTUnion = false;
             }
             if (augs != null) {

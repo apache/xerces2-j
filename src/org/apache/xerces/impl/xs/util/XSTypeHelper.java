@@ -25,8 +25,8 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -93,18 +93,18 @@ public class XSTypeHelper {
     
     
     /*
-     * Determine if an atomic value is valid with respect to any of the simpleType -> union's member types (those that are in XML Schema namespace). 
-     * If this method returns 'true', then the value is valid with respect to entire union schema component. 
+     * Determine if a string value (which will result in an XDM atomic value) is valid with respect to any of the simpleType -> union's member types 
+     * (those that are in XML Schema namespace). If this method returns a boolean 'true', then the value is valid with respect to entire union schema component. 
      */
-    public static boolean isAtomicValueValidForSTUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo) {
+    public static boolean isAtomicStrValueValidForSTUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo, short schemaVersion) {
         
         boolean isValueValid = false;
         
-        // check the union member types in order to check for validity of an 'atomic value'. the validity of 'atomic value' wrt
+        // check the union member types in order to check for validity of an atomic value. the validity of atomic value wrt
         // to the 1st available type in union's member type collection, is sufficient to achieve the objective of this method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
-            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && XSTypeHelper.isValueValidForASimpleType(content, simpleTypeDv)) {
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && XSTypeHelper.isStrValueValidForASimpleType(content, simpleTypeDv, schemaVersion)) {
                 isValueValid = true;
                 validatedInfo.memberType = simpleTypeDv; 
                 break;  
@@ -113,32 +113,33 @@ public class XSTypeHelper {
         
         return isValueValid;
         
-    } // isAtomicValueValidForSTUnion
+    } // isAtomicStrValueValidForSTUnion
     
     
     /*
      * Determine if a lexical "string value" belongs to the value space (i.e is valid according to the type) of a given schema 
      * simpleType definition. Using Xerces API 'XSSimpleType.validate' for this need.
      */
-    public static boolean isValueValidForASimpleType(String value, XSSimpleType simplType) {
+    public static boolean isStrValueValidForASimpleType(String value, XSSimpleType simplType, short schemaVersion) {
         
-        boolean isValueValid = true;
+        boolean isStrValueValid = true;
         
         try {
             // construct necessary context objects
             ValidatedInfo validatedInfo = new ValidatedInfo();
-            ValidationContext validationState = new ValidationState();
+            ValidationState validationState = new ValidationState();
+            validationState.setTypeValidatorHelper(TypeValidatorHelper.getInstance(schemaVersion));
             
-            // attempt to validate the "string value" with a simpleType instance.
+            // attempt to validate the "string value" with a simpleType definition
             simplType.validate(value, validationState, validatedInfo);
         } 
         catch(InvalidDatatypeValueException ex){
-            isValueValid = false;
+            isStrValueValid = false;
         }
         
-        return isValueValid;
+        return isStrValueValid;
         
-    } // isValueValidForASimpleType
+    } // isStrValueValidForASimpleType
     
     
     /*
