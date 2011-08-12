@@ -29,7 +29,6 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
@@ -307,18 +306,15 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // get types from "memberTypes" attribute
         ArrayList dTValidators = null;
         XSSimpleType dv = null;
-        XSSimpleType[] memberTypeDvList = null;
         XSObjectList dvs;
         if (union && memberTypes != null && memberTypes.size() > 0) {
             int size = memberTypes.size();
-            memberTypeDvList = new XSSimpleType[size]; 
             dTValidators = new ArrayList(size);
             // for each qname in the list
             for (int i = 0; i < size; i++) {
                 // get the type decl
                 dv = findDTValidator(child, name, (QName)memberTypes.elementAt(i),
                         XSConstants.DERIVATION_UNION, schemaDoc);
-                memberTypeDvList[i] = dv;
                 if (dv != null) {
                     // if it's a union, expand it
                     // In XML Schema 1.1, we do not expand
@@ -449,20 +445,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
             }
         }
-        
-        if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            if (list && baseValidator != null && XSTypeHelper.isSpecialSimpleType(baseValidator)) {
-               reportSchemaError("st-props-correct.1", new Object[] {((XSSimpleTypeDecl)newDecl).getTypeName(), "xs:list"}, child);
-            }
-            else if (union && memberTypeDvList != null) {
-               for (int memTypeIdx = 0; memTypeIdx < memberTypeDvList.length; memTypeIdx++) {
-                   if (XSTypeHelper.isSpecialSimpleType(memberTypeDvList[memTypeIdx])) {
-                       reportSchemaError("st-props-correct.1", new Object[] {((XSSimpleTypeDecl)newDecl).getTypeName(), "xs:union"}, child);  
-                   }
-               }
-            }
-        }
-        
+
         // XML Schema 1.1
         // Set context information
         final int localValidatorsSize = localValidators.size();
@@ -510,15 +493,22 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         // if it's a complex type, or if its restriction of anySimpleType
         // or anyAtomicType (XML Schema 1.1)
-        if ((baseType == SchemaGrammar.fAnySimpleType || baseType == SchemaGrammar.fAnyAtomicType) &&
-            baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
-            // if the base type is anySimpleType and the current type is
-            // a S4S built-in type, return null. (not an error).
-            if (checkBuiltIn(refName, schemaDoc.fTargetNamespace)) {
+        if (baseType == SchemaGrammar.fAnySimpleType || baseType == SchemaGrammar.fAnyAtomicType) {
+            if (baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
+                // if the base type is anySimpleType and the current type is
+                // a S4S built-in type, return null. (not an error).
+                if (checkBuiltIn(refName, schemaDoc.fTargetNamespace)) {
+                    return null;
+                }
+                reportSchemaError("cos-st-restricts.1.1", new Object[]{baseTypeStr.rawname, refName}, elm);
                 return null;
             }
-            reportSchemaError("cos-st-restricts.1.1", new Object[]{baseTypeStr.rawname, refName}, elm);
-            return null;
+            else if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                // itemType and memberType cannot be a special type
+                final String contextString = (baseRefContext == XSConstants.DERIVATION_LIST) ? "xs:list" : "xs:union";
+                reportSchemaError("st-props-correct.1", new Object[] {refName, contextString}, elm);
+                return null;
+            }
         }
 
         if ((baseType.getFinal() & baseRefContext) != 0) {
