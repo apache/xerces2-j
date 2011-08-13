@@ -37,6 +37,7 @@ import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.ShortList;
@@ -2073,17 +2074,19 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             if (fPatternType != SPECIAL_PATTERN_NONE) {
 
                 boolean seenErr = false;
+                boolean isSchema11 = context.getTypeValidatorHelper().isXMLSchema11();
+                // if using XSD 1.1, use the XML 1.1 rules of validating the NMTOKEN, Name and NCName else use the XML 1.0 rules 
                 if (fPatternType == SPECIAL_PATTERN_NMTOKEN) {
                     // PATTERN "\\c+"
-                    seenErr = !XMLChar.isValidNmtoken(nvalue);
+                    seenErr = (isSchema11) ? !XML11Char.isXML11ValidNmtoken(nvalue) : !XMLChar.isValidNmtoken(nvalue);
                 }
                 else if (fPatternType == SPECIAL_PATTERN_NAME) {
-                    // PATTERN "\\i\\c*"
-                    seenErr = !XMLChar.isValidName(nvalue);
+                    // PATTERN "\\i\\c*"                
+                    seenErr = (isSchema11) ? !XML11Char.isXML11ValidName(nvalue) : !XMLChar.isValidName(nvalue);
                 }
                 else if (fPatternType == SPECIAL_PATTERN_NCNAME) {
                     // PATTERN "[\\i-[:]][\\c-[:]]*"
-                    seenErr = !XMLChar.isValidNCName(nvalue);
+                    seenErr = (isSchema11) ? !XML11Char.isXML11ValidNCName(nvalue) : !XMLChar.isValidNCName(nvalue);   
                 }
                 if (seenErr) {
                     throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1",

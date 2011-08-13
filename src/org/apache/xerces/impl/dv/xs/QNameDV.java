@@ -19,6 +19,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.datatypes.XSQName;
@@ -52,12 +53,17 @@ public class QNameDV extends TypeValidator {
             localpart = content;
         }
 
-        // both prefix (if any) a nd localpart must be valid NCName
-        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix))
+        boolean isSchema11 = context.getTypeValidatorHelper().isXMLSchema11();
+        
+        // both prefix (if any) and localpart must be valid NCName
+        // if using XSD 1.1, use the XML 1.1 rules of validating the prefix and the local part, else use the XML 1.0 rules
+        if (prefix.length() > 0 && ((isSchema11) ? !XML11Char.isXML11ValidNCName(prefix) : !XMLChar.isValidNCName(prefix))) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
+        }
 
-        if(!XMLChar.isValidNCName(localpart))
+        if((isSchema11) ? !XML11Char.isXML11ValidNCName(localpart) : !XMLChar.isValidNCName(localpart)) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
+        }
 
         // resove prefix to a uri, report an error if failed
         String uri = context.getURI(prefix);
