@@ -61,9 +61,10 @@ public class XJavac extends Javac {
                 // we're on an IBM 1.4 or higher; fiddle with the bootclasspath.
                 setBootclasspath(createIBMJDKBootclasspath());
             }
-            // need to do special things for Sun too and also
+            // need to do special things for Sun/Oracle too and also
             // for Apple, HP, FreeBSD, SableVM, Kaffe and Blackdown: a Linux port of Sun Java
             else if( (vendor.indexOf("SUN") >= 0) || 
+                     (vendor.indexOf("ORACLE") >= 0) ||
                      (vendor.indexOf("BLACKDOWN") >= 0) || 
                      (vendor.indexOf("APPLE") >= 0) ||
                      (vendor.indexOf("HEWLETT-PACKARD") >= 0) ||
@@ -94,9 +95,13 @@ public class XJavac extends Javac {
         Path bcp = createBootclasspath();
         String javaHome = System.getProperty("java.home");
         StringBuffer bcpMember = new StringBuffer();
-        bcpMember.append(javaHome).append("/lib/charsets.jar:");
+        bcpMember.append(javaHome).append("/bin/default/jclSC170/vm.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/charsets.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/core.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/math.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/vm.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
