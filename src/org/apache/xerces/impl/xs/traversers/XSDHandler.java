@@ -4392,7 +4392,7 @@ public class XSDHandler {
         }
     }
     
-    void reportSchemaWarning(String key, Object[] args, Element ele) {
+    public void reportSchemaWarning(String key, Object[] args, Element ele) {
         reportSchemaWarning(key, args, ele, null);
     }
     

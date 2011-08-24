@@ -146,7 +146,7 @@ public class AbstractPsychoPathXPath2Impl {
         } catch (XPathParserException ex) {
             // error compiling XPath expression
             if (SchemaSymbols.ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {               
-                fSchemaHandler.reportSchemaError("cvc-xpath.3.13.4.2b", new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
+                fSchemaHandler.reportSchemaWarning("cvc-xpath.3.13.4.2b", new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
             }
             else {               
                 fSchemaHandler.reportSchemaError("cvc-xpath.3.13.4.2a", new Object[] {assertImpl.getTest().getXPath().toString(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
