@@ -158,10 +158,29 @@ public class XPath20Parser {
         case NCNAME:
             name = QName();
             consumeToken(OPEN_PARAN);
-            n1 = OrExpr();
+            if ("not".equals(name.localpart) && "http://www.w3.org/2005/xpath-functions".equals(name.uri)) {
+                n1 = OrExpr();
+                consumeToken(CLOSE_PARAN);
+                return new FunctionNode(name, n1);
+            }
+            n1 = SimpleValue();
             consumeToken(CLOSE_PARAN);
-            return new FunctionNode(name, n1);
-            
+            n1 = new CastNode(n1, name);
+            switch ((nextTokenIndex == -1) ? nextToken() : nextTokenIndex) {
+            case SYMBOL_EQ:
+            case SYMBOL_NE:
+            case SYMBOL_LT:
+            case SYMBOL_GT:
+            case SYMBOL_LE:
+            case SYMBOL_GE:
+                comp = Comparator();
+                n2 = ValueExpr();
+                return new CompNode(comp, n1, n2);
+                
+            default:
+                array1[2] = gen;
+            }
+            return n1;
         case SYMBOL_AT:
         case NUMERIC_LITERAL:
         case STRING_LITERAL:
@@ -205,7 +224,7 @@ public class XPath20Parser {
         default:
             // TODO: better way to intern the strings
             local = t1.image.intern();
-            name = new QName("", local, local, null);
+            name = new QName(null, local, local, null);
             array1[4] = gen;
         }
         return name;
@@ -239,6 +258,25 @@ public class XPath20Parser {
             
         default:
             array1[5] = gen;
+            consumeToken(-1);
+            throw new XPathException("c-general-xpath");
+        }
+    }
+
+    private XPathSyntaxTreeNode ValueExpr() throws XPathException {
+        switch ((nextTokenIndex == -1) ? nextToken() : nextTokenIndex) {
+        case NCNAME:
+            QName name = QName();
+            consumeToken(OPEN_PARAN);
+            XPathSyntaxTreeNode n1 = SimpleValue();
+            consumeToken(CLOSE_PARAN);
+            return new CastNode(n1, name);
+        case SYMBOL_AT:
+        case NUMERIC_LITERAL:
+        case STRING_LITERAL:
+            return CastExpr();
+        default:
+            array1[3] = gen;
             consumeToken(-1);
             throw new XPathException("c-general-xpath");
         }

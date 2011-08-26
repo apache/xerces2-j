@@ -424,13 +424,16 @@ class FunctionNode extends XPathSyntaxTreeNode {
     private QName name;
     private XPathSyntaxTreeNode child;
 
-    public FunctionNode(QName name, XPathSyntaxTreeNode child) {
+    public FunctionNode(QName name, XPathSyntaxTreeNode child) throws XPathException {
+        if (!"not".equals(name.localpart) || !"http://www.w3.org/2005/xpath-functions".equals(name.uri)) {
+            throw new XPathException("Only support fn:not function.");
+        }
         this.name = name;
         this.child = child;
     }
 
-    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) {
-        return false;
+    public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
+        return !child.evaluate(element, attributes, nsContext);
     }
 
     public String getValue(QName element, XMLAttributes attributes) {
