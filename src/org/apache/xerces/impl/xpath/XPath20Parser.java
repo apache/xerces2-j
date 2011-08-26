@@ -17,6 +17,9 @@
 
 package org.apache.xerces.impl.xpath;
 
+import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.QName;
+
 /**
  * Lexical analyzer and parser for test XPath expressions. This parser 
  * implementation constructs a syntax tree for valid test XPath expressions
@@ -89,6 +92,8 @@ public class XPath20Parser {
       "\"\\n\"",
     };
 
+    protected final NamespaceContext fNsContext;
+
     public XPathSyntaxTreeNode parseExpression() throws XPathException {
         return Test();
     }
@@ -141,7 +146,7 @@ public class XPath20Parser {
 
     private XPathSyntaxTreeNode BooleanExpr() throws XPathException {
         XPathSyntaxTreeNode n1, n2;
-        String s;
+        QName name;
         int comp;
         switch ((nextTokenIndex == -1) ? nextToken() : nextTokenIndex) {
         case OPEN_PARAN:
@@ -151,11 +156,11 @@ public class XPath20Parser {
             return n1;
             
         case NCNAME:
-            s = QName();
+            name = QName();
             consumeToken(OPEN_PARAN);
             n1 = OrExpr();
             consumeToken(CLOSE_PARAN);
-            return new FunctionNode(s, n1);
+            return new FunctionNode(name, n1);
             
         case SYMBOL_AT:
         case NUMERIC_LITERAL:
@@ -184,21 +189,26 @@ public class XPath20Parser {
         }
     }
 
-    private String QName() throws XPathException {
+    private QName QName() throws XPathException {
         Token t1, t2;
-        String s;
+        QName name;
         t1 = consumeToken(NCNAME);
-        s = t1.image;
         switch ((nextTokenIndex == -1) ? nextToken() : nextTokenIndex) {
         case SYMBOL_COLON:
             consumeToken(SYMBOL_COLON);
             t2 = consumeToken(NCNAME);
-            s += ":" + t2.image;
+            // TODO: better way to intern the strings
+            String prefix = t1.image.intern();
+            String local = t2.image.intern();
+            name = new QName(prefix, local, prefix + ':' + local, fNsContext.getURI(prefix));
             break;
         default:
+            // TODO: better way to intern the strings
+            local = t1.image.intern();
+            name = new QName("", local, local, null);
             array1[4] = gen;
         }
-        return s;
+        return name;
     }
 
     private int Comparator() throws XPathException {
@@ -236,13 +246,13 @@ public class XPath20Parser {
 
     private XPathSyntaxTreeNode CastExpr() throws XPathException {
         XPathSyntaxTreeNode n;
-        String s;
+        QName name;
         n = SimpleValue();
         switch ((nextTokenIndex == -1) ? nextToken() : nextTokenIndex) {
         case KEYWORD_CAST:
             consumeToken(KEYWORD_CAST);
             consumeToken(KEYWORD_AS);
-            s = QName();
+            name = QName();
             switch ((nextTokenIndex == -1) ? nextToken() : nextTokenIndex) {
             case SYMBOL_QUESTION:
                 consumeToken(SYMBOL_QUESTION);
@@ -250,7 +260,7 @@ public class XPath20Parser {
             default:
                 array1[6] = gen;
             }
-            return new CastNode(n, s);
+            return new CastNode(n, name);
             
         default:
             array1[7] = gen;
@@ -278,10 +288,8 @@ public class XPath20Parser {
     }
 
     private XPathSyntaxTreeNode AttrName() throws XPathException {
-        String t;
         consumeToken(SYMBOL_AT);
-        t = NameTest();
-        return new AttrNode(t);
+        return new AttrNode(NameTest());
     }
 
     private XPathSyntaxTreeNode Literal() throws XPathException {
@@ -303,8 +311,8 @@ public class XPath20Parser {
         }
     }
 
-    private String NameTest() throws XPathException {
-        String t;
+    private QName NameTest() throws XPathException {
+        QName t;
         t = QName();
         return t;
     }
@@ -323,7 +331,8 @@ public class XPath20Parser {
     final private int[] array1 = new int[10];
         
     /** Constructor. */
-    public XPath20Parser(java.io.Reader stream) {
+    public XPath20Parser(java.io.Reader stream, NamespaceContext nsContext) {
+        fNsContext = nsContext;
         inputStream = new SimpleCharStream(stream, 1, 1);
         tokenSource = new XPath20ParserTokenManager(inputStream);
         token = new Token();

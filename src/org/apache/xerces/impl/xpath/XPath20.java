@@ -19,6 +19,8 @@ package org.apache.xerces.impl.xpath;
 
 import java.io.StringReader;
 
+import javax.xml.XMLConstants;
+
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.TypeValidator;
@@ -49,7 +51,7 @@ public class XPath20 {
         
         //The parser expects '\n' at the end of the expression. So insert it.
         StringReader reader = new StringReader(fExpression + "\n");
-        XPath20Parser parser = new XPath20Parser(reader);
+        XPath20Parser parser = new XPath20Parser(reader, nsContext);
         fRootNode = parser.parseExpression();
     }
 
@@ -103,7 +105,7 @@ abstract class XPathSyntaxTreeNode {
         return TYPE_UNDEFINED;
     }
 
-    public String getTypeName() {
+    public XSSimpleType getSimpleType() {
         return null;
     }
 }
@@ -172,14 +174,14 @@ class ConjunctionNode extends XPathSyntaxTreeNode {
 }
 
 class AttrNode extends XPathSyntaxTreeNode {
-    private String name;
+    private QName name;
 
-    public AttrNode(String name) {
+    public AttrNode(QName name) {
         this.name = name;
     }
 
     public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
-        String attrValue = attributes.getValue(name);
+        String attrValue = attributes.getValue(name.uri, name.localpart);
         if (attrValue == null || attrValue.length() == 0) {
             return false;
         }
@@ -187,10 +189,7 @@ class AttrNode extends XPathSyntaxTreeNode {
     }
 
     public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
-        int qNamePrfxIdx = name.indexOf(':');
-        String attrPrefix = (qNamePrfxIdx != -1) ? name.substring(0, qNamePrfxIdx) : "";   
-        String attrLocalName = (qNamePrfxIdx != -1) ? name.substring(qNamePrfxIdx + 1) : name;
-        String attrValue = attributes.getValue(nsContext.getURI(attrPrefix.intern()), attrLocalName);
+        String attrValue = attributes.getValue(name.uri, name.localpart);
         if (attrValue == null) {
             throw new XPathException("Attribute value is null");
         }
@@ -275,10 +274,9 @@ class CompNode extends XPathSyntaxTreeNode {
             
         } else if (type1 == TYPE_UNTYPED && type2 == TYPE_OTHER) {
             // attr and cast expr
-            String type = child2.getTypeName();
             String attrVal = child1.getValue(attributes, nsContext).toString();
             
-            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
+            simpleType = (XSSimpleTypeDecl)child2.getSimpleType();
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
@@ -289,10 +287,9 @@ class CompNode extends XPathSyntaxTreeNode {
             
         } else if (type1 == TYPE_OTHER && type2 == TYPE_UNTYPED) {
             // cast expr and attr
-            String type = child1.getTypeName();
             String attrVal = child2.getValue(attributes, nsContext).toString();
             
-            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
+            simpleType = (XSSimpleTypeDecl)child1.getSimpleType();
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
@@ -303,16 +300,13 @@ class CompNode extends XPathSyntaxTreeNode {
             
         } else if (type1 == TYPE_OTHER && type2 == TYPE_OTHER) {
             //cast expr and cast expr
-            String typeName1 = child1.getTypeName();
-            String typeName2 = child2.getTypeName();
-            
-            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(typeName1);
+            simpleType = (XSSimpleTypeDecl)child1.getSimpleType();
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
             short dt1 = simpleType.getBuiltInKind();
             
-            simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(typeName2);
+            simpleType = (XSSimpleTypeDecl)child2.getSimpleType();
             if (simpleType == null) {
                 throw new XPathException("Casted type is not a built-in type");
             }
@@ -349,12 +343,18 @@ class CompNode extends XPathSyntaxTreeNode {
 }
 
 class CastNode extends XPathSyntaxTreeNode {
-    private String castedType;
+    private XSSimpleType castedType;
     private XPathSyntaxTreeNode child;
 
-    public CastNode(XPathSyntaxTreeNode child, String castedType) {
+    public CastNode(XPathSyntaxTreeNode child, QName type) throws XPathException {
         this.child = child;
-        this.castedType = castedType;
+        if (!XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(type.uri)) {
+            throw new XPathException("Casted type is not a built-in type");
+        }
+        castedType = dvFactory.getBuiltInType(type.localpart);
+        if (castedType == null) {
+            throw new XPathException("Casted type is not a built-in type");
+        }
     }
 
     public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
@@ -386,10 +386,7 @@ class CastNode extends XPathSyntaxTreeNode {
     }
 
     public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
-        XSSimpleType type = dvFactory.getBuiltInType(getTypeName());
-        if (type == null) {
-            throw new XPathException("Casted type is not a built-in type");
-        }
+        XSSimpleType type = getSimpleType();
         
         Object obj;
         if (child.getType() == TYPE_UNTYPED) {
@@ -408,21 +405,14 @@ class CastNode extends XPathSyntaxTreeNode {
         return obj;
     }
 
-    public String getTypeName() {
-        String localname = castedType;
-        int index = localname.indexOf(':');
-        if (index != -1) {
-            localname = localname.substring(index + 1);
-        }
-        return localname;
+    public XSSimpleType getSimpleType() {
+        return castedType;
     }
 
     public int getType() {
-        String type = getTypeName();
-        XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(type);
-        if (simpleType.getNumeric()) {
+        if (castedType.getNumeric()) {
             return TYPE_DOUBLE;
-        } else if (type.equals("string")) {
+        } else if (castedType.getName().equals("string")) {
             return TYPE_STRING;
         } else {
             return TYPE_OTHER;
@@ -431,10 +421,10 @@ class CastNode extends XPathSyntaxTreeNode {
 }
 
 class FunctionNode extends XPathSyntaxTreeNode {
-    private String name;
+    private QName name;
     private XPathSyntaxTreeNode child;
 
-    public FunctionNode(String name, XPathSyntaxTreeNode child) {
+    public FunctionNode(QName name, XPathSyntaxTreeNode child) {
         this.name = name;
         this.child = child;
     }
