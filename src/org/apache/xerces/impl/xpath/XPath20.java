@@ -359,13 +359,30 @@ class CastNode extends XPathSyntaxTreeNode {
 
     public boolean evaluate(QName element, XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
         Object obj = getValue(attributes, nsContext);
-        XSSimpleTypeDecl simpleType = (XSSimpleTypeDecl) dvFactory.getBuiltInType(getTypeName());
-        if (simpleType.getNumeric()) {
-            return obj != null && 0.0 != ((Double) obj).doubleValue();
-        } 
-        else {
-            return obj != null;
+        // Implement XPath fn:boolean() function:
+        // If $arg is the empty sequence, fn:boolean returns false.
+        // TODO: how is this checked?
+        if (obj == null) {
+            return false;
         }
+        // If $arg is a sequence whose first item is a node, fn:boolean returns true.
+        // TODO: how to implement this?
+        // If $arg is a singleton value of type xs:boolean or a derived from xs:boolean, fn:boolean returns $arg.
+        if (obj instanceof Boolean) {
+            return ((Boolean)obj).booleanValue();
+        }
+        // If $arg is a singleton value of type xs:string or a type derived from xs:string, xs:anyURI or a type derived from xs:anyURI or xs:untypedAtomic, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
+        if (obj instanceof String) {
+            return ((String)obj).length() > 0;
+        }
+        // If $arg is a singleton value of any numeric type or a type derived from a numeric type, fn:boolean returns false if the operand value is NaN or is numerically equal to zero; otherwise it returns true.
+        // TODO: should check type and handle different numeric types differntly
+        if (obj instanceof Double) {
+            return ((Double)obj).doubleValue() != 0;
+        }
+        // In all other cases, fn:boolean raises a type error [err:FORG0006].
+        // TODO: need to distinguish between node (true) and other simple types (false).
+        return true;
     }
 
     public Object getValue(XMLAttributes attributes, NamespaceContext nsContext) throws Exception {
