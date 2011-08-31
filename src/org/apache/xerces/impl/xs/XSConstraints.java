@@ -17,6 +17,9 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.ArrayList;
+import java.util.Stack;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
@@ -394,6 +397,8 @@ public abstract class XSConstraints {
         // i: grammar; j: type; k: error
         // for all grammars
         SymbolHash elemTable = new SymbolHash();
+        Stack stack = new Stack();
+        ArrayList wcList = (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) ? new ArrayList() : null;
         for (int i = grammars.length-1, j; i >= 0; i--) {
             // get whether to skip EDC, and types need to be checked
             keepType = 0;
@@ -410,7 +415,8 @@ public abstract class XSConstraints {
                         elemTable.clear();
                         try {
                             checkElementDeclsConsistent(types[j], types[j].fParticle,
-                                    elemTable, SGHandler);
+                                    elemTable, SGHandler, grammarBucket,
+                                    wcList, stack);
                         }
                         catch (XMLSchemaException e) {
                             reportSchemaError(errorReporter, ctLocators[j],
@@ -491,7 +497,8 @@ public abstract class XSConstraints {
     }
 
     /*
-       Check that a given particle is a valid restriction of a base particle.
+     * Check that a given particle is a valid restriction of a base particle.
+     * NOTE: deprecated
      */
     public void checkElementDeclsConsistent(XSComplexTypeDecl type,
             XSParticleDecl particle,
@@ -524,128 +531,80 @@ public abstract class XSConstraints {
             checkElementDeclsConsistent(type, group.fParticles[i], elemDeclHash, sgHandler);
     }
 
+    protected void checkElementDeclsConsistent(XSComplexTypeDecl type,
+            XSParticleDecl particle,
+            SymbolHash elemDeclHash,
+            SubstitutionGroupHandler sgHandler,
+            XSGrammarBucket grammarBucket,
+            ArrayList wcList,
+            Stack stack) throws XMLSchemaException {
+
+        // check for elements in the tree with the same name and namespace
+
+        if (stack.size() > 0) {
+            stack.clear();
+        }
+
+        for (;;) {
+            final int pType = particle.fType;
+
+            if (pType == XSParticleDecl.PARTICLE_WILDCARD) {
+                // no op
+            }
+            else  if (pType == XSParticleDecl.PARTICLE_ELEMENT) {
+                XSElementDecl elem = (XSElementDecl)(particle.fValue);
+                findElemInTable(type, elem, elemDeclHash);
+
+                if (elem.fScope == XSConstants.SCOPE_GLOBAL) {
+                    // Check for subsitution groups.
+                    XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(elem, fSchemaVersion);
+                    for (int i = 0; i < subGroup.length; i++) {
+                        findElemInTable(type, subGroup[i], elemDeclHash);
+                    }
+                }
+            }
+            else {
+                XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
+                for (int i = group.fParticleCount - 1; i >= 0 ; i--)
+                    stack.push(group.fParticles[i]);
+            }
+            
+            if (stack.isEmpty()) {
+                break;
+            }
+            particle = (XSParticleDecl) stack.pop();
+        }
+    }
+
     public void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem,
             SymbolHash elemDeclHash)
         throws XMLSchemaException {
 
+        final XSElementDecl existingElem = findExistingElement(elem, elemDeclHash);
+
+        // First time or is same element
+        if (existingElem == null || existingElem == elem) {
+            return;
+        }
+
+        if (elem.fType != existingElem.fType) {
+            // Types are not the same
+            throw new XMLSchemaException("cos-element-consistent", new Object[] {type.fName, elem.fName});
+        }
+    }
+
+    protected XSElementDecl findExistingElement(XSElementDecl elem, SymbolHash elemDeclHash) {
         // How can we avoid this concat?  LM.
         String name = elem.fName + "," + elem.fTargetNamespace;
+        XSElementDecl existingElem = (XSElementDecl)(elemDeclHash.get(name));
 
-        XSElementDecl existingElem = null;
-        if ((existingElem = (XSElementDecl)(elemDeclHash.get(name))) == null) {
+        if (existingElem == null) {
             // just add it in
             elemDeclHash.put(name, elem);
         }
-        else {
-            // If this is the same check element, we're O.K.
-            if (elem == existingElem)
-                return;
-
-            if (elem.fType != existingElem.fType) {
-                // Types are not the same
-                throw new XMLSchemaException("cos-element-consistent", new Object[] {type.fName, elem.fName});
-            }
-            else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && !isTypeTablesEquivalent(elem, existingElem)) {
-                // Type tables are not equivalent
-                throw new XMLSchemaException("cos-element-consistent.4.b", new Object[] {type.fName, elem.fName});  
-            }
-        }
+        
+        return existingElem;
     }
-    
-    /*
-     * Check if two type tables are equivalent.
-     */
-    private boolean isTypeTablesEquivalent(XSElementDecl elementDecl1, XSElementDecl elementDecl2) {
-        
-        boolean isTypeTablesEquivalent = true;
-        
-        XSTypeAlternativeImpl[] typeTable1 = elementDecl1.getTypeAlternatives();
-        XSTypeAlternativeImpl[] typeTable2 = elementDecl2.getTypeAlternatives();
-        
-        if (typeTable1 != null && typeTable2 != null) {
-            if (typeTable1.length != typeTable2.length) {
-                isTypeTablesEquivalent = false; 
-            }
-            else {
-                for (int typeAltIdx = 0; typeAltIdx < typeTable1.length; typeAltIdx++) {
-                    XSTypeAlternativeImpl typeAlt1 = typeTable1[typeAltIdx];
-                    XSTypeAlternativeImpl typeAlt2 = typeTable2[typeAltIdx];
-                    if (!isTypeAlternativesEquivalent(typeAlt1, typeAlt2)) {
-                        isTypeTablesEquivalent = false;
-                        break;
-                    }
-                }
-            }
-            if (isTypeTablesEquivalent && !isTypeAlternativesEquivalent(elementDecl1.getDefaultTypeDefinition(), elementDecl2.getDefaultTypeDefinition())) {
-                isTypeTablesEquivalent = false; 
-            }
-        }
-        else if ((typeTable1 != null && typeTable2 == null) || (typeTable1 == null && typeTable2 != null)) {
-            isTypeTablesEquivalent = false;  
-        }
-        
-        return isTypeTablesEquivalent;
-        
-    } // isTypeTablesEquivalent
-    
-    /*
-     * Check if two type alternative components are equivalent.
-     */
-    private boolean isTypeAlternativesEquivalent(XSTypeAlternativeImpl typeAlt1, XSTypeAlternativeImpl typeAlt2) {
-        
-        boolean isTypeAlternativesEquivalent = false;
-        
-        String defNamespace1 = typeAlt1.getXPathDefaultNamespace();
-        String defNamespace2 = typeAlt2.getXPathDefaultNamespace();
-        String testStr1 = (typeAlt1.getTest() == null) ? null : typeAlt1.getTest().toString();
-        String testStr2 = (typeAlt2.getTest() == null) ? null : typeAlt2.getTest().toString();
-        XSTypeDefinition typeDefn1 = typeAlt1.getTypeDefinition();
-        XSTypeDefinition typeDefn2 = typeAlt2.getTypeDefinition();
-        
-        // check equivalence of defaultNamespace, test expression & type definition
-        if (((defNamespace1 == null && defNamespace2 == null) || (defNamespace1 != null && defNamespace2 != null && defNamespace1.equals(defNamespace2))) &&
-            ((testStr1 == null && testStr2 == null) || (testStr1 != null && testStr2 != null && (testStr1.trim()).equals(testStr2.trim()))) &&
-            (XSTypeHelper.isSchemaTypesIdentical(typeDefn1, typeDefn2))) {
-              isTypeAlternativesEquivalent = true;
-        }
-        
-        // check equivalence of namespace bindings
-        if (isTypeAlternativesEquivalent) {
-            NamespaceSupport typeAlt1NamespaceContext = typeAlt1.getNamespaceContext();
-            NamespaceSupport typeAlt2NamespaceContext = typeAlt2.getNamespaceContext();
-            int nsDeclPrefixCount1 = typeAlt1NamespaceContext.getDeclaredPrefixCount();
-            if (nsDeclPrefixCount1 == typeAlt2NamespaceContext.getDeclaredPrefixCount()) {
-                for (int prefIdx1 = 0; prefIdx1 < nsDeclPrefixCount1; prefIdx1++) {
-                    String prefix1 = typeAlt1NamespaceContext.getDeclaredPrefixAt(prefIdx1);
-                    if (!(typeAlt2NamespaceContext.containsPrefix(prefix1) && (typeAlt1NamespaceContext.getURI(prefix1) == typeAlt2NamespaceContext.getURI(prefix1)))) {
-                        isTypeAlternativesEquivalent = false;
-                        break;
-                    }
-                }
-            }
-            else {
-                isTypeAlternativesEquivalent = false;  
-            }
-        }
-        
-        // check equivalence of base URIs
-        if (isTypeAlternativesEquivalent) {
-            String baseURI1 = typeAlt1.getBaseURI();
-            String baseURI2 = typeAlt2.getBaseURI();
-            if ((baseURI1 == null && baseURI2 != null) || (baseURI2 == null && baseURI1 != null)) {
-                isTypeAlternativesEquivalent = false; 
-            }
-            else if ((baseURI1 == null && baseURI2 == null) || baseURI1.equals(baseURI2)) {
-                isTypeAlternativesEquivalent = true;
-            }
-            else {
-                isTypeAlternativesEquivalent = false;
-            }
-        }
-        
-        return isTypeAlternativesEquivalent;
-        
-    } // isTypeAlternativesEquivalent
 
     // to check whether two element overlap, as defined in constraint UPA
     protected boolean overlapUPA(XSElementDecl element1,

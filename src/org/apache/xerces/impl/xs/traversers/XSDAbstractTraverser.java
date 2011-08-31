@@ -43,6 +43,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
@@ -470,7 +471,16 @@ abstract class XSDAbstractTraverser {
                 String test = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
                 String xpathDefaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
                 if (xpathDefaultNamespace == null) {
-                   xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;    
+                    if (schemaDoc.fXpathDefaultNamespaceIs2PoundDefault) {
+                        xpathDefaultNamespace = schemaDoc.fValidationContext.getURI(XMLSymbols.EMPTY_STRING);
+                        if (xpathDefaultNamespace != null) {
+                            xpathDefaultNamespace = fSymbolTable.addSymbol(xpathDefaultNamespace);
+                            
+                        }
+                    }
+                    else {
+                        xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;
+                    }
                 }
                 
                 if (test != null) {                    

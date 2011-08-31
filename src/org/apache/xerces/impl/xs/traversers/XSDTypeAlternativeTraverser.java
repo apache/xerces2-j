@@ -32,6 +32,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -61,7 +62,6 @@ import org.w3c.dom.Element;
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
     
     private static final XSSimpleType fErrorType;
-    private XSDHandler fXsdHandler = null;
     
     static {
         SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_1);
@@ -70,7 +70,6 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
 
     XSDTypeAlternativeTraverser (XSDHandler handler, XSAttributeChecker attrChecker) {
         super(handler, attrChecker);
-        fXsdHandler = handler;
     }
 
     /**
@@ -211,15 +210,23 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             typeAlternative.setNamespaceContext(new NamespaceSupport(schemaDoc.fNamespaceSupport)); 
         }
         
-        // REVISIT : is using Document.getDocumentURI() correct to retrieve base URI in every case, for type alternatives? 
-        typeAlternative.setBaseURI(fXsdHandler.getDocumentURI());
+        // REVISIT : is using Document.getDocumentURI() correct to retrieve base URI in every case, for type alternatives?
+        String baseURI = fSchemaHandler.getDocumentURI(altElement);
+        if (baseURI != null) {
+            typeAlternative.setBaseURI(baseURI);
+        }
 
         if (xpathDefaultNS == null) {
-            xpathDefaultNS = schemaDoc.fXpathDefaultNamespace;
-            if (xpathDefaultNS == null) {
-                // try to find value of xpathDefaultNamespace by resolving '##defaultNamespace'
-                xpathDefaultNS = XSTypeHelper.getDefaultNamespace(altElement, schemaDoc.fSchemaElement);
-            }            
+            if (schemaDoc.fXpathDefaultNamespaceIs2PoundDefault) {
+                xpathDefaultNS = schemaDoc.fValidationContext.getURI(XMLSymbols.EMPTY_STRING);
+                if (xpathDefaultNS != null) {
+                    xpathDefaultNS = fSymbolTable.addSymbol(xpathDefaultNS);
+                    
+                }
+            }
+            else {
+                xpathDefaultNS = schemaDoc.fXpathDefaultNamespace;
+            }          
         }
         if (xpathDefaultNS != null) {
             //set the xpathDefaultNamespace attribute value

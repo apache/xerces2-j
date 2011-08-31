@@ -28,9 +28,7 @@ import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -68,6 +66,7 @@ class XSDocumentInfo {
     
     // xpathDefaultNamespace
     String fXpathDefaultNamespace;
+    boolean fXpathDefaultNamespaceIs2PoundDefault;
 
     // represents whether this is a chameleon schema (i.e., whether its TNS is natural or comes from without)
     protected boolean fIsChameleonSchema;
@@ -121,14 +120,10 @@ class XSDocumentInfo {
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
             fValidationContext.setSymbolTable(symbolTable);
             fValidationContext.setTypeValidatorHelper(typeValidatorHelper);
+
+            // get the target namespace
+            fTargetNamespace = attrChecker.checkTargetNamespace(root, this);
             
-            if (DOMUtil.getAttr(root, SchemaSymbols.ATT_TARGETNAMESPACE) != null) {
-                fTargetNamespace = XMLChar.trim(DOMUtil.getAttrValue(root, SchemaSymbols.ATT_TARGETNAMESPACE));
-                if (!"".equals(fTargetNamespace)) {
-                    fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
-                }
-            }
-                        
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element
             // throw an exception, but we don't know the document systemId,
@@ -143,9 +138,11 @@ class XSDocumentInfo {
             fBlockDefault =
                 ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).shortValue();
             fFinalDefault =
-                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();            
+                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fXpathDefaultNamespace = 
-                (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS]; 
+                (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+            fXpathDefaultNamespaceIs2PoundDefault =
+                ((Boolean) fSchemaAttrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS_TWOPOUNDDFLT]).booleanValue();
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 

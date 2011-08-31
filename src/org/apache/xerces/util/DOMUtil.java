@@ -19,8 +19,6 @@ package org.apache.xerces.util;
 
 import java.util.Hashtable;
 
-import javax.xml.XMLConstants;
-
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
@@ -809,6 +807,12 @@ public class DOMUtil {
     
     // return the value of the attribute of the given element
     // with the given name
+    public static String getAttrValueTrimmed(Element elem, String name) {
+        return XMLChar.trim(elem.getAttribute(name));
+    } // getAttr(Element, String):Attr
+    
+    // return the value of the attribute of the given element
+    // with the given name
     public static String getAttrValueNS(Element elem, String nsUri,
             String localName) {
         return elem.getAttributeNS(nsUri, localName);
@@ -823,24 +827,6 @@ public class DOMUtil {
     public static String getNamespaceURI(Node node) {
         return node.getNamespaceURI();
     }
-    
-    // find value of "default namespace" for an element node. does a recursive search
-    // up the DOM tree as needed, to find the appropriate in-scope "default namespace".
-    public static String getDefaultNamespace(Element element) {
-        
-        String defaultNamespace = null;
-        
-        if (getAttr(element, XMLConstants.XMLNS_ATTRIBUTE) != null) {
-            defaultNamespace = XMLChar.trim(getAttrValue(element, XMLConstants.XMLNS_ATTRIBUTE)); 
-        }
-        
-        if (defaultNamespace == null && (element.getParentNode() instanceof Element)) {
-            defaultNamespace = getDefaultNamespace((Element)element.getParentNode());  
-        }
-        
-        return defaultNamespace;
-        
-    } // getDefaultNamespace
     
     // return annotation
     public static String getAnnotation(Node node) {

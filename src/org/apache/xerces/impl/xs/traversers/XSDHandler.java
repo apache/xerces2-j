@@ -4605,6 +4605,10 @@ public class XSDHandler {
     public String getDocumentURI() {
         return fSchemaParser.getDocument().getDocumentURI();
     }
+    
+    public String getDocumentURI(Element ele) {
+        return doc2SystemId(ele);
+    }
 
     public short getSchemaVersion() {
         return fSchemaVersion;

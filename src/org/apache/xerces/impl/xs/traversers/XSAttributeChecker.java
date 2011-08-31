@@ -127,14 +127,15 @@ public class XSAttributeChecker {
     public static final int ATTIDX_ISRETURNED        = ATTIDX_COUNT++;
     
     //  Schema 1.1
-    public static final int ATTIDX_APPLIESTOEMPTY    = ATTIDX_COUNT++;
-    public static final int ATTIDX_DEFAULTATTRAPPLY  = ATTIDX_COUNT++;
-    public static final int ATTIDX_DEFAULTATTRIBUTES = ATTIDX_COUNT++;    
-    public static final int ATTIDX_MODE              = ATTIDX_COUNT++;
-    public static final int ATTIDX_NOTNAMESPACE      = ATTIDX_COUNT++;
-    public static final int ATTIDX_NOTQNAME          = ATTIDX_COUNT++;
-    public static final int ATTIDX_XPATHDEFAULTNS    = ATTIDX_COUNT++;
-    public static final int ATTIDX_INHERITABLE       = ATTIDX_COUNT++;
+    public static final int ATTIDX_APPLIESTOEMPTY              = ATTIDX_COUNT++;
+    public static final int ATTIDX_DEFAULTATTRAPPLY            = ATTIDX_COUNT++;
+    public static final int ATTIDX_DEFAULTATTRIBUTES           = ATTIDX_COUNT++;    
+    public static final int ATTIDX_MODE                        = ATTIDX_COUNT++;
+    public static final int ATTIDX_NOTNAMESPACE                = ATTIDX_COUNT++;
+    public static final int ATTIDX_NOTQNAME                    = ATTIDX_COUNT++;
+    public static final int ATTIDX_XPATHDEFAULTNS              = ATTIDX_COUNT++;
+    public static final int ATTIDX_INHERITABLE                 = ATTIDX_COUNT++;
+    public static final int ATTIDX_XPATHDEFAULTNS_TWOPOUNDDFLT = ATTIDX_COUNT++;
 
     private static final XIntPool fXIntPool = new XIntPool();
     // constants to return
@@ -1403,6 +1404,20 @@ public class XSAttributeChecker {
         fNonSchemaAttrs.clear();
     }
 
+    public String checkTargetNamespace(Element element,
+            XSDocumentInfo schemaDoc) {
+        if (DOMUtil.getAttr(element, SchemaSymbols.ATT_TARGETNAMESPACE) != null) {
+            final String value = DOMUtil.getAttrValueTrimmed(element, SchemaSymbols.ATT_TARGETNAMESPACE);
+            try {
+                fExtraDVs[DT_ANYURI].validate(value, schemaDoc.fValidationContext, null);
+                return fSymbolTable.addSymbol(value);
+            } catch (InvalidDatatypeValueException ide) {
+                // REVISIT: bypass checking in checkAttributes?
+                // Ignore for now, it will be reported when we call checkAttributes
+            }
+        }
+        return null;
+    }
     /**
      * Check whether the specified element conforms to the attributes restriction.
      * an array of attribute values is returned. the caller must call
@@ -2056,6 +2071,7 @@ public class XSAttributeChecker {
                 if (retValue != null) {
                     retValue = fSymbolTable.addSymbol((String)retValue);
                 }
+                attrValues[ATTIDX_XPATHDEFAULTNS_TWOPOUNDDFLT] = Boolean.TRUE;
             } else if (!value.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)){
                 // we have found namespace URI here
                 // need to add it to the symbol table
@@ -2275,6 +2291,7 @@ public class XSAttributeChecker {
         // now set it to false.
         System.arraycopy(fTempArray, 0, retArray, 0, ATTIDX_COUNT-1);
         retArray[ATTIDX_ISRETURNED] = Boolean.FALSE;
+        retArray[ATTIDX_XPATHDEFAULTNS_TWOPOUNDDFLT] = Boolean.FALSE;
 
         return retArray;
     }
