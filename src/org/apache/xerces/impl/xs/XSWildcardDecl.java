@@ -127,14 +127,18 @@ public class XSWildcardDecl implements XSWildcard {
      * 
      * Validation Rule: Wildcard allows Name
      */
-    public boolean allowQName(QName name) {
+    final public boolean allowQName(QName name) {
+        return allowName(name.uri, name.localpart);
+    }
+    
+    final public boolean allowName(String uri, String localPart) {
         // 1 The namespace name is valid with respect to C, as defined in Wildcard allows Namespace Name (3.10.4.3);
         // 2 C.{disallowed names} does not contain E.
-        if (allowNamespace(name.uri)) {
+        if (allowNamespace(uri)) {
             if (fDisallowedNamesList == null || fDisallowedNamesList.length == 0) {
                 return true;
             }
-            return isNameAllowed(name.uri, name.localpart);
+            return isNameAllowed(uri, localPart);
         }
 
         // failed
