@@ -21,6 +21,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.EqualityHelper;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -208,7 +209,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (attrUse.fAttrDecl.getConstraintType() == XSConstants.VC_FIXED &&
                     attrUse.fConstraintType != XSConstants.VC_NONE) {
                 if (attrUse.fConstraintType != XSConstants.VC_FIXED ||
-                        !attrUse.fAttrDecl.getValInfo().actualValue.equals(attrUse.fDefault.actualValue)) {
+                        !EqualityHelper.isEqual(attrUse.fAttrDecl.getValInfo(), attrUse.fDefault, fSchemaHandler.fSchemaVersion)) {
                     reportSchemaError ("au-props-correct.2", new Object[]{nameAtt, attrUse.fAttrDecl.getValInfo().stringValue()}, attrDecl);
                     // Recover by using the decl's {value constraint}
                     attrUse.fDefault = attrUse.fAttrDecl.getValInfo();

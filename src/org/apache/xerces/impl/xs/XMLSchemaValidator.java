@@ -36,6 +36,7 @@ import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.EqualityHelper;
 import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.validation.ValidationManager;
@@ -3511,7 +3512,7 @@ public class XMLSchemaValidator
         // get the value constraint from use or decl
         // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
         if (actualValue != null && currDecl.getConstraintType() == XSConstants.VC_FIXED) {
-            if (!ValidatedInfo.isComparable(fValidatedInfo, currDecl.fDefault) || !actualValue.equals(currDecl.fDefault.actualValue)) {
+            if (!EqualityHelper.isEqual(fValidatedInfo, currDecl.fDefault, fSchemaVersion)) {
                 reportSchemaError(
                     "cvc-attribute.4",
                     new Object[] {
@@ -3526,7 +3527,7 @@ public class XMLSchemaValidator
         if (actualValue != null
             && currUse != null
             && currUse.fConstraintType == XSConstants.VC_FIXED) {
-            if (!ValidatedInfo.isComparable(fValidatedInfo, currUse.fDefault) || !actualValue.equals(currUse.fDefault.actualValue)) {
+            if (!EqualityHelper.isEqual(fValidatedInfo, currUse.fDefault, fSchemaVersion)) {
                 reportSchemaError(
                     "cvc-complex-type.3.1",
                     new Object[] {
@@ -3768,8 +3769,8 @@ public class XMLSchemaValidator
                     }
                     // 5.2.2.2.2 If the {content type} of the actual type definition is a simple type definition, then the actual value of the item must match the canonical lexical representation of the {value constraint} value.
                     else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                        if (actualValue != null && (!ValidatedInfo.isComparable(fValidatedInfo, fCurrentElemDecl.fDefault)
-                                || !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))) {
+                        if (actualValue != null &&
+                                !EqualityHelper.isEqual(fValidatedInfo, fCurrentElemDecl.fDefault, fSchemaVersion)) {
                             reportSchemaError(
                                 "cvc-elt.5.2.2.2.2",
                                 new Object[] {
@@ -3779,8 +3780,8 @@ public class XMLSchemaValidator
                         }
                     }
                 } else if (fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                    if (actualValue != null && (!ValidatedInfo.isComparable(fValidatedInfo, fCurrentElemDecl.fDefault) 
-                            || !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))) {
+                    if (actualValue != null &&
+                            !EqualityHelper.isEqual(fValidatedInfo, fCurrentElemDecl.fDefault, fSchemaVersion)) {
                         // REVISIT: the spec didn't mention this case: fixed
                         //          value with simple type
                         reportSchemaError(
@@ -4191,6 +4192,10 @@ public class XMLSchemaValidator
         public void append(ValueStoreBase newVal) {
             for (int i = 0; i < newVal.fValues.size(); i++) {
                 fValues.addElement(newVal.fValues.elementAt(i));
+
+                // REVISIT:
+                addValueType(newVal.getValueTypeAt(i));
+                addItemValueType(newVal.getItemValueTypeAt(i));
             }
         } // append(ValueStoreBase)
 
@@ -4336,18 +4341,15 @@ public class XMLSchemaValidator
             LOOP : for (int i = 0; i < size; i = next) {
                 next = i + fFieldCount;
                 for (int j = 0; j < fFieldCount; j++) {
-                    Object value1 = fLocalValues[j];
-                    Object value2 = fValues.elementAt(i);
-                    short valueType1 = fLocalValueTypes[j];
-                    short valueType2 = getValueTypeAt(i);
-                    if (value1 == null || value2 == null || valueType1 != valueType2 || !(value1.equals(value2))) {
+                    final Object value1 = fLocalValues[j];
+                    final Object value2 = fValues.elementAt(i);
+                    final short valueType1 = fLocalValueTypes[j];
+                    final short valueType2 = getValueTypeAt(i);
+                    final ShortList typeList1 = isListType(valueType1) ? fLocalItemValueTypes[j] : null;
+                    final ShortList typeList2 = isListType(valueType2) ? getItemValueTypeAt(i) : null;
+
+                    if (!EqualityHelper.isEqual(value1, value2, valueType1, valueType2, typeList1, typeList2, fSchemaVersion)) {
                         continue LOOP;
-                    }
-                    else if(valueType1 == XSConstants.LIST_DT || valueType1 == XSConstants.LISTOFUNION_DT) {
-                        ShortList list1 = fLocalItemValueTypes[j];
-                        ShortList list2 = getItemValueTypeAt(i);
-                        if(list1 == null || list2 == null || !list1.equals(list2))
-                            continue LOOP;
                     }
                     i++;
                 }
@@ -4368,17 +4370,19 @@ public class XMLSchemaValidator
             final Vector values = vsb.fValues;         
             final int size1 = values.size();
             if (fFieldCount <= 1) {
-                for (int i = 0; i < size1; ++i) {
-                    short val = vsb.getValueTypeAt(i);
-                    if (!valueTypeContains(val) || !fValues.contains(values.elementAt(i))) {
-                        return i;
-                    }
-                    else if(val == XSConstants.LIST_DT || val == XSConstants.LISTOFUNION_DT) {
-                        ShortList list1 = vsb.getItemValueTypeAt(i);
-                        if (!itemValueTypeContains(list1)) {
-                            return i;
+                LOOP: for (int i = 0; i < size1; ++i) {
+                    final Object value1 = values.elementAt(i);
+                    final short valueType1 = vsb.getValueTypeAt(i);
+                    final ShortList typeList1 = isListType(valueType1) ? vsb.getItemValueTypeAt(i) : null;
+                    for (int j=0; j < fValues.size(); ++j) {
+                        final Object value2 = fValues.elementAt(j);
+                        final short valueType2 = getValueTypeAt(j);
+                        final ShortList typeList2 = isListType(valueType2) ? getItemValueTypeAt(j) : null;
+                        if (EqualityHelper.isEqual(value1, value2, valueType1, valueType2, typeList1, typeList2, fSchemaVersion)) {
+                            continue LOOP;
                         }
                     }
+                    return i;
                 }
             }
             /** Handle n-tuples. **/
@@ -4393,15 +4397,11 @@ public class XMLSchemaValidator
                             final Object value2 = fValues.elementAt(j+k);
                             final short valueType1 = vsb.getValueTypeAt(i+k);
                             final short valueType2 = getValueTypeAt(j+k);
-                            if (value1 != value2 && (valueType1 != valueType2 || value1 == null || !value1.equals(value2))) {
+                            final ShortList typeList1 = isListType(valueType1) ? vsb.getItemValueTypeAt(i+k) : null;
+                            final ShortList typeList2 = isListType(valueType2) ? getItemValueTypeAt(j+k) : null;
+                            
+                            if (!EqualityHelper.isEqual(value1, value2, valueType1, valueType2, typeList1, typeList2, fSchemaVersion)) {
                                 continue INNER;
-                            }
-                            else if(valueType1 == XSConstants.LIST_DT || valueType1 == XSConstants.LISTOFUNION_DT) {
-                                ShortList list1 = vsb.getItemValueTypeAt(i+k);
-                                ShortList list2 = getItemValueTypeAt(j+k);
-                                if (list1 == null || list2 == null || !list1.equals(list2)) {
-                                    continue INNER;
-                                }
                             }
                         }
                         continue OUTER;
@@ -4489,6 +4489,9 @@ public class XMLSchemaValidator
         //
         // Private methods
         //
+        private boolean isListType(short type) {
+            return type == XSConstants.LIST_DT || type == XSConstants.LISTOFUNION_DT;
+        }
         
         private void addValueType(short type) {
             if (fUseValueTypeVector) {
@@ -4514,13 +4517,6 @@ public class XMLSchemaValidator
                 return fValueTypes.valueAt(index);
             }
             return fValueType;
-        }
-        
-        private boolean valueTypeContains(short value) {
-            if (fUseValueTypeVector) {
-                return fValueTypes.contains(value);
-            }
-            return fValueType == value;
         }
         
         private void addItemValueType(ShortList itemValueType) {
@@ -4550,14 +4546,6 @@ public class XMLSchemaValidator
             return fItemValueType;
         }
         
-        private boolean itemValueTypeContains(ShortList value) {
-            if (fUseItemValueTypeVector) {
-                return fItemValueTypes.contains(value);
-            }
-            return fItemValueType == value || 
-                (fItemValueType != null && fItemValueType.equals(value));
-        }
-
     } // class ValueStoreBase
 
     /**

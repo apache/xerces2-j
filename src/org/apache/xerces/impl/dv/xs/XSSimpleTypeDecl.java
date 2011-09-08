@@ -1814,7 +1814,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         // then validate the actual value against the facets
         if (context.needFacetChecking() &&
                 (fFacetsDefined != 0 && fFacetsDefined != FACET_WHITESPACE)) {
-            checkFacets(validatedInfo);
+            checkFacets(validatedInfo, context);
         }
 
         // now check extra rules: for ID/IDREF/ENTITY
@@ -1824,12 +1824,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     }
 
-    private void checkFacets(ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
+    private void checkFacets(ValidatedInfo validatedInfo, ValidationContext context) throws InvalidDatatypeValueException {
 
         Object ob = validatedInfo.actualValue;
         String content = validatedInfo.normalizedValue;
-        short type = validatedInfo.actualValueType;
-        ShortList itemType = validatedInfo.itemValueTypes;
+        final short schemaVersion = (context.getTypeValidatorHelper().isXMLSchema11()) ? Constants.SCHEMA_VERSION_1_1 : Constants.SCHEMA_VERSION_1_0;
 
         // For QName and NOTATION types, we don't check length facets
         if (fValidationDV != DV_QNAME && fValidationDV != DV_NOTATION) {
@@ -1864,42 +1863,13 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
             boolean present = false;
             final int enumSize = fEnumerationSize;
-            final short primitiveType1 = convertToPrimitiveKind(type);
             for (int i = 0; i < enumSize; i++) {
-                final short primitiveType2 = convertToPrimitiveKind(fEnumeration[i].actualValueType);
-                if ((primitiveType1 == primitiveType2 ||
-                        primitiveType1 == XSConstants.ANYSIMPLETYPE_DT && primitiveType2 == XSConstants.STRING_DT ||
-                        primitiveType1 == XSConstants.STRING_DT && primitiveType2 == XSConstants.ANYSIMPLETYPE_DT)
-                        && fEnumeration[i].actualValue.equals(ob)) {
-                    if (primitiveType1 == XSConstants.LIST_DT || primitiveType1 == XSConstants.LISTOFUNION_DT) {
-                        ShortList enumItemType = fEnumeration[i].itemValueTypes;
-                        final int typeList1Length = itemType != null ? itemType.getLength() : 0;
-                        final int typeList2Length = enumItemType != null ? enumItemType.getLength() : 0;
-                        if (typeList1Length == typeList2Length) {
-                            int j;
-                            for (j = 0; j < typeList1Length; ++j) {
-                                final short primitiveItem1 = convertToPrimitiveKind(itemType.item(j));
-                                final short primitiveItem2 = convertToPrimitiveKind(enumItemType.item(j));
-                                if (primitiveItem1 != primitiveItem2) {
-                                    if (primitiveItem1 == XSConstants.ANYSIMPLETYPE_DT && primitiveItem2 == XSConstants.STRING_DT ||
-                                            primitiveItem1 == XSConstants.STRING_DT && primitiveItem2 == XSConstants.ANYSIMPLETYPE_DT) {
-                                        continue;
-                                    }
-                                    break;
-                                }
-                            }
-                            if (j == typeList1Length) {
-                                present = true;
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        present = true;
-                        break;
-                    }
+                if (EqualityHelper.isEqual(validatedInfo, fEnumeration[i], schemaVersion)) {
+                    present = true;
+                    break;
                 }
             }
+
             if(!present){
                 StringBuffer sb = new StringBuffer();
                 appendEnumString(sb);
@@ -2122,7 +2092,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 avalue[i] = fItemType.getActualValue(parsedList.nextToken(), context, validatedInfo, false);
                 if (context.needFacetChecking() &&
                         (fItemType.fFacetsDefined != 0 && fItemType.fFacetsDefined != FACET_WHITESPACE)) {
-                    fItemType.checkFacets(validatedInfo);
+                    fItemType.checkFacets(validatedInfo, context);
                 }
                 memberTypes[i] = (XSSimpleTypeDecl)validatedInfo.memberType;
                 if (isUnion)
@@ -2154,7 +2124,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     Object aValue = fMemberTypes[i].getActualValue(_content, context, validatedInfo, true);
                     if (context.needFacetChecking() &&
                             (fMemberTypes[i].fFacetsDefined != 0 && fMemberTypes[i].fFacetsDefined != FACET_WHITESPACE)) {
-                        fMemberTypes[i].checkFacets(validatedInfo);
+                        fMemberTypes[i].checkFacets(validatedInfo, context);
                     }
 
                     if (fMemberTypes[i].fVariety != VARIETY_UNION) {

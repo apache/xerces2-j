@@ -86,6 +86,10 @@ public abstract class XSConstraints {
         fAnyType = anyType;
         fSchemaVersion = schemaVersion;
     }
+    
+    final public short getSchemaVersion() {
+        return fSchemaVersion;
+    }
 
     /**
      * check whether derived is valid derived from base, given a subset

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.dv.xs.EqualityHelper;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -32,11 +33,8 @@ import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamedMap;
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
-import org.apache.xerces.xs.XSTypeDefinition;
 
 
 // TODO: tests:
@@ -474,36 +472,9 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
                 return false;
             }
 
-            // Get primitive kind for the fixed values. Use "string" for
-            // complex type with mixed content.
-            short btype, dtype;
-            if (eb.fType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                btype = ((XSSimpleTypeDefinition)eb.fType).getPrimitiveType().getBuiltInKind();
-            }
-            else {
-                XSComplexTypeDefinition complex = (XSComplexTypeDefinition)eb.fType;
-                if (complex.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
-                    btype = complex.getSimpleType().getPrimitiveType().getBuiltInKind();
-                }
-                else {
-                    btype = XSConstants.STRING_DT;
-                }
-            }
-            if (ed.fType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                dtype = ((XSSimpleTypeDefinition)ed.fType).getPrimitiveType().getBuiltInKind();
-            }
-            else {
-                XSComplexTypeDefinition complex = (XSComplexTypeDefinition)ed.fType;
-                if (complex.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
-                    dtype = complex.getSimpleType().getPrimitiveType().getBuiltInKind();
-                }
-                else {
-                    dtype = XSConstants.STRING_DT;
-                }
-            }
             // The 2 values must have the same primitive kind and actual value.
             // equals() checks both equality and identity.
-            if (btype != dtype || !eb.fDefault.actualValue.equals(ed.fDefault.actualValue)) {
+            if (!EqualityHelper.isEqual(eb.fDefault, ed.fDefault, Constants.SCHEMA_VERSION_1_1)) {
                 return false;
             }
         }

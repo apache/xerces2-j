@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.xs.EqualityHelper;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSAttributeGroupDefinition;
@@ -254,11 +255,12 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 						return errorArgs;
                     } else {
                         // check the values are the same.
-                        ValidatedInfo baseFixedValue=(baseAttrUse.fDefault!=null ?
+                        final ValidatedInfo baseFixedValue=(baseAttrUse.fDefault!=null ?
                                                       baseAttrUse.fDefault: baseAttrDecl.fDefault);
-                        ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
+                        final ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
                                                       attrUse.fDefault: attrDecl.fDefault);
-                        if (!baseFixedValue.actualValue.equals(thisFixedValue.actualValue)) {
+
+                        if (!EqualityHelper.isEqual(baseFixedValue, thisFixedValue, xsConstraints.getSchemaVersion())) {
 							errorArgs = new Object[]{typeName, attrDecl.fName, thisFixedValue.stringValue(),
 													 baseFixedValue.stringValue(), "derivation-ok-restriction.2.1.3.b"};
 							return errorArgs;
