@@ -146,6 +146,10 @@ XSLoader, DOMConfiguration {
     protected static final String TOLERATE_DUPLICATES = 
         Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
     
+    /** Feature identifier: tolerate duplicates */
+    protected static final String CTA_FULL_XPATH = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
+    
     /** Property identifier: Schema DV Factory */
     protected static final String SCHEMA_DV_FACTORY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
@@ -162,7 +166,8 @@ XSLoader, DOMConfiguration {
         VALIDATE_ANNOTATIONS,
         HONOUR_ALL_SCHEMALOCATIONS,
         NAMESPACE_GROWTH,
-        TOLERATE_DUPLICATES
+        TOLERATE_DUPLICATES,
+        CTA_FULL_XPATH,
     };
     
     // property identifiers

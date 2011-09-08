@@ -334,6 +334,9 @@ public final class Constants {
     /** Feature to ignore errors caused by type alternatives */
     public static final String TYPE_ALTERNATIVES_CHEKING_FEATURE = "validation/type-alternative-checking";
     
+    /** Feature to control full XPath 2.0 checking for CTA processing */
+    public static final String CTA_FULL_XPATH_CHECKING_FEATURE = "validation/cta-full-xpath-checking";
+    
     /** Feature to ignore errors caused by unparsed entities ("validation/unparsed-entity-checking") */
     public static final String UNPARSED_ENTITY_CHECKING_FEATURE = "validation/unparsed-entity-checking";
     
@@ -548,6 +551,7 @@ public final class Constants {
             TOLERATE_DUPLICATES_FEATURE,
             STRINGS_INTERNED_FEATURE,
             TYPE_ALTERNATIVES_CHEKING_FEATURE,
+            CTA_FULL_XPATH_CHECKING_FEATURE,
     };
     
     /** Xerces properties. */

@@ -196,6 +196,10 @@ public class XML11Configuration extends ParserConfigurationSettings
     protected static final String TYPE_ALTERNATIVES_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
     
+    /** Feature identifier: whether to use full XPath 2.0 support for CTA processing */
+    protected static final String CTA_FULL_XPATH_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
+    
 
     // property identifiers
    
@@ -499,6 +503,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 		        ID_IDREF_CHECKING, IDENTITY_CONSTRAINT_CHECKING,
 		        UNPARSED_ENTITY_CHECKING, USE_GRAMMAR_POOL_ONLY,
 		        TYPE_ALTERNATIVES_CHECKING,
+		        CTA_FULL_XPATH_CHECKING,
 		        // NOTE: These shouldn't really be here but since the XML Schema
 		        //       validator is constructed dynamically, its recognized
 		        //       features might not have been set and it would cause a

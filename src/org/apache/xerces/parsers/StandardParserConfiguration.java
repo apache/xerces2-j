@@ -131,6 +131,10 @@ public class StandardParserConfiguration
     /** Feature identifier: whether to ignore type alternatives errors */
     protected static final String TYPE_ALTERNATIVES_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
+    
+    /** Feature identifier: whether to use full XPath 2.0 support for CTA processing */
+    protected static final String CTA_FULL_XPATH_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
 
     // property identifiers
 
@@ -239,6 +243,7 @@ public class StandardParserConfiguration
             IDENTITY_CONSTRAINT_CHECKING,
             UNPARSED_ENTITY_CHECKING,
             TYPE_ALTERNATIVES_CHECKING,
+            CTA_FULL_XPATH_CHECKING,
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -257,6 +262,7 @@ public class StandardParserConfiguration
         setFeature(IDENTITY_CONSTRAINT_CHECKING, true);
         setFeature(UNPARSED_ENTITY_CHECKING, true);
         setFeature(TYPE_ALTERNATIVES_CHECKING, true);
+        setFeature(CTA_FULL_XPATH_CHECKING, false);
 
         // add default recognized properties
     

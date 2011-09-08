@@ -61,7 +61,9 @@ import org.w3c.dom.Element;
  */
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
     
-    private static final XSSimpleType fErrorType;
+    private static final XSSimpleType fErrorType;    
+    private boolean fIsFullXPathModeForCTA;
+    private String[] fctaXPathModes = {"cta-subset", "cta-full"};
     
     static {
         SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_1);
@@ -70,6 +72,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
 
     XSDTypeAlternativeTraverser (XSDHandler handler, XSAttributeChecker attrChecker) {
         super(handler, attrChecker);
+        fIsFullXPathModeForCTA = handler.fFullXPathForCTA;
     }
 
     /**
@@ -188,21 +191,27 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         // now look for other optional attributes like test and xpathDefaultNamespace
         if (testStr != null) {
             Test testExpr = null;
-            //set the test attribute value
             try {
-               testExpr = new Test(new XPath20(testStr, fSymbolTable, new NamespaceSupport(schemaDoc.fNamespaceSupport)), typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
-            } 
+                if (fIsFullXPathModeForCTA) {
+                    // if full XPath 2.0 support is enabled for CTA, use PsychoPath XPath 2.0 engine for XPath evaluation
+                    XPathParser xpp = new JFlexCupParser();
+                    XPath xp = xpp.parse("boolean(" + testStr + ")");
+                    testExpr = new Test(xp, typeAlternative, schemaDoc.fNamespaceSupport);
+                }
+                else {
+                    // if XPath subset is enabled for CTA (this is also the default option), use Xerces's native XPath parser for CTA
+                    testExpr = new Test(new XPath20(testStr, fSymbolTable, new NamespaceSupport(schemaDoc.fNamespaceSupport)), typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
+                }
+            }
             catch (XPathException e) {
-               // fall back to full XPath 2.0 support, with PsychoPath engine
-               try {
-                  XPathParser xpp = new JFlexCupParser();
-                  XPath xp = xpp.parse("boolean(" + testStr + ")");
-                  testExpr = new Test(xp, typeAlternative, schemaDoc.fNamespaceSupport);
-               } catch(XPathParserException ex) {
-                  reportSchemaError("c-cta-xpath", new Object[] { testStr }, altElement);
-                  //if the XPath is invalid, create a Test without an expression
-                  testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
-               }                
+                // if XPath expression couldn't compile, create a "test" without an expression
+                testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
+                reportSchemaError("c-cta-xpath", new Object[] {testStr, fctaXPathModes[0]}, altElement);                
+            }
+            catch(XPathParserException ex) {
+                // if XPath expression couldn't compile, create a "test" without an expression
+                testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
+                reportSchemaError("c-cta-xpath", new Object[] {testStr, fctaXPathModes[1]}, altElement);                
             }            
             typeAlternative.setTest(testExpr);
         }

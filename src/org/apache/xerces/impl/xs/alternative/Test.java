@@ -101,7 +101,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
         if (fXPath != null) {
             return fXPath.evaluateTest(element, attributes);
         } else if (fXPathPsychoPath != null) {
-            return evaluateTestExprWithPsychoPathEngine(element, attributes);  
+            return evaluateTestWithPsychoPathXPathEngine(element, attributes);  
         }
         else {
             return false;
@@ -113,15 +113,15 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
     
     /*
-     * Evaluate the XPath "test" expression on an XDM instance, consisting of the specified element and its attributes.
-     * Uses PsychoPath XPath 2.0 engine for the evaluation. 
+     * Evaluate the XPath "test" expression on an XDM instance, for CTA evaluation. Uses PsychoPath XPath 2.0 engine for the evaluation. 
      */
-    private boolean evaluateTestExprWithPsychoPathEngine(QName element, XMLAttributes attributes) {
+    private boolean evaluateTestWithPsychoPathXPathEngine(QName element, XMLAttributes attributes) {
         
         boolean evaluationResult = false;
 
         try { 
-            // an untyped PSVI DOM tree is constructed, to provide to PsychoPath engine for evaluation.
+            // an untyped PSVI DOM tree (consisting only of the top most element node and it's attributes) is constructed,
+            // to provide to PsychoPath XPath engine for evaluation.
             Document document = new PSVIDocumentImpl();
             Element elem = document.createElementNS(element.uri, element.rawname);
             for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
@@ -146,6 +146,6 @@ public class Test extends AbstractPsychoPathXPath2Impl {
 
         return evaluationResult;
        
-    } // evaluateTestExprWithPsychoPathEngine
+    } // evaluateTestWithPsychoPathXPathEngine
     
 }

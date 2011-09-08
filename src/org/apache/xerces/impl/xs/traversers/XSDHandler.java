@@ -77,7 +77,6 @@ import org.apache.xerces.util.StAXLocationWrapper;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI.MalformedURIException;
-import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
@@ -178,6 +177,10 @@ public class XSDHandler {
     /** Feature identifier: tolerate duplicates */
     protected static final String TOLERATE_DUPLICATES = 
       Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
+    
+    /** Feature identifier: Full XPath 2.0 for CTA evaluations */
+    protected static final String CTA_FULL_XPATH = 
+      Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
     
     /** Feature identifier: namespace prefixes. */
     private static final String NAMESPACE_PREFIXES =
@@ -403,6 +406,9 @@ public class XSDHandler {
     
     // handle tolerate duplicates feature
     boolean fTolerateDuplicates = false;
+    
+    // handle full XPath 2.0 feature
+    boolean fFullXPathForCTA = false;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -3817,6 +3823,12 @@ public class XSDHandler {
             fTolerateDuplicates = componentManager.getFeature(TOLERATE_DUPLICATES);
         } catch (XMLConfigurationException e) {
             fTolerateDuplicates = false;
+        }
+        
+        try {
+            fFullXPathForCTA = componentManager.getFeature(CTA_FULL_XPATH);
+        } catch (XMLConfigurationException e) {
+            fFullXPathForCTA = false;
         }
 
         try {
