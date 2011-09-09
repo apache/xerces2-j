@@ -44,6 +44,9 @@ public class Test extends AbstractPsychoPathXPath2Impl {
 
 	/** The type alternative to which the test belongs */
     protected final XSTypeAlternativeImpl fTypeAlternative;
+    
+    /** String representation of the XPath */
+    protected final String fExpression;
 
     /** XPath 2.0 expression. Xerces-J native XPath 2.0 subset. */
     protected final XPath20 fXPath;
@@ -57,6 +60,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     /** Constructs a "test" for type alternatives */
     public Test(XPath20 xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
         fXPath = xpath;
+        fExpression = xpath == null ? "" : xpath.getXPathStrValue();
         fXPathPsychoPath = null;
         fTypeAlternative = typeAlternative;
         fXPath2NamespaceContext = namespaceContext;
@@ -65,8 +69,9 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     /*
      * Constructs a "test" for type alternatives. An overloaded constructor, for PsychoPath XPath processor.
      */
-    public Test(XPath xpath, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
+    public Test(XPath xpath, String expression, XSTypeAlternativeImpl typeAlternative, NamespaceSupport namespaceContext) {
         fXPath = null;
+        fExpression = expression == null ? "" : expression;
         fXPathPsychoPath = xpath;
         fTypeAlternative = typeAlternative;
         fXPath2NamespaceContext = namespaceContext;
@@ -109,7 +114,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
 
     public String toString() {
-        return fXPath.getXPathStrValue();
+        return fExpression;
     }
     
     /*

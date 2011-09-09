@@ -196,7 +196,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                     // if full XPath 2.0 support is enabled for CTA, use PsychoPath XPath 2.0 engine for XPath evaluation
                     XPathParser xpp = new JFlexCupParser();
                     XPath xp = xpp.parse("boolean(" + testStr + ")");
-                    testExpr = new Test(xp, typeAlternative, schemaDoc.fNamespaceSupport);
+                    testExpr = new Test(xp, testStr, typeAlternative, schemaDoc.fNamespaceSupport);
                 }
                 else {
                     // if XPath subset is enabled for CTA (this is also the default option), use Xerces's native XPath parser for CTA
