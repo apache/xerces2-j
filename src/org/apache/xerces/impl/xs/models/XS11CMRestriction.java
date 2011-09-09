@@ -496,6 +496,12 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
             return false;
         }
         
+        // 4.6 S.{type table} and G.{type table} either are both absent or
+        //     are both present and equivalent. 
+        if (!xsc.isTypeTablesEquivalent(eb, ed)) {
+            return false;
+        }
+
         return true;
     }
 

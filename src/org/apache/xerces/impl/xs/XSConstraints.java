@@ -87,6 +87,10 @@ public abstract class XSConstraints {
     final public short getSchemaVersion() {
         return fSchemaVersion;
     }
+    
+    public boolean isTypeTablesEquivalent(XSElementDecl elementDecl1, XSElementDecl elementDecl2) {
+        return true;
+    }
 
     /**
      * check whether derived is valid derived from base, given a subset

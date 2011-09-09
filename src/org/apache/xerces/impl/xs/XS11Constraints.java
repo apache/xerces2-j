@@ -198,7 +198,7 @@ class XS11Constraints extends XSConstraints {
     /*
      * Check if two type tables are equivalent.
      */
-    protected boolean isTypeTablesEquivalent(XSElementDecl elementDecl1, XSElementDecl elementDecl2) {
+    final public boolean isTypeTablesEquivalent(XSElementDecl elementDecl1, XSElementDecl elementDecl2) {
         
         final XSTypeAlternativeImpl[] typeTable1 = elementDecl1.getTypeAlternatives();
         final XSTypeAlternativeImpl[] typeTable2 = elementDecl2.getTypeAlternatives();
