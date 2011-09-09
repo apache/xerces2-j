@@ -2686,13 +2686,18 @@ public class XSDHandler {
     private Element getSchemaDocument0(XSDKey key, String schemaId, Element schemaElement) {
         // now we need to store the mapping information from system id
         // to the document. also from the document to the system id.
-        if (key != null) {
-            fTraversed.put(key, schemaElement);
+        if (schemaElement != null) {
+            if (key != null) {
+                fTraversed.put(key, schemaElement);
+            }
+            if (schemaId != null) {
+                fDoc2SystemId.put(schemaElement, schemaId);
+            }
+            fLastSchemaWasDuplicate = false;
         }
-        if (schemaId != null) {
-            fDoc2SystemId.put(schemaElement, schemaId);
+        else {
+            fLastSchemaWasDuplicate = true;
         }
-        fLastSchemaWasDuplicate = false;
         return schemaElement;
     } // getSchemaDocument0(XSDKey, String, Element): Element
     

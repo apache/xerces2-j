@@ -256,7 +256,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
             // perform conditional exclusion checks for schema versioning namespace 
             // (does not apply to <schema> element).
-            if (fDepth > 0) {
+            if (fDepth > -1) {
                 checkVersionControlAttributes(element, attributes);
                 if (fIgnoreDepth > -1) {
                     return;
