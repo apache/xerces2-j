@@ -72,13 +72,18 @@ public class TimeDV extends AbstractDateTimeDV {
         //validate and normalize
 
         validateDateTime(date, isXMLSchema11);
+        
+        // reset back day
+        date.day = 15;
 
         //save unnormalized values
         saveUnnormalized(date);
         
         if ( date.utc!=0 && date.utc != 'Z') {
             normalize(date);
-            date.day = 15;
+            if (!isXMLSchema11) {
+                date.day = 15;
+            }
         }
         date.position = 2;
         return date;
