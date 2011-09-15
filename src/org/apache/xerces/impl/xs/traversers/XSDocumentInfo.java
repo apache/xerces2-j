@@ -99,10 +99,15 @@ class XSDocumentInfo {
 
     // defaultOpenContent
     XSOpenContentDecl fDefaultOpenContent = null;
+    
+    // dataype xml version
+    short fDatatypeXMLVersion;
 
     // note that the caller must ensure to call returnSchemaAttrs()
     // to avoid memory leaks!
-    XSDocumentInfo (Element schemaRoot, XSAttributeChecker attrChecker, SymbolTable symbolTable, TypeValidatorHelper typeValidatorHelper)
+    XSDocumentInfo (Element schemaRoot, XSAttributeChecker attrChecker,
+            SymbolTable symbolTable, TypeValidatorHelper typeValidatorHelper,
+            short datatypeXMLVersion)
                     throws XMLSchemaException {
         
         fSchemaElement = schemaRoot;
@@ -112,6 +117,7 @@ class XSDocumentInfo {
 
         fSymbolTable = symbolTable;
         fAttrChecker = attrChecker;
+        fDatatypeXMLVersion = datatypeXMLVersion;
 
         if (schemaRoot != null) {
             Element root = schemaRoot;
@@ -120,6 +126,7 @@ class XSDocumentInfo {
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
             fValidationContext.setSymbolTable(symbolTable);
             fValidationContext.setTypeValidatorHelper(typeValidatorHelper);
+            fValidationContext.setDatatypeXMLVersion(datatypeXMLVersion);
 
             // get the target namespace
             fTargetNamespace = attrChecker.checkTargetNamespace(root, this);

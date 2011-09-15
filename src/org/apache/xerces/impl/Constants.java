@@ -442,8 +442,11 @@ public final class Constants {
     /** Schema element declaration for the root element in a document ("internal/validation/schema/dv-factory"). */
     public static final String SCHEMA_DV_FACTORY_PROPERTY = "internal/validation/schema/dv-factory";
 
-    /** Datatype XML version property ("validation/schema/datatype-xml-version"). */
+    /** XML Schema version property ("validation/schema/version"). */
     public static final String XML_SCHEMA_VERSION_PROPERTY ="validation/schema/version";
+    
+    /** Datatype XML version property ("validation/schema/datatype-xml-version"). */
+    public static final String DATATYPE_XML_VERSION_PROPERTY = "validation/schema/datatype-xml-version";
     
     // general constants
     
@@ -577,7 +580,8 @@ public final class Constants {
             ROOT_TYPE_DEFINITION_PROPERTY,
             ROOT_ELEMENT_DECLARATION_PROPERTY,
             SCHEMA_DV_FACTORY_PROPERTY,
-            XML_SCHEMA_VERSION_PROPERTY
+            XML_SCHEMA_VERSION_PROPERTY,
+            DATATYPE_XML_VERSION_PROPERTY
     };
     
     /** Empty enumeration. */

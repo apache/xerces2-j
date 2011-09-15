@@ -224,6 +224,10 @@ public class XSDHandler {
     /** Property identifier: locale. */
     protected static final String LOCALE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
+
+    /** Property identifier: datatype xml version. */
+    protected static final String DATATYPE_XML_VERSION = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_XML_VERSION_PROPERTY;
     
     protected static final boolean DEBUG_NODE_POOL = false;
     
@@ -369,6 +373,9 @@ public class XSDHandler {
     // this is useful to resolve a uri relative to the referring document
     private Hashtable fDoc2SystemId = new Hashtable();
     
+    //
+    private Hashtable fDoc2DatatypeXMLVersion = null;
+    
     // the primary XSDocumentInfo we were called to parse
     private XSDocumentInfo fRoot = null;
     
@@ -460,6 +467,9 @@ public class XSDHandler {
 
     // TypeValidatorHelper
     TypeValidatorHelper fTypeValidatorHelper;
+    
+    // Datatype XML version
+    String fDatatypeXMLVersion;
     
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -856,11 +866,19 @@ public class XSDHandler {
         if (schemaRoot == null) return null;
         String callerTNS = desc.getTargetNamespace();
         short referType = desc.getContextType();
-        
+
         XSDocumentInfo currSchemaInfo = null;
         try {
             // note that attributes are freed at end of traverseSchemas()
-            currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable, fTypeValidatorHelper);
+            short datatypeXMLVersion = Constants.XML_VERSION_1_0;
+            if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                final Object xmlVer = (fDatatypeXMLVersion == null)
+                    ? fDoc2DatatypeXMLVersion.get(schemaRoot) : fDatatypeXMLVersion;
+                datatypeXMLVersion = "1.1".equals(xmlVer)
+                    ? Constants.XML_VERSION_1_1 : Constants.XML_VERSION_1_0;
+            }
+            currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker,
+                    fSymbolTable, fTypeValidatorHelper, datatypeXMLVersion);
         } catch (XMLSchemaException se) {
             reportSchemaError(ELE_ERROR_CODES[referType],
                     new Object[]{locationHint},
@@ -2405,7 +2423,9 @@ public class XSDHandler {
                 fSchemaParser.parse(schemaSource);
                 Document schemaDocument = fSchemaParser.getDocument();
                 schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
-                return getSchemaDocument0(key, schemaId, schemaElement);
+                return getSchemaDocument0(key, schemaId, schemaElement,
+                        fSchemaVersion == Constants.SCHEMA_VERSION_1_1
+                            ? fSchemaParser.getProperty(DATATYPE_XML_VERSION) : null);
             }
             else {
                 hasInput = false;
@@ -2512,7 +2532,9 @@ public class XSDHandler {
                 
                 Document schemaDocument = fXSContentHandler.getDocument();
                 schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
-                return getSchemaDocument0(key, schemaId, schemaElement);
+                return getSchemaDocument0(key, schemaId, schemaElement,
+                        fSchemaVersion == Constants.SCHEMA_VERSION_1_1
+                            ? fSchemaParser.getProperty(DATATYPE_XML_VERSION) : null);
             }
             else {
                 hasInput = false;
@@ -2583,7 +2605,7 @@ public class XSDHandler {
                 }
 
                 schemaElement = schemaRootElement;
-                return getSchemaDocument0(key, schemaId, schemaElement);
+                return getSchemaDocument0(key, schemaId, schemaElement, null);
             }
             else {
                 hasInput = false;
@@ -2660,7 +2682,9 @@ public class XSDHandler {
             }
             Document schemaDocument = fStAXSchemaParser.getDocument();
             schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
-            return getSchemaDocument0(key, schemaId, schemaElement);
+            return getSchemaDocument0(key, schemaId, schemaElement,
+                    fSchemaVersion == Constants.SCHEMA_VERSION_1_1
+                        ? fSchemaParser.getProperty(DATATYPE_XML_VERSION) : null);
         }
         catch (XMLStreamException e) {
             Throwable t = e.getNestedException();
@@ -2683,7 +2707,7 @@ public class XSDHandler {
      * Code shared between the various getSchemaDocument() methods which
      * stores mapping information for the document.
      */
-    private Element getSchemaDocument0(XSDKey key, String schemaId, Element schemaElement) {
+    private Element getSchemaDocument0(XSDKey key, String schemaId, Element schemaElement, Object datatypeXMLVersion) {
         // now we need to store the mapping information from system id
         // to the document. also from the document to the system id.
         if (schemaElement != null) {
@@ -2692,6 +2716,9 @@ public class XSDHandler {
             }
             if (schemaId != null) {
                 fDoc2SystemId.put(schemaElement, schemaId);
+            }
+            if (datatypeXMLVersion != null) {
+                fDoc2DatatypeXMLVersion.put(schemaElement, datatypeXMLVersion);
             }
             fLastSchemaWasDuplicate = false;
         }
@@ -3660,6 +3687,9 @@ public class XSDHandler {
     void prepareForParse() {
         fTraversed.clear();
         fDoc2SystemId.clear();
+        if (fDoc2DatatypeXMLVersion != null) {
+            fDoc2DatatypeXMLVersion.clear();
+        }
         fHiddenNodes.clear();
         fLastSchemaWasDuplicate = false;
     }
@@ -3875,7 +3905,22 @@ public class XSDHandler {
             }
         } catch (XMLConfigurationException e) {
         }
-        
+
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            try {
+                final Object xmlVer = componentManager.getProperty(DATATYPE_XML_VERSION);
+                if (xmlVer instanceof String) {
+                    fDatatypeXMLVersion = (String) xmlVer;
+                }
+                else {
+                    fDatatypeXMLVersion = null;
+                }
+            }
+            catch (XMLConfigurationException e) {
+                fDatatypeXMLVersion = null;
+            }
+        }
+
         fTypeValidatorHelper = TypeValidatorHelper.getInstance(fSchemaVersion);        
     } // reset(XMLComponentManager)
     
@@ -4615,10 +4660,13 @@ public class XSDHandler {
             if (fOverrideHandler == null) {
                 fOverrideHandler = new OverrideTransformationManager(this, new DOMOverrideImpl(this));
             }
+            if (fDoc2DatatypeXMLVersion == null) {
+                fDoc2DatatypeXMLVersion = new Hashtable();
+            }
         }
         fSchemaParser.setSupportedVersion(fSupportedVersion);
     }
-    
+
     public String getDocumentURI() {
         return fSchemaParser.getDocument().getDocumentURI();
     }

@@ -67,23 +67,24 @@ public class Schema11DVFactoryImpl extends BaseSchemaDVFactory {
         // as the base type
         final XSFacets facets = new XSFacets();
         facets.minLength = 1;
+        facets.whiteSpace = XSSimpleType.WS_COLLAPSE;
 
         // add ENTITIES
         final XSSimpleTypeDecl entityDV = (XSSimpleTypeDecl)fBuiltInTypes.get(ENTITY);
         final XSSimpleTypeDecl entitiesDV = new XSSimpleTypeDecl(ENTITIES, URI_SCHEMAFORSCHEMA, (short)0, entityDV, false, null);
-        entitiesDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        entitiesDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH | XSSimpleType.FACET_WHITESPACE, (short)0);
         fBuiltInTypes.put(ENTITIES, entitiesDV);
 
         // add NMTOKENS
         final XSSimpleTypeDecl nmtokenDV = (XSSimpleTypeDecl)fBuiltInTypes.get(NMTOKEN);
         final XSSimpleTypeDecl nmtokensDV = new XSSimpleTypeDecl(NMTOKENS, URI_SCHEMAFORSCHEMA, (short)0, nmtokenDV, false, null);
-        nmtokensDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        nmtokensDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH  | XSSimpleType.FACET_WHITESPACE, (short)0);
         fBuiltInTypes.put(NMTOKENS, nmtokensDV);
 
         // add IDREFS
         final XSSimpleTypeDecl idrefDV = (XSSimpleTypeDecl)fBuiltInTypes.get(IDREF);
         final XSSimpleTypeDecl idrefsDV = new XSSimpleTypeDecl(IDREFS, URI_SCHEMAFORSCHEMA, (short)0, idrefDV, false, null);
-        idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
+        idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH  | XSSimpleType.FACET_WHITESPACE, (short)0);
         fBuiltInTypes.put(IDREFS, idrefsDV);
 
         // add 2 duration types

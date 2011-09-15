@@ -64,5 +64,8 @@ public interface ValidationContext {
     public Locale getLocale();
     
     // TypeValidatorHelper
-    public TypeValidatorHelper getTypeValidatorHelper();    
+    public TypeValidatorHelper getTypeValidatorHelper();
+    
+    // Datatype XML version
+    public short getDatatypeXMLVersion();
 }

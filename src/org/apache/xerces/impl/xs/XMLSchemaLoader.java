@@ -217,6 +217,9 @@ XSLoader, DOMConfiguration {
     protected static final String XML_SCHEMA_VERSION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
     
+    protected static final String DATATYPE_XML_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_XML_VERSION_PROPERTY;
+    
     // recognized properties
     private static final String [] RECOGNIZED_PROPERTIES = {
         ENTITY_MANAGER,
@@ -231,7 +234,8 @@ XSLoader, DOMConfiguration {
         SECURITY_MANAGER,
         LOCALE,
         SCHEMA_DV_FACTORY,
-        XML_SCHEMA_VERSION
+        XML_SCHEMA_VERSION,
+        DATATYPE_XML_VERSION
     };
     
     private static final String EXTENDED_SCHEMA_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.ExtendedSchemaDVFactoryImpl";
@@ -520,7 +524,7 @@ XSLoader, DOMConfiguration {
     /**
      * Sets the XML Schema Version
      */
-    void setSchemaVersion(String version) {
+    private void setSchemaVersion(String version) {
         if (version.equals(Constants.W3C_XML_SCHEMA10_NS_URI)) {
             fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
             fXSConstraints = XSConstraints.XS_1_0_CONSTRAINTS;

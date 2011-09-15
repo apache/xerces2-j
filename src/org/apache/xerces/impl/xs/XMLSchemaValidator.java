@@ -272,6 +272,10 @@ public class XMLSchemaValidator
     protected static final String XML_SCHEMA_VERSION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
 
+    /** Property identifier: datatype xml version. */
+    protected static final String DATATYPE_XML_VERSION = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_XML_VERSION_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -344,11 +348,12 @@ public class XMLSchemaValidator
             ROOT_ELEMENT_DECL,
             SCHEMA_DV_FACTORY,
             XML_SCHEMA_VERSION,
+            DATATYPE_XML_VERSION
         };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS =
-        { null, null, null, null, null, null, null, null, null, null, null, null};
+        { null, null, null, null, null, null, null, null, null, null, null, null, null};
 
     // this is the number of valuestores of each kind
     // we expect an element to have.  It's almost
@@ -415,6 +420,8 @@ public class XMLSchemaValidator
     private ArrayList fXSITypeErrors = new ArrayList(4);
 
     private IDContext fIDContext = null;
+    
+    private String fDatatypeXMLVersion = null;
 
     /**
      * A wrapper of the standard error reporter. We'll store all schema errors
@@ -648,8 +655,7 @@ public class XMLSchemaValidator
             }
         }
         else if (propertyId.equals(XML_SCHEMA_VERSION)) {
-            // TODO: do we use fSchemaLoader.setProperty
-            fSchemaLoader.setSchemaVersion((String)value);
+            fSchemaLoader.setProperty(XML_SCHEMA_VERSION, value);
             fSchemaVersion = fSchemaLoader.getSchemaVersion();
             fXSConstraints = fSchemaLoader.getXSConstraints();
             if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
@@ -660,6 +666,7 @@ public class XMLSchemaValidator
             }
             else {
                 fValidationState.setIDContext(null);
+                fValidationState.setDatatypeXMLVersion(Constants.XML_VERSION_1_0);
             }
         }
     } // setProperty(String,Object)
@@ -791,6 +798,12 @@ public class XMLSchemaValidator
             fDocumentHandler.xmlDecl(version, encoding, standalone, augs);
         }
 
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            if (fDatatypeXMLVersion == null) {
+                fValidationState.setDatatypeXMLVersion("1.0".equals(version)
+                        ? Constants.XML_VERSION_1_0 : Constants.XML_VERSION_1_1);
+            }
+        }
     } // xmlDecl(String,String,String)
 
     /**
@@ -1416,7 +1429,6 @@ public class XMLSchemaValidator
      */
     public void reset(XMLComponentManager componentManager) throws XMLConfigurationException {
 
-
         fIdConstraint = false;
         //reset XSDDescription
         fLocationPairs.clear();
@@ -1648,6 +1660,26 @@ public class XMLSchemaValidator
         } catch (XMLConfigurationException e) {
             fExternalSchemas = null;
             fExternalNoNamespaceSchema = null;
+        }
+
+        // get datatype xml version
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            try {
+                final Object xmlVer = componentManager.getProperty(DATATYPE_XML_VERSION);
+                if (xmlVer instanceof String) {
+                    fDatatypeXMLVersion = (String) xmlVer;
+                    if ("1.1".equals(xmlVer)) {
+                        fValidationState.setDatatypeXMLVersion(Constants.XML_VERSION_1_1);
+                    }
+                    else {
+                        fValidationState.setDatatypeXMLVersion(Constants.XML_VERSION_1_0);
+                    }
+                }
+            }
+            catch (XMLConfigurationException e) {
+                fDatatypeXMLVersion = null;
+                fValidationState.setDatatypeXMLVersion(Constants.XML_VERSION_1_0);
+            }
         }
 
         // store the external schema locations. they are set when reset is called,

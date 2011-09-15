@@ -182,6 +182,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (defaultAtt != null && attrUse != null) {
             // 2 if there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in String Valid (3.14.4).
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+            fValidationState.setDatatypeXMLVersion(schemaDoc.fDatatypeXMLVersion);
             try {
                 checkDefaultValid(attrUse);
             }
@@ -452,6 +453,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // 2 if there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in String Valid (3.14.4).
         if (attDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+            fValidationState.setDatatypeXMLVersion(schemaDoc.fDatatypeXMLVersion);
             try {
                 checkDefaultValid(attribute);
             }

@@ -154,6 +154,9 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     protected static final String LOCALE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
     
+    protected static final String DATATYPE_XML_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_XML_VERSION_PROPERTY;
+    
     
     // debugging
     
@@ -323,7 +326,8 @@ public class SchemaParsingConfig extends BasicParserConfiguration
             DATATYPE_VALIDATOR_FACTORY,
             VALIDATION_MANAGER,
             GENERATE_SYNTHETIC_ANNOTATIONS,
-            LOCALE
+            LOCALE,
+            DATATYPE_XML_VERSION
         };
         addRecognizedProperties(recognizedProperties);
         
@@ -724,7 +728,10 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     
     /** Configures the XML 1.0 pipeline. */
     protected void configurePipeline() {
-        
+
+        // set datatype XML version to 1.0
+        setProperty(DATATYPE_XML_VERSION, "1.0");
+
         if (fCurrentDVFactory != fDatatypeValidatorFactory) {
             fCurrentDVFactory = fDatatypeValidatorFactory;
             // use XML 1.0 datatype library
@@ -760,7 +767,10 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     
     /** Configures the XML 1.1 pipeline. */
     protected void configureXML11Pipeline() {
-        
+
+        // set datatype XML version to 1.1
+        setProperty(DATATYPE_XML_VERSION, "1.1");
+
         if (fCurrentDVFactory != fXML11DatatypeFactory) {
             fCurrentDVFactory = fXML11DatatypeFactory;
             // use XML 1.1 datatype library
@@ -790,8 +800,7 @@ public class SchemaParsingConfig extends BasicParserConfiguration
         fXML11DTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
         if (fDTDContentModelHandler != null) {
             fDTDContentModelHandler.setDTDContentModelSource(fXML11DTDScanner);
-        } 
-        
+        }
     } // configureXML11Pipeline()
     
     // features and properties

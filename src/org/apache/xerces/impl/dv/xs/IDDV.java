@@ -17,8 +17,10 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLChar;
 
 /**
@@ -34,7 +36,9 @@ import org.apache.xerces.util.XMLChar;
 public class IDDV extends TypeValidator{
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        if (!XMLChar.isValidNCName(content)) {
+        final boolean valid = (context.getDatatypeXMLVersion() == Constants.XML_VERSION_1_0)
+            ? XMLChar.isValidNCName(content) : XML11Char.isXML11ValidNCName(content);
+        if (!valid) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "NCName"});
         }
         return content;

@@ -551,6 +551,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 2 If there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in Element Default Valid (Immediate) (3.3.6).
         if (element.fDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+            fValidationState.setDatatypeXMLVersion(schemaDoc.fDatatypeXMLVersion);
             if (fSchemaHandler.fXSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault) == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue}, elmDecl);
                 element.fDefault = null;

@@ -360,4 +360,16 @@ public final class REUtil {
         }
         System.out.println();
     }
+
+    static void setupRange(Token range, String src) {
+        int len = src.length();
+        for (int i = 0;  i < len;  i += 2)
+            range.addRange(src.charAt(i), src.charAt(i+1));
+    }
+
+    static void setupRange(Token range, int[] src) {
+        int len = src.length;
+        for (int i = 0;  i < len;  i += 2)
+            range.addRange(src[i], src[i+1]);
+    }
 }

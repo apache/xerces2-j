@@ -437,6 +437,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             
             try {
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+                fValidationState.setDatatypeXMLVersion(schemaDoc.fDatatypeXMLVersion);
                 newDecl.applyFacets(fi.facetdata, fi.fPresentFacets, fi.fFixedFacets, fValidationState);
             } catch (InvalidDatatypeFacetException ex) {
                 reportSchemaError(ex.getKey(), ex.getArgs(), child);

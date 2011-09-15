@@ -244,6 +244,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public TypeValidatorHelper getTypeValidatorHelper() {
             return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
         }
+        public short getDatatypeXMLVersion() {
+            return Constants.XML_VERSION_1_0;
+        }
     };
 
     protected static TypeValidator[] getGDVs() {
@@ -887,7 +890,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 patternAnnotations = facets.patternAnnotations;
                 RegularExpression regex = null;
                 try {
-                    regex = new RegularExpression(facets.pattern, "X", context.getLocale());
+                    regex = new RegularExpression(facets.pattern, "X", context.getLocale(), context.getDatatypeXMLVersion());
                 } catch (Exception e) {
                     reportError("InvalidRegex", new Object[]{facets.pattern, e.getLocalizedMessage()});
                 }
@@ -2044,19 +2047,19 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             if (fPatternType != SPECIAL_PATTERN_NONE) {
 
                 boolean seenErr = false;
-                boolean isSchema11 = context.getTypeValidatorHelper().isXMLSchema11();
+                final boolean isXML11 = context.getDatatypeXMLVersion() == Constants.XML_VERSION_1_1;
                 // if using XSD 1.1, use the XML 1.1 rules of validating the NMTOKEN, Name and NCName else use the XML 1.0 rules 
                 if (fPatternType == SPECIAL_PATTERN_NMTOKEN) {
                     // PATTERN "\\c+"
-                    seenErr = (isSchema11) ? !XML11Char.isXML11ValidNmtoken(nvalue) : !XMLChar.isValidNmtoken(nvalue);
+                    seenErr = (isXML11) ? !XML11Char.isXML11ValidNmtoken(nvalue) : !XMLChar.isValidNmtoken(nvalue);
                 }
                 else if (fPatternType == SPECIAL_PATTERN_NAME) {
                     // PATTERN "\\i\\c*"                
-                    seenErr = (isSchema11) ? !XML11Char.isXML11ValidName(nvalue) : !XMLChar.isValidName(nvalue);
+                    seenErr = (isXML11) ? !XML11Char.isXML11ValidName(nvalue) : !XMLChar.isValidName(nvalue);
                 }
                 else if (fPatternType == SPECIAL_PATTERN_NCNAME) {
                     // PATTERN "[\\i-[:]][\\c-[:]]*"
-                    seenErr = (isSchema11) ? !XML11Char.isXML11ValidNCName(nvalue) : !XMLChar.isValidNCName(nvalue);   
+                    seenErr = (isXML11) ? !XML11Char.isXML11ValidNCName(nvalue) : !XMLChar.isValidNCName(nvalue);
                 }
                 if (seenErr) {
                     throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1",
@@ -3127,6 +3130,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public TypeValidatorHelper getTypeValidatorHelper() {
             return TypeValidatorHelper.getInstance(Constants.SCHEMA_VERSION_1_0);
         }
+        
+        public short getDatatypeXMLVersion() {
+            return Constants.XML_VERSION_1_0;
+        }
     };
 
     private boolean fAnonymous = false;
@@ -3202,6 +3209,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         
         public TypeValidatorHelper getTypeValidatorHelper() {
             return fExternal.getTypeValidatorHelper();
+        }
+
+        public short getDatatypeXMLVersion() {
+             return fExternal.getDatatypeXMLVersion();
         }
     }
 
@@ -3776,23 +3787,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, int derivationMethod) {
         return isDOMDerivedFrom(typeNamespaceArg, typeNameArg, derivationMethod);
-    }
-
-    private short convertToPrimitiveKind(short valueType) {
-        /** Primitive datatypes. */
-        if (valueType <= XSConstants.NOTATION_DT) {
-            return valueType;
-        }
-        /** Types derived from string. */
-        if (valueType <= XSConstants.ENTITY_DT) {
-            return XSConstants.STRING_DT;
-        }
-        /** Types derived from decimal. */
-        if (valueType <= XSConstants.POSITIVEINTEGER_DT) {
-            return XSConstants.DECIMAL_DT;
-        }
-        /** Other types. */
-        return valueType;
     }
 
     private void appendEnumString(StringBuffer sb) {

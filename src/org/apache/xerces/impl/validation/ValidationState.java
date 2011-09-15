@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.xs.TypeValidatorHelper;
 import org.apache.xerces.util.SymbolTable;
@@ -56,6 +57,7 @@ public class ValidationState implements ValidationContext {
     private final static Object fNullValue = new Object();
     
     private TypeValidatorHelper fTypeValidatorHelper = null;
+    private short fXMLVersion = Constants.XML_VERSION_1_0;
 
     //
     // public methods
@@ -214,5 +216,14 @@ public class ValidationState implements ValidationContext {
 
     public TypeValidatorHelper getTypeValidatorHelper() {
         return fTypeValidatorHelper;
+    }
+    
+    // Datatype XML Version
+    public void setDatatypeXMLVersion(short xmlVersion) {
+        fXMLVersion = xmlVersion;
+    }
+    
+    public short getDatatypeXMLVersion() {
+        return fXMLVersion;
     }
 }
