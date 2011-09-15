@@ -1451,7 +1451,9 @@ public class XSDHandler {
                         if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1 || !dependenciesCanOccur) {
                             reportSchemaError("s4s-elt-invalid-content.3", new Object [] {componentType}, globalComp);
                         }
-                        // skip it; traverse it later
+                        final SchemaGrammar currSG = fGrammarBucket.getGrammar(currSchemaDoc.fTargetNamespace);
+                        currSchemaDoc.fDefaultOpenContent = fComplexTypeTraverser.traverseOpenContent(globalComp, currSchemaDoc, currSG, true);
+                        DOMUtil.setHidden(globalComp, fHiddenNodes);
                         dependenciesCanOccur = false;
                         continue;
                     }
@@ -1623,23 +1625,6 @@ public class XSDHandler {
                 else if (componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
                     currSG.addAnnotation(fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
                     sawAnnotation = true;
-                }
-                else if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                    if (componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
-                        currSchemaDoc.fDefaultOpenContent = fComplexTypeTraverser.traverseOpenContent(globalComp, currSchemaDoc, currSG, true);
-                    }
-                    // if component is of override type - currently we do not
-                    // attempt to validate <override> Element since it will
-                    // be reflected on schema anyway
-                    //
-                    // REVISIT - is it required to validate Override components
-                    // that do not affect any schema..?
-                    else if (componentType.equals(SchemaSymbols.ELT_OVERRIDE)){
-                        continue;
-                    }
-                    else {
-                        reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
-                    }
                 }
                 else {
                     reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
