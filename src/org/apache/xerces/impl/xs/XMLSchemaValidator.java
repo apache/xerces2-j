@@ -2382,7 +2382,7 @@ public class XMLSchemaValidator
         // EDC rule
         if (isSchema11) {
             if (wildcard != null && fCurrentCM != null) {
-                XSElementDecl elemDecl = fCurrentCM.findMatchingElemDecl(element, fSubGroupHandler);
+                XSElementDecl elemDecl = findLocallyDeclaredType(element, fCurrentCM, fTypeStack[fElementDepth-1].getBaseType());
                 if (elemDecl != null) {
                     final XSTypeDefinition elemType = elemDecl.getTypeDefinition();
                     // types need to be equivalent
@@ -2566,6 +2566,19 @@ public class XMLSchemaValidator
         return augs;
 
     } // handleStartElement(QName,XMLAttributes,boolean)
+
+    private XSElementDecl findLocallyDeclaredType(QName element,
+            XSCMValidator currentCM, XSTypeDefinition baseType) {
+        XSElementDecl elemDecl = currentCM.findMatchingElemDecl(element, fSubGroupHandler);
+        if (elemDecl == null) {
+            if (baseType.getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE &&
+                    baseType != SchemaGrammar.getXSAnyType(fSchemaVersion)) {
+                currentCM = ((XSComplexTypeDecl) baseType).getContentModel(fCMBuilder);
+                return findLocallyDeclaredType(element, currentCM, baseType.getBaseType());
+            }
+        }
+        return elemDecl;
+    }
     
     /*
      * Delegate to assertions validator startElement handler.
