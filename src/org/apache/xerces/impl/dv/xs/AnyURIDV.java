@@ -46,21 +46,38 @@ public class AnyURIDV extends TypeValidator {
     // before we return string we have to make sure it is correct URI as per spec.
     // for some types (string and derived), they just return the string itself
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        // check 3.2.17.c0 must: URI (rfc 2396/2723)
-        try {
-            if( content.length() != 0 ) {
-                // encode special characters using XLink 5.4 algorithm
-                final String encoded = encode(content);
-                // Support for relative URLs
-                // According to Java 1.1: URLs may also be specified with a
-                // String and the URL object that it is related to.
-                new URI(BASE_URI, encoded );
+        // According to XML Schema 1.1
+        //
+        // 3.3.17.1 Value Space
+        //
+        // The value space of anyURI is the set of finite-length sequences of
+        // zero or more characters (as defined in [XML]) that match the Char
+        // production from [XML].
+        // 
+        // 3.3.17.2 Lexical Mapping
+        //
+        // The lexical space of anyURI is the set of finite-length sequences
+        // of zero or more characters (as defined in [XML]) that match the
+        // Char production from [XML].
+        
+        // Only for XML Schema 1.0
+        if (!context.getTypeValidatorHelper().isXMLSchema11()) {
+            // check 3.2.17.c0 must: URI (rfc 2396/2723)
+            try {
+                if( content.length() != 0 ) {
+                    // encode special characters using XLink 5.4 algorithm
+                    final String encoded = encode(content);
+                    // Support for relative URLs
+                    // According to Java 1.1: URLs may also be specified with a
+                    // String and the URL object that it is related to.
+                    new URI(BASE_URI, encoded );new URI(content);
+                }
+            } catch (URI.MalformedURIException ex) {
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "anyURI"});
             }
-        } catch (URI.MalformedURIException ex) {
-            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "anyURI"});
         }
 
-        // REVISIT: do we need to return the new URI object?
+        // REVISIT - XML Schema 1.0: do we need to return the new URI object?
         return content;
     }
 
