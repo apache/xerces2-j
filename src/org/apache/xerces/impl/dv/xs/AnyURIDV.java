@@ -70,7 +70,7 @@ public class AnyURIDV extends TypeValidator {
                     // Support for relative URLs
                     // According to Java 1.1: URLs may also be specified with a
                     // String and the URL object that it is related to.
-                    new URI(BASE_URI, encoded );new URI(content);
+                    new URI(BASE_URI, encoded );
                 }
             } catch (URI.MalformedURIException ex) {
                 throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "anyURI"});
