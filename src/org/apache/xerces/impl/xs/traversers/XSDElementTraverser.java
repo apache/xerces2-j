@@ -544,7 +544,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // Step 5: check 3.3.6 constraints
         // check for NOTATION type
-        checkNotationType(nameAtt, elementType, elmDecl);
+        // Only for XML Schema 1.0
+        if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
+            checkNotationType(nameAtt, elementType, elmDecl);
+        }
         
         // e-props-correct
         

@@ -979,7 +979,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             } else {
                 maxInclusiveAnnotation = facets.maxInclusiveAnnotation;
                 try {
-                    fMaxInclusive = fBase.getActualValue(facets.maxInclusive, context, tempInfo, true);
+                    fMaxInclusive = fBase.getActualValue(facets.maxInclusive, context, tempInfo, true, false);
                     fFacetsDefined |= FACET_MAXINCLUSIVE;
                     if ((fixedFacet & FACET_MAXINCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXINCLUSIVE;
@@ -1015,7 +1015,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             } else {
                 maxExclusiveAnnotation = facets.maxExclusiveAnnotation;
                 try {
-                    fMaxExclusive = fBase.getActualValue(facets.maxExclusive, context, tempInfo, true);
+                    fMaxExclusive = fBase.getActualValue(facets.maxExclusive, context, tempInfo, true, false);
                     fFacetsDefined |= FACET_MAXEXCLUSIVE;
                     if ((fixedFacet & FACET_MAXEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXEXCLUSIVE;
@@ -1062,7 +1062,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             } else {
                 minExclusiveAnnotation = facets.minExclusiveAnnotation;
                 try {
-                    fMinExclusive = fBase.getActualValue(facets.minExclusive, context, tempInfo, true);
+                    fMinExclusive = fBase.getActualValue(facets.minExclusive, context, tempInfo, true, false);
                     fFacetsDefined |= FACET_MINEXCLUSIVE;
                     if ((fixedFacet & FACET_MINEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MINEXCLUSIVE;
@@ -1108,7 +1108,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             } else {
                 minInclusiveAnnotation = facets.minInclusiveAnnotation;
                 try {
-                    fMinInclusive = fBase.getActualValue(facets.minInclusive, context, tempInfo, true);
+                    fMinInclusive = fBase.getActualValue(facets.minInclusive, context, tempInfo, true, false);
                     fFacetsDefined |= FACET_MININCLUSIVE;
                     if ((fixedFacet & FACET_MININCLUSIVE) != 0)
                         fFixedFacet |= FACET_MININCLUSIVE;
@@ -1743,7 +1743,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
-        Object ob = getActualValue(content, context, validatedInfo, needNormalize);
+        Object ob = getActualValue(content, context, validatedInfo, needNormalize, false);
 
         validate(context, validatedInfo);
 
@@ -1753,13 +1753,18 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     protected ValidatedInfo getActualEnumValue(String lexical, ValidationContext ctx, ValidatedInfo info)
     throws InvalidDatatypeValueException {
-        return fBase.validateWithInfo(lexical, ctx, info);
+        return fBase.validateWithInfo(lexical, ctx, info, true);
     }
 
     /**
      * validate a value, and return the compiled form
      */
     public ValidatedInfo validateWithInfo(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
+        return validateWithInfo(content, context, validatedInfo, false);
+    }
+    
+    private ValidatedInfo validateWithInfo(String content, ValidationContext context,
+            ValidatedInfo validatedInfo, boolean enumerationValidation) throws InvalidDatatypeValueException {
 
         if (context == null)
             context = fEmptyContext;
@@ -1771,7 +1776,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
-        getActualValue(content, context, validatedInfo, needNormalize);
+        getActualValue(content, context, validatedInfo, needNormalize, enumerationValidation);
 
         validate(context, validatedInfo);
 
@@ -1794,7 +1799,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
-        Object ob = getActualValue(content, context, validatedInfo, needNormalize);
+        Object ob = getActualValue(content, context, validatedInfo, needNormalize, false);
 
         validate(context, validatedInfo);
 
@@ -2019,7 +2024,8 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     //we can still return object for internal use.
     private Object getActualValue(Object content, ValidationContext context,
-            ValidatedInfo validatedInfo, boolean needNormalize)
+            ValidatedInfo validatedInfo, boolean needNormalize,
+            boolean enumerationValidation)
     throws InvalidDatatypeValueException{        
         String nvalue;
         if (needNormalize) {
@@ -2067,7 +2073,19 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 }
             }
 
-            validatedInfo.normalizedValue = nvalue;            
+            validatedInfo.normalizedValue = nvalue;
+            
+            // XML Schema 1.1
+            // xs:Notation cannot be used directly to validate values
+            // without enumeration facet - exception is enumeration values
+            if (context.getTypeValidatorHelper().isXMLSchema11()) {
+                if (fValidationDV == DV_NOTATION &&
+                    (getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0 &&
+                    !enumerationValidation) {
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.4",
+                            new Object[]{fTypeName, content});
+                }
+            }
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
             validatedInfo.actualValue = avalue;
             validatedInfo.actualValueType = fBuiltInKind;
@@ -2092,7 +2110,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 // so we take two steps to get the actual value:
                 // 1. fItemType.getActualValue()
                 // 2. fItemType.chekcFacets()
-                avalue[i] = fItemType.getActualValue(parsedList.nextToken(), context, validatedInfo, false);
+                avalue[i] = fItemType.getActualValue(parsedList.nextToken(), context, validatedInfo, false, enumerationValidation);
                 if (context.needFacetChecking() &&
                         (fItemType.fFacetsDefined != 0 && fItemType.fFacetsDefined != FACET_WHITESPACE)) {
                     fItemType.checkFacets(validatedInfo, context);
@@ -2124,7 +2142,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                     // so we take two steps to get the actual value:
                     // 1. fMemberType[i].getActualValue()
                     // 2. fMemberType[i].chekcFacets()
-                    Object aValue = fMemberTypes[i].getActualValue(_content, context, validatedInfo, true);
+                    Object aValue = fMemberTypes[i].getActualValue(_content, context, validatedInfo, true, enumerationValidation);
                     if (context.needFacetChecking() &&
                             (fMemberTypes[i].fFacetsDefined != 0 && fMemberTypes[i].fFacetsDefined != FACET_WHITESPACE)) {
                         fMemberTypes[i].checkFacets(validatedInfo, context);

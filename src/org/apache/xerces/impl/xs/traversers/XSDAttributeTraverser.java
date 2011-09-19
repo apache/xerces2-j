@@ -426,7 +426,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         
         // Step 5: check 3.2.6 constraints
         // check for NOTATION type
-        checkNotationType(nameAtt, attrType, attrDecl);
+        // Only for XML Schema 1.0
+        if (fSchemaHandler.fSchemaVersion < Constants.SCHEMA_VERSION_1_1) {
+            checkNotationType(nameAtt, attrType, attrDecl);
+        }
         
         // 6 If the targetNamespace attribute is present then all of the following must be true:         
         if (targetNsAtt != null) {
