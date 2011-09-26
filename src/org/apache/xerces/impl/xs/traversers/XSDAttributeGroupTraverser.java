@@ -16,7 +16,6 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
