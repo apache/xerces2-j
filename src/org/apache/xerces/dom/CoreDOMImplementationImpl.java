@@ -395,7 +395,7 @@ public class CoreDOMImplementationImpl
 		if (schemaType != null
 			&& schemaType.equals("http://www.w3.org/TR/REC-xml")) {
 			return new DOMParserImpl(
-				"org.apache.xerces.parsers.DTDConfiguration",
+				"org.apache.xerces.parsers.XML11DTDConfiguration",
 				schemaType);
 		}
 		else {
