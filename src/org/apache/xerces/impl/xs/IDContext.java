@@ -19,9 +19,9 @@ package org.apache.xerces.impl.xs;
 
 
 /**
- * @xerces.internal
- * 
  * XML Schema 1.1 - ID value handling
+ * 
+ * @xerces.internal
  * 
  * @version $Id$
  */
