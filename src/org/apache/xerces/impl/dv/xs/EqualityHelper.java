@@ -24,6 +24,8 @@ import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSConstants;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class EqualityHelper {

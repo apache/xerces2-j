@@ -18,6 +18,8 @@
 package org.apache.xerces.impl.xpath.regex;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 final class REConstants {

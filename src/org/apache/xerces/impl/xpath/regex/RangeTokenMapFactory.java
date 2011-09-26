@@ -20,6 +20,8 @@ package org.apache.xerces.impl.xpath.regex;
 import org.apache.xerces.impl.Constants;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public final class RangeTokenMapFactory {

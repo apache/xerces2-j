@@ -20,6 +20,8 @@ package org.apache.xerces.impl.xpath.regex;
 import java.util.HashMap;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 final class XMLTokenMap implements RangeTokenMap {
