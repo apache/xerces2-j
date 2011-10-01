@@ -58,7 +58,7 @@
   <q>How can I use JAXP 1.4 on JDK 1.4 and above?</q>
   <a>
    <p>
-    Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">Endorsed Standards Override Mechanism</jump>
+    Use the <jump href="http://download.oracle.com/javase/1.4.2/docs/guide/standards/">Endorsed Standards Override Mechanism</jump>
     to specify xml-apis.jar and xercesImpl.jar. This will override the version of JAXP in the JDK. A more complete 
     description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100EF">here</jump>.
    </p>
