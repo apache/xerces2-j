@@ -206,7 +206,7 @@ serializer.serialize(document);</source>
    <faq title="Using DOM Level 3 with JDK 1.4 and higher">
     <q>How do I run DOM Level 3 applications under JDK 1.4 and higher?</q>
     <a>    <anchor name="dom3-run"/>
-    <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
+    <p>Use the <jump href="http://download.oracle.com/javase/1.4.2/docs/guide/standards/">
     Endorsed Standards Override Mechanism</jump> to specify xercesImpl.jar and xml-apis.jar.
     A more complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100D6">here</jump>.
     </p>
