@@ -47,10 +47,10 @@
   </p>
   <p>
    If you do not already have a JDK already on your computer download
-   one from Sun&apos;s Java website: 
-   <jump href="http://java.sun.com">http://java.sun.com</jump> or from 
-   IBM&apos;s website
-   <jump href="http://www.ibm.com/developer/java/">http://www.ibm.com/developer/java/</jump>.
+   one from Oracle&apos;s Java website: 
+   <jump href="http://www.oracle.com/technetwork/java/index.html">http://www.oracle.com/technetwork/java/index.html</jump>
+   or from IBM&apos;s website
+   <jump href="http://www.ibm.com/developerworks/java/jdk/">http://www.ibm.com/developerworks/java/jdk/</jump>.
    The sample applications described in the following pages support 
    Java 1.x (e.g. 1.1.8, etc) and/or Java 2 (e.g. 1.2.2, 1.3, etc).
    The UI samples are written using Swing and require Java 2 in order
