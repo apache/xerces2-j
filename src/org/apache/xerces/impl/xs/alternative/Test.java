@@ -17,14 +17,19 @@
 
 package org.apache.xerces.impl.xs.alternative;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.XMLConstants;
 
 import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
+import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
@@ -102,11 +107,11 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
     
     /** Evaluate the test expression with respect to the specified element and its attributes */
-    public boolean evaluateTest(QName element, XMLAttributes attributes) {        
+    public boolean evaluateTest(QName element, XMLAttributes attributes, NamespaceContext instanceNamespaceContext) {        
         if (fXPath != null) {
             return fXPath.evaluateTest(element, attributes);
         } else if (fXPathPsychoPath != null) {
-            return evaluateTestWithPsychoPathXPathEngine(element, attributes);  
+            return evaluateTestWithPsychoPathXPathEngine(element, attributes, instanceNamespaceContext);  
         }
         else {
             return false;
@@ -120,7 +125,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     /*
      * Evaluate the XPath "test" expression on an XDM instance, for CTA evaluation. Uses PsychoPath XPath 2.0 engine for the evaluation. 
      */
-    private boolean evaluateTestWithPsychoPathXPathEngine(QName element, XMLAttributes attributes) {
+    private boolean evaluateTestWithPsychoPathXPathEngine(QName element, XMLAttributes attributes, NamespaceContext instanceNamespaceContext) {
         
         boolean evaluationResult = false;
 
@@ -134,6 +139,18 @@ public class Test extends AbstractPsychoPathXPath2Impl {
                 attrNode.setNodeValue(attributes.getValue(attrIndx));
                 elem.setAttributeNode(attrNode);
             }
+
+            // add in-scope namespaces on the document tree
+            Enumeration currPrefixes = instanceNamespaceContext.getAllPrefixes();
+            while (currPrefixes.hasMoreElements()) {
+                String prefix = (String)currPrefixes.nextElement();
+                String nsUri = instanceNamespaceContext.getURI(prefix);
+                if (!(XMLConstants.XML_NS_PREFIX.equals(prefix) || XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))) {
+                   String attrName = (prefix!=null && !SchemaSymbols.EMPTY_STRING.equals(prefix)) ? XMLConstants.XMLNS_ATTRIBUTE+":"+prefix : XMLConstants.XMLNS_ATTRIBUTE;  
+                   elem.setAttribute(attrName, nsUri);  
+                }
+            } 
+            
             document.appendChild(elem);
 
             // construct parameter values for psychopath xpath processor

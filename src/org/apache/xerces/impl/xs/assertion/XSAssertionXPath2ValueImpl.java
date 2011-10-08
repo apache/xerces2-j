@@ -35,7 +35,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
-import org.eclipse.wst.xml.xpath2.processor.PsychoPathTypeHelper;
+import org.eclipse.wst.xml.xpath2.processor.PsychoPathXPathTypeHelper;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyAtomicType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.SchemaTypeValueFactory;
@@ -263,11 +263,11 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
             // the below 'if else' clauses are written to process few special cases handling few of schema types within PsychoPath XPath engine
             final String elementTypeName = elementType.getName();
             if ("dayTimeDuration".equals(elementTypeName)) {
-                typeCode = PsychoPathTypeHelper.DAYTIMEDURATION_DT;
+                typeCode = PsychoPathXPathTypeHelper.DAYTIMEDURATION_DT;
                 isxsd11Type = true;
             }
             else if ("yearMonthDuration".equals(elementTypeName)) {
-                typeCode = PsychoPathTypeHelper.YEARMONTHDURATION_DT;
+                typeCode = PsychoPathXPathTypeHelper.YEARMONTHDURATION_DT;
                 isxsd11Type = true;
             }
 

@@ -422,6 +422,8 @@ public class XMLSchemaValidator
     private IDContext fIDContext = null;
     
     private String fDatatypeXMLVersion = null;
+    
+    private NamespaceContext fNamespaceContext = null;
 
     /**
      * A wrapper of the standard error reporter. We'll store all schema errors
@@ -774,6 +776,8 @@ public class XMLSchemaValidator
         if (fDocumentHandler != null) {
             fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
         }
+        
+        fNamespaceContext = namespaceContext;
 
     } // startDocument(XMLLocator,String)
 
@@ -2246,7 +2250,7 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-           fTypeAlternative = fTypeAlternativeValidator.getTypeAlternative(fCurrentElemDecl, element, attributes, fInheritableAttrList);           
+           fTypeAlternative = fTypeAlternativeValidator.getTypeAlternative(fCurrentElemDecl, element, attributes, fInheritableAttrList, fNamespaceContext);           
            if (fTypeAlternative != null) {
                fCurrentType = fTypeAlternative.getTypeDefinition();
            }

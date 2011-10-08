@@ -41,6 +41,7 @@ public final class SchemaSymbols {
     public static final String XSI_NONAMESPACESCHEMALOCATION = "noNamespaceSchemaLocation".intern();
     public static final String XSI_TYPE                      = "type".intern();
     public static final String XSI_NIL                       = "nil".intern();
+    public static final String EMPTY_STRING                  = "".intern(); 
 
     // schema namespace
     public static final String URI_SCHEMAFORSCHEMA           = "http://www.w3.org/2001/XMLSchema".intern();

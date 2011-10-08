@@ -51,9 +51,7 @@ import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public class XSTypeHelper {
-    
-    private static final String EMPTY_STRING = "".intern();    
+public class XSTypeHelper { 
     
     /*
      * Checks if the two schema type components are identical.
@@ -141,10 +139,38 @@ public class XSTypeHelper {
     
     
     /*
-     * Validate a QName value (it should be in correct lexical form, and it's prefix must be declared), and report
-     * errors as found.
+     * Validate a QName value (check correct lexical form, and if the prefix is declared), and report errors if there.
      */
     public static void validateQNameValue(String qNameStr, NamespaceContext namespaceContext, XMLErrorReporter errorReporter) {
+        
+        String[] parsedQname = parseQnameString(qNameStr);
+        String prefix = parsedQname[0]; 
+        String localpart = parsedQname[1];
+        
+        // both prefix (if any) and localpart must be valid NCName
+        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix)) {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1", new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
+        }
+
+        if(!XMLChar.isValidNCName(localpart)) {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1", new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
+        }
+
+        // resove prefix to a uri, report an error if failed
+        String uri = namespaceContext.getURI(prefix.intern());
+        if (prefix.length() > 0 && uri == null) {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "UndeclaredPrefix", new Object[] {qNameStr, prefix}, XMLErrorReporter.SEVERITY_ERROR);
+        }
+        
+    } // validateQNameValue
+    
+    
+    /*
+     * Parse QName string value into prefix and local-name pairs.
+     */
+    private static String[] parseQnameString(String qNameStr) {
+        
+        String[] parsedQName = new String[2];
         
         String prefix, localpart;
         int colonptr = qNameStr.indexOf(':');
@@ -152,29 +178,15 @@ public class XSTypeHelper {
             prefix = qNameStr.substring(0, colonptr);
             localpart = qNameStr.substring(colonptr + 1);
         } else {
-            prefix = EMPTY_STRING;
+            prefix = SchemaSymbols.EMPTY_STRING;
             localpart = qNameStr;
         }
+        parsedQName[0] = prefix;
+        parsedQName[1] = localpart;
         
-        // both prefix (if any) and localpart must be valid NCName
-        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix)) {
-            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1",
-                                      new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
-        }
-
-        if(!XMLChar.isValidNCName(localpart)) {
-            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1",
-                                      new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
-        }
-
-        // resove prefix to a uri, report an error if failed
-        String uri = namespaceContext.getURI(prefix.intern());
-        if (prefix.length() > 0 && uri == null) {
-            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "UndeclaredPrefix",
-                                      new Object[] {qNameStr, prefix}, XMLErrorReporter.SEVERITY_ERROR);
-        }
+        return parsedQName; 
         
-    } // validateQNameValue
+    } // parseQnameString 
     
     
     /*

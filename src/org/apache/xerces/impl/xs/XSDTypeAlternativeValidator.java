@@ -23,6 +23,7 @@ import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xs.AttributePSVI;
@@ -52,7 +53,7 @@ public class XSDTypeAlternativeValidator {
     /*
      * Determine the schema type applicable (represented as XSTypeAlternative component) for an element declaration, using type alternative information.
      */
-    public XSTypeAlternative getTypeAlternative(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes, Vector inheritableAttrList) {
+    public XSTypeAlternative getTypeAlternative(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes, Vector inheritableAttrList, NamespaceContext instanceNamespaceContext) {
         
         XSTypeAlternative selectedTypeAlternative = null; 
         
@@ -62,7 +63,7 @@ public class XSDTypeAlternativeValidator {
             XMLAttributes ctaAttributes = getAttributesForCTA(attributes, inheritableAttrList);
             for (int typeAltIdx = 0; typeAltIdx < typeAlternatives.length; typeAltIdx++) {
                 Test ctaTest = typeAlternatives[typeAltIdx].getTest();
-                if (ctaTest != null && ctaTest.evaluateTest(element, ctaAttributes)) {
+                if (ctaTest != null && ctaTest.evaluateTest(element, ctaAttributes, instanceNamespaceContext)) {
                     selectedTypeAlternative = typeAlternatives[typeAltIdx]; 
                     break;
                 }
