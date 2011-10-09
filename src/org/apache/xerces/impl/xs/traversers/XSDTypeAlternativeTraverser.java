@@ -17,10 +17,14 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xpath.XPathException;
+import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -37,6 +41,9 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.eclipse.wst.xml.xpath2.processor.JFlexCupParser;
+import org.eclipse.wst.xml.xpath2.processor.StaticChecker;
+import org.eclipse.wst.xml.xpath2.processor.StaticError;
+import org.eclipse.wst.xml.xpath2.processor.StaticNameResolver;
 import org.eclipse.wst.xml.xpath2.processor.XPathParser;
 import org.eclipse.wst.xml.xpath2.processor.XPathParserException;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
@@ -57,6 +64,7 @@ import org.w3c.dom.Element;
  * @xerces.internal
  * 
  * @author Hiranya Jayathilaka, University of Moratuwa
+ * @author Mukul Gandhi IBM
  * @version $Id$
  */
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
@@ -64,6 +72,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
     private static final XSSimpleType fErrorType;    
     private boolean fIsFullXPathModeForCTA;
     private String[] fctaXPathModes = {"cta-subset", "cta-full"};
+    private AbstractPsychoPathXPath2Impl abstractPsychoPathInst = new AbstractPsychoPathXPath2Impl();
     
     static {
         SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_1);
@@ -196,6 +205,10 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                     // if full XPath 2.0 support is enabled for CTA, use PsychoPath XPath 2.0 engine for XPath evaluation
                     XPathParser xpp = new JFlexCupParser();
                     XPath xp = xpp.parse("boolean(" + testStr + ")");
+                    Map psychoPathParams = new HashMap();
+                    psychoPathParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, schemaDoc.fNamespaceSupport);
+                    StaticChecker name_check = new StaticNameResolver(abstractPsychoPathInst.initXPath2DynamicContext(null, null, psychoPathParams));
+                    name_check.check(xp);
                     testExpr = new Test(xp, testStr, typeAlternative, schemaDoc.fNamespaceSupport);
                 }
                 else {
@@ -212,6 +225,10 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                 // if XPath expression couldn't compile, create a "test" without an expression
                 testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
                 reportSchemaError("c-cta-xpath", new Object[] {testStr, fctaXPathModes[1]}, altElement);                
+            } catch (StaticError serr) {
+                // if XPath expression couldn't compile, and there's a static error in XPath expression, create a "test" without an expression
+                testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
+                reportSchemaError("c-cta-xpath-serr", new Object[] {testStr, fctaXPathModes[1], serr.code()}, altElement);
             }            
             typeAlternative.setTest(testExpr);
         }

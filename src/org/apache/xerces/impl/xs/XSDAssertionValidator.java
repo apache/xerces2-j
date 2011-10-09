@@ -107,7 +107,7 @@ public class XSDAssertionValidator {
             }
 
             Map assertProcessorParams = new HashMap();
-            assertProcessorParams.put("XPATH2_NS_CONTEXT", xpathNamespaceContext);
+            assertProcessorParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, xpathNamespaceContext);
             // initialize the assertions processor
             initializeAssertProcessor(assertProcessorParams);
         }

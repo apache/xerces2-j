@@ -139,7 +139,7 @@ public class XSTypeHelper {
     
     
     /*
-     * Validate a QName value (check correct lexical form, and if the prefix is declared), and report errors if there.
+     * Validate a QName value (check lexical form for correctness, and if the prefix is declared), and report errors if there are any.
      */
     public static void validateQNameValue(String qNameStr, NamespaceContext namespaceContext, XMLErrorReporter errorReporter) {
         
@@ -166,7 +166,7 @@ public class XSTypeHelper {
     
     
     /*
-     * Parse QName string value into prefix and local-name pairs.
+     * Parse a QName string value into prefix and local-name pairs.
      */
     private static String[] parseQnameString(String qNameStr) {
         

@@ -25,6 +25,7 @@ import javax.xml.XMLConstants;
 
 import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIDocumentImpl;
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -155,7 +156,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
 
             // construct parameter values for psychopath xpath processor
             Map psychoPathParams = new HashMap();
-            psychoPathParams.put("XPATH2_NS_CONTEXT", fXPath2NamespaceContext);
+            psychoPathParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, fXPath2NamespaceContext);
             initXPath2DynamicContext(null, document, psychoPathParams);
             if (fTypeAlternative.fXPathDefaultNamespace != null) {
                 addNamespaceBindingToXPath2DynamicContext(null, fTypeAlternative.fXPathDefaultNamespace);

@@ -20,6 +20,9 @@ package org.apache.xerces.impl.xs;
 import java.util.Enumeration;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
+
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.util.XSTypeHelper;
@@ -60,19 +63,21 @@ public class AbstractPsychoPathXPath2Impl {
     private Document fDomDoc = null;
     
     /*
-     * Initialize the PsychoPath engine XPath 2.0 dynamic context.
+     * Initialize the PsychoPath engine XPath 2.0 dynamic context. This also initializes the XPath engine's static
+     * context, since dynamic context is inherited from the static context.
      */
-    protected DynamicContext initXPath2DynamicContext(XSModel schema, Document document, Map psychoPathParams) {
+    public DynamicContext initXPath2DynamicContext(XSModel schema, Document document, Map psychoPathParams) {
         
         fXpath2DynamicContext = new DefaultDynamicContext(schema, document);        
         
         // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document
-        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get("XPATH2_NS_CONTEXT");
+        NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get(Constants.XPATH2_NAMESPACE_CONTEXT);
         Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
         while (currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
             addNamespaceBindingToXPath2DynamicContext(prefix, xpath2NamespaceContext.getURI(prefix));
-        }        
+        }
+        addNamespaceBindingToXPath2DynamicContext(XMLConstants.XML_NS_PREFIX, XMLConstants.XML_NS_URI);
         fXpath2DynamicContext.add_function_library(new FnFunctionLibrary());
         fXpath2DynamicContext.add_function_library(new XSCtrLibrary());        
         fDomDoc = document;
