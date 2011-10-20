@@ -108,11 +108,11 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     }
     
     /** Evaluate the test expression with respect to the specified element and its attributes */
-    public boolean evaluateTest(QName element, XMLAttributes attributes, NamespaceContext instanceNamespaceContext) {        
+    public boolean evaluateTest(QName element, XMLAttributes attributes, NamespaceContext instanceNamespaceContext, String expandedSystemId) {        
         if (fXPath != null) {
             return fXPath.evaluateTest(element, attributes);
         } else if (fXPathPsychoPath != null) {
-            return evaluateTestWithPsychoPathXPathEngine(element, attributes, instanceNamespaceContext);  
+            return evaluateTestWithPsychoPathXPathEngine(element, attributes, instanceNamespaceContext, expandedSystemId);  
         }
         else {
             return false;
@@ -126,7 +126,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
     /*
      * Evaluate the XPath "test" expression on an XDM instance, for CTA evaluation. Uses PsychoPath XPath 2.0 engine for the evaluation. 
      */
-    private boolean evaluateTestWithPsychoPathXPathEngine(QName element, XMLAttributes attributes, NamespaceContext instanceNamespaceContext) {
+    private boolean evaluateTestWithPsychoPathXPathEngine(QName element, XMLAttributes attributes, NamespaceContext instanceNamespaceContext, String expandedSystemId) {
         
         boolean evaluationResult = false;
 
@@ -134,6 +134,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
             // an untyped PSVI DOM tree (consisting only of the top most element node and it's attributes) is constructed,
             // to provide to PsychoPath XPath engine for evaluation.
             Document document = new PSVIDocumentImpl();
+            document.setDocumentURI(expandedSystemId); // an approximation (the URI of the parent document) of the document URI for this <alternative>, document tree
             Element elem = document.createElementNS(element.uri, element.rawname);
             for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
                 PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)document, attributes.getURI(attrIndx), attributes.getQName(attrIndx));

@@ -2250,7 +2250,7 @@ public class XMLSchemaValidator
 
         //process type alternatives
         if (fTypeAlternativesChecking && fCurrentElemDecl != null) {
-           fTypeAlternative = fTypeAlternativeValidator.getTypeAlternative(fCurrentElemDecl, element, attributes, fInheritableAttrList, fNamespaceContext);           
+           fTypeAlternative = fTypeAlternativeValidator.getTypeAlternative(fCurrentElemDecl, element, attributes, fInheritableAttrList, fNamespaceContext, fLocator.getExpandedSystemId());           
            if (fTypeAlternative != null) {
                fCurrentType = fTypeAlternative.getTypeDefinition();
            }

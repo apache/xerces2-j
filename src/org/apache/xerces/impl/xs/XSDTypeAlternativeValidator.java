@@ -53,7 +53,7 @@ public class XSDTypeAlternativeValidator {
     /*
      * Determine the schema type applicable (represented as XSTypeAlternative component) for an element declaration, using type alternative information.
      */
-    public XSTypeAlternative getTypeAlternative(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes, Vector inheritableAttrList, NamespaceContext instanceNamespaceContext) {
+    public XSTypeAlternative getTypeAlternative(XSElementDecl currentElemDecl, QName element, XMLAttributes attributes, Vector inheritableAttrList, NamespaceContext instanceNamespaceContext, String expandedSystemId) {
         
         XSTypeAlternative selectedTypeAlternative = null; 
         
@@ -63,7 +63,7 @@ public class XSDTypeAlternativeValidator {
             XMLAttributes ctaAttributes = getAttributesForCTA(attributes, inheritableAttrList);
             for (int typeAltIdx = 0; typeAltIdx < typeAlternatives.length; typeAltIdx++) {
                 Test ctaTest = typeAlternatives[typeAltIdx].getTest();
-                if (ctaTest != null && ctaTest.evaluateTest(element, ctaAttributes, instanceNamespaceContext)) {
+                if (ctaTest != null && ctaTest.evaluateTest(element, ctaAttributes, instanceNamespaceContext, expandedSystemId)) {
                     selectedTypeAlternative = typeAlternatives[typeAltIdx]; 
                     break;
                 }
