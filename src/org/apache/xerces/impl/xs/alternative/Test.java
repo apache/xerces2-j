@@ -33,6 +33,7 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.eclipse.wst.xml.xpath2.processor.DynamicContext;
 import org.eclipse.wst.xml.xpath2.processor.ast.XPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -158,7 +159,8 @@ public class Test extends AbstractPsychoPathXPath2Impl {
             // construct parameter values for psychopath xpath processor
             Map psychoPathParams = new HashMap();
             psychoPathParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, fXPath2NamespaceContext);
-            initXPath2DynamicContext(null, document, psychoPathParams);
+            DynamicContext xpath2DynamicContext = initXPath2DynamicContext(null, document, psychoPathParams);
+            xpath2DynamicContext.set_base_uri(fTypeAlternative.getBaseURI()); // set base-uri property in XPath2 static context, to the URI of XSD document
             if (fTypeAlternative.fXPathDefaultNamespace != null) {
                 addNamespaceBindingToXPath2DynamicContext(null, fTypeAlternative.fXPathDefaultNamespace);
             }
