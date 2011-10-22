@@ -75,8 +75,8 @@ public class AbstractPsychoPathXPath2Impl {
         
         // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get(Constants.XPATH2_NAMESPACE_CONTEXT);
-        Boolean isCtaAvaluator = (Boolean)psychoPathParams.get(Constants.IS_CTA_EVALUATOR);
-        if (isCtaAvaluator != null && isCtaAvaluator.booleanValue()) {
+        Boolean isCtaEvaluator = (Boolean)psychoPathParams.get(Constants.IS_CTA_EVALUATOR);
+        if (isCtaEvaluator != null && isCtaEvaluator.booleanValue()) {
            // check if the call to this method came from CTA evaluator. needs special treatment for handling namespace context.
            String[] namespaceBindingInfo = xpath2NamespaceContext.getNamespaceBindingInfo();
            List prefixes = getPrefixesXS11CTA(namespaceBindingInfo);
