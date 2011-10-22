@@ -286,6 +286,10 @@ public class NamespaceSupport implements NamespaceContext {
         return false;
     }
     
+    public String[] getNamespaceBindingInfo() {
+       return fNamespace;  
+    }
+    
     protected final class Prefixes implements Enumeration {
         private String[] prefixes;
         private int counter = 0;

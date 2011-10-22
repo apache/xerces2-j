@@ -17,7 +17,9 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -62,6 +64,7 @@ public class AbstractPsychoPathXPath2Impl {
     private DynamicContext fXpath2DynamicContext = null;
     private Document fDomDoc = null;
     
+    
     /*
      * Initialize the PsychoPath engine XPath 2.0 dynamic context. This also initializes the XPath engine's static
      * context, since dynamic context is inherited from the static context.
@@ -72,12 +75,24 @@ public class AbstractPsychoPathXPath2Impl {
         
         // populate the 'PsychoPath XPath 2' static context, with namespace bindings derived from the XML Schema document
         NamespaceSupport xpath2NamespaceContext = (NamespaceSupport) psychoPathParams.get(Constants.XPATH2_NAMESPACE_CONTEXT);
-        Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
-        while (currPrefixes.hasMoreElements()) {
-            String prefix = (String)currPrefixes.nextElement();
-            addNamespaceBindingToXPath2DynamicContext(prefix, xpath2NamespaceContext.getURI(prefix));
+        Boolean isCtaAvaluator = (Boolean)psychoPathParams.get(Constants.IS_CTA_EVALUATOR);
+        if (isCtaAvaluator != null && isCtaAvaluator.booleanValue()) {
+           // check if the call to this method came from CTA evaluator. needs special treatment for handling namespace context.
+           String[] namespaceBindingInfo = xpath2NamespaceContext.getNamespaceBindingInfo();
+           List prefixes = getPrefixesXS11CTA(namespaceBindingInfo);
+           for (int prfxIdx = 0; prfxIdx < prefixes.size(); prfxIdx++) {
+               String prefix = (String)prefixes.get(prfxIdx);
+               addNamespaceBindingToXPath2DynamicContext(prefix, getURIXS11CTA(prefix, namespaceBindingInfo)); 
+           }
         }
-        addNamespaceBindingToXPath2DynamicContext(XMLConstants.XML_NS_PREFIX, XMLConstants.XML_NS_URI);
+        else {
+            Enumeration currPrefixes = xpath2NamespaceContext.getAllPrefixes();
+            while (currPrefixes.hasMoreElements()) {
+                String prefix = (String)currPrefixes.nextElement();
+                addNamespaceBindingToXPath2DynamicContext(prefix, xpath2NamespaceContext.getURI(prefix));
+            }
+            addNamespaceBindingToXPath2DynamicContext(XMLConstants.XML_NS_PREFIX, XMLConstants.XML_NS_URI);
+        }
         fXpath2DynamicContext.add_function_library(new FnFunctionLibrary());
         fXpath2DynamicContext.add_function_library(new XSCtrLibrary());        
         fDomDoc = document;
@@ -159,5 +174,32 @@ public class AbstractPsychoPathXPath2Impl {
         return xpathObject;
         
     } // compileXPathStr
+    
+    
+    /*
+     * Get in-scope namespace prefixes. special handling for CTA.
+     */
+    private List getPrefixesXS11CTA(String[] namespaceBindingInfo) {
+        List prefixes = new ArrayList();
+        for (int prefixIdx = 0; prefixIdx < namespaceBindingInfo.length && namespaceBindingInfo[prefixIdx] != null; prefixIdx += 2) {
+            prefixes.add(namespaceBindingInfo[prefixIdx]);
+        } 
+        return prefixes;
+     } // getPrefixesXS11CTA
+    
+     
+     /*
+      * Get an URI for a particular in-scope namespace prefix. special handling for CTA. 
+      */
+     private String getURIXS11CTA(String prefix, String[] namespaceBindingInfo) {
+         String uri = null;
+         for (int prefixIdx = 0; prefixIdx < namespaceBindingInfo.length && namespaceBindingInfo[prefixIdx] != null; prefixIdx += 2) {
+            if (prefix.equals(namespaceBindingInfo[prefixIdx])) {
+                uri = namespaceBindingInfo[prefixIdx + 1];
+                break;
+            }
+         }
+         return uri;
+     } // getURIXS11CTA
     
 } // class AbstractPsychoPathXPath2Impl

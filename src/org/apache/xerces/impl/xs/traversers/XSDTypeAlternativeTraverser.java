@@ -72,7 +72,6 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
     private static final XSSimpleType fErrorType;    
     private boolean fIsFullXPathModeForCTA;
     private String[] fctaXPathModes = {"cta-subset", "cta-full"};
-    private AbstractPsychoPathXPath2Impl abstractPsychoPathInst = new AbstractPsychoPathXPath2Impl();
     
     static {
         SchemaGrammar grammar = SchemaGrammar.getS4SGrammar(Constants.SCHEMA_VERSION_1_1);
@@ -207,6 +206,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                     XPath xp = xpp.parse("boolean(" + testStr + ")");
                     Map psychoPathParams = new HashMap();
                     psychoPathParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, schemaDoc.fNamespaceSupport);
+                    AbstractPsychoPathXPath2Impl abstractPsychoPathInst = new AbstractPsychoPathXPath2Impl();
                     StaticChecker name_check = new StaticNameResolver(abstractPsychoPathInst.initXPath2DynamicContext(null, null, psychoPathParams));
                     name_check.check(xp);
                     testExpr = new Test(xp, testStr, typeAlternative, schemaDoc.fNamespaceSupport);

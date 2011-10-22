@@ -159,6 +159,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
             // construct parameter values for psychopath xpath processor
             Map psychoPathParams = new HashMap();
             psychoPathParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, fXPath2NamespaceContext);
+            psychoPathParams.put(Constants.IS_CTA_EVALUATOR, Boolean.TRUE);
             DynamicContext xpath2DynamicContext = initXPath2DynamicContext(null, document, psychoPathParams);
             xpath2DynamicContext.set_base_uri(fTypeAlternative.getBaseURI()); // set base-uri property in XPath2 static context, to the URI of XSD document
             if (fTypeAlternative.fXPathDefaultNamespace != null) {

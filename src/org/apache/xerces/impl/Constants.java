@@ -499,6 +499,7 @@ public final class Constants {
     
     // Constants to support PsychoPath XPath engine uses
     public final static String XPATH2_NAMESPACE_CONTEXT = "XPATH2_NS_CONTEXT";
+    public final static String IS_CTA_EVALUATOR = "CTA-EVALUATOR";
     
     // private
     
