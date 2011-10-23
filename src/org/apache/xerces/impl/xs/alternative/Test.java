@@ -23,8 +23,10 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 
+import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIDocumentImpl;
+import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xpath.XPath20;
 import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
@@ -136,7 +138,7 @@ public class Test extends AbstractPsychoPathXPath2Impl {
             // to provide to PsychoPath XPath engine for evaluation.
             Document document = new PSVIDocumentImpl();
             document.setDocumentURI(expandedSystemId); // an approximation (the URI of the parent document) of the document URI for this <alternative>, document tree
-            Element elem = document.createElementNS(element.uri, element.rawname);
+            Element elem = new PSVIElementNSImpl((CoreDocumentImpl) document, element.uri, element.rawname);            
             for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {         
                 PSVIAttrNSImpl attrNode = new PSVIAttrNSImpl((PSVIDocumentImpl)document, attributes.getURI(attrIndx), attributes.getQName(attrIndx));
                 attrNode.setNodeValue(attributes.getValue(attrIndx));
