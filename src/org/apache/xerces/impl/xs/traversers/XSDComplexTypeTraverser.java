@@ -20,8 +20,11 @@ import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.AnyURIDV;
+import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -52,6 +55,7 @@ import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
 /**
@@ -1400,18 +1404,15 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
 
     /*
-     * Find all assertions up in schema type hierarchy, and add them to the list
-     * of assertions to be processed.
+     * Find all assertions up in schema type hierarchy, and add them to the list of assertions to be processed.
      */
     private void addAssertsFromBaseTypes(XSTypeDefinition baseSchemaType) {
         
         if (baseSchemaType != null) {
             if (baseSchemaType instanceof XSComplexTypeDefinition) {
                // if schema type is a 'complex type'
-               XSObjectList assertList = ((XSComplexTypeDefinition) baseSchemaType)
-                                                 .getAssertions();
-               for (int assertLstIdx = 0; assertLstIdx < assertList.size(); 
-                                                                 assertLstIdx++) {
+               XSObjectList assertList = ((XSComplexTypeDefinition) baseSchemaType).getAssertions();
+               for (int assertLstIdx = 0; assertLstIdx < assertList.size(); assertLstIdx++) {
                   // add assertion to the list, only if it's already not present
                   if (!assertExists((XSAssertImpl) assertList.get(assertLstIdx))) {
                      addAssertion((XSAssertImpl) assertList.get(assertLstIdx));
@@ -1420,19 +1421,15 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (baseSchemaType instanceof XSSimpleTypeDefinition) {
                 // if schema type is a 'simple type'
-                XSObjectList facets = ((XSSimpleTypeDefinition) baseSchemaType).
-                                                             getMultiValueFacets();
+                XSObjectList facets = ((XSSimpleTypeDefinition) baseSchemaType).getMultiValueFacets();
                 for (int facetIdx = 0; facetIdx < facets.getLength(); facetIdx++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.
-                                                                     item(facetIdx);
+                    XSMultiValueFacet facet = (XSMultiValueFacet) facets.item(facetIdx);
                     if (facet.getFacetKind() == XSSimpleTypeDefinition.FACET_ASSERT) {
                         Vector assertionFacets = facet.getAsserts();
                         for (int j = 0; j < assertionFacets.size(); j++) {
-                           XSAssertImpl assertImpl = (XSAssertImpl) 
-                                                            assertionFacets.get(j);
+                           XSAssertImpl assertImpl = (XSAssertImpl)assertionFacets.get(j);
                            addAssertion(assertImpl);
-                        }
-                       
+                        }                       
                         // among the facet list, there could be only one
                         // assertion facet (which is multi-valued). break from
                         // the loop.
@@ -1444,10 +1441,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             
             // invoke the method recursively (traverse up the type hierarchy)
             XSTypeDefinition ancestorType = baseSchemaType.getBaseType();
-            if (ancestorType != null && !(ancestorType.getName().equals(
-                "anyType") || ancestorType.derivedFrom(Constants.NS_XMLSCHEMA,
-                "anyAtomicType", XSConstants.DERIVATION_RESTRICTION))) {              
-               addAssertsFromBaseTypes(ancestorType);
+            if (ancestorType != null && !(ancestorType.getName().equals(SchemaSymbols.ATTVAL_ANYTYPE) || 
+                                          ancestorType.derivedFrom(Constants.NS_XMLSCHEMA, SchemaSymbols.ATTVAL_ANYATOMICTYPE, XSConstants.DERIVATION_RESTRICTION))) {              
+                 addAssertsFromBaseTypes(ancestorType);
             }
         }
         
@@ -1694,19 +1690,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private void traverseAsserts(Element assertElement, XSDocumentInfo schemaDoc, SchemaGrammar grammar, XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
 
         Object[] attrValues = fAttrChecker.checkAttributes(assertElement, false, schemaDoc);
-        String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];
-        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
-        if (xpathDefaultNamespace == null) {
-            if (schemaDoc.fXpathDefaultNamespaceIs2PoundDefault) {
-                xpathDefaultNamespace = schemaDoc.fValidationContext.getURI(XMLSymbols.EMPTY_STRING);
-                if (xpathDefaultNamespace != null) {
-                    xpathDefaultNamespace = fSymbolTable.addSymbol(xpathDefaultNamespace);
-                }
-            }
-            else {
-                xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;
-            }
-        }
+        String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];        
 
         if (test != null) {
             // get 'annotation'
@@ -1730,8 +1714,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             } else {
                 String text = DOMUtil.getSyntheticAnnotation(childNode);
                 if (text != null) {
-                    annotation = traverseSyntheticAnnotation(childNode, text,
-                                        attrValues, false, schemaDoc);
+                    annotation = traverseSyntheticAnnotation(childNode, text, attrValues, false, schemaDoc);
                 }
             }
 
@@ -1748,6 +1731,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // create an assertion object            
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations, fSchemaHandler);
             Test testExpr = new Test(new XPath20Assert(test, new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport)), assertImpl);
+            String xpathDefaultNamespace = getXPathDefaultNamespaceForAssert(assertElement, schemaDoc, attrValues);
             assertImpl.setTest(testExpr, assertElement);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
             assertImpl.setXPath2NamespaceContext(new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport));
@@ -1776,13 +1760,66 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         } else {
             // 'test' attribute is mandatory in an assert element
-            reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil
-                    .getLocalName(assertElement) }, assertElement);
+            reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil.getLocalName(assertElement) }, assertElement);
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
     } // traverseAsserts
+    
+    
+    /*
+     * Get effective value of 'xpathDefaultNamespace' for assert.
+     */
+    private String getXPathDefaultNamespaceForAssert(Element assertElement, XSDocumentInfo schemaDoc, Object[] attrValues) {
+        
+        String xpathDefaultNamespace = (String) attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
+        
+        if (xpathDefaultNamespace == null) {
+            if (schemaDoc.fXpathDefaultNamespaceIs2PoundDefault) {
+                xpathDefaultNamespace = schemaDoc.fValidationContext.getURI(XMLSymbols.EMPTY_STRING);
+                if (xpathDefaultNamespace != null) {
+                    xpathDefaultNamespace = fSymbolTable.addSymbol(xpathDefaultNamespace);
+                }
+            }
+            else {
+                xpathDefaultNamespace = schemaDoc.fXpathDefaultNamespace;
+            }
+        }
+        
+        if (xpathDefaultNamespace == null) {
+            // REVISIT ...
+            // attempt to determine value of 'xpathDefaultNamespace' by looking at ancestor xs:schema element. it's possible to
+            // get value of 'xpathDefaultNamespace' from here, for example in case of <include> processing. 
+            Element schemaElementName = assertElement.getOwnerDocument().getDocumentElement();
+            Attr xpathDefNamespaceAttrNode = schemaElementName.getAttributeNode(SchemaSymbols.ATT_XPATH_DEFAULT_NS);
+            if (xpathDefNamespaceAttrNode != null) {
+                xpathDefaultNamespace = xpathDefNamespaceAttrNode.getValue();
+                if (SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS.equals(xpathDefaultNamespace)) {
+                    xpathDefaultNamespace = schemaDoc.fTargetNamespace;
+                } else if (SchemaSymbols.ATTVAL_TWOPOUNDDEFAULTNS.equals(xpathDefaultNamespace)) {
+                    xpathDefaultNamespace = schemaDoc.fValidationContext.getURI(XMLSymbols.EMPTY_STRING);
+                    if (xpathDefaultNamespace != null) {
+                        xpathDefaultNamespace = fSymbolTable.addSymbol((String)xpathDefaultNamespace);
+                    }
+                    attrValues[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS_TWOPOUNDDFLT] = Boolean.TRUE;
+                } else if (!xpathDefaultNamespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)){
+                    // we have found namespace URI here
+                    try {
+                        TypeValidator anyUriDV = new AnyURIDV(); 
+                        anyUriDV.getActualValue(xpathDefaultNamespace, schemaDoc.fValidationContext);
+                        xpathDefaultNamespace = fSymbolTable.addSymbol(xpathDefaultNamespace);
+                    } catch (InvalidDatatypeValueException ide) {                        
+                        reportSchemaError("cvc-datatype-valid.1.2.3", new Object[] {xpathDefaultNamespace, "anyURI | ##defaultNamespace | ##targetNamespace | ##local"}, assertElement);
+                    }
+                }
+            }
+        }
+        
+        return xpathDefaultNamespace;
+        
+    } // getXPathDefaultNamespaceForAssert
+    
 
     /*
      * Generate a name for an anonymous type
