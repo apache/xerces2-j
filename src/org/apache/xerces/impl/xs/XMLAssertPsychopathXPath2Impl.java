@@ -60,11 +60,11 @@ import org.w3c.dom.Element;
 /**
  * Class implementing an XPath interface for XML Schema 1.1 "assertions" evaluation.
  * This class interfaces with the "Eclipse/PsychoPath XPath 2.0" engine for XPath 
- * expression evaluations for XML Schema assertions.
+ * expression evaluations for XSD assertions.
  * 
- * We construct here Xerces PSVI enabled DOM trees (on which PsychoPath XPath 2.0 
- * engine operates) from XNI event calls, for typed XDM instance support. XML Schema 
- * assertions are evaluated on these XPath tree instances in a bottom up fashion.
+ * An instance of this class constructs Xerces PSVI enabled DOM trees (which are in-memory XDM 
+ * representation for PsychoPath XPath 2.0 engine) from XNI event calls. XSD assertions 
+ * are evaluated on these PSVI XDM instances in a bottom up fashion.
  * 
  * @xerces.internal
  * 
@@ -106,6 +106,9 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     
     // failed assertions for an "element information item"
     private XSAssert[] fFailedAssertions = null;
+    
+    // state to save the <assert> root type information, of the current assertion evaluation 
+    private XSTypeDefinition fAsertRootTypeDef = null;
     
     
     /*
@@ -268,12 +271,15 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         initXPathProcessor();
 
         // determine "string value" of XPath2 context variable $value
-        String value = computeStringValueOf$value(fCurrentAssertDomNode, (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI));
+        ElementPSVI elemPsvi = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+        String value = computeStringValueOf$value(fCurrentAssertDomNode, elemPsvi);
 
         // evaluate assertions
         if (assertions instanceof XSObjectList) {
-            // assertions from a "complex type" definition             
-            evaluateAssertionsFromAComplexType(element, assertions, value, augs);            
+            // assertions from a "complex type" definition
+            ElementPSVImpl modifiedRootNodePsvi = savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);
+            evaluateAssertionsFromAComplexType(element, assertions, value, augs);
+            restorePsviInfoForXPathContext(modifiedRootNodePsvi);
         }
         else if (assertions instanceof Vector) {            
             // assertions from a "simple type" definition
@@ -281,6 +287,32 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         }
          
     } // processAllAssertionsOnElement
+    
+
+    /*
+     * Save PSVI information of <assert> root node, and possibly make root node of <assert> in an untyped state.
+     */
+    private ElementPSVImpl savePsviInfoWithUntypingOfAssertRoot(ElementPSVI elemPsvi, boolean isSetXsAny) {
+        ElementPSVImpl assertRootPsvi = new ElementPSVImpl(true, elemPsvi);
+        fAsertRootTypeDef = assertRootPsvi.getTypeDefinition();
+        if (isSetXsAny) {           
+           assertRootPsvi.fTypeDecl = new SchemaGrammar.XSAnyType();
+           ((PSVIElementNSImpl)fCurrentAssertDomNode).setPSVI(assertRootPsvi); 
+        }        
+        return assertRootPsvi; 
+    } // savePsviInfoWithUntypingOfAssertRoot
+    
+    
+    /*
+     * Restore PSVI information for the XPath evaluation context.
+     */
+    private void restorePsviInfoForXPathContext(ElementPSVI elemPsvi) {
+        ElementPSVImpl assertRootPsvi = (ElementPSVImpl)elemPsvi;
+        if (fAsertRootTypeDef != null) {
+           assertRootPsvi.fTypeDecl = fAsertRootTypeDef;
+           ((PSVIElementNSImpl)fCurrentAssertDomNode).setPSVI(assertRootPsvi);
+        }         
+    } // restorePsviInfoForXPathContext
 
     
     /*
@@ -448,9 +480,13 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      */
     private void evaluateAssertionsFromAComplexType(QName element, List assertions, String value, Augmentations augs) throws Exception {
         
+        ElementPSVI elemPsvi = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+        
         if (value != null) {
             // complex type with simple content
+            restorePsviInfoForXPathContext(elemPsvi);
             setXDMTypedValueOf$value(fCurrentAssertDomNode, value, null, null, false, fXpath2DynamicContext);
+            savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);
         } else {
             // complex type with complex content. set xpath context variable $value to an empty sequence.
             fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XSTypeHelper.getXPath2ResultSequence(new ArrayList()));
@@ -481,19 +517,22 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                 else {
                     simpleTypeDefn = (XSSimpleTypeDefinition) xsTypeDefn;  
                 }
-                ElementPSVI elemPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
-                XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition)elemPSVI.getTypeDefinition();
+                XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition)elemPsvi.getTypeDefinition();
                 if (XSTypeHelper.isComplexTypeDerivedFromSTList(complexTypeDef, XSConstants.DERIVATION_EXTENSION)) {
                     // reassign value to simple type instance
                     simpleTypeDefn = (XSSimpleTypeDefinition)complexTypeDef.getBaseType(); 
                 }
                 boolean isTypeDerivedFromList = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
                 boolean isTypeDerivedFromUnion = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
-                evaluateOneAssertionFromSimpleType(element, value, augs, simpleTypeDefn, isTypeDerivedFromList, isTypeDerivedFromUnion, assertImpl, false, null);                
+                restorePsviInfoForXPathContext(elemPsvi);
+                evaluateOneAssertionFromSimpleType(element, value, augs, simpleTypeDefn, isTypeDerivedFromList, isTypeDerivedFromUnion, assertImpl, false, null);
+                savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);
                 // evaluate assertions on itemType of xs:list
                 XSSimpleTypeDefinition listItemType = simpleTypeDefn.getItemType();
                 if (isTypeDerivedFromList && listItemType != null) {
+                    restorePsviInfoForXPathContext(elemPsvi);
                     evaluateAssertsFromItemTypeOfSTList(element, listItemType, value);
+                    savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);;
                 }
             }            
         }       

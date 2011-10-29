@@ -1228,7 +1228,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         return type == fAnyType || type == fAnyType11 || type == fAnyTypeExtended;
     }
 
-    private static class XSAnyType extends XSComplexTypeDecl {
+    public static class XSAnyType extends XSComplexTypeDecl {
         public XSAnyType () {
             fName = SchemaSymbols.ATTVAL_ANYTYPE;
             super.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
