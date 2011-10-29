@@ -108,7 +108,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private XSAssert[] fFailedAssertions = null;
     
     // state to save the <assert> root type information, of the current assertion evaluation 
-    private XSTypeDefinition fAsertRootTypeDef = null;
+    private XSTypeDefinition fAssertRootTypeDef = null;
     
     
     /*
@@ -294,7 +294,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      */
     private ElementPSVImpl savePsviInfoWithUntypingOfAssertRoot(ElementPSVI elemPsvi, boolean isSetXsAny) {
         ElementPSVImpl assertRootPsvi = new ElementPSVImpl(true, elemPsvi);
-        fAsertRootTypeDef = assertRootPsvi.getTypeDefinition();
+        fAssertRootTypeDef = assertRootPsvi.getTypeDefinition();
         if (isSetXsAny) {           
            assertRootPsvi.fTypeDecl = new SchemaGrammar.XSAnyType();
            ((PSVIElementNSImpl)fCurrentAssertDomNode).setPSVI(assertRootPsvi); 
@@ -308,8 +308,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      */
     private void restorePsviInfoForXPathContext(ElementPSVI elemPsvi) {
         ElementPSVImpl assertRootPsvi = (ElementPSVImpl)elemPsvi;
-        if (fAsertRootTypeDef != null) {
-           assertRootPsvi.fTypeDecl = fAsertRootTypeDef;
+        if (fAssertRootTypeDef != null) {
+           assertRootPsvi.fTypeDecl = fAssertRootTypeDef;
            ((PSVIElementNSImpl)fCurrentAssertDomNode).setPSVI(assertRootPsvi);
         }         
     } // restorePsviInfoForXPathContext
