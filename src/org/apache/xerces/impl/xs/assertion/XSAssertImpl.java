@@ -91,7 +91,7 @@ public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAsse
         fTestExpr = expr;        
         // compile the XPath string, and keep compiled representation into this object for later use (this helps us to
         // optimize assertions evaluations).
-        setCompiledExpr(compileXPathStr(expr.toString(), this, fSchemaHandler, schemaContextElem));
+        setCompiledExpr(compileXPathStr(expr.getXPathStr(), this, fSchemaHandler, schemaContextElem));
     }
     
     public void setCompiledExpr(XPath compiledXPathExpr) {
@@ -146,7 +146,7 @@ public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAsse
     }
 
     public String getTestStr() {
-        return fTestExpr.toString();
+        return fTestExpr.getXPathStr();
     }
     
     public XPath getCompiledXPathExpr() {
@@ -226,8 +226,8 @@ public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAsse
         
         boolean returnVal = false;
 
-        String xpathStr = pAssertion.getTest().getXPath().toString();
-        String currXpathStr = this.getTest().getXPath().toString();        
+        String xpathStr = pAssertion.getTest().getXPathStr();
+        String currXpathStr = this.getTest().getXPathStr();        
 
         // if type and the xpath string are same, the asserts are equal
         if (XSTypeHelper.isSchemaTypesIdentical(pAssertion.getTypeDefinition(), fTypeDefinition) && 

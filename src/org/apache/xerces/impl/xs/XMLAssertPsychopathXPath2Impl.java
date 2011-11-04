@@ -718,12 +718,12 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         else {
            if (assertImpl.getAssertKind() == XSConstants.ASSERTION) {
               // error for xs:assert component
-              fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, mesgSuffix});
+              fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPathStr(), typeNameStr, mesgSuffix});
            }
            else {
                // errors for xs:assertion facet
-               fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid", new Object[] {value, assertImpl.getTest().getXPath().toString(), exceptionMesg});
-               fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPath().toString(), typeNameStr, mesgSuffix});  
+               fXmlSchemaValidator.reportSchemaError("cvc-assertions-valid", new Object[] {value, assertImpl.getTest().getXPathStr(), exceptionMesg});
+               fXmlSchemaValidator.reportSchemaError(key, new Object[] {elemNameAnnotation, assertImpl.getTest().getXPathStr(), typeNameStr, mesgSuffix});  
            }
         }
         

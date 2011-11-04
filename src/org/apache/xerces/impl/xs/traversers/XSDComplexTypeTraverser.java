@@ -26,7 +26,6 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.AnyURIDV;
 import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
-import org.apache.xerces.impl.xpath.XPath20Assert;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -1730,7 +1729,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             
             // create an assertion object            
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations, fSchemaHandler);
-            Test testExpr = new Test(new XPath20Assert(test, new SchemaNamespaceSupport(schemaDoc.fNamespaceSupport)), assertImpl);
+            Test testExpr = new Test(test, schemaDoc.fNamespaceSupport, assertImpl);
             String xpathDefaultNamespace = getXPathDefaultNamespaceForAssert(assertElement, schemaDoc, attrValues);
             assertImpl.setTest(testExpr, assertElement);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
