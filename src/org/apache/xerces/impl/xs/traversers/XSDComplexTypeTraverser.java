@@ -1689,9 +1689,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private void traverseAsserts(Element assertElement, XSDocumentInfo schemaDoc, SchemaGrammar grammar, XSComplexTypeDecl enclosingCT) throws ComplexTypeRecoverableError {
 
         Object[] attrValues = fAttrChecker.checkAttributes(assertElement, false, schemaDoc);
-        String test = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];        
+        String testStr = (String) attrValues[XSAttributeChecker.ATTIDX_XPATH];        
 
-        if (test != null) {
+        if (testStr != null) {
             // get 'annotation'
             Element childNode = DOMUtil.getFirstChildElement(assertElement);
             XSAnnotationImpl annotation = null;
@@ -1729,7 +1729,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             
             // create an assertion object            
             XSAssertImpl assertImpl = new XSAssertImpl(enclosingCT, annotations, fSchemaHandler);
-            Test testExpr = new Test(test, schemaDoc.fNamespaceSupport, assertImpl);
+            Test testExpr = new Test(testStr, schemaDoc.fNamespaceSupport, assertImpl);
             String xpathDefaultNamespace = getXPathDefaultNamespaceForAssert(assertElement, schemaDoc, attrValues);
             assertImpl.setTest(testExpr, assertElement);
             assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);

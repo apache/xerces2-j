@@ -467,7 +467,7 @@ abstract class XSDAbstractTraverser {
             // process 'assertion' facet. introduced in XML Schema 1.1
             else if (facet.equals(SchemaSymbols.ELT_ASSERTION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
-                String test = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
+                String testStr = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
                 String xpathDefaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
                 if (xpathDefaultNamespace == null) {
                     if (schemaDoc.fXpathDefaultNamespaceIs2PoundDefault) {
@@ -482,7 +482,7 @@ abstract class XSDAbstractTraverser {
                     }
                 }
                 
-                if (test != null) {                    
+                if (testStr != null) {                    
                     // get 'annotation'
                     Element childNode = DOMUtil.getFirstChildElement(content);
                     XSAnnotationImpl annotation = null;
@@ -519,7 +519,7 @@ abstract class XSDAbstractTraverser {
                     
                     // create an assertion object
                     XSAssertImpl assertImpl = new XSAssertImpl(typeDef, annotations, fSchemaHandler);
-                    Test testExpr = new Test(test, schemaDoc.fNamespaceSupport, assertImpl);                 
+                    Test testExpr = new Test(testStr, schemaDoc.fNamespaceSupport, assertImpl);                 
                     assertImpl.setAssertKind(XSConstants.ASSERTION_FACET);
                     assertImpl.setTest(testExpr, content);
                     assertImpl.setXPathDefaultNamespace(xpathDefaultNamespace);
