@@ -203,7 +203,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                 if (fIsFullXPathModeForCTA) {
                     // if full XPath 2.0 support is enabled for CTA, use PsychoPath XPath 2.0 engine for XPath evaluation
                     XPathParser xpp = new JFlexCupParser();
-                    XPath xp = xpp.parse("boolean(" + testStr + ")");
+                    XPath xp = xpp.parse("boolean(" + testStr + ")", true);
                     Map psychoPathParams = new HashMap();
                     psychoPathParams.put(Constants.XPATH2_NAMESPACE_CONTEXT, schemaDoc.fNamespaceSupport);
                     AbstractPsychoPathXPath2Impl abstractPsychoPathInst = new AbstractPsychoPathXPath2Impl();
@@ -212,7 +212,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                     testExpr = new Test(xp, testStr, typeAlternative, schemaDoc.fNamespaceSupport);
                 }
                 else {
-                    // if XPath subset is enabled for CTA (this is also the default option), use Xerces's native XPath parser for CTA
+                    // if XPath subset is enabled for CTA (this is also the default option), use Xerces native XPath parser for CTA
                     testExpr = new Test(new XPath20(testStr, fSymbolTable, new NamespaceSupport(schemaDoc.fNamespaceSupport)), typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
                 }
             }
@@ -222,9 +222,14 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
                 reportSchemaError("c-cta-xpath", new Object[] {testStr, fctaXPathModes[0]}, altElement);                
             }
             catch(XPathParserException ex) {
-                // if XPath expression couldn't compile, create a "test" without an expression
+                // XPath parser exception. create a "test" without an expression.
                 testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));
-                reportSchemaError("c-cta-xpath", new Object[] {testStr, fctaXPathModes[1]}, altElement);                
+                if (SchemaSymbols.XS11_XPATHEXPR_COMPILE_WRN_MESG_1.equals(ex.getMessage())) {               
+                    fSchemaHandler.reportSchemaWarning("c-cta-xpath-b", new Object[] {testStr, fctaXPathModes[1]}, altElement);
+                }
+                else {
+                    reportSchemaError("c-cta-xpath", new Object[] {testStr, fctaXPathModes[1]}, altElement);
+                }
             } catch (StaticError serr) {
                 // if XPath expression couldn't compile, and there's a static error in XPath expression, create a "test" without an expression
                 testExpr = new Test((XPath20) null, typeAlternative, new NamespaceSupport(schemaDoc.fNamespaceSupport));

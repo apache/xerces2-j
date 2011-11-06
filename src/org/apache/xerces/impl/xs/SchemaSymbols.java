@@ -258,7 +258,7 @@ public final class SchemaSymbols {
     // a placeholder definition used for assertions error messages
     public static final String ASSERT_ERRORMSG_PLACEHOLDER_REGEX = "\\{\\$value\\}";
     
-    // compile error message string when an assert XPath expression starts with tokens '/' or '//'. 
-    public static final String ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1 = "Expression starts with / or //";
+    // warning message string when an assert or, a CTA XPath expression (in full mode) contains tokens '/' or '//' 
+    public static final String XS11_XPATHEXPR_COMPILE_WRN_MESG_1 = "Expression starts with / or //";
 
 }

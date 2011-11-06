@@ -162,8 +162,8 @@ public class AbstractPsychoPathXPath2Impl {
         try {
             xpathObject = xpathParser.parse("boolean(" + xpathStr + ")", true);
         } catch (XPathParserException ex) {
-            // error compiling XPath expression
-            if (SchemaSymbols.ASSERT_XPATHEXPR_COMPILE_ERR_MESG_1.equals(ex.getMessage())) {               
+            // XPath parser exception
+            if (SchemaSymbols.XS11_XPATHEXPR_COMPILE_WRN_MESG_1.equals(ex.getMessage())) {               
                 fSchemaHandler.reportSchemaWarning("cvc-xpath.3.13.4.2b", new Object[] {assertImpl.getTest().getXPathStr(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
             }
             else {               
