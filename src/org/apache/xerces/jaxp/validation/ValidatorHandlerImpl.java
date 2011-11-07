@@ -174,7 +174,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     /** Flag used to track whether XML names and Namespace URIs have been internalized. */
     private boolean fStringsInternalized = false;
     
-    /** Fields for start element, end element and characters. */
+    /** Fields for start element, end element, characters, comments and processing instructions. **/
     private final QName fElementQName = new QName();
     private final QName fAttributeQName = new QName();
     private final XMLAttributesImpl fAttributes = new XMLAttributesImpl();
