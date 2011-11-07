@@ -96,6 +96,10 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     private static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
     
+    /** Property identifier: xml schema version. */
+    private static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+    
     //
     // Data
     //
@@ -145,11 +149,14 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     /** Current element. **/
     private Node fCurrentElement;
     
-    /** Fields for start element, end element and characters. **/
+    /** Fields for start element, end element, characters, comments and processing instructions. **/
     final QName fElementQName = new QName();
     final QName fAttributeQName = new QName();
     final XMLAttributesImpl fAttributes = new XMLAttributesImpl(); 
     final XMLString fTempString = new XMLString();
+    
+    /** Flag indicating whether the schema version is 1.1. */
+    private final boolean fIsXSD11;
     
     public DOMValidatorHelper(XMLSchemaValidatorComponentManager componentManager) {
         fComponentManager = componentManager;
@@ -158,6 +165,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
         fSchemaValidator = (XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
         fSymbolTable = (SymbolTable) fComponentManager.getProperty(SYMBOL_TABLE);        
         fValidationManager = (ValidationManager) fComponentManager.getProperty(VALIDATION_MANAGER);
+        fIsXSD11 = Constants.W3C_XML_SCHEMA11_NS_URI.equals(fComponentManager.getProperty(XML_SCHEMA_VERSION));
     }
     
     /*
@@ -302,19 +310,23 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                 }
                 break;
             case Node.PROCESSING_INSTRUCTION_NODE:
-                /** 
-                 * The validator does nothing with processing instructions so bypass it.
-                 * Send the ProcessingInstruction node directly to the result builder.
-                 */
+                // The XSD 1.0 validator does nothing with processing instructions so bypass it unless it's 1.1.
+                if (fIsXSD11) {
+                    fillXMLString(fTempString, node.getNodeValue());
+                    fSchemaValidator.processingInstruction(node.getNodeName(), fTempString, null);
+                }
+                // Send the ProcessingInstruction node directly to the result builder.
                 if (fDOMValidatorHandler != null) {
                     fDOMValidatorHandler.processingInstruction((ProcessingInstruction) node);
                 }
                 break;
             case Node.COMMENT_NODE:
-                /** 
-                 * The validator does nothing with comments so bypass it.
-                 * Send the Comment node directly to the result builder.
-                 */
+                // The XSD 1.0 validator does nothing with comments so bypass it unless it's 1.1.
+                if (fIsXSD11) {
+                    fillXMLString(fTempString, node.getNodeValue());
+                    fSchemaValidator.comment(fTempString, null);
+                }
+                // Send the Comment node directly to the result builder.
                 if (fDOMValidatorHandler != null) {
                     fDOMValidatorHandler.comment((Comment) node);
                 }
@@ -450,6 +462,19 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                 fSchemaValidator.characters(fTempString, null);
             }
         }
+    }
+    
+    private void fillXMLString(XMLString toFill, String str) {
+        final int length = str.length();
+        final char[] strArray;
+        if (length <= fCharBuffer.length) {
+            str.getChars(0, length, fCharBuffer, 0);
+            strArray = fCharBuffer;
+        }
+        else {
+            strArray = str.toCharArray();
+        }
+        toFill.setValues(strArray, 0, length);
     }
     
     /**
