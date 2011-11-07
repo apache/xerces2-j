@@ -53,6 +53,16 @@ public class XMLAssertAdapter extends XSAssertionXPath2ValueImpl implements XMLA
 
     }
     
+    public void comment(XMLString text) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public void processingInstruction(String target, XMLString data) {
+        // TODO Auto-generated method stub
+        
+    }
+    
     /**
      * Allows the user to set specific properties on the underlying implementation.
      * @param name    name of property
@@ -97,4 +107,4 @@ public class XMLAssertAdapter extends XSAssertionXPath2ValueImpl implements XMLA
         return null;
     }
 
-}
+} // class XMLAssertAdapter

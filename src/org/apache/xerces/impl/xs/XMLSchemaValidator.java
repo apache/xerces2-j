@@ -1145,6 +1145,10 @@ public class XMLSchemaValidator
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
         
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fAssertionValidator.comment(text);  
+        }
+        
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.comment(text, augs);
@@ -1171,6 +1175,10 @@ public class XMLSchemaValidator
      */
     public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
+        
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+            fAssertionValidator.processingInstruction(target, data);  
+        }
 
         // call handlers
         if (fDocumentHandler != null) {

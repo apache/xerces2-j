@@ -38,7 +38,7 @@ import org.apache.xerces.xni.XMLString;
 public interface XMLAssertHandler extends XSAssertionXPath2Value {  
 
     /*
-     * A callback method triggered during startElement method call in, XMLSchemaValidator
+     * A callback method triggered during "startElement" method call in, XMLSchemaValidator
      * 
      * @param element
      *             XML element
@@ -50,7 +50,7 @@ public interface XMLAssertHandler extends XSAssertionXPath2Value {
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs) throws Exception;
     
     /*
-     * A callback method triggered during endElement method call in, XMLSchemaValidator
+     * A callback method triggered during "endElement" method call in, XMLSchemaValidator
      * 
      * @param element
      *           XML element  
@@ -60,12 +60,30 @@ public interface XMLAssertHandler extends XSAssertionXPath2Value {
     public void endElement(QName element, Augmentations augs) throws Exception;
         
     /*
-     * A callback method triggered during characters method call in, XMLSchemaValidator
+     * A callback method triggered during "characters" method call in, XMLSchemaValidator
      * 
      * @param text
      *        Text data received during the call
      */
     public void characters(XMLString text);
+    
+    /*
+     * A callback method triggered during "comment" method call in, XMLSchemaValidator
+     * 
+     * @param text
+     *        The text in the comment
+     */
+    public void comment(XMLString text);
+    
+    /*
+     * A callback method triggered during "processingInstruction" method call in, XMLSchemaValidator
+     * 
+     * @param target
+     *        The target
+     * @param data
+     *        The data or null if none specified
+     */
+    public void processingInstruction(String target, XMLString data);
 
   
     /**

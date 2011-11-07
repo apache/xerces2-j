@@ -76,7 +76,7 @@ import org.w3c.dom.Element;
 public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
 
     // class fields declarations
-    
+
     // XSModel instance representing the schema information needed by PsychoPath XPath 2.0 engine 
     private XSModel fSchemaXSmodel = null;
     
@@ -249,6 +249,28 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         }
         
     } // endElement
+    
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.impl.xs.assertion.XMLAssertAdapter#comment(org.apache.xerces.xni.XMLString)
+     */
+    public void comment(XMLString text) {
+        // add a comment node to the assertions, DOM tree
+        if (fCurrentAssertDomNode != null) {
+            fCurrentAssertDomNode.appendChild(fAssertDocument.createComment(new String(text.ch, text.offset, text.length)));
+        } 
+    } // comment
+    
+    
+    /* (non-Javadoc)
+     * @see org.apache.xerces.impl.xs.assertion.XMLAssertAdapter#processingInstruction(java.lang.String, org.apache.xerces.xni.XMLString)
+     */
+    public void processingInstruction(String target, XMLString data) {
+        // add a PI node to the assertions, DOM tree
+        if (fCurrentAssertDomNode != null) {
+            fCurrentAssertDomNode.appendChild(fAssertDocument.createProcessingInstruction(target, new String(data.ch, data.offset, data.length)));
+        } 
+    } // processingInstruction
     
     
     /*

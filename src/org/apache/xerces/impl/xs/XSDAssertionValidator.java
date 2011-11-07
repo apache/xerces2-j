@@ -142,6 +142,26 @@ public class XSDAssertionValidator {
     
     
     /*
+     * Assertions processing interface during the XNI event, 'comment' in XMLSchemaValidator. 
+     */
+    public void comment(XMLString text) {
+        if (fAssertionProcessor != null) {
+            fAssertionProcessor.comment(text);  
+        }
+    } // comment
+    
+    
+    /*
+     * Assertions processing interface during the XNI event, 'processingInstruction' in XMLSchemaValidator. 
+     */
+    public void processingInstruction(String target, XMLString data) {
+        if (fAssertionProcessor != null) {
+            fAssertionProcessor.processingInstruction(target, data);  
+        }
+    } // processingInstruction
+    
+    
+    /*
      * Accumulate a list of assertions (get from the underlying XSModel instance) to be processed
      * for the current context. Return the assertions list.
      */
