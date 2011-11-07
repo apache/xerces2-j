@@ -90,7 +90,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @version $Id$
  */
 final class ValidatorHandlerImpl extends ValidatorHandler implements
-    DTDHandler, EntityState, PSVIProvider, ValidatorHelper, XMLDocumentHandler {
+    DTDHandler, EntityState, LexicalHandler, PSVIProvider, ValidatorHelper, XMLDocumentHandler {
     
     // feature identifiers
     
@@ -181,11 +181,15 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     private final AttributesProxy fAttrAdapter = new AttributesProxy(fAttributes); 
     private final XMLString fTempString = new XMLString();
     
+    /** Flag indicating whether the schema version is 1.1. */
+    private final boolean fIsXSD11;
+    
     //
     // User Objects
     //
     
     private ContentHandler fContentHandler = null;
+    private LexicalHandler fLexicalHandler = null;
     
     /*
      * Constructors
@@ -206,6 +210,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         fSchemaValidator = (XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
         fSymbolTable = (SymbolTable) fComponentManager.getProperty(SYMBOL_TABLE);
         fValidationManager = (ValidationManager) fComponentManager.getProperty(VALIDATION_MANAGER);
+        fIsXSD11 = Constants.W3C_XML_SCHEMA11_NS_URI.equals(fComponentManager.getProperty(XML_SCHEMA_VERSION));
     }
 
     /*
@@ -389,16 +394,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     public void comment(XMLString text, Augmentations augs) throws XNIException {}
 
     public void processingInstruction(String target, XMLString data,
-            Augmentations augs) throws XNIException {
-        if (fContentHandler != null) {
-            try {
-                fContentHandler.processingInstruction(target, data.toString());
-            }
-            catch (SAXException e) {
-                throw new XNIException(e);
-            }
-        }
-    }
+            Augmentations augs) throws XNIException {}
 
     public void startElement(QName element, XMLAttributes attributes,
             Augmentations augs) throws XNIException {
@@ -652,11 +648,17 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
 
     public void processingInstruction(String target, String data)
             throws SAXException {
-        /** 
-         * Processing instructions do not participate in schema validation,
-         * so just forward the event to the application's content
-         * handler. 
-         */
+        // The XSD 1.0 validator does nothing with processing instructions so bypass it unless it's 1.1.
+        if (fIsXSD11) {
+            if (data != null) {
+                fTempString.setValues(data.toCharArray(), 0, data.length());
+            }
+            else {
+                fTempString.setValues(new char[0], 0, 0);
+            }
+            fSchemaValidator.processingInstruction(target, fTempString, null);
+        }
+        // Send the processing instruction event directly to the application's ContentHandler.
         if (fContentHandler != null) {
             fContentHandler.processingInstruction(target, data);
         }
@@ -686,6 +688,59 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     }
     
     /*
+     * LexicalHandler methods
+     */
+    
+    public void comment(char[] ch, int start, int length) throws SAXException {
+        // The XSD 1.0 validator does nothing with comments so bypass it unless it's 1.1.
+        if (fIsXSD11) {
+            fTempString.setValues(ch, start, length);
+            fSchemaValidator.comment(fTempString, null);
+        }
+        // Send the comment event directly to the application's LexicalHandler.
+        if (fLexicalHandler != null) {
+            fLexicalHandler.comment(ch, start, length);
+        }
+    }
+
+    public void endCDATA() throws SAXException {
+        if (fLexicalHandler != null) {
+            fLexicalHandler.endCDATA();
+        }
+    }
+
+    public void endDTD() throws SAXException {
+        if (fLexicalHandler != null) {
+            fLexicalHandler.endDTD();
+        }
+    }
+
+    public void endEntity(String name) throws SAXException {
+        if (fLexicalHandler != null) {
+            fLexicalHandler.endEntity(name);
+        }
+    }
+
+    public void startCDATA() throws SAXException {
+        if (fLexicalHandler != null) {
+            fLexicalHandler.startCDATA();
+        }
+    }
+
+    public void startDTD(String name, String publicId, String systemId)
+            throws SAXException {
+        if (fLexicalHandler != null) {
+            fLexicalHandler.startDTD(name, publicId, systemId);
+        }
+    }
+
+    public void startEntity(String name) throws SAXException {
+        if (fLexicalHandler != null) {
+            fLexicalHandler.startEntity(name);
+        }
+    }
+    
+    /*
      * ValidatorHelper methods
      */
     
@@ -704,6 +759,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                     lh = (LexicalHandler) ch;
                 }
                 setContentHandler(ch);
+                fLexicalHandler = lh;
             }
             
             XMLReader reader = null;
@@ -751,7 +807,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                 reader.setContentHandler(this);
                 reader.setDTDHandler(this);
                 try {
-                    reader.setProperty(LEXICAL_HANDLER, lh);
+                    reader.setProperty(LEXICAL_HANDLER, fIsXSD11 ? this : lh);
                 }
                 // Ignore the exception if the lexical handler cannot be set.
                 catch (SAXException exc) {}
@@ -760,8 +816,9 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                 reader.parse(is);
             } 
             finally {
-                // Release the reference to user's ContentHandler ASAP
+                // Release the reference to user's ContentHandler and LexicalHandler ASAP
                 setContentHandler(null);
+                fLexicalHandler = null;
                 // Disconnect the validator and other objects from the XMLReader
                 if (reader != null) {
                     try {
