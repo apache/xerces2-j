@@ -135,6 +135,10 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     /** Property identifier: validation manager. */
     private static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+    
+    /** Property identifier: xml schema version. */
+    private static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
  
     //
     // Data
@@ -320,6 +324,11 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         if (name == null) {
             throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "ProperyNameNull", null));
+        }
+        if (XML_SCHEMA_VERSION.equals(name)) {
+            throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
+                    "property-read-only", new Object [] {name}));
         }
         try {
             fComponentManager.setProperty(name, object);

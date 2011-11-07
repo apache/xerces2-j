@@ -64,6 +64,10 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     private static final String CURRENT_ELEMENT_NODE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
     
+    /** Property identifier: xml schema version. */
+    private static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+    
     //
     // Data
     //
@@ -268,7 +272,7 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
             throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "ProperyNameNull", null));
         }
-        if (CURRENT_ELEMENT_NODE.equals(name)) {
+        if (CURRENT_ELEMENT_NODE.equals(name) || XML_SCHEMA_VERSION.equals(name)) {
             throw new SAXNotSupportedException(
                     SAXMessageFormatter.formatMessage(fComponentManager.getLocale(), 
                     "property-read-only", new Object [] {name}));

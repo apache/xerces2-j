@@ -173,6 +173,9 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
      */
     private boolean fUseGrammarPoolOnly;
     
+    /** Whether the XML Schema is 1.1 or not */
+    private final String fXSDVersion;
+    
     /** Lookup map for components required for validation. **/
     private final HashMap fComponents = new HashMap();
     
@@ -235,7 +238,8 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         fComponents.put(NAMESPACE_CONTEXT, fNamespaceContext);
         
         fSchemaValidator = new XMLSchemaValidator();
-        fSchemaValidator.setProperty(XML_SCHEMA_VERSION, grammarContainer.getXMLSchemaVersion());
+        fXSDVersion = grammarContainer.getXMLSchemaVersion();
+        fSchemaValidator.setProperty(XML_SCHEMA_VERSION, fXSDVersion);
         fComponents.put(SCHEMA_VALIDATOR, fSchemaValidator);
         
         fValidationManager = new ValidationManager();
@@ -373,6 +377,9 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         if (LOCALE.equals(propertyId)) {
             return getLocale();
         }
+        else if (XML_SCHEMA_VERSION.equals(propertyId)) {
+            return fXSDVersion;
+        }
         final Object component = fComponents.get(propertyId);
         if (component != null) {
             return component;
@@ -395,7 +402,7 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         if ( ENTITY_MANAGER.equals(propertyId) || ERROR_REPORTER.equals(propertyId) ||
              NAMESPACE_CONTEXT.equals(propertyId) || SCHEMA_VALIDATOR.equals(propertyId) ||
              SYMBOL_TABLE.equals(propertyId) || VALIDATION_MANAGER.equals(propertyId) ||
-             XMLGRAMMAR_POOL.equals(propertyId)) {
+             XMLGRAMMAR_POOL.equals(propertyId) || XML_SCHEMA_VERSION.equals(propertyId)) {
             throw new XMLConfigurationException(XMLConfigurationException.NOT_SUPPORTED, propertyId);
         }
         fConfigUpdated = true;
