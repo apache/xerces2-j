@@ -154,7 +154,7 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
 
     /** Property identifier: xml schema version. */
-    protected static final String XML_SCHEMA_VERSION =
+    private static final String XML_SCHEMA_VERSION =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
 
     //
