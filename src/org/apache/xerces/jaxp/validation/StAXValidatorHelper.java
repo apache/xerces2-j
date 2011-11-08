@@ -93,6 +93,10 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     private static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
     
+    /** Property identifier: xml schema version. */
+    private static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+    
     //
     // Data
     //
@@ -148,13 +152,16 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
     /** Current event. **/
     private XMLEvent fCurrentEvent = null;
     
-    /** Fields for start element, end element and characters. **/
+    /** Fields for start element, end element, characters, comments and processing instructions. **/
     final QName fElementQName = new QName();
     final QName fAttributeQName = new QName();
     final XMLAttributesImpl fAttributes = new XMLAttributesImpl();
     final ArrayList fDeclaredPrefixes = new ArrayList();
     final XMLString fTempString = new XMLString();
     final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    
+    /** Flag indicating whether the schema version is 1.1. */
+    private final boolean fIsXSD11;
 
     public StAXValidatorHelper(XMLSchemaValidatorComponentManager componentManager) {
         fComponentManager = componentManager;
@@ -164,6 +171,7 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
         fValidationManager = (ValidationManager) fComponentManager.getProperty(VALIDATION_MANAGER);
         fNamespaceContext = new JAXPNamespaceContextWrapper(fSymbolTable);
         fNamespaceContext.setDeclaredPrefixes(fDeclaredPrefixes);
+        fIsXSD11 = Constants.W3C_XML_SCHEMA11_NS_URI.equals(fComponentManager.getProperty(XML_SCHEMA_VERSION));
     }
     
     /*
@@ -395,11 +403,30 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                             }
                             break;
                         case XMLStreamConstants.PROCESSING_INSTRUCTION:
+                            // The XSD 1.0 validator does nothing with processing instructions so bypass it unless it's 1.1.
+                            if (fIsXSD11) {
+                                String data = reader.getPIData();
+                                if (data != null) {
+                                    fTempString.setValues(data.toCharArray(), 0, data.length());
+                                }
+                                else {
+                                    fTempString.setValues(new char[0], 0, 0);
+                                }
+                                fSchemaValidator.processingInstruction(reader.getPITarget(), fTempString, null);
+                            }
+                            // Send the processing instruction event directly to the StAXDocumentHandler.
                             if (fStAXValidatorHandler != null) {
                                 fStAXValidatorHandler.processingInstruction(reader);
                             }
                             break;
                         case XMLStreamConstants.COMMENT:
+                            // The XSD 1.0 validator does nothing with comments so bypass it unless it's 1.1.
+                            if (fIsXSD11) {
+                                fTempString.setValues(reader.getTextCharacters(), 
+                                        reader.getTextStart(), reader.getTextLength());
+                                fSchemaValidator.comment(fTempString, null);
+                            }
+                            // Send the comment event directly to the StAXDocumentHandler.
                             if (fStAXValidatorHandler != null) {
                                 fStAXValidatorHandler.comment(reader);
                             }
@@ -549,11 +576,25 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                             }
                             break;
                         case XMLStreamConstants.PROCESSING_INSTRUCTION:
+                            // The XSD 1.0 validator does nothing with processing instructions so bypass it unless it's 1.1.
+                            if (fIsXSD11) {
+                                final ProcessingInstruction pi = (ProcessingInstruction) fCurrentEvent;
+                                fillXMLString(fTempString, pi.getData());
+                                fSchemaValidator.processingInstruction(pi.getTarget(), fTempString, null);
+                            }
+                            // Send the processing instruction event directly to the StAXDocumentHandler.
                             if (fStAXValidatorHandler != null) {
                                 fStAXValidatorHandler.processingInstruction((ProcessingInstruction) fCurrentEvent);
                             }
                             break;
                         case XMLStreamConstants.COMMENT:
+                            // The XSD 1.0 validator does nothing with comments so bypass it unless it's 1.1.
+                            if (fIsXSD11) {
+                                final Comment c = (Comment) fCurrentEvent;
+                                fillXMLString(fTempString, c.getText());
+                                fSchemaValidator.comment(fTempString, null);
+                            }
+                            // Send the comment event directly to the StAXDocumentHandler.
                             if (fStAXValidatorHandler != null) {
                                 fStAXValidatorHandler.comment((Comment) fCurrentEvent);
                             }
@@ -633,6 +674,26 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                     fSchemaValidator.characters(fTempString, null);
                 }
             }
+        }
+        
+        private void fillXMLString(XMLString toFill, String str) {
+            final int length;
+            final char[] strArray;
+            if (str != null) {
+                length = str.length();
+                if (length <= fCharBuffer.length) {
+                    str.getChars(0, length, fCharBuffer, 0);
+                    strArray = fCharBuffer;
+                }
+                else {
+                    strArray = str.toCharArray();
+                }
+            }
+            else {
+                length = 0;
+                strArray = new char[0];
+            }
+            toFill.setValues(strArray, 0, length);
         }
     }
     
