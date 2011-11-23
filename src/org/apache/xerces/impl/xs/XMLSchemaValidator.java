@@ -2739,7 +2739,12 @@ public class XMLSchemaValidator
         
         // delegate to assertions validator subcomponent
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-            assertionValidatorEndElementDelegate(element);            
+            try {
+               assertionValidatorEndElementDelegate(element); 
+            }
+            catch(Exception ex) {
+               // NO OP  
+            }
         }
 
         // Check if we should modify the xsi:type ignore depth
