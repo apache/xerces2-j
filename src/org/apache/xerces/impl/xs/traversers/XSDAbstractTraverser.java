@@ -38,6 +38,7 @@ import org.apache.xerces.impl.xs.assertion.Test;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.xs.util.XSTypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -535,10 +536,8 @@ abstract class XSDAbstractTraverser {
                     // add assertion object, to the list of assertions to be processed
                     assertData.addElement(assertImpl);
                 } else {
-                    // 'test' attribute is mandatory in assert element
-                    reportSchemaError("src-assert.3.13.1",
-                            new Object[] { DOMUtil.getLocalName(content) },
-                            content);
+                    // 'test' attribute is mandatory on an <assertion> element
+                    reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil.getLocalName(content), XSTypeHelper.getSchemaTypeName(typeDef) }, content);
                 }
             } else {
                 if (facet.equals(SchemaSymbols.ELT_MINLENGTH)) {

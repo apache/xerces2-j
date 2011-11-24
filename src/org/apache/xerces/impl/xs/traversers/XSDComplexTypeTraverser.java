@@ -1759,8 +1759,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 }
             }
         } else {
-            // 'test' attribute is mandatory on an assert element
-            reportSchemaError("src-assert.3.13.1", new Object[] { XSTypeHelper.getSchemaTypeName(enclosingCT) }, assertElement);
+            // 'test' attribute is mandatory on an <assert> element
+            reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil.getLocalName(assertElement), XSTypeHelper.getSchemaTypeName(enclosingCT) }, assertElement);
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
