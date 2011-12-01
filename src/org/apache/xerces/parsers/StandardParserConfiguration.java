@@ -135,6 +135,10 @@ public class StandardParserConfiguration
     /** Feature identifier: whether to use full XPath 2.0 support for CTA processing */
     protected static final String CTA_FULL_XPATH_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
+    
+    /** Feature identifier: whether to allow comment and PI nodes to be visible during <assert> processing */
+    protected static final String ASSERT_COMMENT_PI_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.ASSERT_COMMENT_PI_CHECKING_FEATURE;
 
     // property identifiers
 
@@ -244,6 +248,7 @@ public class StandardParserConfiguration
             UNPARSED_ENTITY_CHECKING,
             TYPE_ALTERNATIVES_CHECKING,
             CTA_FULL_XPATH_CHECKING,
+            ASSERT_COMMENT_PI_CHECKING,
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -263,6 +268,7 @@ public class StandardParserConfiguration
         setFeature(UNPARSED_ENTITY_CHECKING, true);
         setFeature(TYPE_ALTERNATIVES_CHECKING, true);
         setFeature(CTA_FULL_XPATH_CHECKING, false);
+        setFeature(ASSERT_COMMENT_PI_CHECKING, false);
 
         // add default recognized properties
     

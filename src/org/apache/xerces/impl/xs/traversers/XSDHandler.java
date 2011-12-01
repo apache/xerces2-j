@@ -182,6 +182,10 @@ public class XSDHandler {
     protected static final String CTA_FULL_XPATH = 
       Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
     
+    /** Feature identifier: comment and PI nodes for <assert> */
+    protected static final String ASSERT_COMMENT_PI = 
+      Constants.XERCES_FEATURE_PREFIX + Constants.ASSERT_COMMENT_PI_CHECKING_FEATURE;
+    
     /** Feature identifier: namespace prefixes. */
     private static final String NAMESPACE_PREFIXES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
@@ -416,6 +420,9 @@ public class XSDHandler {
     
     // handle full XPath 2.0 feature
     boolean fFullXPathForCTA = false;
+    
+    // handle comments and PIs with <assert>
+    boolean fCommentsAndPIsForAssert = false;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -3849,6 +3856,12 @@ public class XSDHandler {
             fFullXPathForCTA = componentManager.getFeature(CTA_FULL_XPATH);
         } catch (XMLConfigurationException e) {
             fFullXPathForCTA = false;
+        }
+        
+        try {
+            fCommentsAndPIsForAssert = componentManager.getFeature(ASSERT_COMMENT_PI);
+        } catch (XMLConfigurationException e) {
+            fCommentsAndPIsForAssert = false;
         }
 
         try {

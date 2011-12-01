@@ -337,6 +337,9 @@ public final class Constants {
     /** Feature to control full XPath 2.0 checking for CTA processing */
     public static final String CTA_FULL_XPATH_CHECKING_FEATURE = "validation/cta-full-xpath-checking";
     
+    /** Feature to control, if comments and PIs should be available in <assert> XDM trees */
+    public static final String ASSERT_COMMENT_PI_CHECKING_FEATURE = "validation/assert-comments-and-pi-checking";
+    
     /** Feature to ignore errors caused by unparsed entities ("validation/unparsed-entity-checking") */
     public static final String UNPARSED_ENTITY_CHECKING_FEATURE = "validation/unparsed-entity-checking";
     
@@ -559,6 +562,7 @@ public final class Constants {
             STRINGS_INTERNED_FEATURE,
             TYPE_ALTERNATIVES_CHEKING_FEATURE,
             CTA_FULL_XPATH_CHECKING_FEATURE,
+            ASSERT_COMMENT_PI_CHECKING_FEATURE,
     };
     
     /** Xerces properties. */

@@ -91,6 +91,10 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     private static final String CTA_FULL_XPATH_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
     
+    /** Feature identifier: whether to allow comment and PI nodes to be visible during <assert> processing */
+    private static final String ASSERT_COMMENT_PI_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.ASSERT_COMMENT_PI_CHECKING_FEATURE;
+    
     /** Feature identifier: disallow DOCTYPE declaration */
     private static final String DISALLOW_DOCTYPE_DECL_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
@@ -296,6 +300,7 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         fFeatures.put(UNPARSED_ENTITY_CHECKING, Boolean.TRUE);
         fFeatures.put(TYPE_ALTERNATIVES_CHECKING, Boolean.TRUE);
         fFeatures.put(CTA_FULL_XPATH_CHECKING, Boolean.FALSE);
+        fFeatures.put(ASSERT_COMMENT_PI_CHECKING, Boolean.FALSE);
     }
 
     /**

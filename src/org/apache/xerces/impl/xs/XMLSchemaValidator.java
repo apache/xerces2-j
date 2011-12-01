@@ -215,6 +215,10 @@ public class XMLSchemaValidator
     /** Feature identifier: whether to ignore type alternatives */
     protected static final String TYPE_ALTERNATIVES_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
+    
+    /** Feature identifier: whether to allow comment and PI nodes to be visible during <assert> processing */
+    protected static final String ASSERT_COMMENT_PI_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.ASSERT_COMMENT_PI_CHECKING_FEATURE;
 
     // property identifiers
 
@@ -298,7 +302,8 @@ public class XMLSchemaValidator
             UNPARSED_ENTITY_CHECKING,
             NAMESPACE_GROWTH,
             TOLERATE_DUPLICATES,
-            TYPE_ALTERNATIVES_CHECKING
+            TYPE_ALTERNATIVES_CHECKING,
+            ASSERT_COMMENT_PI_CHECKING
         };
 
 
@@ -319,6 +324,7 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
+        null,
         null,
         null,
         null,
@@ -1145,7 +1151,7 @@ public class XMLSchemaValidator
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
         
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && fCommentsAndPIsForAssert) {
             fAssertionValidator.comment(text);  
         }
         
@@ -1176,7 +1182,7 @@ public class XMLSchemaValidator
     public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
         
-        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+        if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1 && fCommentsAndPIsForAssert) {
             fAssertionValidator.processingInstruction(target, data);  
         }
 
@@ -1362,6 +1368,8 @@ public class XMLSchemaValidator
     private boolean fIDCChecking;
 
     private boolean fTypeAlternativesChecking;
+    
+    private boolean fCommentsAndPIsForAssert;
 
     /** temporary validated info */
     private ValidatedInfo fValidatedInfo = new ValidatedInfo();
@@ -1662,6 +1670,13 @@ public class XMLSchemaValidator
         }
         catch (XMLConfigurationException e) {
             fTypeAlternativesChecking = true;
+        }
+        
+        try {
+            fCommentsAndPIsForAssert = componentManager.getFeature(ASSERT_COMMENT_PI_CHECKING);
+        }
+        catch (XMLConfigurationException e) {
+            fCommentsAndPIsForAssert = true;
         }
         
         // get schema location properties

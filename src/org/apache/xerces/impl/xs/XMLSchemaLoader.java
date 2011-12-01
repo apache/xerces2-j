@@ -146,9 +146,13 @@ XSLoader, DOMConfiguration {
     protected static final String TOLERATE_DUPLICATES = 
         Constants.XERCES_FEATURE_PREFIX + Constants.TOLERATE_DUPLICATES_FEATURE;
     
-    /** Feature identifier: tolerate duplicates */
+    /** Feature identifier: full XPath 2.0 support for CTA */
     protected static final String CTA_FULL_XPATH = 
         Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
+    
+    /** Feature identifier: comment and PI nodes for <assert> */
+    protected static final String ASSERT_COMMENT_PI = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.ASSERT_COMMENT_PI_CHECKING_FEATURE;
     
     /** Property identifier: Schema DV Factory */
     protected static final String SCHEMA_DV_FACTORY = 
@@ -168,6 +172,7 @@ XSLoader, DOMConfiguration {
         NAMESPACE_GROWTH,
         TOLERATE_DUPLICATES,
         CTA_FULL_XPATH,
+        ASSERT_COMMENT_PI,
     };
     
     // property identifiers
