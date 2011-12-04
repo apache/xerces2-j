@@ -174,7 +174,7 @@ public final class DOMOverrideImpl extends OverrideTransformer {
                     if (componentType == OVERRIDE_TYPE_DEFINITION) {
                         final String overridingLocalName = getLocalName(newNode.originalElement);
                         if (!localName.equals(overridingLocalName)) {
-                            fSchemaHandler.reportSchemaError("src-override-transformation.1", new Object[]{overridingLocalName, localName, componentName}, newNode.originalElement);
+                            fSchemaHandler.reportSchemaWarning("src-override-transformation.1", new Object[]{overridingLocalName, localName, componentName}, newNode.originalElement);
                             if (isOverrideRoot){
                                 newNode.overrideCloned = true;   
                             }
@@ -251,7 +251,7 @@ public final class DOMOverrideImpl extends OverrideTransformer {
     }
     
     private int getOverrideType(String localName){
-        if (localName.equals(SchemaSymbols.ELT_SIMPLETYPE) || localName.equals(SchemaSymbols.ELT_COMPLEXTYPE )){
+        if (localName.equals(SchemaSymbols.ELT_SIMPLETYPE) || localName.equals(SchemaSymbols.ELT_COMPLEXTYPE)){
             return OVERRIDE_TYPE_DEFINITION;                              
         }
         else if (localName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ){
