@@ -59,6 +59,7 @@ class Token implements java.io.Serializable {
 
     final int type;
 
+    static RangeToken token_all;
     static Token token_dot;
     static Token token_0to9;
     static Token token_wordchars;
@@ -78,6 +79,9 @@ class Token implements java.io.Serializable {
     static Token token_wordbeginning;
     static Token token_wordend;
     static {
+        token_all = Token.createRange();
+        token_all.addRange(0, UTF16_MAX);
+
         Token.token_empty = new Token(Token.EMPTY);
 
         Token.token_linebeginning = Token.createAnchor('^');

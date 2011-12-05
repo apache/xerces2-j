@@ -398,20 +398,7 @@ class XS11Constraints extends XSConstraints {
         unionWildcard.fDisallowedNamesList = disallowedNamesUnion(wildcard, otherWildcard);
 
         // 3 The keyword defined if it is contained in both O1's and O2's {disallowed names}.;
-        // 4 If one {disallowed names} (assume it is from O1 without losing generality) contains defined and the other
-        //   one (from O2) does not, and there exists a namespace name or absent that is allowed by O1, as defined
-        //   in Wildcard allows Namespace Name (3.10.4.), but not by O2, then the wildcard union is not expressible.
         unionWildcard.fDisallowedDefined = wildcard.fDisallowedDefined && otherWildcard.fDisallowedDefined;
-        if (wildcard.fDisallowedDefined != otherWildcard.fDisallowedDefined) {
-            if (wildcard.fDisallowedDefined) {
-                if (disallowedNamespaces(wildcard, otherWildcard)) {
-                    return null;
-                }
-            }
-            else if (disallowedNamespaces(otherWildcard, wildcard)){
-                return null;
-            }
-        }
 
         return unionWildcard;
     }

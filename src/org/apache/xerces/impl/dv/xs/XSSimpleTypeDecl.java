@@ -889,8 +889,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
             } else {
                 patternAnnotations = facets.patternAnnotations;
                 RegularExpression regex = null;
+                // In schema 1.1, enable the new behavior for '-' and
+                // unrecognized block names.
+                final String options = context.getTypeValidatorHelper().isXMLSchema11() ? "Xbh" : "X";
                 try {
-                    regex = new RegularExpression(facets.pattern, "X", context.getLocale(), context.getDatatypeXMLVersion());
+                    regex = new RegularExpression(facets.pattern, options, context.getLocale(), context.getDatatypeXMLVersion());
                 } catch (Exception e) {
                     reportError("InvalidRegex", new Object[]{facets.pattern, e.getLocalizedMessage()});
                 }

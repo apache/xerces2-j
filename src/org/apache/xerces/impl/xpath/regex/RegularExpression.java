@@ -2226,6 +2226,14 @@ public class RegularExpression implements java.io.Serializable {
      * ",".
      */
     static final int SPECIAL_COMMA = 1<<10;
+    /**
+     * "b". Allow unrecognized block names; treat as '.'.
+     */
+    static final int ALLOW_UNRECOGNIZED_BLOCK_NAME = 1<<11;
+    /**
+     * "h". New rule about '-' in schema 1.1.
+     */
+    static final int HYPHEN_IN_SCHEMA_11 = 1<<12;
 
 
     private static final boolean isSet(int options, int flag) {

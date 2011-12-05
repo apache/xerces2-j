@@ -90,6 +90,11 @@ public final class REUtil {
           case ',':
             ret = RegularExpression.SPECIAL_COMMA;
             break;
+          case 'b':
+            ret = RegularExpression.ALLOW_UNRECOGNIZED_BLOCK_NAME;
+            break;
+          case 'h':
+            ret = RegularExpression.HYPHEN_IN_SCHEMA_11;
           default:
         }
         return ret;

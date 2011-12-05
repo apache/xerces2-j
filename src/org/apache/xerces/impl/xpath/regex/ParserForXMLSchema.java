@@ -175,6 +175,7 @@ class ParserForXMLSchema extends RegexParser {
      * @return This returns no NrageToken.
      */
     protected RangeToken parseCharacterClass(boolean useNrange) throws ParseException {
+        boolean hyphen11 = isSet(RegularExpression.HYPHEN_IN_SCHEMA_11);
         this.setContext(S_INBRACKETS);
         this.next();                            // '['
         boolean nrange = false;
@@ -224,7 +225,14 @@ class ParserForXMLSchema extends RegexParser {
                   case 'P':
                     int pstart = this.offset;
                     RangeToken tok2 = this.processBacksolidus_pP(c);
-                    if (tok2 == null)  throw this.ex("parser.atom.5", pstart);
+                    if (tok2 == null) {
+                        if (this.isSet(RegularExpression.ALLOW_UNRECOGNIZED_BLOCK_NAME)) {
+                            tok2 = Token.token_all;
+                        }
+                        else {
+                            throw this.ex("parser.atom.5", pstart);
+                        }
+                    }
                     tok.mergeRanges(tok2);
                     end = true;
                     break;
@@ -255,9 +263,9 @@ class ParserForXMLSchema extends RegexParser {
                 if (type == T_CHAR) {
                     if (c == '[')  throw this.ex("parser.cc.6", this.offset-2);
                     if (c == ']')  throw this.ex("parser.cc.7", this.offset-2);
-                    if (c == '-' && this.chardata != ']' && !firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
+                    if (!hyphen11 && c == '-' && this.chardata != ']' && !firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
                 }
-                if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && !wasDecoded && firstloop) { // Here is no '-'.
+                if (this.read() != T_CHAR || this.chardata != '-' || !hyphen11 && c == '-' && !wasDecoded && firstloop) { // Here is no '-'.
                     if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
                         tok.addRange(c, c);
                     }
@@ -269,7 +277,8 @@ class ParserForXMLSchema extends RegexParser {
                     this.next(); // Skips '-'
                     if ((type = this.read()) == T_EOF)  throw this.ex("parser.cc.2", this.offset);
                                                 // c '-' ']' -> '-' is a single-range.
-                    if(type == T_CHAR && this.chardata == ']') {				// if - is at the last position of the group
+                    if(type == T_CHAR && this.chardata == ']' ||
+                       hyphen11 && type == T_XMLSCHEMA_CC_SUBTRACTION) {				// if - is at the last position of the group
                         if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
                     	    tok.addRange(c, c);
                         }
@@ -281,6 +290,9 @@ class ParserForXMLSchema extends RegexParser {
                     else if (type == T_XMLSCHEMA_CC_SUBTRACTION) {
                         throw this.ex("parser.cc.8", this.offset-1);
                     } else {
+                        if (hyphen11 && c == '-' && !wasDecoded) {
+                            throw this.ex("parser.cc.4", this.offset-2);
+                        }
                     	
                         int rangeend = this.chardata;
                         if (type == T_CHAR) {
