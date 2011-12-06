@@ -41,7 +41,7 @@ public final class DOMOverrideImpl extends OverrideTransformer {
     private final ArrayList fOverrideComponents = new ArrayList();
     private final HashMap[] fOverrideComponentsMap =  new HashMap[] {
             null, new HashMap(), new HashMap(), new HashMap(),
-            new HashMap(), new HashMap(), new HashMap()
+            new HashMap(), new HashMap(), new HashMap(), new HashMap()
     };
 
     // overridden schema document 
@@ -171,16 +171,6 @@ public final class DOMOverrideImpl extends OverrideTransformer {
                 Element oldNode = child;
                 //check if element needs to be overridden     
                 if (newNode != null){
-                    if (componentType == OVERRIDE_TYPE_DEFINITION) {
-                        final String overridingLocalName = getLocalName(newNode.originalElement);
-                        if (!localName.equals(overridingLocalName)) {
-                            fSchemaHandler.reportSchemaWarning("src-override-transformation.1", new Object[]{overridingLocalName, localName, componentName}, newNode.originalElement);
-                            if (isOverrideRoot){
-                                newNode.overrideCloned = true;   
-                            }
-                            continue;
-                        }
-                    }
                     child = performDOMOverride(overridenSchemaRoot, newNode.originalElement, oldNode);
                     if (!child.isEqualNode(oldNode)) {
                         hasPerformedTransformations = true;
@@ -251,8 +241,11 @@ public final class DOMOverrideImpl extends OverrideTransformer {
     }
     
     private int getOverrideType(String localName){
-        if (localName.equals(SchemaSymbols.ELT_SIMPLETYPE) || localName.equals(SchemaSymbols.ELT_COMPLEXTYPE)){
-            return OVERRIDE_TYPE_DEFINITION;                              
+        if (localName.equals(SchemaSymbols.ELT_SIMPLETYPE)){
+            return OVERRIDE_SIMPLE_TYPE;
+        }
+        else if (localName.equals(SchemaSymbols.ELT_COMPLEXTYPE )){
+            return OVERRIDE_COMPLEX_TYPE;
         }
         else if (localName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ){
             return OVERRIDE_ATTRIBUTE_GROUP;   

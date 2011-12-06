@@ -27,12 +27,13 @@ public abstract class OverrideTransformer {
 
     // different type definitions needed to record type of OverrideElement
     // before processing is done 
-    protected final static int OVERRIDE_TYPE_DEFINITION = 1 ;
-    protected final static int OVERRIDE_ATTRIBUTE_GROUP = 2 ;
-    protected final static int OVERRIDE_GROUP = 3 ;
-    protected final static int OVERRIDE_ELEMENT = 4 ;
-    protected final static int OVERRIDE_NOTATION = 5 ;
-    protected final static int OVERRIDE_ATTRIBUTE = 6 ;  
+    protected final static int OVERRIDE_SIMPLE_TYPE = 1 ;
+    protected final static int OVERRIDE_COMPLEX_TYPE = 2 ;
+    protected final static int OVERRIDE_ATTRIBUTE_GROUP = 3 ;
+    protected final static int OVERRIDE_GROUP = 4 ;
+    protected final static int OVERRIDE_ELEMENT = 5 ;
+    protected final static int OVERRIDE_NOTATION = 6 ;
+    protected final static int OVERRIDE_ATTRIBUTE = 7 ;  
 
     // Constructor - not accessible
     protected OverrideTransformer(){
