@@ -430,6 +430,7 @@ Authors:
           classpath="${java.class.path}:${doc.generator.package}:./tools/xalan.jar"
           classname="${doc.generator}"
           failOnError="yes">
+      <sysproperty key="java.awt.headless" value="true"/>
       <arg value="targetDirectory=${build.docs}"/>
       <arg value="${build.dir}/xdocs/docs-book.xml"/>
       <arg value="${build.dir}/xdocs/style"/>
