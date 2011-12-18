@@ -320,6 +320,26 @@ catch (SAXException e) {
    <see idref='validation'/>
    <see idref='validation.schema'/>
   </feature>
+  <feature name='http://apache.org/xml/features/validation/cta-full-xpath-checking'
+           id='validation.xs11-cta-fullxpath-checking'>
+   <true>Enable XSD 1.1 CTA full XPath 2.0 checking.</true>
+   <false>Disable XSD 1.1 CTA full XPath 2.0 checking.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.12.0'/>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
+  <feature name='http://apache.org/xml/features/validation/assert-comments-and-pi-checking'
+           id='validation.xs11-assert-comments-pi-checking'>
+   <true>Enable comment and PI checking during the XSD 1.1 assert evaluation.</true>
+   <false>Disable comment and PI checking during the XSD 1.1 assert evaluation.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.12.0'/>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
   <feature name='http://apache.org/xml/features/validation/unparsed-entity-checking'
            id='validation.unparsed-entity-checking'>
    <true>Check that each value of type ENTITY matches the name of an unparsed entity declared in the DTD.</true>
