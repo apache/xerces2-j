@@ -118,6 +118,7 @@
      </td>
     </tr>
     <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
+    <tr><td>-xsd11</td><td>Turn on/off XSD 1.1 support.</td></tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
    </table>
   </s3>
