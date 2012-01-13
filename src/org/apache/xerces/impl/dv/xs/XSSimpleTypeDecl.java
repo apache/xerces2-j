@@ -461,8 +461,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     //Create a new simple type for list.
-    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl itemType, boolean isImmutable,
-            XSObjectList annotations) {
+    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl itemType, boolean isImmutable, XSObjectList annotations) {
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
@@ -470,7 +469,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fAnnotations = annotations;
 
         fVariety = VARIETY_LIST;
-        fItemType = (XSSimpleTypeDecl)itemType;
+        fItemType = itemType;
         fValidationDV = DV_LIST;
         fFacetsDefined = FACET_WHITESPACE;
         fFixedFacet = FACET_WHITESPACE;
@@ -571,8 +570,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     }
 
     //set values for list.
-    protected XSSimpleTypeDecl setListValues(String name, String uri, short finalSet, XSSimpleTypeDecl itemType,
-            XSObjectList annotations) {
+    protected XSSimpleTypeDecl setListValues(String name, String uri, short finalSet, XSSimpleTypeDecl itemType, XSObjectList annotations) {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = fAnySimpleType;
@@ -583,7 +581,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fAnnotations = annotations;
 
         fVariety = VARIETY_LIST;
-        fItemType = (XSSimpleTypeDecl)itemType;
+        fItemType = itemType;
         fValidationDV = DV_LIST;
         fFacetsDefined = FACET_WHITESPACE;
         fFixedFacet = FACET_WHITESPACE;
@@ -2863,7 +2861,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
                 ((ancestorNS == null && type.getNamespace() == null) ||
                         (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
                         type != fAnySimpleType) {  // reached anySimpleType
-            type = (XSTypeDefinition)type.getBaseType();
+            type = type.getBaseType();
         }
 
         return type != fAnySimpleType;
