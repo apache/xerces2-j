@@ -487,25 +487,23 @@ abstract class XSDAbstractTraverser {
                     // get 'annotation'
                     Element childNode = DOMUtil.getFirstChildElement(content);
                     XSAnnotationImpl annotation = null;
+                    
                     // first child could be an annotation
-                    if (childNode != null
-                            && DOMUtil.getLocalName(childNode).equals(
-                                    SchemaSymbols.ELT_ANNOTATION)) {
-                        annotation = traverseAnnotationDecl(childNode, attrs,
-                                false, schemaDoc);
-                        // now move on to the next child element
-                        childNode = DOMUtil.getNextSiblingElement(childNode);
-                        
-                        if (childNode != null) {
-                          // it's an error to have something after the annotation, in an assertion
-                          reportSchemaError("s4s-elt-invalid-content.1", new Object[]{DOMUtil.getLocalName(content), DOMUtil.getLocalName(childNode)}, childNode);
+                    if (childNode != null) {
+                        if (DOMUtil.getLocalName(childNode).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                            annotation = traverseAnnotationDecl(childNode, attrs, false, schemaDoc);
+                            // now move on to the next child element
+                            childNode = DOMUtil.getNextSiblingElement(childNode);
+                            if (childNode != null) {
+                                // it's an error to have something after the annotation, in an assertion
+                                reportSchemaError("s4s-elt-invalid-content.1", new Object[]{DOMUtil.getLocalName(content), DOMUtil.getLocalName(childNode)}, childNode);
+                            }
+                        } else {
+                            String text = DOMUtil.getSyntheticAnnotation(childNode);
+                            if (text != null) {
+                                annotation = traverseSyntheticAnnotation(childNode, text, attrs, false, schemaDoc);
+                            }                        
                         }
-                    } else {
-                        String text = DOMUtil.getSyntheticAnnotation(childNode);
-                        if (text != null) {
-                            annotation = traverseSyntheticAnnotation(childNode,
-                                    text, attrs, false, schemaDoc);
-                        }                        
                     }
                     
                     XSObjectList annotations = null;
