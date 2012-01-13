@@ -1696,35 +1696,33 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // get 'annotation'
             Element childNode = DOMUtil.getFirstChildElement(assertElement);
             XSAnnotationImpl annotation = null;
-
             // first child could be an annotation
-            if (childNode != null
-                    && DOMUtil.getLocalName(childNode).equals(
-                            SchemaSymbols.ELT_ANNOTATION)) {
-                annotation = traverseAnnotationDecl(childNode, attrValues, false, schemaDoc);
-                // now move on to the next child element
-                childNode = DOMUtil.getNextSiblingElement(childNode);
+            if (childNode != null) {
+                if (DOMUtil.getLocalName(childNode).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    annotation = traverseAnnotationDecl(childNode, attrValues, false, schemaDoc);
+                    // now move on to the next child element
+                    childNode = DOMUtil.getNextSiblingElement(childNode);
 
-                if (childNode != null) {
-                    // it's an error to have something after the annotation, in 'assert'
-                    reportSchemaError("s4s-elt-invalid-content.1", new Object[] {
-                            DOMUtil.getLocalName(assertElement),
-                            DOMUtil.getLocalName(childNode) }, childNode);
-                }
-            } else {
-                String text = DOMUtil.getSyntheticAnnotation(childNode);
-                if (text != null) {
-                    annotation = traverseSyntheticAnnotation(childNode, text, attrValues, false, schemaDoc);
+                    if (childNode != null) {
+                        // it's an error to have something after the annotation, in 'assert'
+                        reportSchemaError("s4s-elt-invalid-content.1", new Object[] {
+                                           DOMUtil.getLocalName(assertElement),
+                                           DOMUtil.getLocalName(childNode) }, childNode);
+                    }
+                } else {
+                    String text = DOMUtil.getSyntheticAnnotation(childNode);
+                    if (text != null) {
+                        annotation = traverseSyntheticAnnotation(childNode, text, attrValues, false, schemaDoc);
+                    }
                 }
             }
-
+            
             XSObjectList annotations = null;
             if (annotation != null) {
                 annotations = new XSObjectListImpl();
                 ((XSObjectListImpl) annotations).addXSObject(annotation);
             } else {
-                // if no annotations are present assign an empty list, for
-                // annotations.
+                // if no annotations are present assign an empty list, for annotations.
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
             
@@ -1747,15 +1745,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // if there is sibling element
             if (sibling != null) {
                 if (sibling.getLocalName().equals(SchemaSymbols.ELT_ASSERT)) {
-                    // traverse sibling assertion elements recursively, till
-                    // none is found
+                    // traverse sibling assertion elements recursively, till none is found
                     traverseAsserts(sibling, schemaDoc, grammar, enclosingCT);
                 } else {
                     // a non-assert element after assert is an error
                     fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-                    throw new ComplexTypeRecoverableError(
-                            "s4s-elt-invalid-content.1", new Object[] { fName,
-                                    DOMUtil.getLocalName(sibling) }, sibling);
+                    throw new ComplexTypeRecoverableError("s4s-elt-invalid-content.1", new Object[] { fName, DOMUtil.getLocalName(sibling) }, sibling);
                 }
             }
         } else {
