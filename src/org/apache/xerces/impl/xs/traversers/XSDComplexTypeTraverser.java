@@ -318,6 +318,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fAttrChecker.returnAttrArray(attrValues, schemaDoc);
                 return ocDecl;
             }
+            Attr anyWcMinOccurs = child.getAttributeNode(SchemaSymbols.ATT_MINOCCURS);
+            Attr anyWcMaxOccurs = child.getAttributeNode(SchemaSymbols.ATT_MAXOCCURS);
+            if (anyWcMinOccurs != null || anyWcMaxOccurs != null) {
+                // prohibit the attributes "minOccurs" and "maxOccurs" to appear on an <any> wild-card if it exists within <openContent> or <defaultOpenContent>
+                // REVISIT...
+                reportSchemaError("s4s-att-not-allowed", new Object[]{elmNode.getLocalName()+"=>"+SchemaSymbols.ELT_ANY, SchemaSymbols.ATT_MINOCCURS+"|"+SchemaSymbols.ATT_MAXOCCURS}, child); 
+            }
             Object[] wcAttrValues = fAttrChecker.checkAttributes(child, false, schemaDoc);
             ocDecl.fWildcard = fSchemaHandler.fWildCardTraverser.traverseWildcardDecl(child, wcAttrValues, schemaDoc, grammar);
             fAttrChecker.returnAttrArray(wcAttrValues, schemaDoc);
