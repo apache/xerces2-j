@@ -60,8 +60,9 @@
   <p>
    A sample demonstrating how to use the JAXP 1.4 Validation API
    to create a validator and use the validator to validate input
-   from SAX, DOM or a stream. The output of this program shows the 
-   time spent executing the Validator.validate(Source) method.
+   from SAX, DOM, StAX or a stream. The output of this program
+   shows the time spent executing the Validator.validate(Source)
+   method.
   </p>
   <p>
    This class is useful as a "poor-man's" performance tester to
@@ -70,8 +71,8 @@
    validation time of a validator will include both VM class load time 
    and validator initialization that would not be present in subsequent
    validations with the same document. Also note that when the source for
-   validation is SAX or a stream, the validation time will also include
-   the time to parse the document, whereas the DOM validation is
+   validation is SAX, StAX or a stream, the validation time will also 
+   include the time to parse the document, whereas the DOM validation is
    completely in memory. 
   </p>
   <note>
