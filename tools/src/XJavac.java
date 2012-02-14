@@ -97,6 +97,8 @@ public class XJavac extends Javac {
         StringBuffer bcpMember = new StringBuffer();
         bcpMember.append(javaHome).append("/bin/default/jclSC170/vm.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/ppc/default/jclSC170/vm.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/charsets.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/core.jar:");
