@@ -47,7 +47,7 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
 
 /**
  * A DTD grammar. This class implements the XNI handler interfaces
- * for DTD information so that it can build the approprate validation
+ * for DTD information so that it can build the appropriate validation
  * structures automatically from the callbacks.
  * 
  * @xerces.internal
