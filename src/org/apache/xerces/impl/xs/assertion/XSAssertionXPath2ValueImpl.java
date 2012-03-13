@@ -25,7 +25,7 @@ import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -123,7 +123,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
                     String itemValue = listStrTokens.nextToken();
                     xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue(listOrUnionType.getBuiltInKind(), itemValue)); 
                 }
-                xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XSTypeHelper.getXPath2ResultSequence(xdmItemList));                
+                xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XS11TypeHelper.getXPath2ResultSequence(xdmItemList));                
             }
             else {
                xsdTypecode = getXercesXSDTypeCodeFor$value(listOrUnionType);
@@ -144,7 +144,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
               }
               else if (typeDef instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition) typeDef).getSimpleType() == null) {
                   // set xpath context variable $value to an empty sequence
-                  xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XSTypeHelper.getXPath2ResultSequence(new ArrayList())); 
+                  xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XS11TypeHelper.getXPath2ResultSequence(new ArrayList())); 
               }
               else {
                   xsdTypecode = getXercesXSDTypeCodeFor$value(typeDef);
@@ -192,7 +192,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         // first, and set the type annotation of XPath2 context variable $value with this member type definition.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
-            if (XSTypeHelper.isStrValueValidForASimpleType(value, simpleTypeDv, Constants.SCHEMA_VERSION_1_1)) {
+            if (XS11TypeHelper.isStrValueValidForASimpleType(value, simpleTypeDv, Constants.SCHEMA_VERSION_1_1)) {
                setXDMTypedValueOf$valueForSTVarietyAtomic(value, getXercesXSDTypeCodeFor$value(simpleTypeDv), xpath2DynamicContext);
                break;
             }            
@@ -232,7 +232,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
             }
 
             // assign an XPath2 sequence to xpath context variable $value
-            xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XSTypeHelper.getXPath2ResultSequence(xdmItemList));
+            xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XS11TypeHelper.getXPath2ResultSequence(xdmItemList));
         }
         else if (complexTypeSimplContentType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
             // simple content type has variety xs:union
@@ -291,7 +291,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         final int memberTypesLength = memberTypes.getLength();
         for (int memTypeIdx = 0; memTypeIdx < memberTypesLength; memTypeIdx++) {
            XSSimpleType memSimpleType = (XSSimpleType) memberTypes.item(memTypeIdx);
-           if (XSTypeHelper.isStrValueValidForASimpleType(xdmItemStrValue, memSimpleType, Constants.SCHEMA_VERSION_1_1)) {
+           if (XS11TypeHelper.isStrValueValidForASimpleType(xdmItemStrValue, memSimpleType, Constants.SCHEMA_VERSION_1_1)) {
               // no more memberTypes need to be checked
               xdmItemType = memSimpleType; 
               break; 

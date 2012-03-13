@@ -29,7 +29,7 @@ import org.apache.xerces.impl.xs.assertion.XMLAssertHandler;
 import org.apache.xerces.impl.xs.assertion.XSAssert;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.Augmentations;
@@ -210,14 +210,14 @@ public class XSDAssertionValidator {
         if (simpleContentType != null) {                    
             if (complexTypeDef.getDerivationMethod() == XSConstants.DERIVATION_RESTRICTION) {
                 // add assertions for complexType -> simpleContent -> restriction cases 
-                Vector simpleContentAsserts = XSTypeHelper.getAssertsFromSimpleType(simpleContentType);
+                Vector simpleContentAsserts = XS11TypeHelper.getAssertsFromSimpleType(simpleContentType);
                 for (int assertIdx = 0; assertIdx < simpleContentAsserts.size(); assertIdx++) {
                     complexTypeAsserts.addXSObject((XSAssert) simpleContentAsserts.get(assertIdx));
                 }
             }
-            else if (XSTypeHelper.isComplexTypeDerivedFromSTList(complexTypeDef, XSConstants.DERIVATION_EXTENSION)) {
+            else if (XS11TypeHelper.isComplexTypeDerivedFromSTList(complexTypeDef, XSConstants.DERIVATION_EXTENSION)) {
                 // add assertions from the list->itemType of base schema simple type
-                Vector baseItemTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getItemType());
+                Vector baseItemTypeAsserts = XS11TypeHelper.getAssertsFromSimpleType(((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getItemType());
                 for (int assertIdx = 0; assertIdx < baseItemTypeAsserts.size(); assertIdx++) {
                     complexTypeAsserts.addXSObject((XSAssert) baseItemTypeAsserts.get(assertIdx)); 
                 }
@@ -251,7 +251,7 @@ public class XSDAssertionValidator {
             Augmentations attrAugs = attributes.getAugmentations(attrIndx);
             AttributePSVImpl attrPSVI = (AttributePSVImpl) attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
             XSSimpleTypeDefinition attrType = (XSSimpleTypeDefinition) attrPSVI.getTypeDefinition();                                   
-            if (attrType != null && !XSTypeHelper.isListContainsType(xsTypeList, attrType)) {
+            if (attrType != null && !XS11TypeHelper.isListContainsType(xsTypeList, attrType)) {
                 // since different attributes may be validated by the same type, so we deduplicate the type list here
                 // to only store unique assertions.
                 xsTypeList.add(attrType); 
@@ -318,7 +318,7 @@ public class XSDAssertionValidator {
          for (int memberTypeIdx = 0; memberTypeIdx < unionMemberTypes.getLength(); memberTypeIdx++) {
              XSSimpleTypeDefinition unionMemberType = (XSSimpleTypeDefinition) unionMemberTypes.item(memberTypeIdx);
              if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(unionMemberType.getNamespace())) {
-                Vector memberTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(unionMemberType);                
+                Vector memberTypeAsserts = XS11TypeHelper.getAssertsFromSimpleType(unionMemberType);                
                 if (!memberTypeAsserts.isEmpty()) {
                    assertImpl = (XSAssertImpl) memberTypeAsserts.get(0);
                    break;

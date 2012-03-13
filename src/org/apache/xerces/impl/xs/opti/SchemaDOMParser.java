@@ -28,7 +28,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.Augmentations;
@@ -809,7 +809,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
         while (st.hasMoreTokens()) {
             String QNameStr = st.nextToken();
-            XSTypeHelper.validateQNameValue(QNameStr, fNamespaceContext, fErrorReporter);          
+            XS11TypeHelper.validateQNameValue(QNameStr, fNamespaceContext, fErrorReporter);          
             stringTokens.add(QNameStr);
         }
 

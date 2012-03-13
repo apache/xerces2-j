@@ -51,7 +51,7 @@ import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public class XSTypeHelper { 
+public class XS11TypeHelper { 
     
     /*
      * Checks if the two schema type components are identical.
@@ -100,7 +100,7 @@ public class XSTypeHelper {
         // to the 1st available type in union's member type collection, is sufficient to achieve the objective of this method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
-            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && XSTypeHelper.isStrValueValidForASimpleType(content, simpleTypeDv, schemaVersion)) {
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(simpleTypeDv.getNamespace()) && XS11TypeHelper.isStrValueValidForASimpleType(content, simpleTypeDv, schemaVersion)) {
                 isValueValid = true;
                 validatedInfo.memberType = simpleTypeDv; 
                 break;  
@@ -147,16 +147,12 @@ public class XSTypeHelper {
         String prefix = parsedQname[0]; 
         String localpart = parsedQname[1];
         
-        // both prefix (if any) and localpart must be valid NCName
-        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix)) {
+        // both prefix (if any) and localpart of QName, must be valid NCName
+        if ((prefix.length() > 0 && !XMLChar.isValidNCName(prefix)) || !XMLChar.isValidNCName(localpart)) {
             errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1", new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
         }
 
-        if(!XMLChar.isValidNCName(localpart)) {
-            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "cvc-datatype-valid.1.2.1", new Object[] {qNameStr, "QName"}, XMLErrorReporter.SEVERITY_ERROR);
-        }
-
-        // resove prefix to a uri, report an error if failed
+        // try to resolve QName prefix to a namespace URI, and report an error if resolution fails.
         String uri = namespaceContext.getURI(prefix.intern());
         if (prefix.length() > 0 && uri == null) {
             errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "UndeclaredPrefix", new Object[] {qNameStr, prefix}, XMLErrorReporter.SEVERITY_ERROR);
@@ -238,7 +234,7 @@ public class XSTypeHelper {
         
         boolean typeExists = false;
         for (Iterator iter = typeList.iterator(); iter.hasNext();) {
-            if (XSTypeHelper.isSchemaTypesIdentical((XSTypeDefinition) iter.next(), targetType)) {
+            if (XS11TypeHelper.isSchemaTypesIdentical((XSTypeDefinition) iter.next(), targetType)) {
                 typeExists = true;
                 break;
             }
@@ -253,8 +249,9 @@ public class XSTypeHelper {
      */
     public static boolean isComplexTypeDerivedFromSTList(XSComplexTypeDefinition complexTypeDef, short derivationMethod) {
         
-        return complexTypeDef.getDerivationMethod() == derivationMethod && complexTypeDef.getBaseType() instanceof XSSimpleTypeDefinition &&
-               ((XSSimpleTypeDefinition)complexTypeDef.getBaseType()).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST;
+        XSTypeDefinition baseType = complexTypeDef.getBaseType();
+        return complexTypeDef.getDerivationMethod() == derivationMethod && baseType instanceof XSSimpleTypeDefinition &&
+               ((XSSimpleTypeDefinition)baseType).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST;
         
     } // isComplexTypeDerivedFromSTList
     
@@ -282,8 +279,9 @@ public class XSTypeHelper {
      * Check if a simpleType definition is one of special types (i.e xs:anyAtomicType or xs:anySimpleType).
      */
     public static boolean isSpecialSimpleType(XSSimpleType simpleType) {        
-        boolean isSpecialSimpleType = false;        
-        if (Constants.NS_XMLSCHEMA.equals(simpleType.getNamespace()) && (SchemaSymbols.ATTVAL_ANYATOMICTYPE.equals(simpleType.getName()) || SchemaSymbols.ATTVAL_ANYSIMPLETYPE.equals(simpleType.getName()))) {
+        boolean isSpecialSimpleType = false;
+        String typeName = simpleType.getName(); 
+        if (Constants.NS_XMLSCHEMA.equals(simpleType.getNamespace()) && (SchemaSymbols.ATTVAL_ANYATOMICTYPE.equals(typeName) || SchemaSymbols.ATTVAL_ANYSIMPLETYPE.equals(typeName))) {
             isSpecialSimpleType = true; 
         }        
         return isSpecialSimpleType;        
@@ -306,4 +304,4 @@ public class XSTypeHelper {
     } // getXPath2ResultSequence
     
     
-} // class XSTypeHelper
+} // class XS11TypeHelper

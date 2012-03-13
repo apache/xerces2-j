@@ -42,7 +42,7 @@ import org.apache.xerces.impl.xs.assertion.Test;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
@@ -1762,7 +1762,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         } else {
             // 'test' attribute is mandatory on an <assert> element
-            reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil.getLocalName(assertElement), XSTypeHelper.getSchemaTypeName(enclosingCT) }, assertElement);
+            reportSchemaError("src-assert.3.13.1", new Object[] { DOMUtil.getLocalName(assertElement), XS11TypeHelper.getSchemaTypeName(enclosingCT) }, assertElement);
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);

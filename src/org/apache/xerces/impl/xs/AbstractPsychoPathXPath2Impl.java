@@ -27,7 +27,7 @@ import javax.xml.XMLConstants;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSModel;
 import org.eclipse.wst.xml.xpath2.processor.DefaultDynamicContext;
@@ -164,10 +164,10 @@ public class AbstractPsychoPathXPath2Impl {
         } catch (XPathParserException ex) {
             // XPath parser exception
             if (SchemaSymbols.XS11_XPATHEXPR_COMPILE_WRN_MESG_1.equals(ex.getMessage())) {               
-                fSchemaHandler.reportSchemaWarning("cvc-xpath.3.13.4.2b", new Object[] {assertImpl.getTest().getXPathStr(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
+                fSchemaHandler.reportSchemaWarning("cvc-xpath.3.13.4.2b", new Object[] {assertImpl.getTest().getXPathStr(), XS11TypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
             }
             else {               
-                fSchemaHandler.reportSchemaError("cvc-xpath.3.13.4.2a", new Object[] {assertImpl.getTest().getXPathStr(), XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
+                fSchemaHandler.reportSchemaError("cvc-xpath.3.13.4.2a", new Object[] {assertImpl.getTest().getXPathStr(), XS11TypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition())}, schemaContextElem);
             }
         }  
 

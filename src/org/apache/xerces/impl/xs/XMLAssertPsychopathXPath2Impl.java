@@ -36,7 +36,7 @@ import org.apache.xerces.impl.xs.assertion.XMLAssertAdapter;
 import org.apache.xerces.impl.xs.assertion.XSAssert;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.ObjectListImpl;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -408,7 +408,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
      */
     private void evaluateAssertsFromItemTypeOfSTList(QName element, XSSimpleTypeDefinition listItemType, String value) throws Exception {
         
-        Vector itemTypeAsserts = XSTypeHelper.getAssertsFromSimpleType(listItemType);
+        Vector itemTypeAsserts = XS11TypeHelper.getAssertsFromSimpleType(listItemType);
         if (listItemType.getVariety() ==  XSSimpleTypeDefinition.VARIETY_ATOMIC && itemTypeAsserts.size() > 0) {
             for (int assertIdx = 0; assertIdx < itemTypeAsserts.size(); assertIdx++) {
                 XSAssertImpl itemTypeAssert = (XSAssertImpl) itemTypeAsserts.get(assertIdx);
@@ -511,7 +511,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);
         } else {
             // complex type with complex content. set xpath context variable $value to an empty sequence.
-            fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XSTypeHelper.getXPath2ResultSequence(new ArrayList()));
+            fXpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XS11TypeHelper.getXPath2ResultSequence(new ArrayList()));
         }
         
         XSObjectList assertList = (XSObjectList) assertions;
@@ -540,7 +540,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                     simpleTypeDefn = (XSSimpleTypeDefinition) xsTypeDefn;  
                 }
                 XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition)elemPsvi.getTypeDefinition();
-                if (XSTypeHelper.isComplexTypeDerivedFromSTList(complexTypeDef, XSConstants.DERIVATION_EXTENSION)) {
+                if (XS11TypeHelper.isComplexTypeDerivedFromSTList(complexTypeDef, XSConstants.DERIVATION_EXTENSION)) {
                     // reassign value to simple type instance
                     simpleTypeDefn = (XSSimpleTypeDefinition)complexTypeDef.getBaseType(); 
                 }
@@ -621,7 +621,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             XSSimpleTypeDefinition memType = (XSSimpleTypeDefinition) memberTypes.item(memberTypeIdx);
             
             // check for assertions on types in an non-schema namespace
-            if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.getNamespace()) && XSTypeHelper.simpleTypeHasAsserts(memType)) {
+            if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.getNamespace()) && XS11TypeHelper.simpleTypeHasAsserts(memType)) {
                 XSObjectList memberTypeFacets = memType.getMultiValueFacets();
                 final int memberTypeFacetsLength = memberTypeFacets.getLength();
                 for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < memberTypeFacetsLength; memberTypeFacetIdx++) {
@@ -706,7 +706,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             exceptionMesg = exceptionMesg + ".";  
         }
                
-        String typeNameStr = XSTypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition());
+        String typeNameStr = XS11TypeHelper.getSchemaTypeName(assertImpl.getTypeDefinition());
         
         String elemNameAnnotation = element.rawname;
         if (assertImpl.getAttrName() != null) {

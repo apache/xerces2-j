@@ -19,7 +19,7 @@ package org.apache.xerces.impl.xs.assertion;
 
 import org.apache.xerces.impl.xs.AbstractPsychoPathXPath2Impl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
@@ -230,7 +230,7 @@ public class XSAssertImpl extends AbstractPsychoPathXPath2Impl implements XSAsse
         String currXpathStr = this.getTest().getXPathStr();        
 
         // if type and the xpath string are same, the asserts are equal
-        if (XSTypeHelper.isSchemaTypesIdentical(pAssertion.getTypeDefinition(), fTypeDefinition) && 
+        if (XS11TypeHelper.isSchemaTypesIdentical(pAssertion.getTypeDefinition(), fTypeDefinition) && 
                 currXpathStr.equals(xpathStr)) {
             returnVal = true;  
         }

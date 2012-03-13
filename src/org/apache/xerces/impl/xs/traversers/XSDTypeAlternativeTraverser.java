@@ -33,7 +33,7 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLSymbols;
@@ -180,7 +180,7 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
             if (!fSchemaHandler.fXSConstraints.checkTypeDerivationOk(alternativeType, element.fType, block)) {
                 reportSchemaError(
                         "e-props-correct.7",
-                        new Object[] {element.getName(), XSTypeHelper.getSchemaTypeName(alternativeType), XSTypeHelper.getSchemaTypeName(element.fType)},
+                        new Object[] {element.getName(), XS11TypeHelper.getSchemaTypeName(alternativeType), XS11TypeHelper.getSchemaTypeName(element.fType)},
                         altElement);
                 // fall back to element declaration's type
                 alternativeType = element.fType;

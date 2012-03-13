@@ -21,7 +21,7 @@ import java.util.Vector;
 
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -116,7 +116,7 @@ public class XSDTypeAlternativeValidator {
     private boolean isInheritedAttributeOverridden(XMLAttributes attributes, XSAttributeDeclaration inhrAttrDecl) {      
         boolean attrExists = false;
         for (int attrIndx = 0; attrIndx < attributes.getLength(); attrIndx++) {        
-            if ((attributes.getLocalName(attrIndx)).equals(inhrAttrDecl.getName()) && XSTypeHelper.isURIEqual(attributes.getURI(attrIndx), inhrAttrDecl.getNamespace())) {              
+            if ((attributes.getLocalName(attrIndx)).equals(inhrAttrDecl.getName()) && XS11TypeHelper.isURIEqual(attributes.getURI(attrIndx), inhrAttrDecl.getNamespace())) {              
                 attrExists = true;
                 break;
             }
