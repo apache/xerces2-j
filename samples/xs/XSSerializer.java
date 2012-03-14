@@ -39,7 +39,7 @@ import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.identity.KeyRef;
 import org.apache.xerces.impl.xs.identity.Selector;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -885,7 +885,7 @@ public class XSSerializer {
             String requiredVal = (attrUse.getRequired() == true) ? SchemaSymbols.ATTVAL_REQUIRED : SchemaSymbols.ATTVAL_OPTIONAL;           
             XSAttributeDecl attrDecl = (XSAttributeDecl) attrUse.getAttrDeclaration();
             XSComplexTypeDefinition enclosingCTDefn = attrDecl.getEnclosingCTDefinition();
-            boolean complexTypesIdentical = (enclosingCTDefn == null) ? false : XSTypeHelper.isSchemaTypesIdentical(complexTypeDecl, enclosingCTDefn);
+            boolean complexTypesIdentical = (enclosingCTDefn == null) ? false : XS11TypeHelper.isSchemaTypesIdentical(complexTypeDecl, enclosingCTDefn);
             // do not add attributes, from the base type. they will be serialized as part of the base type serialization.
             if (complexTypesIdentical) {
                 addAttributeToSchemaComponent(document, parentDomNode, attrDecl, constraintName, constraintVal, requiredVal); 
