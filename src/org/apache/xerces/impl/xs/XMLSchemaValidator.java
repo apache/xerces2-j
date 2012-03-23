@@ -2596,7 +2596,10 @@ public class XMLSchemaValidator
 
     private XSElementDecl findLocallyDeclaredType(QName element,
             XSCMValidator currentCM, XSTypeDefinition baseType) {
-        XSElementDecl elemDecl = currentCM.findMatchingElemDecl(element, fSubGroupHandler);
+        XSElementDecl elemDecl = null;
+        if (currentCM != null) {
+           elemDecl = currentCM.findMatchingElemDecl(element, fSubGroupHandler);
+        }
         if (elemDecl == null) {
             if (baseType.getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE &&
                     baseType != SchemaGrammar.getXSAnyType(fSchemaVersion)) {
