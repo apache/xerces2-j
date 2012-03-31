@@ -191,20 +191,22 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             Augmentations attrAugs = attributes.getAugmentations(attrIdx);
             AttributePSVImpl attrPsvi = (AttributePSVImpl)attrAugs.getItem(Constants.ATTRIBUTE_PSVI);
             XSSimpleTypeDefinition attrSimpleType = (XSSimpleTypeDefinition) attrPsvi.getTypeDefinition();
-            List attrAssertList = fXmlSchemaValidator.getAssertionValidator().getAssertsFromSimpleType(attrSimpleType);
-            if (attrAssertList != null) {
-                boolean isTypeDerivedFromList = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
-                boolean isTypeDerivedFromUnion = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;                
-                for (int assertIdx = 0; assertIdx < attrAssertList.size(); assertIdx++) {
-                    XSAssertImpl assertImpl = (XSAssertImpl)attrAssertList.get(assertIdx);
-                    assertImpl.setAttrName(attrQname.localpart);
-                    evaluateOneAssertionFromSimpleType(element, attrValue, attrAugs, attrSimpleType, isTypeDerivedFromList, isTypeDerivedFromUnion, assertImpl, true, attrQname);
-                    // evaluate assertions on itemType of xs:list
-                    XSSimpleTypeDefinition attrItemType = attrSimpleType.getItemType();
-                    if (isTypeDerivedFromList && attrItemType != null) {
-                        evaluateAssertsFromItemTypeOfSTList(element, attrItemType, attrValue);
-                    }
-                }                
+            if (attrSimpleType != null) {
+                List attrAssertList = fXmlSchemaValidator.getAssertionValidator().getAssertsFromSimpleType(attrSimpleType);
+                if (attrAssertList != null) {
+                    boolean isTypeDerivedFromList = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+                    boolean isTypeDerivedFromUnion = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;                
+                    for (int assertIdx = 0; assertIdx < attrAssertList.size(); assertIdx++) {
+                        XSAssertImpl assertImpl = (XSAssertImpl)attrAssertList.get(assertIdx);
+                        assertImpl.setAttrName(attrQname.localpart);
+                        evaluateOneAssertionFromSimpleType(element, attrValue, attrAugs, attrSimpleType, isTypeDerivedFromList, isTypeDerivedFromUnion, assertImpl, true, attrQname);
+                        // evaluate assertions on itemType of xs:list
+                        XSSimpleTypeDefinition attrItemType = attrSimpleType.getItemType();
+                        if (isTypeDerivedFromList && attrItemType != null) {
+                            evaluateAssertsFromItemTypeOfSTList(element, attrItemType, attrValue);
+                        }
+                    }                
+                }
             }
         }
         
