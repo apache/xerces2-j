@@ -2293,6 +2293,15 @@ public class XMLSchemaValidator
         // if no decl/type found for the current element
         final boolean isSchema11 = (fSchemaVersion == Constants.SCHEMA_VERSION_1_1);
         boolean needToPushErrorContext = false;
+        
+        if (fCurrentType == null && xsiType != null && fElementDepth == 0) {
+            fXSIErrorReporter.fErrorReporter.reportError(
+                    XSMessageFormatter.SCHEMA_DOMAIN,
+                    "cvc-elt.1.a",
+                    new Object[] { element.rawname },
+                    XMLErrorReporter.SEVERITY_ERROR);  
+        }
+        
         if (fCurrentType == null && xsiType == null) {
             // if this is the validation root, report an error, because
             // we can't find eith decl or type for this element
@@ -2339,7 +2348,8 @@ public class XMLSchemaValidator
             else if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.PC_STRICT) {
                 // report error, because wilcard = strict
                 reportSchemaError("cvc-complex-type.2.4.c", new Object[] { element.rawname });
-            }
+            }           
+            
             // no element decl or type found for this element.
             // Allowed by the spec, we can choose to either laxly assess this
             // element, or to skip it. Now we choose lax assessment.
