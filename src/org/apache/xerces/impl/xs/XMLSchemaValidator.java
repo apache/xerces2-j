@@ -2294,14 +2294,6 @@ public class XMLSchemaValidator
         final boolean isSchema11 = (fSchemaVersion == Constants.SCHEMA_VERSION_1_1);
         boolean needToPushErrorContext = false;
         
-        if (fCurrentType == null && xsiType != null && fElementDepth == 0) {
-            fXSIErrorReporter.fErrorReporter.reportError(
-                    XSMessageFormatter.SCHEMA_DOMAIN,
-                    "cvc-elt.1.a",
-                    new Object[] { element.rawname },
-                    XMLErrorReporter.SEVERITY_ERROR);  
-        }
-        
         if (fCurrentType == null && xsiType == null) {
             // if this is the validation root, report an error, because
             // we can't find eith decl or type for this element
