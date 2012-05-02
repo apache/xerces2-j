@@ -2106,14 +2106,6 @@ public class XMLSchemaValidator
             xsiType = attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_TYPE);
         }
         
-        if (fCurrentType == null && xsiType != null && fElementDepth == 0) {
-            fXSIErrorReporter.fErrorReporter.reportError(
-                    XSMessageFormatter.SCHEMA_DOMAIN,
-                    "cvc-elt.1.a",
-                    new Object[] { element.rawname },
-                    XMLErrorReporter.SEVERITY_ERROR);  
-        }
-        
         // if no decl/type found for the current element
         if (fCurrentType == null && xsiType == null) {
             // if this is the validation root, report an error, because
