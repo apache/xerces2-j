@@ -47,7 +47,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class DatatypeInterfaceUsage extends DefaultHandler {
 
-    private PSVIProvider provider;
+    private final PSVIProvider provider;
     
     public DatatypeInterfaceUsage(PSVIProvider p) {
         provider = p;
