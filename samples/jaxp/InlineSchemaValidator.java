@@ -117,13 +117,13 @@ public class InlineSchemaValidator
     //
     
     /** Print writer. */
-    protected PrintWriter fOut = new PrintWriter(System.out);
+    protected final PrintWriter fOut = new PrintWriter(System.out);
     
     /** Prefix to URI mappings for the NamespaceContext. */
-    protected HashMap fPrefixToURIMappings;
+    protected final HashMap fPrefixToURIMappings;
     
     /** URI to prefix mappings for the NamespaceContext. */
-    protected HashMap fURIToPrefixMappings;
+    protected final HashMap fURIToPrefixMappings;
 
     //
     // Constructors

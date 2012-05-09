@@ -123,7 +123,7 @@ public class SourceValidator
     // Data
     //
     
-    protected PrintWriter fOut = new PrintWriter(System.out);
+    protected final PrintWriter fOut = new PrintWriter(System.out);
 
     //
     // Constructors
