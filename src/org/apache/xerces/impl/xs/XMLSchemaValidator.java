@@ -4020,6 +4020,9 @@ public class XMLSchemaValidator
     
     void processRootTypeQName(final javax.xml.namespace.QName rootTypeQName) {
         String rootTypeNamespace = rootTypeQName.getNamespaceURI();
+        // Add namespace to symbol table, to make sure it's interned.
+        // This namespace may be later compared with other values using ==.
+        rootTypeNamespace = fSymbolTable.addSymbol(rootTypeNamespace);
         if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
             rootTypeNamespace = null;
         }
@@ -4047,6 +4050,9 @@ public class XMLSchemaValidator
     
     void processRootElementDeclQName(final javax.xml.namespace.QName rootElementDeclQName, final QName element) {
         String rootElementDeclNamespace = rootElementDeclQName.getNamespaceURI();
+        // Add namespace to symbol table, to make sure it's interned.
+        // This namespace may be later compared with other values using ==.
+        rootElementDeclNamespace = fSymbolTable.addSymbol(rootElementDeclNamespace);
         if (rootElementDeclNamespace != null && rootElementDeclNamespace.equals(XMLConstants.NULL_NS_URI)) {
             rootElementDeclNamespace = null;
         }
