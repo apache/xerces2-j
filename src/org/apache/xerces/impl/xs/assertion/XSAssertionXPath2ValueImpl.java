@@ -30,7 +30,6 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
-import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -45,7 +44,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This class defines a set of methods to work with XPath 2.0 dynamic context variable "$value" that is needed for assertions evaluation.
+ * This class defines a set of methods to work with XPath 2.0 dynamic context 
+ * variable "$value", that is needed for assertions evaluation.
  * 
  * @xerces.internal
  * 
@@ -82,9 +82,8 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         
         String strValueOf$value = "";        
         if (textChildCount == effectiveChildNodeCount) {
-            // the DOM tree we are inspecting has simple content. therefore we can find the desired string value. 
-            XSElementDeclaration elemDecl = pElemPSVI.getElementDeclaration();
-            if ((elemDecl.getTypeDefinition()).derivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ATTVAL_STRING, XSConstants.DERIVATION_RESTRICTION)) {
+            // the DOM tree we are inspecting has simple content. therefore we can find the desired string value.
+            if ((pElemPSVI.getTypeDefinition()).derivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ATTVAL_STRING, XSConstants.DERIVATION_RESTRICTION)) {
                 // if element's schema type is derived by restriction from xs:string, white-space normalization is not needed for the
                 // string value for context variable $value.
                 strValueOf$value = textValueContents.toString();  
