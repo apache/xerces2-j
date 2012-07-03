@@ -53,15 +53,15 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.ObjectListImpl;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XS11TypeHelper;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -80,6 +80,7 @@ import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
@@ -2620,7 +2621,7 @@ public class XMLSchemaValidator
             fAssertionValidator.handleStartElement(element, attributes);
         }
         catch(Exception ex) {
-            throw new XNIException(ex.getMessage(), ex); 
+            throw new XMLParseException(fLocator, ex.getMessage());
         } 
     } // assertionValidatorStartElementDelegate
 
@@ -2763,7 +2764,7 @@ public class XMLSchemaValidator
                assertionValidatorEndElementDelegate(element); 
             }
             catch(Exception ex) {
-               // NO OP  
+               throw new XMLParseException(fLocator, ex.getMessage());
             }
         }
 
