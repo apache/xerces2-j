@@ -2641,6 +2641,11 @@ public class DTDGrammar
      */
     protected static final class QNameHashtable {
         
+        /**
+         * Fills an array with a random sequence of prime numbers.
+         * 
+         * @xerces.internal
+         */
         private static final class PrimeNumberSequenceGenerator {
             
             private static int [] PRIMES = {
