@@ -31,19 +31,34 @@ public class SymbolHash {
     //
     // Constants
     //
-
+    
     /** Default table size. */
-    protected int fTableSize = 101;
+    protected static final int TABLE_SIZE = 101;
+    
+    /** Maximum hash collisions per bucket. */
+    protected static final int MAX_HASH_COLLISIONS = 40;
+    
+    protected static final int MULTIPLIERS_SIZE = 1 << 5;
+    protected static final int MULTIPLIERS_MASK = MULTIPLIERS_SIZE - 1;
 
     //
     // Data
     //
+    
+    /** Actual table size **/
+    protected int fTableSize;
 
     /** Buckets. */
     protected Entry[] fBuckets; 
 
     /** Number of elements. */
     protected int fNum = 0;
+    
+    /**
+     * Array of randomly selected hash function multipliers or <code>null</code>
+     * if the default String.hashCode() function should be used.
+     */
+    protected int[] fHashMultipliers;
 
     //
     // Constructors
@@ -51,7 +66,7 @@ public class SymbolHash {
 
     /** Constructs a key table with the default size. */
     public SymbolHash() {
-        fBuckets = new Entry[fTableSize];
+        this(TABLE_SIZE);
     }
 
     /**
@@ -77,26 +92,37 @@ public class SymbolHash {
      * @param value 
      */
     public void put(Object key, Object value) {
+        
+        // search for identical key
+        int collisionCount = 0;
         final int hash = hash(key);
         int bucket = hash % fTableSize;
-        Entry entry = search(key, bucket);
-
-        // replace old value
-        if (entry != null) {
-            entry.value = value;
-        }
-        // create new entry
-        else {
-            if (fNum >= fTableSize) {
-                // Rehash the table if the number of entries
-                // would exceed the number of buckets.
-                rehash();
-                bucket = hash % fTableSize;
+        for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+            if (key.equals(entry.key)) {
+                // replace old value
+                entry.value = value;
+                return;
             }
-            entry = new Entry(key, value, fBuckets[bucket]);
-            fBuckets[bucket] = entry;
-            fNum++;
+            ++collisionCount;
         }
+        
+        if (fNum >= fTableSize) {
+            // Rehash the table if the number of entries
+            // would exceed the number of buckets.
+            rehash();
+            bucket = hash % fTableSize;
+        }
+        else if (collisionCount >= MAX_HASH_COLLISIONS && key instanceof String) {
+            // Select a new hash function and rehash the table if
+            // MAX_HASH_COLLISIONS is exceeded.
+            rebalance();
+            bucket = hash(key) % fTableSize;
+        }
+        
+        // create new entry
+        Entry entry = new Entry(key, value, fBuckets[bucket]);
+        fBuckets[bucket] = entry;
+        ++fNum;
     }
 
     /**
@@ -161,6 +187,7 @@ public class SymbolHash {
     public SymbolHash makeClone() {
         SymbolHash newTable = new SymbolHash(fTableSize);
         newTable.fNum = fNum;
+        newTable.fHashMultipliers = fHashMultipliers != null ? (int[]) fHashMultipliers.clone() : null;
         for (int i = 0; i < fTableSize; i++) {
             if (fBuckets[i] != null) {
                 newTable.fBuckets[i] = fBuckets[i].makeClone();
@@ -178,6 +205,7 @@ public class SymbolHash {
             fBuckets[i] = null;
         }
         fNum = 0;
+        fHashMultipliers = null;
     } // clear():  void
 
     protected Entry search(Object key, int bucket) {
@@ -195,8 +223,21 @@ public class SymbolHash {
      * @param key The key to hash.
      */
     protected int hash(Object key) {
-        return key.hashCode() & 0x7FFFFFFF;
-    }
+        if (fHashMultipliers == null || !(key instanceof String)) {
+            return key.hashCode() & 0x7FFFFFFF;
+        }
+        return hash0((String) key);
+    } // hash(Object):int
+    
+    private int hash0(String symbol) {
+        int code = 0;
+        final int length = symbol.length();
+        final int[] multipliers = fHashMultipliers;
+        for (int i = 0; i < length; ++i) {
+            code = code * multipliers[i & MULTIPLIERS_MASK] + symbol.charAt(i);
+        }
+        return code & 0x7FFFFFFF;
+    } // hash0(String):int
     
     /**
      * Increases the capacity of and internally reorganizes this 
@@ -205,11 +246,28 @@ public class SymbolHash {
      * number of keys in the SymbolHash exceeds its number of buckets.
      */
     protected void rehash() {
-
+        rehashCommon((fBuckets.length << 1) + 1);
+    }
+    
+    /**
+     * Randomly selects a new hash function and reorganizes this SymbolHash
+     * in order to more evenly distribute its entries across the table. This 
+     * method is called automatically when the number keys in one of the 
+     * SymbolHash's buckets exceeds MAX_HASH_COLLISIONS.
+     */
+    protected void rebalance() {
+        if (fHashMultipliers == null) {
+            fHashMultipliers = new int[MULTIPLIERS_SIZE];
+        }
+        PrimeNumberSequenceGenerator.generateSequence(fHashMultipliers);
+        rehashCommon(fBuckets.length);
+    }
+    
+    private void rehashCommon(final int newCapacity) {
+        
         final int oldCapacity = fBuckets.length;
         final Entry[] oldTable = fBuckets;
 
-        final int newCapacity = (oldCapacity << 1) + 1;
         final Entry[] newTable = new Entry[newCapacity];
 
         fBuckets = newTable;

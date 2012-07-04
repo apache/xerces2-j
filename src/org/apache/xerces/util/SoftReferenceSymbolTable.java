@@ -127,6 +127,7 @@ public class SoftReferenceSymbolTable extends SymbolTable {
     public String addSymbol(String symbol) {
         clean();
         // search for identical symbol
+        int collisionCount = 0;
         int bucket = hash(symbol) % fTableSize;
         for (SREntry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             SREntryData data = (SREntryData)entry.get();
@@ -136,13 +137,20 @@ public class SoftReferenceSymbolTable extends SymbolTable {
             if (data.symbol.equals(symbol)) {
                 return data.symbol;
             }
+            ++collisionCount;
         }
         
         if (fCount >= fThreshold) {
             // Rehash the table if the threshold is exceeded
             rehash();
             bucket = hash(symbol) % fTableSize;
-        } 
+        }
+        else if (collisionCount >= fCollisionThreshold) {
+            // Select a new hash function and rehash the table if
+            // the collision threshold is exceeded.
+            rebalance();
+            bucket = hash(symbol) % fTableSize;
+        }
         
         // add new entry
         symbol = symbol.intern();
@@ -165,6 +173,7 @@ public class SoftReferenceSymbolTable extends SymbolTable {
     public String addSymbol(char[] buffer, int offset, int length) {
         clean();
         // search for identical symbol
+        int collisionCount = 0;
         int bucket = hash(buffer, offset, length) % fTableSize;
         OUTER: for (SREntry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             SREntryData data = (SREntryData)entry.get();
@@ -174,18 +183,26 @@ public class SoftReferenceSymbolTable extends SymbolTable {
             if (length == data.characters.length) {
                 for (int i = 0; i < length; i++) {
                     if (buffer[offset + i] != data.characters[i]) {
+                        ++collisionCount;
                         continue OUTER;
                     }
                 }
                 return data.symbol;
             }
+            ++collisionCount;
         }
         
         if (fCount >= fThreshold) {
             // Rehash the table if the threshold is exceeded
             rehash();
             bucket = hash(buffer, offset, length) % fTableSize;
-        } 
+        }
+        else if (collisionCount >= fCollisionThreshold) {
+            // Select a new hash function and rehash the table if
+            // the collision threshold is exceeded.
+            rebalance();
+            bucket = hash(buffer, offset, length) % fTableSize;
+        }
         
         // add new entry
         String symbol = new String(buffer, offset, length).intern();
@@ -218,6 +235,20 @@ public class SoftReferenceSymbolTable extends SymbolTable {
         rehashCommon(((int) (fCount / fLoadFactor)) * 2 + 1);
     }
     
+    /**
+     * Randomly selects a new hash function and reorganizes this SymbolTable
+     * in order to more evenly distribute its entries across the table. This 
+     * method is called automatically when the number keys in one of the 
+     * SymbolTable's buckets exceeds the given collision threshold.
+     */
+    protected void rebalance() {
+        if (fHashMultipliers == null) {
+            fHashMultipliers = new int[MULTIPLIERS_SIZE];
+        }
+        PrimeNumberSequenceGenerator.generateSequence(fHashMultipliers);
+        rehashCommon(fBuckets.length);
+    }
+    
     private void rehashCommon(final int newCapacity) {
         
         final int oldCapacity = fBuckets.length;
@@ -235,7 +266,7 @@ public class SoftReferenceSymbolTable extends SymbolTable {
 
                 SREntryData data = (SREntryData)e.get();
                 if (data != null) {
-                    int index = hash(data.characters, 0, data.characters.length) % newCapacity;
+                    int index = hash(data.symbol) % newCapacity;
                     if (newTable[index] != null) {
                         newTable[index].prev = e;
                     }

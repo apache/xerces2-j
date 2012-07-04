@@ -19,6 +19,7 @@ package org.apache.xerces.impl.dtd;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.apache.xerces.impl.dtd.models.CMAny;
 import org.apache.xerces.impl.dtd.models.CMBinOp;
@@ -2639,6 +2640,26 @@ public class DTDGrammar
      * @author Andy Clark, IBM
      */
     protected static final class QNameHashtable {
+        
+        private static final class PrimeNumberSequenceGenerator {
+            
+            private static int [] PRIMES = {
+                3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,  41,  43,  47,  53,  59, 
+               61,  67,  71,  73,  79,  83,  89,  97, 101, 103, 107, 109, 113, 127, 131, 137, 
+              139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 
+              229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 
+              317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 
+              421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 
+              521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 
+              619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727};
+            
+            static void generateSequence(int[] arrayToFill) {
+                Random r = new Random();
+                for (int i = 0; i < arrayToFill.length; ++i) {
+                    arrayToFill[i] = PRIMES[r.nextInt(PRIMES.length)];
+                }  
+            }
+        }
     
         //
         // Constants
@@ -2651,11 +2672,29 @@ public class DTDGrammar
         //       that we get a better distribution for hashing. -Ac
         /** Hashtable size (101). */
         private static final int HASHTABLE_SIZE = 101;
+        
+        /** Maximum hash collisions per bucket for a table with load factor == 1. */
+        private static final int MAX_HASH_COLLISIONS = 40;
+        
+        private static final int MULTIPLIERS_SIZE = 1 << 5;
+        private static final int MULTIPLIERS_MASK = MULTIPLIERS_SIZE - 1;
 
         //
         // Data
         //
         private Object[][] fHashTable = new Object[HASHTABLE_SIZE][];
+        
+        /** actual table size **/
+        private int fTableSize = HASHTABLE_SIZE;
+
+        /** The total number of entries in the hash table. */
+        private int fCount = 0;
+        
+        /**
+         * Array of randomly selected hash function multipliers or <code>null</code>
+         * if the default String.hashCode() function should be used.
+         */
+        private int[] fHashMultipliers;
 
         //
         // Public methods
@@ -2663,7 +2702,7 @@ public class DTDGrammar
         /** Associates the given value with the specified key tuple. */
         public void put(String key, int value) {
 
-            int hash = (key.hashCode() & 0x7FFFFFFF) % HASHTABLE_SIZE;
+            int hash = (hash(key) & 0x7FFFFFFF) % fTableSize;
             Object[] bucket = fHashTable[hash];
 
             if (bucket == null) {
@@ -2672,6 +2711,11 @@ public class DTDGrammar
                 bucket[1] = key;
                 bucket[2] = new int[]{value};
                 fHashTable[hash] = bucket;
+                if (++fCount > fTableSize) {
+                    // Rehash the table if the number of entries
+                    // would exceed the number of buckets.
+                    rehash();
+                }
             } else {
                 int count = ((int[])bucket[0])[0];
                 int offset = 1 + 2*count;
@@ -2692,10 +2736,20 @@ public class DTDGrammar
                     }
                     j += 2;
                 }
-                if (! found) {
+                if (!found) {
                     bucket[offset++] = key;
                     bucket[offset]= new int[]{value};
                     ((int[])bucket[0])[0] = ++count;
+                    if (++fCount > fTableSize) {
+                        // Rehash the table if the number of entries
+                        // would exceed the number of buckets.
+                        rehash();
+                    }
+                    else if (count > MAX_HASH_COLLISIONS) {
+                        // Select a new hash function and rehash the table if
+                        // MAX_HASH_COLLISIONS is exceeded.
+                        rebalance();
+                    }
                 }
 
             }
@@ -2706,7 +2760,7 @@ public class DTDGrammar
 
         /** Returns the value associated with the specified key tuple. */
         public int get(String key) {
-            int hash = (key.hashCode() & 0x7FFFFFFF) % HASHTABLE_SIZE;
+            int hash = (hash(key) & 0x7FFFFFFF) % fTableSize;
             Object[] bucket = fHashTable[hash];
 
             if (bucket == null) {
@@ -2724,6 +2778,93 @@ public class DTDGrammar
             return -1;
 
         } // get(int,String,String)
+        
+        public int hash(String symbol) {
+            if (fHashMultipliers == null) {
+                return symbol.hashCode();
+            }
+            return hash0(symbol);
+        } // hash(String):int
+        
+        private int hash0(String symbol) {
+            int code = 0;
+            final int length = symbol.length();
+            final int[] multipliers = fHashMultipliers;
+            for (int i = 0; i < length; ++i) {
+                code = code * multipliers[i & MULTIPLIERS_MASK] + symbol.charAt(i);
+            }
+            return code;
+        } // hash0(String):int
+        
+        private void rehash() {
+            rehashCommon(fHashTable.length * 2 + 1);
+        } // rehash()
+        
+        private void rebalance() {
+            if (fHashMultipliers == null) {
+                fHashMultipliers = new int[MULTIPLIERS_SIZE];
+            }
+            PrimeNumberSequenceGenerator.generateSequence(fHashMultipliers);
+            rehashCommon(fHashTable.length);
+        } // rebalance()
+        
+        private void rehashCommon(final int newCapacity) {
+            
+            final int oldCapacity = fHashTable.length;
+            final Object[][] oldTable = fHashTable;
+
+            final Object[][] newTable = new Object[newCapacity][];
+            
+            fHashTable = newTable;
+            fTableSize = fHashTable.length;
+            
+            for (int i = 0; i < oldCapacity; ++i) {
+                final Object[] oldBucket = oldTable[i];
+                if (oldBucket != null) {
+                    final int oldCount = ((int[]) oldBucket[0])[0];
+                    boolean oldBucketReused = false;
+                    int k = 1;
+                    for (int j = 0; j < oldCount; ++j) {
+                        final String key = (String) oldBucket[k];
+                        final Object value = oldBucket[k+1];
+                        
+                        final int hash = (hash(key) & 0x7FFFFFFF) % fTableSize;
+                        Object[] bucket = fHashTable[hash];
+                        
+                        if (bucket == null) {
+                            if (oldBucketReused) {
+                                bucket = new Object[1 + 2*INITIAL_BUCKET_SIZE];
+                                bucket[0] = new int[]{1};
+                            }
+                            else {
+                                bucket = oldBucket;
+                                ((int[])bucket[0])[0] = 1;
+                                oldBucketReused = true;
+                            }
+                            bucket[1] = key;
+                            bucket[2] = value;
+                            fHashTable[hash] = bucket;
+                        }
+                        else {
+                            int count = ((int[])bucket[0])[0];
+                            int offset = 1 + 2*count;
+                            if (offset == bucket.length) {
+                                int newSize = count + INITIAL_BUCKET_SIZE;
+                                Object[] newBucket = new Object[1 + 2*newSize];
+                                System.arraycopy(bucket, 0, newBucket, 0, offset);
+                                bucket = newBucket;
+                                fHashTable[hash] = bucket;
+                            }
+                            bucket[offset++] = key;
+                            bucket[offset]= value;
+                            ((int[])bucket[0])[0] = ++count;
+                        }
+                        k += 2;
+                    }
+                } 
+            }
+            
+        } // rehashCommon(int)
 
     }  // class QNameHashtable
 
