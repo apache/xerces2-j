@@ -20,6 +20,10 @@ package org.apache.xerces.util;
 import java.util.Random;
 
 /**
+ * Fills an array with a random sequence of prime numbers.
+ * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 final class PrimeNumberSequenceGenerator {
