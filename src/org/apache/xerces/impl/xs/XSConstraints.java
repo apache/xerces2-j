@@ -644,8 +644,8 @@ public abstract class XSConstraints {
         // or if the 2 substitution groups overlap.
         for (int i = subGroup1.length-1; i >= 0; i--) {
             for (int j = subGroup2.length-1; j >= 0; j--) {
-                if (subGroup1[i].fName == subGroup2[i].fName &&
-                        subGroup1[i].fTargetNamespace == subGroup2[i].fTargetNamespace) {
+                if (subGroup1[i].fName == subGroup2[j].fName &&
+                        subGroup1[i].fTargetNamespace == subGroup2[j].fTargetNamespace) {
                     return true;
                 }
             }
