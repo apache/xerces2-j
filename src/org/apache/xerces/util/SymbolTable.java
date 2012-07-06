@@ -201,6 +201,11 @@ public class SymbolTable {
             }
             ++collisionCount;
         }
+        return addSymbol0(symbol, bucket, collisionCount);
+        
+    } // addSymbol(String):String
+    
+    private String addSymbol0(String symbol, int bucket, int collisionCount) {
         
         if (fCount >= fThreshold) {
             // Rehash the table if the threshold is exceeded
@@ -220,7 +225,7 @@ public class SymbolTable {
         ++fCount;
         return entry.symbol;
         
-    } // addSymbol(String):String
+    } // addSymbol0(String,int,int):String
 
     /**
      * Adds the specified symbol to the symbol table and returns a
@@ -249,6 +254,11 @@ public class SymbolTable {
             }
             ++collisionCount;
         }
+        return addSymbol0(buffer, offset, length, bucket, collisionCount);
+        
+    } // addSymbol(char[],int,int):String
+    
+    private String addSymbol0(char[] buffer, int offset, int length, int bucket, int collisionCount) {
         
         if (fCount >= fThreshold) {
             // Rehash the table if the threshold is exceeded
@@ -268,7 +278,7 @@ public class SymbolTable {
         ++fCount;
         return entry.symbol;
         
-    } // addSymbol(char[],int,int):String
+    } // addSymbol0(char[],int,int,int,int):String
 
     /**
      * Returns a hashcode value for the specified symbol. The value
