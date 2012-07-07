@@ -69,7 +69,7 @@ public class Test implements XMLErrorHandler {
     // is meant to be a pass or fail test
     // true means the test should pass
     private static final int NUM_TESTS = 41;
-    private static boolean[] TEST_RESULTS = new boolean[] {
+    private static final boolean[] TEST_RESULTS = new boolean[] {
         // one value for each test
         true, true, true, true, true, true, false, true, false, true, // 10
         false, false, false, false, true, true, true, false, true, true, // 20
