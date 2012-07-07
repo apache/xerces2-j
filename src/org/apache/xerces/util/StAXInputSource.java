@@ -39,7 +39,7 @@ public final class StAXInputSource extends XMLInputSource {
     }
     
     public StAXInputSource(XMLStreamReader source, boolean consumeRemainingContent) {
-        super(null, source.getLocation().getSystemId(), null);
+        super(null, getStreamReaderSystemId(source), null);
         if (source == null) {
             throw new IllegalArgumentException("XMLStreamReader parameter cannot be null.");
         }
@@ -76,6 +76,13 @@ public final class StAXInputSource extends XMLInputSource {
     
     public void setSystemId(String systemId){
         throw new UnsupportedOperationException("Cannot set the system ID on a StAXInputSource");
+    }
+    
+    private static String getStreamReaderSystemId(XMLStreamReader reader) {
+        if (reader != null) {
+            return reader.getLocation().getSystemId();
+        }
+        return null;
     }
     
     private static String getEventReaderSystemId(XMLEventReader reader) {
