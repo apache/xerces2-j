@@ -27,7 +27,6 @@ import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.LSParser;
 
 /**
  * This sample program illustrates how to use load XML Schemas and 
@@ -38,16 +37,6 @@ import org.w3c.dom.ls.LSParser;
  */
 public class QueryXS implements DOMErrorHandler {
 
-    /** Default namespaces support (true). */
-    protected static final boolean DEFAULT_NAMESPACES = true;
-
-    /** Default validation support (false). */
-    protected static final boolean DEFAULT_VALIDATION = false;
-
-    /** Default Schema validation support (false). */
-    protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
-
-    static LSParser builder;
     public static void main(String[] argv) {
 
         if (argv.length == 0) {
