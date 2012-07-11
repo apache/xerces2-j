@@ -194,8 +194,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
             if (attrSimpleType != null) {
                 List attrAssertList = fXmlSchemaValidator.getAssertionValidator().getAssertsFromSimpleType(attrSimpleType);
                 if (attrAssertList != null) {
-                    boolean isTypeDerivedFromList = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
-                    boolean isTypeDerivedFromUnion = ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;                
+                    boolean isTypeDerivedFromList = isTypeDerivedFromSTList(attrSimpleType);
+                    boolean isTypeDerivedFromUnion = isTypeDerivedFromSTUnion(attrSimpleType);                
                     for (int assertIdx = 0; assertIdx < attrAssertList.size(); assertIdx++) {
                         XSAssertImpl assertImpl = (XSAssertImpl)attrAssertList.get(assertIdx);
                         assertImpl.setAttrName(attrQname.localpart);
@@ -345,8 +345,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     private void evaluateAssertionsFromASimpleType(QName element, List assertions, String value, Augmentations augs) throws Exception {  
               
         XSSimpleTypeDefinition simpleTypeDefn = (XSSimpleTypeDefinition) ((ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI)).getTypeDefinition();
-        boolean isTypeDerivedFromList = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
-        boolean isTypeDerivedFromUnion = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
+        boolean isTypeDerivedFromList = isTypeDerivedFromSTList(simpleTypeDefn);
+        boolean isTypeDerivedFromUnion = isTypeDerivedFromSTUnion(simpleTypeDefn);
         
         Vector assertList = (Vector) assertions;
         for (int assertIdx = 0; assertIdx < assertList.size(); assertIdx++) {
@@ -546,8 +546,8 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                     // reassign value to simple type instance
                     simpleTypeDefn = (XSSimpleTypeDefinition)complexTypeDef.getBaseType(); 
                 }
-                boolean isTypeDerivedFromList = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
-                boolean isTypeDerivedFromUnion = ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
+                boolean isTypeDerivedFromList = isTypeDerivedFromSTList(simpleTypeDefn);
+                boolean isTypeDerivedFromUnion = isTypeDerivedFromSTUnion(simpleTypeDefn);
                 restorePsviInfoForXPathContext(elemPsvi);
                 evaluateOneAssertionFromSimpleType(element, value, augs, simpleTypeDefn, isTypeDerivedFromList, isTypeDerivedFromUnion, assertImpl, false, null);
                 savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);
@@ -812,5 +812,21 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         }
         
     } // class AssertionError
+    
+
+    /*
+     * Check if a simple type definition has a base type whose variety is simpleType->list.
+     */
+    private boolean isTypeDerivedFromSTList(XSSimpleTypeDefinition simpleTypeDefn) {
+        return ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_LIST;
+    }
+    
+    
+    /*
+     * Check if a simple type definition has a base type whose variety is simpleType->union.
+     */
+    private boolean isTypeDerivedFromSTUnion(XSSimpleTypeDefinition simpleTypeDefn) {
+        return ((XSSimpleType) simpleTypeDefn.getBaseType()).getVariety() == XSSimpleType.VARIETY_UNION;
+    }
     
 } // class XMLAssertPsychopathXPath2Impl

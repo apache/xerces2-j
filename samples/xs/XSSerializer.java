@@ -70,7 +70,7 @@ import org.xml.sax.InputSource;
 
 /**
  * XSModel serialization utility.
- * This utility serializes the Xerces XSModel into lexical, XSD syntax.
+ * This utility serializes the Xerces XSModel instance into lexical, XSD syntax.
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
@@ -87,7 +87,7 @@ public class XSSerializer {
      * 
      * An entry point to test this utility.
      * 
-     * The XSModel could be synthesized by any means (for example, by direct
+     * The XSModel could be synthesized by various means (for example, by direct
      * API calls to Xerces Schema API, methods) -- in which case, the method
      * "serialize" will be used directly, passing in the XSModel object. 
      */
