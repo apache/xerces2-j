@@ -466,7 +466,7 @@ abstract class XSDAbstractTraverser {
                 }
             }
             // process 'assertion' facet. introduced in XML Schema 1.1
-            else if (facet.equals(SchemaSymbols.ELT_ASSERTION)) {
+            else if (facet.equals(SchemaSymbols.ELT_ASSERTION) && fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
                 String testStr = (String) attrs[XSAttributeChecker.ATTIDX_XPATH];
                 String xpathDefaultNamespace = (String) attrs[XSAttributeChecker.ATTIDX_XPATHDEFAULTNS];
