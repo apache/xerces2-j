@@ -1215,7 +1215,7 @@ public class XSDHandler {
                     newSchemaRoot = resolveSchema(schemaSource, fSchemaGrammarDescription, mustResolve, child);
                     schemaNamespace = currSchemaInfo.fTargetNamespace;
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        if (isOverride) {
+                        if (isOverride && newSchemaRoot != null) {
                             final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
 
                             // Either we had a collision where the transformed
