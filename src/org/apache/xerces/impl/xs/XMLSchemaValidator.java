@@ -784,7 +784,8 @@ public class XMLSchemaValidator
             fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
         }
         
-        fNamespaceContext = namespaceContext;
+        fNamespaceContext = namespaceContext;        
+        fAssertionValidator = new XSDAssertionValidator(this);
 
     } // startDocument(XMLLocator,String)
 
@@ -1025,6 +1026,7 @@ public class XMLSchemaValidator
             fDocumentHandler.endDocument(augs);
         }
         fLocator = null;
+        fAssertionValidator = null;
 
     } // endDocument(Augmentations)
 
@@ -1429,8 +1431,7 @@ public class XMLSchemaValidator
         fState4XsiType.setExtraChecking(false);
         fState4ApplyDefault.setFacetChecking(false);
         fSchemaVersion = fSchemaLoader.getSchemaVersion();
-        fXSConstraints = fSchemaLoader.getXSConstraints();
-        fAssertionValidator = new XSDAssertionValidator(this);
+        fXSConstraints = fSchemaLoader.getXSConstraints();        
         fTypeAlternativeValidator = new XSDTypeAlternativeValidator();
     } // <init>()
 
