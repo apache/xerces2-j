@@ -332,8 +332,8 @@ catch (SAXException e) {
   </feature>
   <feature name='http://apache.org/xml/features/validation/assert-comments-and-pi-checking'
            id='validation.xs11-assert-comments-pi-checking'>
-   <true>Enable comment and PI checking during the XSD 1.1 assert evaluation.</true>
-   <false>Disable comment and PI checking during the XSD 1.1 assert evaluation.</false>
+   <true>Enable comments and PIs in XDM model, for XSD 1.1 assertion processing.</true>
+   <false>Disable comments and PIs in XDM model, for XSD 1.1 assertion processing.</false>
    <default value='false'/>
    <access parsing='read-only' not-parsing='read-write'/>
    <since value='&ParserName; 2.12.0'/>
