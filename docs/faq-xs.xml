@@ -71,6 +71,23 @@ v.validate(instanceDocument);
 	Schema grammar.</p>
       
     </a>
+  </faq>  
+  <faq title="Using Entities and CDATA Sections">
+    <q>How does the XML Schema processor treat entities and CDATA sections?</q>
+    <a> 
+      <p>According to the XML Infoset the infoset items contributing to the 
+	<jump href='http://www.w3.org/TR/xml-infoset/#infoitem.character'>[character
+	  information item]</jump> are: characters in the document, whether literally, as
+	a character reference, or within a CDATA section, or within Entity
+	Reference. The XML Schema specification 
+	"requires as a precondition for assessment
+	an information set as defined in [XML-Infoset]" 
+	<jump href='http://www.w3.org/TR/xmlschema-1/#infoset'>(Appendix D)</jump> and thus Xerces might attempt to normalize data in an entity
+	reference or CDATA section.  To preserve character data within entity references and 
+	CDATA sections, 
+	turn off http://apache.org/xml/features/validation/schema/normalized-value feature.
+      </p>
+    </a>
   </faq>
   <faq title="XPath 2.0 support for XML Schema 1.1 validation">
   	<q>How Xerces-J uses an XPath 2.0 engine for XML Schema 1.1 assertions and CTAs?</q>
@@ -94,24 +111,31 @@ v.validate(instanceDocument);
   	   </note>
   	</a>
   </faq>
-  <faq title="Using Entities and CDATA Sections">
-    <q>How does the XML Schema processor treat entities and CDATA sections?</q>
-    <a> 
-      <p>According to the XML Infoset the infoset items contributing to the 
-	<jump href='http://www.w3.org/TR/xml-infoset/#infoitem.character'>[character
-	  information item]</jump> are: characters in the document, whether literally, as
-	a character reference, or within a CDATA section, or within Entity
-	Reference. The XML Schema specification 
-	"requires as a precondition for assessment
-	an information set as defined in [XML-Infoset]" 
-	<jump href='http://www.w3.org/TR/xmlschema-1/#infoset'>(Appendix D)</jump> and thus Xerces might attempt to normalize data in an entity
-	reference or CDATA section.  To preserve character data within entity references and 
-	CDATA sections, 
-	turn off http://apache.org/xml/features/validation/schema/normalized-value feature.
-      </p>
-    </a>
+  <faq title="User defined error messages, for XML Schema 1.1 assertion failures">
+     <q>How to specify a user defined error message, when an XML Schema 1.1 assertion returns a 'false' result?</q>
+     <a>
+        <p>By default when an XSD 1.1 assertion fails, the Xerces XML Schema validator would produce a default error message,
+        which would say that which element or attribute was not validated successfully by an assertion and the schema type involved 
+        during validation. It is however possible to, specify an user-defined error message for assertion failures. This is done by 
+        specifying an attribute <code>"message"</code> in the XML namespace <code>'http://xerces.apache.org'</code> on an <code>xs:assert</code> or <code>xs:assertion</code> 
+        element in the schema. The value of attribute <code>"message"</code> is the text of user-defined assertion error message, which is produced by 
+        the Xerces XML Schema validator when an assertion fails.
+        </p>
+        <p>
+        In case of use of the XML Schema <code>xs:assertion</code> facet within simple types, if a user defined error message is used, if a user wants
+        it is further possible to dynamically construct the assertion error message by fetching the value of XPath 2.0 context variable 
+        <code>$value</code> into the assertion error message. Following is an example of such an assertion error message:
+        <code>xerces:message="The number {$value} is not divisible by 2"</code>. With such a specification of assertion error message, 
+        a value from XML instance document is assigned to a variable placeholder <code>{$value}</code> (which is a key word). Therefore at 
+        runtime, an assertion message for this example would be produced as follows, <code>"The number 3 is not divisible by 2"</code>
+        (the value 3 was assigned to the variable reference <code>{$value}</code>).     
+        </p>
+        <note>
+           User-defined error messages for assertion failures are not a standard feature of the XML Schema 1.1 specification, and 
+           are a Xerces extension to help XML Schema document authors to specify a problem domain specific error messages.
+        </note>
+     </a>
   </faq>
-
   <faq title="XML Schema API">
     <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
     <a>
