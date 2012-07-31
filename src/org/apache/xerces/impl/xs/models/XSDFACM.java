@@ -1475,25 +1475,27 @@ public class XSDFACM
             return;
         }
         // If base has max=unbounded, then there's enough space for "need"
-        if (base.fCountingStates[d[0]].maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-            d[2] += need;
-            if (b[2] + need > base.fCountingStates[d[0]].minOccurs) {
-                // Avoid setting count bigger than min if max is unbounded.
-                // It makes no difference. Not exceeding min means fewer
-                // distinct states, so shorter state-pairs in the list.
-                b[2] = base.fCountingStates[d[0]].minOccurs;
+        if (base.fCountingStates[d[0]] != null) {
+            if (base.fCountingStates[d[0]].maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                d[2] += need;
+                if (b[2] + need > base.fCountingStates[d[0]].minOccurs) {
+                    // Avoid setting count bigger than min if max is unbounded.
+                    // It makes no difference. Not exceeding min means fewer
+                    // distinct states, so shorter state-pairs in the list.
+                    b[2] = base.fCountingStates[d[0]].minOccurs;
+                }
+                else {
+                    b[2] += need;
+                }
             }
             else {
+                // If base doesn't have sufficient space, lower "need"
+                if (need > base.fCountingStates[d[0]].maxOccurs - b[2]) {
+                    need = base.fCountingStates[d[0]].maxOccurs - b[2];
+                }
                 b[2] += need;
+                d[2] += need;
             }
-        }
-        else {
-            // If base doesn't have sufficient space, lower "need"
-            if (need > base.fCountingStates[d[0]].maxOccurs - b[2]) {
-                need = base.fCountingStates[d[0]].maxOccurs - b[2];
-            }
-            b[2] += need;
-            d[2] += need;
         }
     }
     private void optimizeForAllBase(XS11AllCM base, int[] b, int[] d, int need, int indexb) {
