@@ -44,14 +44,23 @@ import org.eclipse.wst.xml.xpath2.processor.ResultSequenceFactory;
 import org.eclipse.wst.xml.xpath2.processor.internal.types.AnyType;
 
 /**
- * Class defining utility/helper methods related to XML schema types.
+ * Class defining utility/helper methods to support XML Schema 1.1 implementation.
  * 
  * @xerces.internal
  * 
  * @author Mukul Gandhi, IBM
  * @version $Id$
  */
-public class XS11TypeHelper { 
+public class XS11TypeHelper {
+    
+    
+    /*
+     * Class constructor.
+     */
+    private XS11TypeHelper() {
+       // a private constructor, to prohibit instantiating this class from an outside class/application.
+       // this is a good practice, since all methods of this class are "static".
+    }
     
     /*
      * Checks if the two schema type components are identical.
