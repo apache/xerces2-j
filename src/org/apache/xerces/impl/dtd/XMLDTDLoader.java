@@ -97,11 +97,11 @@ public class XMLDTDLoader
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
 
     /** Property identifier: entity resolver. */
-    public static final String ENTITY_RESOLVER =
+    protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
     
     /** Property identifier: locale. */
-    public static final String LOCALE =
+    protected static final String LOCALE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
 
     /** Recognized properties. */
