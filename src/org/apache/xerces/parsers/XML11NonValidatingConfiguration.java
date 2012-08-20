@@ -56,7 +56,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 
 /**
- * This class is the non vlaidating parser configuration 
+ * This class is the non validating parser configuration 
  * used to parse XML 1.0 and XML 1.1 documents.
  *
  * Xerces parser that uses this configuration is <strong>not</strong> <a href="http://www.w3.org/TR/REC-xml#sec-conformance">conformant</a> 
