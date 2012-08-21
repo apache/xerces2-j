@@ -19,7 +19,7 @@ package schema.config;
 
 import junit.framework.Assert;
 
-import org.apache.xerces.dom.PSVIElementNSImpl;
+import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
 
 /**
@@ -74,7 +74,7 @@ public class SurrogatePairLengthTest extends BaseTest {
                 .getValidationAttempted());
         assertElementName("root", fRootNode.getElementDeclaration().getName());
         
-        PSVIElementNSImpl child = super.getChild(1);
+        ElementPSVI child = super.getChild(1);
         assertValidity(ItemPSVI.VALIDITY_VALID, child.getValidity());
         assertValidationAttempted(ItemPSVI.VALIDATION_FULL, child
                 .getValidationAttempted());
