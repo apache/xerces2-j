@@ -17,8 +17,12 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.util.XMLChar;
 
 /**
  * All primitive types plus ID/IDREF/ENTITY/INTEGER are derived from this abstract
@@ -34,6 +38,15 @@ import org.apache.xerces.impl.dv.ValidationContext;
  * @version $Id$
  */
 public abstract class TypeValidator {
+    
+    private static final boolean USE_CODE_POINT_COUNT_FOR_STRING_LENGTH = AccessController.doPrivileged(new PrivilegedAction() {
+        public Object run() {
+            try {
+                return Boolean.getBoolean("org.apache.xerces.impl.dv.xs.useCodePointCountForStringLength") ? Boolean.TRUE : Boolean.FALSE;
+            }
+            catch (SecurityException ex) {}
+            return Boolean.FALSE;
+        }}) == Boolean.TRUE;
 
     // which facets are allowed for this type
     public abstract short getAllowedFacets();
@@ -79,7 +92,14 @@ public abstract class TypeValidator {
     // get the length of the value
     // the parameters are in compiled form (from getActualValue)
     public int getDataLength(Object value) {
-        return (value instanceof String) ? ((String)value).length() : -1;
+        if (value instanceof String) {
+            final String str = (String)value;
+            if (!USE_CODE_POINT_COUNT_FOR_STRING_LENGTH) {
+                return str.length();
+            }
+            return getCodePointLength(str);
+        }
+        return -1;
     }
 
     // get the number of digits of the value
@@ -92,6 +112,25 @@ public abstract class TypeValidator {
     // the parameters are in compiled form (from getActualValue)
     public int getFractionDigits(Object value) {
         return -1;
+    }
+    
+    // Returns the length of the string in Unicode code points.
+    private int getCodePointLength(String value) {
+        // Count the number of surrogate pairs, and subtract them from
+        // the total length.
+        final int len = value.length();
+        int surrogatePairCount = 0;
+        for (int i = 0; i < len - 1; ++i) {
+            if (XMLChar.isHighSurrogate(value.charAt(i))) {
+                if (XMLChar.isLowSurrogate(value.charAt(++i))) {
+                    ++surrogatePairCount;
+                }
+                else {
+                    --i;
+                }
+            }
+        }
+        return len - surrogatePairCount;
     }
 
     // check whether the character is in the range 0x30 ~ 0x39
