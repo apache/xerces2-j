@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs ="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="length">
+    <xs:restriction base="xs:string">
+      <xs:length value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="e1" type="length"/>
+        <xs:element name="e2" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element> 
+</xs:schema>
