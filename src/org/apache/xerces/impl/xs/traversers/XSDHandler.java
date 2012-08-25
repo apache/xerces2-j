@@ -1212,10 +1212,10 @@ public class XSDHandler {
                 // the existing global components
                 boolean alreadyTraversed = (fNamespaceGrowth) ? sg.getDocumentLocations().contains(schemaId) : false;
                 if (!alreadyTraversed) {
-                    newSchemaRoot = resolveSchema(schemaSource, fSchemaGrammarDescription, mustResolve, child);
+                    newSchemaRoot = resolveSchema(schemaSource, fSchemaGrammarDescription, mustResolve, child);                    
                     schemaNamespace = currSchemaInfo.fTargetNamespace;
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        if (isOverride && newSchemaRoot != null) {
+                        if (isOverride && newSchemaRoot != null && schemaSource.getSystemId() != "") {
                             final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
 
                             // Either we had a collision where the transformed
