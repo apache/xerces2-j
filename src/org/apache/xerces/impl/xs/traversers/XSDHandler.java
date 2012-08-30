@@ -1215,7 +1215,7 @@ public class XSDHandler {
                     newSchemaRoot = resolveSchema(schemaSource, fSchemaGrammarDescription, mustResolve, child);                    
                     schemaNamespace = currSchemaInfo.fTargetNamespace;
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        if (isOverride && newSchemaRoot != null && schemaSource.getSystemId() != "") {
+                        if (isOverride && newSchemaRoot != null && isValidTargetUriForOverride(schemaSource, locationHint)) {
                             final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
 
                             // Either we had a collision where the transformed
@@ -1278,6 +1278,14 @@ public class XSDHandler {
         fDependencyMap.put(currSchemaInfo, dependencies);
         return currSchemaInfo;
     } // end constructTrees
+    
+    /*
+     * Check if the target URI for <override> is correct. It must not be absent, and it should not point to the parent
+     * schema document (otherwise, this would result in an un-terminating recursion).
+     */
+    private boolean isValidTargetUriForOverride(XMLInputSource schemaSource, String locationHint) {
+        return schemaSource.getSystemId() != "" && ((locationHint != null) ? (schemaSource.getSystemId() != locationHint) : true);
+    }
 
     private boolean isExistingGrammar(XSDDescription desc, boolean ignoreConflict) {
         SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
