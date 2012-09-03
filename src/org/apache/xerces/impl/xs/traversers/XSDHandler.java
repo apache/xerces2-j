@@ -861,7 +861,7 @@ public class XSDHandler {
     
     // This method does several things:
     // It constructs an instance of an XSDocumentInfo object using the
-    // schemaRoot node.  Then, for each <include>,
+    // schemaRoot node.  Then, for each <include>, <override>,
     // <redefine>, and <import> children, it attempts to resolve the
     // requested schema document, initiates a DOM parse, and calls
     // itself recursively on that document's root.  It also records in
@@ -1181,7 +1181,6 @@ public class XSDHandler {
                 }
                 // pass the systemId of the current document as the base systemId
                 boolean mustResolve = false;
-                boolean isOverride = false;
                 refType = XSDDescription.CONTEXT_INCLUDE;
                 if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
                     mustResolve = nonAnnotationContent(child);
@@ -1190,7 +1189,6 @@ public class XSDHandler {
                 else if (localName.equals(SchemaSymbols.ELT_OVERRIDE)){
                     mustResolve = nonAnnotationContent(child);
                     refType = XSDDescription.CONTEXT_OVERRIDE;
-                    isOverride = true;
                 }
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(refType);
@@ -1215,30 +1213,35 @@ public class XSDHandler {
                     newSchemaRoot = resolveSchema(schemaSource, fSchemaGrammarDescription, mustResolve, child);                    
                     schemaNamespace = currSchemaInfo.fTargetNamespace;
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        if (isOverride && newSchemaRoot != null && isValidTargetUriForOverride(schemaSource, locationHint)) {
-                            final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
+                        if (refType == XSDDescription.CONTEXT_OVERRIDE) {
+                            if (newSchemaRoot != null && isValidTargetUriForIncludeOrOverride(schemaSource, locationHint)) {
+                                final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
 
-                            // Either we had a collision where the transformed
-                            // schema has global components or we hit a
-                            // transformation cycle
-                            if (transformedSchemaRoot == null) {
-                                fLastSchemaWasDuplicate = true;
+                                // Either we had a collision where the transformed
+                                // schema has global components or we hit a
+                                // transformation cycle
+                                if (transformedSchemaRoot == null) {
+                                    fLastSchemaWasDuplicate = true;
+                                }
+                                // In case of a collision where the transformed
+                                // schema has no global components, the override
+                                // transformer will return the new transformed
+                                // schema. We need to process that new schema,
+                                // so we set the duplicate schema flag to false
+
+                                else if (fLastSchemaWasDuplicate && transformedSchemaRoot != newSchemaRoot) {
+                                    fLastSchemaWasDuplicate = false;
+                                }
+
+                                newSchemaRoot = transformedSchemaRoot;
                             }
-                            // In case of a collision where the transformed
-                            // schema has no global components, the override
-                            // transformer will return the new transformed
-                            // schema. We need to process that new schema,
-                            // so we set the duplicate schema flag to false
-
-                            else if (fLastSchemaWasDuplicate && transformedSchemaRoot != newSchemaRoot) {
-                                fLastSchemaWasDuplicate = false;
+                            else {
+                                // check for override collision
+                                fOverrideHandler.checkSchemaRoot(schemaId, child, newSchemaRoot);
                             }
-
-                            newSchemaRoot = transformedSchemaRoot;
                         }
-                        else {
-                            // check for override collision
-                            fOverrideHandler.checkSchemaRoot(schemaId, child, newSchemaRoot);
+                        else if (refType == XSDDescription.CONTEXT_INCLUDE && !isValidTargetUriForIncludeOrOverride(schemaSource, locationHint)) {
+                            fLastSchemaWasDuplicate = true; 
                         }
                     }
                 }
@@ -1280,12 +1283,23 @@ public class XSDHandler {
     } // end constructTrees
     
     /*
-     * Check if the target URI for <override> is correct. It must not be absent, and it should not point to the parent
-     * schema document (otherwise, this would result in an un-terminating recursion).
+     * Check if the target URI for <include> or <override> is correct. It must not be absent, and it should not point
+     * to the parent schema document.
      */
-    private boolean isValidTargetUriForOverride(XMLInputSource schemaSource, String locationHint) {
-        return schemaSource.getSystemId() != "" && ((locationHint != null) ? (schemaSource.getSystemId() != locationHint) : true);
-    }
+    private boolean isValidTargetUriForIncludeOrOverride(XMLInputSource schemaSource, String locationHint) {
+        boolean isUriValid = true;
+        
+        try {
+           String expandedSystemId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
+           String expandedLoctionHint = XMLEntityManager.expandSystemId(locationHint, locationHint, false); 
+           isUriValid = !("".equals(expandedSystemId) || ((expandedLoctionHint != null) ? expandedLoctionHint.equals(expandedSystemId) : true));
+        }
+        catch (MalformedURIException ex) {
+           isUriValid = false;  
+        }
+        
+        return isUriValid;
+    } // isValidTargetUriForIncludeOrOverride
 
     private boolean isExistingGrammar(XSDDescription desc, boolean ignoreConflict) {
         SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
