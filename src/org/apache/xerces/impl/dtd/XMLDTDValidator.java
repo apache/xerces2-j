@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.dtd;
 
+import java.util.Iterator;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -2066,12 +2068,14 @@ public class XMLDTDValidator
             //   IDREF and IDREFS attr (V_IDREF0)
             //
             if (fPerformValidation) {
-                String value = fValidationState.checkIDRefID();
-                if (value != null) {
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                "MSG_ELEMENT_WITH_ID_REQUIRED",
-                                                new Object[]{value},
-                                                XMLErrorReporter.SEVERITY_ERROR );
+                Iterator invIdRefs = fValidationState.checkIDRefID();
+                if (invIdRefs != null) {
+                    while (invIdRefs.hasNext()) {
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                "MSG_ELEMENT_WITH_ID_REQUIRED",
+                                new Object[]{invIdRefs.next()},
+                                XMLErrorReporter.SEVERITY_ERROR );
+                    }
                 }
             }
             return;

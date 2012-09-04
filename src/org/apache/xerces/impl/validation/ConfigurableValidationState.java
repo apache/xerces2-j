@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.validation;
 
+import java.util.Iterator;
+
 /**
  * <p>An extension of ValidationState which can be configured to turn 
  * off checking for ID/IDREF errors and unparsed entity errors.</p>
@@ -72,7 +74,7 @@ public final class ConfigurableValidationState extends ValidationState {
      * @return null, if ID/IDREF checking is turned off
      *         otherwise, returns the value of the super implementation
      */
-    public String checkIDRefID() {
+    public Iterator checkIDRefID() {
         return (fIdIdrefChecking) ? super.checkIDRefID() : null;
     }
     
