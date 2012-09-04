@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1421,7 +1422,11 @@ public abstract class NodeImpl
             return false;
         }
         case Node.DOCUMENT_NODE:{
-                return((NodeImpl)((Document)this).getDocumentElement()).isDefaultNamespace(namespaceURI);
+                Element docElement = ((Document)this).getDocumentElement();
+                if (docElement != null) {
+                    return docElement.isDefaultNamespace(namespaceURI);
+                }
+                return false;
             }
 
         case Node.ENTITY_NODE :
@@ -1475,7 +1480,11 @@ public abstract class NodeImpl
                 return lookupNamespacePrefix(namespaceURI, (ElementImpl)this);
             }
         case Node.DOCUMENT_NODE:{
-                return((NodeImpl)((Document)this).getDocumentElement()).lookupPrefix(namespaceURI);
+                Element docElement = ((Document)this).getDocumentElement();
+                if (docElement != null) {
+                    return docElement.lookupPrefix(namespaceURI);
+                }
+                return null;
             }
 
         case Node.ENTITY_NODE :
@@ -1559,8 +1568,12 @@ public abstract class NodeImpl
 
 
             }
-        case Node.DOCUMENT_NODE : {   
-                return((NodeImpl)((Document)this).getDocumentElement()).lookupNamespaceURI(specifiedPrefix);
+        case Node.DOCUMENT_NODE : {
+                Element docElement = ((Document)this).getDocumentElement();
+                if (docElement != null) {
+                    return docElement.lookupNamespaceURI(specifiedPrefix);
+                }
+                return null;
             }
         case Node.ENTITY_NODE :
         case Node.NOTATION_NODE:
