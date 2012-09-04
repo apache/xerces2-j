@@ -2780,10 +2780,12 @@ public class XMLSchemaValidator
         // have we reached the end tag of the validation root?
         if (fElementDepth == 0) {
             // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
-            String invIdRef = fValidationState.checkIDRefID();
+            Iterator invIdRefs = fValidationState.checkIDRefID();
             fValidationState.resetIDTables();
-            if (invIdRef != null) {
-                reportSchemaError("cvc-id.1", new Object[] { invIdRef });
+            if (invIdRefs != null) {
+                while (invIdRefs.hasNext()) {
+                    reportSchemaError("cvc-id.1", new Object[] { invIdRefs.next() });
+                }    
             }
             // check extra schema constraints
             if (fFullChecking && !fUseGrammarPoolOnly) {

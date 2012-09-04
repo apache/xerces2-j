@@ -18,7 +18,10 @@
 package org.apache.xerces.impl.validation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
@@ -53,7 +56,7 @@ public class ValidationState implements ValidationContext {
 
     //REVISIT: Should replace with a lighter structure.
     private final HashMap fIdTable    = new HashMap();
-    private final HashMap fIdRefTable = new HashMap();
+    private final LinkedHashMap fIdRefTable = new LinkedHashMap();
     private final static Object fNullValue = new Object();
     
     private TypeValidatorHelper fTypeValidatorHelper = null;
@@ -92,18 +95,23 @@ public class ValidationState implements ValidationContext {
 
     /**
      * return null if all IDREF values have a corresponding ID value;
-     * otherwise return the first IDREF value without a matching ID value.
+     * otherwise return an iterator for all the IDREF values without
+     * a matching ID value.
      */
-    public String checkIDRefID () {
+    public Iterator checkIDRefID() {
+        LinkedHashSet missingIDs = null;
         Iterator iter = fIdRefTable.keySet().iterator();
         String key;
         while (iter.hasNext()) {
             key = (String) iter.next();
             if (!containsID(key)) {
-                  return key;
+                if (missingIDs == null) {
+                    missingIDs = new LinkedHashSet();
+                }
+                missingIDs.add(key);
             }
         }
-        return null;
+        return (missingIDs != null) ? missingIDs.iterator() : null;
     }
 
     protected boolean containsID(String name) {
