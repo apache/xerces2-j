@@ -140,11 +140,16 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attrUse.fDefault.normalizedValue = defaultAtt;
             }
             
-            if (attrDecl.getAttributeNode(SchemaSymbols.ATT_INHERITABLE) != null) {
-               attrUse.fInheritable = inheritableAtt.booleanValue();
+            if (fSchemaHandler.fSchemaVersion >= Constants.SCHEMA_VERSION_1_1) {
+                if (attrDecl.getAttributeNode(SchemaSymbols.ATT_INHERITABLE) != null) {
+                    attrUse.fInheritable = inheritableAtt.booleanValue();
+                }
+                else {
+                    attrUse.fInheritable = attribute.getInheritable();  
+                }
             }
             else {
-               attrUse.fInheritable = attribute.getInheritable();  
+                attrUse.fInheritable = false;
             }
             
             // Get the annotation associated with the local attr decl
@@ -386,7 +391,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         
         boolean inheritable = false;
         if (inheritableAtt != null) {
-          inheritable = inheritableAtt.booleanValue();   
+            inheritable = inheritableAtt.booleanValue();   
         }
         
         attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
