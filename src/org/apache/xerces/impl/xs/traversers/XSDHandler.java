@@ -1214,7 +1214,7 @@ public class XSDHandler {
                     schemaNamespace = currSchemaInfo.fTargetNamespace;
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
                         if (refType == XSDDescription.CONTEXT_OVERRIDE) {
-                            if (newSchemaRoot != null && isValidTargetUriForIncludeOrOverride(schemaSource, locationHint)) {
+                            if (newSchemaRoot != null && isValidTargetUriForIncludeOrOverride(schemaId, locationHint)) {
                                 final Element transformedSchemaRoot = (Element) fOverrideHandler.transform(schemaId, child, newSchemaRoot);
 
                                 // Either we had a collision where the transformed
@@ -1240,7 +1240,7 @@ public class XSDHandler {
                                 fOverrideHandler.checkSchemaRoot(schemaId, child, newSchemaRoot);
                             }
                         }
-                        else if (refType == XSDDescription.CONTEXT_INCLUDE && !isValidTargetUriForIncludeOrOverride(schemaSource, locationHint)) {
+                        else if (refType == XSDDescription.CONTEXT_INCLUDE && !isValidTargetUriForIncludeOrOverride(schemaId, locationHint)) {
                             fLastSchemaWasDuplicate = true; 
                         }
                     }
@@ -1286,18 +1286,15 @@ public class XSDHandler {
      * Check if the target URI for <include> or <override> is correct. It must not be absent, and it should not point
      * to the parent schema document.
      */
-    private boolean isValidTargetUriForIncludeOrOverride(XMLInputSource schemaSource, String locationHint) {
+    private boolean isValidTargetUriForIncludeOrOverride(String schemaId, String locationHint) {
         boolean isUriValid = true;
-        
         try {
-           String expandedSystemId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
-           String expandedLoctionHint = XMLEntityManager.expandSystemId(locationHint, locationHint, false); 
-           isUriValid = !("".equals(expandedSystemId) || ((expandedLoctionHint != null) ? expandedLoctionHint.equals(expandedSystemId) : true));
+           String expandedLoctionHint = XMLEntityManager.expandSystemId(locationHint, fSchemaGrammarDescription.getBaseSystemId(), false); 
+           isUriValid = !("".equals(schemaId) || ((expandedLoctionHint != null) ? expandedLoctionHint.equals(schemaId) : true));
         }
         catch (MalformedURIException ex) {
            isUriValid = false;  
         }
-        
         return isUriValid;
     } // isValidTargetUriForIncludeOrOverride
 
