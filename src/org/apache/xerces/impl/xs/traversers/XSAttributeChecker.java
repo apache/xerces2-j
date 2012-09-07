@@ -1611,21 +1611,20 @@ public class XSAttributeChecker {
                                 StringTokenizer st = new StringTokenizer(attrVal, " \n\t\r");
                                 while (st.hasMoreTokens()) {
                                     Object avalue = dv.validate(st.nextToken(), schemaDoc.fValidationContext, null);
+                                    modifyQNameForChameleonProcessing(schemaDoc, avalue);
                                     ((Vector)attrValues[ATTIDX_SUBSGROUP]).addElement(avalue);
                                 }
                             }
                             else {
                                 Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);
+                                modifyQNameForChameleonProcessing(schemaDoc, avalue);
                                 ((Vector)attrValues[ATTIDX_SUBSGROUP]).addElement(avalue);
                             }
                         }
                         else {
-                            Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);
-                            // kludge to handle chameleon includes/redefines...
+                            Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);                            
                             if (oneAttr.dvIndex == DT_QNAME) {
-                                QName qname = (QName)avalue;
-                                if(qname.prefix == XMLSymbols.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
-                                    qname.uri = schemaDoc.fTargetNamespace;
+                               modifyQNameForChameleonProcessing(schemaDoc, avalue);
                             }
                             attrValues[oneAttr.valueIndex] = avalue;
                         }
@@ -1685,6 +1684,21 @@ public class XSAttributeChecker {
         }
 
         return attrValues;
+    }
+
+    /*
+     * If chameleon pre-processing is required, then this method would modify the QName value appropriately.
+     * 
+     * @param schemaDoc     metadata about the schema document
+     * @param qnameVal      validated QName value
+     * 
+     */
+    private void modifyQNameForChameleonProcessing(XSDocumentInfo schemaDoc, Object qnameVal) {
+        // kludge to handle chameleon includes/redefines...
+        QName qname = (QName)qnameVal;
+        if(qname.prefix == XMLSymbols.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema) {
+           qname.uri = schemaDoc.fTargetNamespace;
+        }
     }
 
     private Object validate(Object[] attrValues, String attr, String ivalue, int dvIndex,
