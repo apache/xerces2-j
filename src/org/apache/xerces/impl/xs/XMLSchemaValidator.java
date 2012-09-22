@@ -2751,8 +2751,16 @@ public class XMLSchemaValidator
                             fValueStoreCache.getValueStoreFor(id, selMatcher.getInitialDepth());
                         // nothing to do if nothing matched, or if not all
                         // fields are present.
-                        if (values != null && values.fValuesCount == values.fFieldCount)
+                        if (values != null && values.fValuesCount == values.fFieldCount) {
                             values.endDocumentFragment();
+                        }
+                        else if (values != null) {
+                            IdentityConstraint idcConstraint = values.getIdentityConstraint();
+                            if (fValueStoreCache.fGlobalIDConstraintMap.get(((KeyRef)idcConstraint).getKey()) == null) {
+                                reportSchemaError("KeyRefOutOfScope", new Object[] { idcConstraint.toString() });
+                            }
+                        }
+
                     }
                 }
             }
@@ -4636,6 +4644,10 @@ public class XMLSchemaValidator
                 return (ShortList) fItemValueTypes.elementAt(index);
             }
             return fItemValueType;
+        }
+        
+        private IdentityConstraint getIdentityConstraint() {
+            return fIdentityConstraint;
         }
         
     } // class ValueStoreBase
