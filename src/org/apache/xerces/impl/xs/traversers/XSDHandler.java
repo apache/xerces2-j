@@ -1473,8 +1473,8 @@ public class XSDHandler {
                     String componentType = DOMUtil.getLocalName(globalComp);
 
                     // In XML Schema 1.1, a defaultOpenContent element may occur
-                    if (componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
-                        if (fSchemaVersion < Constants.SCHEMA_VERSION_1_1 || !dependenciesCanOccur) {
+                    if (fSchemaVersion >= Constants.SCHEMA_VERSION_1_1 && componentType.equals(SchemaSymbols.ELT_DEFAULTOPENCONTENT)) {
+                        if (!dependenciesCanOccur) {
                             reportSchemaError("s4s-elt-invalid-content.3", new Object [] {componentType}, globalComp);
                         }
                         final SchemaGrammar currSG = fGrammarBucket.getGrammar(currSchemaDoc.fTargetNamespace);
