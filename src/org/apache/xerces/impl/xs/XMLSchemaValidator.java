@@ -2757,7 +2757,7 @@ public class XMLSchemaValidator
                         else if (values != null) {
                             IdentityConstraint idcConstraint = values.getIdentityConstraint();
                             if (fValueStoreCache.fGlobalIDConstraintMap.get(((KeyRef)idcConstraint).getKey()) == null) {
-                                reportSchemaError("KeyRefOutOfScope", new Object[] { idcConstraint.toString() });
+                                reportSchemaError("KeyRefOutOfScope", new Object[] { idcConstraint.getName() });
                             }
                         }
 
@@ -4767,7 +4767,7 @@ public class XMLSchemaValidator
             if (fKeyValueStore == null) {
                 // report error
                 String code = "KeyRefOutOfScope";
-                String value = fIdentityConstraint.toString();
+                String value = fIdentityConstraint.getName();
                 reportSchemaError(code, new Object[] { value });
                 return;
             }
