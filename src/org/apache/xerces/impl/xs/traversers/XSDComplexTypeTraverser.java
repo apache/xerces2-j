@@ -223,6 +223,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 Element parent = DOMUtil.getParent(complexTypeNode);
                 if (DOMUtil.getLocalName(parent).equals(SchemaSymbols.ELT_REDEFINE)) {
                     ((XSComplexTypeDecl)type.getBaseType()).setContext(type);
+                    grammar.addGlobalComplexTypeDecl(type);
                 }
             }
             

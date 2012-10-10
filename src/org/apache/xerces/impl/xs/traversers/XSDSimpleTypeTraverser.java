@@ -119,6 +119,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     final XSTypeDefinition baseType = type.getBaseType();
                     if (baseType instanceof XSSimpleTypeDecl) {
                         ((XSSimpleTypeDecl)baseType).setContext(type);
+                        grammar.addGlobalSimpleTypeDecl(type);
                     }
                 }
             }
