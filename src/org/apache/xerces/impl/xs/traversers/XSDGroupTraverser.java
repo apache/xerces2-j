@@ -221,8 +221,10 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 annotations = XSObjectListImpl.EMPTY_LIST;
             }
             group.fAnnotations = annotations;
+            
             // Add group declaration to grammar
-            if (grammar.getGlobalGroupDecl(group.fName) == null) {
+            if (grammar.getGlobalGroupDecl(group.fName) == null ||
+                DOMUtil.getLocalName(DOMUtil.getParent(elmNode)).equals(SchemaSymbols.ELT_REDEFINE)) {
                 grammar.addGlobalGroupDecl(group);
             }
 

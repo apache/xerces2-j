@@ -179,7 +179,8 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         attrGrp.fAnnotations = annotations;
         
         // make an entry in global declarations.
-        if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName) == null) {
+        if (grammar.getGlobalAttributeGroupDecl(attrGrp.fName) == null ||
+            DOMUtil.getLocalName(DOMUtil.getParent(elmNode)).equals(SchemaSymbols.ELT_REDEFINE)) {
             grammar.addGlobalAttributeGroupDecl(attrGrp);
         }
 
