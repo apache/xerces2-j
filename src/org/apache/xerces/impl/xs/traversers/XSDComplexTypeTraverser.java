@@ -214,17 +214,15 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         if (complexTypeName == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_COMPLEXTYPE, SchemaSymbols.ATT_NAME}, complexTypeNode);
             type = null;
-        } else {
-
-            // XML Schema 1.1
-            // If parent of complex type is redefine, then we need to set the
-            // context of the redefined complex type
-            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                Element parent = DOMUtil.getParent(complexTypeNode);
-                if (DOMUtil.getLocalName(parent).equals(SchemaSymbols.ELT_REDEFINE)) {
-                    ((XSComplexTypeDecl)type.getBaseType()).setContext(type);
-                    grammar.addGlobalComplexTypeDecl(type);
+        } else {            
+            if (DOMUtil.getLocalName(DOMUtil.getParent(complexTypeNode)).equals(SchemaSymbols.ELT_REDEFINE)) {
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                   // XML Schema 1.1
+                   // If parent of complex type is redefine, then we need to set the
+                   // context of the redefined complex type
+                   ((XSComplexTypeDecl)type.getBaseType()).setContext(type);
                 }
+                grammar.addGlobalComplexTypeDecl(type);
             }
             
             if (grammar.getGlobalTypeDecl(type.getName()) == null) {

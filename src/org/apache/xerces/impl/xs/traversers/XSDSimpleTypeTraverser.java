@@ -108,22 +108,20 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         
         // don't add global components without name to the grammar
-        if (type != null) {
-            
-            // XML Schema 1.1
-            // If parent is redefine, then we need to set the
-            // context of the redefined simple type
-            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                Element parent = DOMUtil.getParent(elmNode);
-                if (DOMUtil.getLocalName(parent).equals(SchemaSymbols.ELT_REDEFINE)) {
+        if (type != null) {            
+            if (DOMUtil.getLocalName(DOMUtil.getParent(elmNode)).equals(SchemaSymbols.ELT_REDEFINE)) {
+                if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                    // XML Schema 1.1
+                    // If parent is redefine, then we need to set the
+                    // context of the redefined simple type 
                     final XSTypeDefinition baseType = type.getBaseType();
                     if (baseType instanceof XSSimpleTypeDecl) {
-                        ((XSSimpleTypeDecl)baseType).setContext(type);
-                        grammar.addGlobalSimpleTypeDecl(type);
+                        ((XSSimpleTypeDecl)baseType).setContext(type);                        
                     }
                 }
+                grammar.addGlobalSimpleTypeDecl(type);
             }
-            
+                        
             if (grammar.getGlobalTypeDecl(type.getName()) == null) {
                 grammar.addGlobalSimpleTypeDecl(type);
             }
