@@ -992,7 +992,7 @@ public abstract class ParentNode
     /** Serialize object. */
     private void writeObject(ObjectOutputStream out) throws IOException {
 
-        // synchronize chilren
+        // synchronize children
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
