@@ -148,7 +148,8 @@ public final class XMLSchemaFactory extends SchemaFactory {
                     "SchemaLanguageLengthZero", null));
         }
         // only W3C XML Schema 1.0 is supported 
-        return schemaLanguage.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        return schemaLanguage.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI) ||
+                schemaLanguage.equals(Constants.W3C_XML_SCHEMA10_NS_URI);
     }
     
     public LSResourceResolver getResourceResolver() {
