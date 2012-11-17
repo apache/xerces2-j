@@ -2749,18 +2749,13 @@ public class XMLSchemaValidator
                             && id.getCategory() == IdentityConstraint.IC_KEYREF) {
                         ValueStoreBase values =
                             fValueStoreCache.getValueStoreFor(id, selMatcher.getInitialDepth());
-                        // nothing to do if nothing matched, or if not all
-                        // fields are present.
-                        if (values != null && values.fValuesCount == values.fFieldCount) {
+                        // report error if not all fields are present                       
+                        if (values.fValuesCount != values.fFieldCount) {
+                            reportSchemaError("KeyRefNotEnoughValues", new Object[] { element.rawname, values.getIdentityConstraint().getName() }); 
+                        }
+                        if (values != null) {    // nothing to do if nothing matched
                             values.endDocumentFragment();
                         }
-                        else if (values != null) {
-                            IdentityConstraint idcConstraint = values.getIdentityConstraint();
-                            if (fValueStoreCache.fGlobalIDConstraintMap.get(((KeyRef)idcConstraint).getKey()) == null) {
-                                reportSchemaError("KeyRefOutOfScope", new Object[] { idcConstraint.getName() });
-                            }
-                        }
-
                     }
                 }
             }
