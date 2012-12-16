@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
  * @xerces.internal
  * 
  * @author: Mukul Gandhi IBM
- * @version $Id:
+ * @version $Id
  */
 public class SimpleTypeTests extends XercesAbstractTestCase {
 

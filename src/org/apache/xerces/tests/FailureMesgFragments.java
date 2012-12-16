@@ -27,7 +27,7 @@ import java.util.List;
  * @xerces.internal
  * 
  * @author: Mukul Gandhi IBM
- * @version $Id:
+ * @version $Id
  */
 public class FailureMesgFragments {
 	
