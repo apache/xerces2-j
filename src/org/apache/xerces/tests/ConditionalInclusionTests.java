@@ -31,7 +31,7 @@ import org.xml.sax.SAXParseException;
  * @xerces.internal
  * 
  * @author: Mukul Gandhi IBM
- * @version $Id
+ * @version $Id$
  */
 public class ConditionalInclusionTests extends XercesAbstractTestCase {
 

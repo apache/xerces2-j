@@ -24,7 +24,7 @@ import junit.framework.TestSuite;
  * @xerces.internal
  * 
  * @author: Mukul Gandhi IBM
- * @version $Id
+ * @version $Id$
  */
 public class AllXercesXSD11Tests {
 

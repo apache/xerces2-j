@@ -26,7 +26,7 @@ import javax.xml.validation.Validator;
  * @xerces.internal
  * 
  * @author: Mukul Gandhi IBM
- * @version $Id
+ * @version $Id$
  */
 public class TargetNamespaceTests extends XercesAbstractTestCase {
 

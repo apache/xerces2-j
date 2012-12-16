@@ -43,7 +43,7 @@ import org.xml.sax.InputSource;
  * @xerces.internal
  * 
  * @author: Mukul Gandhi IBM
- * @version $Id
+ * @version $Id$
  */
 public class PSVITests extends XercesAbstractTestCase {
 	
