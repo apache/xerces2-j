@@ -20,9 +20,14 @@ package org.apache.xerces.tests;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
+/**
  * Represents ONE "error/fatal error/warning" message. Various fragments of ONE "error/fatal error/warning" message
  * can be stored in this object.
+ * 
+ * @xerces.internal
+ * 
+ * @author: Mukul Gandhi IBM
+ * @version $Id:
  */
 public class FailureMesgFragments {
 	

@@ -39,6 +39,12 @@ import org.apache.xerces.xs.XSTypeAlternative;
 import org.apache.xerces.xs.datatypes.ObjectList;
 import org.xml.sax.InputSource;
 
+/**
+ * @xerces.internal
+ * 
+ * @author: Mukul Gandhi IBM
+ * @version $Id:
+ */
 public class PSVITests extends XercesAbstractTestCase {
 	
 	public PSVITests(String name) {

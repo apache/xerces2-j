@@ -20,6 +20,12 @@ package org.apache.xerces.tests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+/**
+ * @xerces.internal
+ * 
+ * @author: Mukul Gandhi IBM
+ * @version $Id:
+ */
 public class AllXercesXSD11Tests {
 
 	public static Test suite() {

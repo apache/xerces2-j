@@ -27,6 +27,12 @@ import javax.xml.validation.Validator;
 
 import org.xml.sax.SAXParseException;
 
+/**
+ * @xerces.internal
+ * 
+ * @author: Mukul Gandhi IBM
+ * @version $Id:
+ */
 public class ConditionalInclusionTests extends XercesAbstractTestCase {
 
 	public ConditionalInclusionTests(String name) {

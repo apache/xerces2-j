@@ -24,6 +24,12 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
+/**
+ * @xerces.internal
+ * 
+ * @author: Mukul Gandhi IBM
+ * @version $Id:
+ */
 public class AssertionTests extends XercesAbstractTestCase {
 
 	public AssertionTests(String name) {

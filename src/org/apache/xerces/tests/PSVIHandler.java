@@ -25,8 +25,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-/*
+/**
  * A class consuming SAX events, augmented by PSVI information.
+ * 
+ * @xerces.internal
+ * 
+ * @author: Mukul Gandhi IBM
+ * @version $Id:
  */
 public class PSVIHandler extends DefaultHandler {
 
