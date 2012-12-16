@@ -1,0 +1,23 @@
+<minutes>
+    <header>
+       <date>2011-04-17</date>
+       <items>
+          <approved>3</approved>
+          <postponed>1</postponed>               
+       </items>
+    </header>
+    <body>
+       <act status="approved">
+          ...
+       </act>
+       <act status="approved">
+          ...
+       </act>
+       <act status="postponed">
+          ...
+       </act>
+       <act status="approved">
+          ...
+       </act>
+    </body>
+</minutes>

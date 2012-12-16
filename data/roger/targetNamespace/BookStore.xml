@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<BookStore xmlns="http://www.bookstore.org"
+           xmlns:b="http://www.book.org">
+		   
+        <Book>
+                <b:Title>My Life and Times</b:Title>
+                <b:Author>Paul McCartney</b:Author>
+                <b:Date>1998</b:Date>
+                <b:ISBN>1-56592-235-2</b:ISBN>
+                <b:Publisher>McMillin Publishing</b:Publisher>
+        </Book>
+        <Book>
+                <b:Title>Illusions The Adventures of a Reluctant Messiah</b:Title>
+                <b:Author>Richard Bach</b:Author>
+                <b:Date>1977</b:Date>
+                <b:ISBN>0-440-34319-4</b:ISBN>
+                <b:Publisher>Dell Publishing Co.</b:Publisher>
+        </Book>
+        <Book>
+                <b:Title>The First and Last Freedom</b:Title>
+                <b:Author>J. Krishnamurti</b:Author>
+                <b:Date>1954</b:Date>
+                <b:ISBN>0-06-064831-7</b:ISBN>
+                <b:Publisher>Harper &amp; Row</b:Publisher>
+        </Book>
+</BookStore>

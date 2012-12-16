@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <element name="Example">
+        <complexType>
+            <sequence>
+                <element name="even-integer">
+                    <simpleType>
+                        <restriction base="integer">
+                            <minInclusive value="0" />
+                            <maxInclusive value="100" />
+                            <assertion test="$value mod 2 = 0" />
+                        </restriction>
+                    </simpleType>
+                </element>
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

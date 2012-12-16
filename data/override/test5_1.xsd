@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:override schemaLocation="test3_2.xsd">
+	   <xs:element name="y" type="xs:integer" />
+	</xs:override>
+	
+	<xs:simpleType name="X_TYPE">
+	   <xs:restriction base="xs:integer">
+		  <xs:maxInclusive value="500"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>

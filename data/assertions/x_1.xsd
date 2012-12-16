@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X">
+     <xs:complexType>
+        <xs:sequence>
+           <xs:element name="temp" type="xs:string"/>
+        </xs:sequence>
+		<xs:assert test="contains(temp, 'hello')"/>
+		<xs:assert test=". instance of element(*, xs:anyType)"/>
+		<xs:assert test="data(.) instance of xs:untypedAtomic"/>
+		<xs:assert test="empty(..) and (. is root())"/>
+     </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

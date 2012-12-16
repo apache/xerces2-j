@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+		   xmlns:my="http://www.examples.org">
+
+	<xs:element name="Example" type="xs:int" vc:typeAvailable="xs:int" />
+	
+	<xs:element name="Example" type="my:myInt" vc:typeAvailable="xs:int my:myInt" />
+	
+</xs:schema>
+

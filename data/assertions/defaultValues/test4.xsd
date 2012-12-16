@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="x">
+      <xs:complexType>
+	     <xs:sequence>
+		    <xs:element default="2 4" name="y">
+			   <xs:simpleType>
+			      <xs:list itemType="xs:int"/>
+			   </xs:simpleType>
+			</xs:element>
+		 </xs:sequence>
+		 <xs:assert test="deep-equal(data(y), (2, 4))"/>
+	  </xs:complexType>
+   </xs:element>
+  
+</xs:schema>

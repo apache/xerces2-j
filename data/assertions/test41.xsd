@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+    <xs:element name="object" type="CAR" />
+	
+	<xs:complexType name="CAR">
+	  <xs:complexContent>
+	    <xs:extension base="OBJECT_ON_SALE">
+		  <xs:assert test="field/@name = 'brand'" />
+		</xs:extension>
+	  </xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="OBJECT_ON_SALE">
+	  <xs:complexContent>
+	    <xs:extension base="OBJECT">
+		  <xs:assert test="if (field/@name = 'price') then 
+		                          (field[@name = 'price']/xs:decimal(@value) gt 0 and
+	                               field/@name = 'currency')
+		                      else true()" />
+		</xs:extension>
+	  </xs:complexContent>
+	</xs:complexType>
+	
+     <xs:complexType name="OBJECT">
+	   <xs:sequence>
+	     <xs:element name="field" minOccurs="0" maxOccurs="unbounded">
+		   <xs:complexType>
+		     <xs:attribute name="name" type="xs:string" />
+	         <xs:attribute name="value" type="xs:string" />
+		   </xs:complexType>
+		 </xs:element>
+	   </xs:sequence>
+	   <xs:attribute name="type" type="xs:string" />
+	   <xs:assert test="count(field) = count(distinct-values(field/string(@name)))" />
+	 </xs:complexType>
+
+</xs:schema>
+

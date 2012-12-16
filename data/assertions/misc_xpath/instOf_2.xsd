@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X">
+     <xs:complexType>
+        <xs:sequence>
+           <xs:element name="Y" type="xs:integer"/>
+        </xs:sequence>
+        <xs:attribute name="att1" type="xs:string"/>
+		<xs:assert test="Y instance of xs:integer"/>
+		<xs:assert test="@att1 instance of xs:string"/>
+     </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

@@ -1,0 +1,7 @@
+<example:x xmlns:example="http://www.example.org">
+   <y>2</y>
+   <y>4</y>
+   <y>6</y>
+   <y>8</y>
+   <y>10</y>
+</example:x>

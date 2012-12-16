@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+    <xs:override schemaLocation="test5_1.xsd">
+	   <xs:simpleType name="X_TYPE">
+	      <xs:restriction base="xs:integer">
+		     <xs:maxInclusive value="100"/>
+		  </xs:restriction>
+	   </xs:simpleType>	   
+	</xs:override>	
+	
+	<xs:element name="A">
+	    <xs:complexType>
+		    <xs:sequence>
+				<xs:element name="x" type="X_TYPE"/>
+				<xs:element ref="y"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+</xs:schema>

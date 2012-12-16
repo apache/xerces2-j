@@ -1,0 +1,24 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:complexType name="Product">
+     <xs:sequence>
+	   <xs:element name="name" type="xs:string" />
+	   <xs:element name="price" maxOccurs="unbounded">
+	     <xs:complexType>
+		   <xs:simpleContent>
+		     <xs:extension base="xs:double">
+		       <xs:attribute name="effective" type="xs:date" />
+			   <xs:assert test="@effective le current-date()" />
+		     </xs:extension>
+		   </xs:simpleContent>		   
+		 </xs:complexType>
+	   </xs:element>
+	 </xs:sequence>
+	 <xs:attribute name="ID" type="xs:string" />
+	 <xs:assert test="every $p in price[position() lt last()] satisfies 
+	                 (days-from-duration($p/following-sibling::price[1]/@effective - $p/@effective) eq 7)" />
+   </xs:complexType>
+   
+   <xs:element name="product" type="Product" />
+           
+</xs:schema>

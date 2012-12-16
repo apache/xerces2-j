@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<BookStore xmlns="http://www.books.org"
+           xmlns:r="http://www.bookrepository.org">
+
+        <Book>
+                <Title>My Life and Times</Title>
+                <Author>Paul McCartney</Author>
+                <Date>1998</Date>
+                <r:Binding>Hardcover</r:Binding>
+        </Book>
+</BookStore>

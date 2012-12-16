@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="list">
+      <xs:complexType>
+	     <xs:simpleContent>
+		    <xs:extension base="INTLIST">
+			   <xs:assert test="count(data($value)) le 5" />
+			   <xs:assert test="every $x in data($value) satisfies ($x mod 2 = 0)" />
+			</xs:extension>
+		 </xs:simpleContent>
+	  </xs:complexType>
+   </xs:element>
+   
+   <xs:simpleType name="INTLIST">
+	  <xs:list itemType="xs:integer" />
+   </xs:simpleType>
+   
+</xs:schema>

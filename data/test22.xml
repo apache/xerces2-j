@@ -1,0 +1,12 @@
+<cd id="0001">
+  <artist>Foo Faa</artist>
+  <album>Blah Blah</album>
+  <genre>Alternative</genre>
+  <price>11.99</price>
+  <currency>USD</currency>
+  <release_date>2009-01-01</release_date>
+  <song>
+    <track>XML XML</track>
+    <duration>1.45</duration>
+  </song>
+</cd>

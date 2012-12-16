@@ -1,0 +1,30 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+   <xs:element name="Book">
+      <xs:complexType>
+         <xs:complexContent>
+		   <xs:extension base="BOOK_FRAGMENT">
+		      <xs:openContent>
+			    <xs:any processContents="lax" />
+			  </xs:openContent>
+              <xs:assert test="not(* except (name, author, ISBN, NoPages)) and 
+			                   (if (ISBN)
+							       then not(ISBN/*) 
+								   else true()) and 
+							   (if (NoPages) 
+							       then (not(NoPages/*) and (NoPages/text() castable as xs:positiveInteger)) 
+								   else true())" />		  
+		   </xs:extension>
+		 </xs:complexContent>        	 
+       </xs:complexType>
+   </xs:element>
+   
+   <xs:complexType name="BOOK_FRAGMENT">
+      <xs:sequence>
+	    <xs:element name="name" type="xs:string" />
+		<xs:element name="author" type="xs:string" />
+	  </xs:sequence>
+   </xs:complexType>
+
+</xs:schema>
+

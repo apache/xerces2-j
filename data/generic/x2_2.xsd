@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="temp">
+      <xs:complexType>
+	     <xs:attribute name="t1" type="xs:dateTime"/>
+		 <xs:assert test="xs:dateTime(@t1) lt xs:dateTime('2010-10-10T10:11:11')"/>
+	  </xs:complexType>
+   </xs:element>
+
+</xs:schema>

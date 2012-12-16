@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:element name="A">
+	   <xs:complexType>
+	      <xs:attribute name="x" type="union_of_date_and_int" />
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="union_of_date_and_int">
+	   <xs:union memberTypes="xs:date">
+	      <xs:simpleType>
+		     <xs:restriction base="xs:int">
+			    <xs:assertion test="$value mod 2 = 0" />
+			 </xs:restriction>
+		  </xs:simpleType>
+	   </xs:union>
+	</xs:simpleType>
+  
+</xs:schema>

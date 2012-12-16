@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="X">
+       <xs:complexType>
+	      <xs:complexContent>
+		     <xs:restriction base="ABST_ROOT">
+	            <xs:sequence>
+		            <xs:element name="allowed">
+		               <xs:complexType>
+		                  <xs:sequence>
+		                     <xs:element name="a" type="xs:string" maxOccurs="unbounded"/>
+		                  </xs:sequence>
+		               </xs:complexType>
+		            </xs:element>
+		            <xs:element name="data" targetNamespace="http://data-example">
+		               <xs:complexType>
+					      <xs:complexContent>
+		                      <xs:restriction base="ABST_ROOT">
+		                         <xs:sequence>
+		                            <xs:element name="a" type="xs:string" maxOccurs="unbounded" targetNamespace="http://data-example"/>
+		                         </xs:sequence>
+							  </xs:restriction>
+						  </xs:complexContent>
+		               </xs:complexType>
+		            </xs:element>
+		        </xs:sequence>	
+              </xs:restriction>
+           </xs:complexContent>			 
+	   </xs:complexType>
+	   <xs:key name="key_allowed">
+		  <xs:selector xpath="allowed/a"/>
+		  <xs:field xpath="."/>
+	   </xs:key>
+	   <xs:keyref name="keyref_data" refer="key_allowed">
+	      <xs:selector xpath="data/a" xpathDefaultNamespace="http://data-example"/>
+	      <xs:field xpath="."/>
+	   </xs:keyref>
+   </xs:element>
+   
+   <xs:complexType name="ABST_ROOT" abstract="true">
+      <xs:sequence>
+	     <xs:any processContents="skip" maxOccurs="unbounded"/>
+	  </xs:sequence>
+   </xs:complexType>
+
+</xs:schema>

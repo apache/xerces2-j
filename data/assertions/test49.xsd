@@ -1,0 +1,42 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="minutes">
+	    <xs:complexType>
+		   <xs:sequence>
+		      <xs:element name="header" type="HEADER"/>
+			  <xs:element name="body">
+			      <xs:complexType>
+				      <xs:sequence>
+					     <xs:element name="act" type="ACT" maxOccurs="unbounded"/>
+					  </xs:sequence>
+				  </xs:complexType>
+			  </xs:element>
+		   </xs:sequence>
+		   <xs:assert test="every $actStatus in body/act/@status satisfies ($actStatus = header/items/*/name())" />
+		   <xs:assert test="every $itm in header/items/* satisfies ($itm = count(body/act[@status = name($itm)]))"/>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="HEADER">
+	   <xs:sequence>
+	      <xs:element name="date" type="xs:date"/>
+		  <xs:element name="items">
+		     <xs:complexType>
+			    <xs:sequence>
+				   <xs:element name="approved" type="xs:nonNegativeInteger" minOccurs="0"/>
+				   <xs:element name="postponed" type="xs:nonNegativeInteger" minOccurs="0"/>
+				</xs:sequence>
+			 </xs:complexType>
+		  </xs:element>
+	   </xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="ACT">
+	   <xs:simpleContent>
+		   <xs:extension base="xs:string">
+			   <xs:attribute name="status" type="xs:string"/>
+		   </xs:extension>
+	   </xs:simpleContent>
+	</xs:complexType>
+	
+</xs:schema>

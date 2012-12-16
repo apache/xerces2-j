@@ -1,0 +1,30 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  
+    <xs:element name="x">
+	   <xs:complexType>
+	      <xs:all>
+		     <xs:group ref="myGroup" />
+			 <xs:element name="c" type="EMPTY" />
+			 <xs:any processContents="lax" minOccurs="0" />
+		  </xs:all>
+		  <xs:assert test="if (*[not(name() = ('a', 'b', 'c'))]) then */self::person else true()">
+		     <xs:annotation>
+			   <xs:documentation>
+			      xs:all in this complexType has an optional wild-card. The assertion test's that if an instance
+				  element exists which matches the wild-card, then it must be named "person".
+			   </xs:documentation>
+			 </xs:annotation>
+		  </xs:assert>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:group name="myGroup">
+	   <xs:all>
+	      <xs:element name="a" type="EMPTY" maxOccurs="unbounded" />
+		  <xs:element name="b" type="EMPTY" />
+	   </xs:all>
+	</xs:group>
+	
+	<xs:complexType name="EMPTY" />
+	
+</xs:schema>	

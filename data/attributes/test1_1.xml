@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<BookStore storename="Barnes and Noble">
+	<Book>
+		<Title>Don't Make Me Think</Title>
+		<Author>Steve Krug</Author>
+		<Date>2006</Date>
+		<ISBN>0-321-34475-8</ISBN>
+		<Publisher>Wrox Press</Publisher>
+	</Book>
+</BookStore>

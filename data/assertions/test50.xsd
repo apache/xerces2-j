@@ -1,0 +1,66 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="minutes">
+	    <xs:complexType>
+		   <xs:sequence>
+		      <xs:element name="header" type="HEADER"/>
+			  <xs:element name="body">
+			      <xs:complexType>
+				      <xs:sequence>
+					     <xs:element name="act" maxOccurs="unbounded">
+						    <xs:complexType>
+							   <xs:simpleContent>
+		                          <xs:extension base="xs:string">
+			                         <xs:attribute name="status" type="ACT_STATUS"/>
+		                          </xs:extension>
+	                           </xs:simpleContent>
+							</xs:complexType>
+						 </xs:element>
+					  </xs:sequence>
+				  </xs:complexType>
+			  </xs:element>
+		   </xs:sequence>
+		   <xs:assert test="every $itm in header/items/* satisfies (number(string($itm)) = count(body/act[@status = name($itm)]))">
+               <xs:annotation>
+                  <xs:appinfo>The aggregate 'status count' value should be equal to sum of body/act with corresponding status.</xs:appinfo>
+               </xs:annotation>			   
+		   </xs:assert>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="HEADER">
+	   <xs:sequence>
+	      <xs:element name="date" type="xs:date"/>
+		  <xs:element name="items">
+		     <xs:complexType>
+			    <xs:sequence>
+				   <xs:any processContents="skip" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:assert test="not(*/(* | @*))">
+				   <xs:annotation>
+                      <xs:appinfo>The 'status count' element should contain an atomic value, having no child elements and attributes.</xs:appinfo>
+                   </xs:annotation>	
+				</xs:assert>
+				<xs:assert test="count(*) = count(distinct-values(*/name()))">
+				   <xs:annotation>
+                      <xs:appinfo>There must not be duplicate 'status count' elements.</xs:appinfo>
+                   </xs:annotation>	
+				</xs:assert>
+				<xs:assert test="every $itm in * satisfies (name($itm) castable as ACT_STATUS)">
+				   <xs:annotation>
+                      <xs:appinfo>The name of 'status count' element should be same as the possible status values.</xs:appinfo>
+                   </xs:annotation>
+				</xs:assert>
+			 </xs:complexType>
+		  </xs:element>
+	   </xs:sequence>
+	</xs:complexType>
+	
+	<xs:simpleType name="ACT_STATUS">
+	   <xs:restriction base="xs:string">
+	      <xs:enumeration value="approved"/>
+		  <xs:enumeration value="postponed"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>

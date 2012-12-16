@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+     <xs:complexType name="TYP1">
+		<xs:assert test="/X"/>
+		<xs:assert test="X[//Y]"/>
+	 </xs:complexType>
+	 
+</xs:schema>

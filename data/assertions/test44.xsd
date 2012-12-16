@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="X">
+      <xs:complexType>
+	     <xs:sequence>
+		    <xs:element name="Y" type="EMPTY" />
+		 </xs:sequence>
+		 <xs:assert test="deep-equal($value, ())" />
+	  </xs:complexType>
+   </xs:element>
+   
+   <xs:complexType name="EMPTY"> 
+       <xs:complexContent> 
+          <xs:restriction base="xs:anyType" /> 
+       </xs:complexContent> 
+    </xs:complexType>
+
+</xs:schema>

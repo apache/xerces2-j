@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+               schemaLocation="xml.xsd"/>
+
+
+    <xs:include schemaLocation="countries.xsd" />
+
+
+    <xs:element name="holiday">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="country-visited" type="xs:string" maxOccurs="unbounded">
+                    <xs:alternative test="@xml:lang='en'" type="Countries" />
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute ref="xml:lang" use="required" inheritable="true" />
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

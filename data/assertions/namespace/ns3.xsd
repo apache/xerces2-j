@@ -1,0 +1,18 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.example.org"
+        elementFormDefault="qualified">
+
+   <element name="x">
+      <complexType>
+        <sequence>
+           <element name="y">
+		      <complexType>
+			    <assert test="namespace-uri(.) = 'http://www.example.org'" />
+			  </complexType>
+		   </element>
+        </sequence>
+        <assert test="namespace-uri(.) = 'http://www.example.org'" />		
+      </complexType>
+   </element>
+
+</schema>

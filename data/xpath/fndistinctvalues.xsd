@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="a" type="xs:integer" maxOccurs="unbounded"/>
+		<xs:element name="b" maxOccurs="unbounded">
+		   <xs:simpleType>
+		      <xs:union memberTypes="xs:integer xs:string"/>
+		   </xs:simpleType>
+		</xs:element>
+      </xs:sequence>
+	  <xs:assert test="deep-equal(distinct-values(a), (2,3,1))"/>
+	  <xs:assert test="deep-equal(distinct-values(b), (2,'b1'))"/>
+	  <xs:assert test="deep-equal(distinct-values(a | b), (2,3,1,'b1'))"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

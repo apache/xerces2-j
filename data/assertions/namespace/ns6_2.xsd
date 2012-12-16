@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://x.y" elementFormDefault="qualified">
+
+   <xs:element name="X">
+       <xs:complexType>
+          <xs:sequence>
+             <xs:element name="Y"/>
+          </xs:sequence>
+          <xs:assert test="namespace-uri-from-QName(node-name(ns0:Y)) = 'http://x.y1'" xmlns:ns0="http://x.y"/>
+		  <xs:assert test="namespace-uri-from-QName(node-name(Y)) = 'http://x.y1'" xpathDefaultNamespace="##targetNamespace"/>
+       </xs:complexType>
+   </xs:element>
+
+</xs:schema>

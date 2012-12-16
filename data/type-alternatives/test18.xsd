@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <xs:attribute name="kind" type="xs:string" />
+    
+    <xs:element name="x" type="xs:anyType">
+	  <xs:alternative test="@kind = 'int'" type="X_Int" />
+	  <xs:alternative test="@kind = 'double'" type="X_Double" />
+	  <xs:alternative type="xs:error" />
+    </xs:element>
+	
+	<xs:complexType name="X_Int">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:int">
+		  <xs:attribute ref="kind" use="required" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+	
+    <xs:complexType name="X_Double">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:double">
+		  <xs:attribute ref="kind" use="required" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+
+</xs:schema>

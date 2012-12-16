@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xx">
+
+   <xs:element name="X">
+      <xs:complexType>
+	    <xs:sequence>
+		   <xs:any processContents="lax" />
+		</xs:sequence>
+		<xs:assert test="Y[deep-equal(*, (Z, U, V, W)) and not(*/node()) and (normalize-space() = '')]" xpathDefaultNamespace="http://yy" />
+	  </xs:complexType>
+   </xs:element>
+  
+</xs:schema>

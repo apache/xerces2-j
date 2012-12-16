@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
+	
+	<xs:element name="A">
+	    <xs:complexType>
+		    <xs:sequence>
+				<xs:element name="x" type="xs:normalizedString" vc:typeAvailable="xs:string xs:normalizedString xs:t1" />
+				<xs:element name="y" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+</xs:schema>

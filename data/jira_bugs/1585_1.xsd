@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="www.bla.com" xmlns:ns="www.bla.com">
+    
+    <xs:element name="Top">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Sub_1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" name="Sub_2">
+                                <xs:complexType>
+                                    <xs:attribute name="SubID" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                    <xs:key name="newKey">
+                        <xs:selector xpath="Sub_2a"/>
+                        <xs:field xpath="@SubID"/>
+                    </xs:key>
+                </xs:element>
+                <xs:element name="Sub_1a">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Sub_2a">
+                                <xs:complexType>
+                                    <xs:attribute name="SubIDPtr"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                    <xs:keyref name="newKeyref" refer="ns:newKey">
+                        <xs:selector xpath="Sub_2a"/>
+                        <xs:field xpath="SubIDPtr"/>
+                    </xs:keyref>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <element name="Todays-Activity">
+        <complexType>
+            <sequence>
+                <any/>
+            </sequence>
+            <attribute name="weather" type="string" use="required" />
+            <assert test="if (@weather eq 'rainy') then child::Movie else
+                          if (@weather eq 'sunny') then child::Beach else
+                          false()" />
+        </complexType>
+    </element>
+
+    <element name="Movie" type="string" />
+    <element name="Beach" type="string" />
+
+</schema>

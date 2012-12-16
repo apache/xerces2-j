@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				
+  <xs:element name="Example">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="x" type="x_Type" maxOccurs="unbounded" />
+      </xs:sequence>
+	  <xs:assert test="every $x in x[position() lt last()] satisfies
+	                       number($x/@a/substring-after(.,'val')) lt
+					       number($x/following-sibling::x[1]/@a/substring-after(.,'val'))" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:complexType name="x_Type">
+    <xs:simpleContent>
+	  <xs:restriction base="x_base">
+        <xs:assert test="$value lt 100" /> 
+	  </xs:restriction>
+	</xs:simpleContent>
+  </xs:complexType>
+  
+  <xs:complexType name="x_base">
+    <xs:simpleContent>
+	  <xs:extension base="myInteger">
+        <xs:attribute name="a" type="attrType" use="required" />
+	  </xs:extension>
+	</xs:simpleContent>
+  </xs:complexType>
+  
+  <xs:simpleType name="myInteger">
+    <xs:restriction base="xs:positiveInteger">
+	  <xs:assertion test="$value mod 2 = 0" />
+	</xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="attrType">
+    <xs:restriction base="xs:string">
+	  <xs:pattern value="val[1-9][0-9]*" />
+	  <xs:maxLength value="20" />
+	</xs:restriction>
+  </xs:simpleType>
+  
+</xs:schema>

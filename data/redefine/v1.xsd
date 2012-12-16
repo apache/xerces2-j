@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:redefine schemaLocation="v2.xsd">
+	   <xs:simpleType name="T1">
+	      <xs:restriction base="T1">
+	         <xs:maxInclusive value="6"/>
+	      </xs:restriction>
+	   </xs:simpleType>
+	</xs:redefine>
+	
+	<xs:element name="x">
+	   <xs:complexType>
+	      <xs:sequence>
+	         <xs:element ref="a"/>
+		     <xs:element name="b" type="xs:string"/>
+			 <xs:element name="c" type="T1"/>
+	       </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+</xs:schema>

@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="tns" xmlns="tns">
+
+    <xs:redefine schemaLocation="gr2.xsd">
+        <xs:group name="Para.Decorate">
+		    <xs:sequence>
+               <xs:group ref="Para.Decorate"/>
+               <xs:element name="x"/>
+			</xs:sequence>
+        </xs:group>
+    </xs:redefine>
+	
+    <xs:element name="el">
+	   <xs:complexType>
+	      <xs:group ref="Para.Decorate"/>
+	   </xs:complexType>
+	</xs:element>
+	
+</xs:schema>

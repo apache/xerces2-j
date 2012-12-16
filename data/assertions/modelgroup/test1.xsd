@@ -1,0 +1,26 @@
+<?xml version='1.0'?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+    <xs:element name="root">
+       <xs:complexType>
+	      <xs:all>
+		     <xs:element name="a" type="EMPTY" />
+	         <xs:element name="b" type="EMPTY" />
+		     <xs:element name="c" type="EMPTY" />
+		     <xs:element name="d" type="EMPTY" />
+		     <xs:element name="e" type="EMPTY" />
+          </xs:all>
+          <xs:assert test="not(*[1]/self::a)">
+             <xs:annotation>
+			    <xs:documentation>
+				   Element "a" cannot be 1st element among child elements of "root". Other sibling elements of "a" can
+				   occur in any order.
+				</xs:documentation>
+			 </xs:annotation>
+          </xs:assert>		  
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="EMPTY" />
+	
+</xs:schema>	

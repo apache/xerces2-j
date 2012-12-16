@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:element name="A">
+	   <xs:complexType>
+	      <xs:attribute name="x" type="MYINT" />
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="MYINT">
+	   <xs:restriction base="xs:int">
+	      <xs:assertion test="$value mod 2 = 0" />
+	   </xs:restriction>
+	</xs:simpleType>
+  
+</xs:schema>

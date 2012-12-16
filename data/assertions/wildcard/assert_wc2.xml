@@ -1,0 +1,9 @@
+<Header xmlns="http://www.example.org/header">
+    
+    <Author>John Doe</Author>
+
+    <Report xmlns="http://www.example.org/report">
+        <Title>My report on XYZ</Title>
+    </Report>
+
+</Header>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.meeting.org"
+        xmlns:m="http://www.meeting.org"
+        xmlns:t="http://www.times.org"
+        elementFormDefault="qualified">
+
+    <import namespace="http://www.times.org"
+            schemaLocation="times.xsd" />
+
+    <element name="Example">
+        <complexType>
+            <sequence>
+                <element name="meeting-time">
+                    <complexType>
+                        <sequence>
+                            <element name="start-time" type="time" />
+                            <element ref="t:end-time" />
+                        </sequence>
+                        <assert test="t:end-time gt start-time" xpathDefaultNamespace="##targetNamespace"  />
+                    </complexType>
+                </element>
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

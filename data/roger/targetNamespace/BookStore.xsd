@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.bookstore.org"
+           xmlns="http://www.bookstore.org"
+           xmlns:b="http://www.book.org"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.book.org"
+               schemaLocation="Book.xsd"/>
+
+    <xs:complexType name="BookTypeMyNamespace">
+        <xs:complexContent>
+            <xs:restriction base="b:BookType">
+                <xs:sequence>
+                    <xs:element name="Title" type="xs:string" targetNamespace="http://www.book.org"/>
+                    <xs:element name="Author" type="xs:string" maxOccurs="2" targetNamespace="http://www.book.org"/>
+                    <xs:element name="Date" type="xs:gYear" targetNamespace="http://www.book.org"/>
+                    <xs:element name="ISBN" type="xs:string" targetNamespace="http://www.book.org"/>
+                    <xs:element name="Publisher" type="xs:string" targetNamespace="http://www.book.org"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="BookStore">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Book" maxOccurs="unbounded" type="BookTypeMyNamespace" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

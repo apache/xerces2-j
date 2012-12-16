@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <element name="Example">
+        <complexType>
+            <sequence>
+                <element name="couples">
+                    <complexType>
+                        <sequence>
+                            <element name="name" maxOccurs="unbounded" />
+                        </sequence>
+                        <assert test="count(name) mod 2 = 0" />
+                    </complexType>
+                </element>
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

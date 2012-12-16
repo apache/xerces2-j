@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <xs:element name="Example">
+	  <xs:complexType>
+	    <xs:sequence>
+		  <xs:element name="x" type="X_Type" maxOccurs="unbounded" />
+		</xs:sequence>
+	  </xs:complexType>
+    </xs:element>
+	
+	<xs:complexType name="X_Type">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:int">
+		  <xs:attribute name="a">
+		    <xs:simpleType>
+			  <xs:restriction base="xs:int">
+			    <xs:assertion test="$value mod 2 = 0" />
+			  </xs:restriction>
+			</xs:simpleType>
+		  </xs:attribute>
+		</xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+
+</xs:schema>

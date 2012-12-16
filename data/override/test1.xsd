@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+   <xs:override schemaLocation="test1_1.xsd" vc:minVersion="1.1">
+       <xs:annotation>
+	      <xs:appinfo>
+		     Override used only in XML Schema 1.1 mode.
+		  </xs:appinfo>
+	   </xs:annotation>
+       <xs:complexType name="TYPE_1">
+          <xs:all>
+		     <xs:element name="a" type="xs:string" />
+			 <xs:group ref="group_1" />
+		  </xs:all>
+       </xs:complexType>
+   </xs:override>
+   
+   <xs:include schemaLocation="test1_1.xsd" vc:maxVersion="1.1">
+      <xs:annotation>
+	     <xs:appinfo>
+		    Include used only in XML Schema 1.0 mode.
+		 </xs:appinfo>
+	  </xs:annotation>
+   </xs:include>
+   
+   <xs:element name="X" type="TYPE_1">
+      <xs:annotation>
+	     <xs:appinfo>
+		    Element declaration used in both XML Schema 1.0 and 1.1 mode, and possibly with all future XML schema
+			language versions. The schema type "TYPE_1" will be resolved to a type definition available in the schema
+			document test1_1.xsd in XML Schema 1.0 mode, and to a type definition available in this schema document
+			(the child of xs:override) in XML Schema 1.1 mode.
+		 </xs:appinfo>
+	  </xs:annotation>
+   </xs:element>
+  
+</xs:schema>

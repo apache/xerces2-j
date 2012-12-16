@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="List" type="LIST_TYPE" />
+   
+   <xs:complexType name="LIST_TYPE">
+      <xs:sequence>
+	    <xs:element name="x" type="EVEN_INTEGER" maxOccurs="unbounded" />
+	  </xs:sequence>
+	  <xs:assert test="deep-equal(distinct-values(data(x)), data(x))" />
+	  <xs:assert test="every $x in x[position() lt last()] satisfies $x lt $x/following-sibling::x[1]" />
+   </xs:complexType>
+   
+   <xs:simpleType name="EVEN_INTEGER">
+      <xs:restriction base="xs:integer">
+	     <xs:assertion test="$value mod 2 = 0" />
+	  </xs:restriction>
+   </xs:simpleType>
+
+</xs:schema>

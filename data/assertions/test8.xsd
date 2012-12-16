@@ -1,0 +1,16 @@
+<!-- demonstrates assertions on a complex type definition, 
+     having simpleContent -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="shoesize" type="shoeType"/>
+
+  <xs:complexType name="shoeType">
+    <xs:simpleContent>
+      <xs:extension base="xs:integer">
+        <xs:attribute name="country" type="xs:string" />
+		<xs:assert test="@country" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+ 
+</xs:schema> 

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <element name="ElectionResultsByPercentage">
+        <complexType>
+            <sequence>
+                <element name="Candidate" maxOccurs="unbounded">
+                    <complexType>
+                        <simpleContent>
+                            <extension base="unsignedByte">
+                                <attribute name="name" type="NMTOKEN" use="required" />
+                            </extension>
+                        </simpleContent>
+                    </complexType>
+                </element>
+            </sequence>
+            <assert test="sum(Candidate) eq 100" />
+        </complexType>
+    </element>
+
+</schema>

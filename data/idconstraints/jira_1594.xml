@@ -1,0 +1,13 @@
+<personnel>
+    <person id="111">
+        <name>name</name>
+        <ref>1</ref>
+    </person>
+    <person id="222">
+        <name>name</name>
+        <ref>2</ref>
+    </person>
+    <person id="333">
+        <name>name</name>
+    </person>
+</personnel>

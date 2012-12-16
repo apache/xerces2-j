@@ -1,0 +1,13 @@
+<!-- demonstrates assertions on a simple type definition -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="value" type="myNumericType" />
+  
+  <xs:simpleType name="myNumericType">
+    <xs:restriction base="xs:string">
+	  <!-- the number should not start with '0' and length of number should be maximum 10 digits -->
+	  <xs:assertion test="not(starts-with($value, '0')) and (string-length($value) le 10)" />
+	</xs:restriction>
+  </xs:simpleType>
+  
+</xs:schema>

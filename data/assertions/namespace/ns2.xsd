@@ -1,0 +1,32 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:seq="http://www.example.org"
+           targetNamespace="http://www.example.org">
+   
+   <xs:element name="x" type="seq:MOD2SEQ" />
+   
+   <xs:complexType name="MOD2SEQ">
+      <xs:sequence>
+	     <xs:element name="y" maxOccurs="unbounded">
+		    <xs:simpleType>
+		       <xs:restriction base="xs:positiveInteger">
+			      <xs:assertion test="$value mod 2 = 0">
+				     <xs:annotation>
+		                <xs:documentation>
+			               'y' must be divisible by 2.
+			            </xs:documentation>
+		             </xs:annotation>
+				  </xs:assertion>
+			   </xs:restriction>
+			</xs:simpleType>
+		 </xs:element>		
+	  </xs:sequence>
+	  <xs:assert test="every $y in y[position() lt last()] satisfies ($y lt $y/following-sibling::y[1])">
+	     <xs:annotation>
+		    <xs:documentation>
+			   The integer list 'y' must be in ascending order.
+			</xs:documentation>
+		 </xs:annotation>
+	  </xs:assert>
+   </xs:complexType>
+   
+</xs:schema>

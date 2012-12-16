@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="Example">
+      <xs:complexType>
+	     <xs:attribute name="attr">
+		    <xs:simpleType>
+			   <xs:list itemType="MYDATE" />
+			</xs:simpleType>
+		 </xs:attribute>
+	  </xs:complexType>
+   </xs:element>
+   
+   <xs:simpleType name="MYDATE">
+     <xs:restriction base="xs:date">
+	    <xs:assertion test="$value gt xs:date('2010-08-25')" />
+	 </xs:restriction>
+   </xs:simpleType>
+
+</xs:schema>
+

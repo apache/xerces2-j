@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="X">
+       <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="allowed">
+		        <xs:complexType>
+		           <xs:sequence>
+		              <xs:element name="a" type="xs:string" maxOccurs="unbounded"/>
+		           </xs:sequence>
+		        </xs:complexType>
+		     </xs:element>
+		     <xs:element name="data">
+		        <xs:complexType>
+		           <xs:sequence>
+		              <xs:element name="a" type="xs:string" maxOccurs="unbounded"/>
+		           </xs:sequence>
+		        </xs:complexType>
+		     </xs:element>
+		  </xs:sequence>		  
+	   </xs:complexType>
+	   <xs:key name="key_allowed">
+		  <xs:selector xpath="allowed/a"/>
+		  <xs:field xpath="."/>
+	   </xs:key>
+	   <xs:keyref name="keyref_data" refer="key_allowed">
+	      <xs:selector xpath="data/a" />
+	      <xs:field xpath="."/>
+	   </xs:keyref>
+   </xs:element>
+
+</xs:schema>

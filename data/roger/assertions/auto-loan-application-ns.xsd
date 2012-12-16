@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.NE-auto-insurance.com"
+        elementFormDefault="qualified">
+
+    <element name="Loan-Application">
+        <complexType>
+            <sequence>
+                <element name="Applicant">
+                    <complexType>
+                        <sequence>
+                            <element name="Name" type="string" />
+                            <element name="Age" type="unsignedByte" />
+                            <element name="Address">
+                                <complexType>
+                                    <sequence>
+                                        <element name="Street" type="string" />
+                                        <element name="City" type="string" />
+                                        <element name="State">
+                                            <simpleType>
+                                                <restriction base="string">
+                                                    <enumeration value="CT" />
+                                                    <enumeration value="MA" />
+                                                    <enumeration value="ME" />
+                                                    <enumeration value="NH" />
+                                                    <enumeration value="RI" />
+                                                    <enumeration value="VT" />
+                                                </restriction>
+                                            </simpleType>
+                                        </element>
+                                    </sequence>
+                                </complexType>
+                            </element>
+                        </sequence>
+                        <assert test="if (Address/State eq 'CT') then number(Age) ge 19 else
+                                      if (Address/State eq 'MA') then number(Age) ge 18 else
+                                      if (Address/State eq 'ME') then number(Age) ge 19 else
+                                      if (Address/State eq 'NH') then number(Age) ge 17 else
+                                      if (Address/State eq 'RI') then number(Age) ge 18 else
+                                      if (Address/State eq 'VT') then number(Age) ge 16 else
+                                      false()" xpathDefaultNamespace="##targetNamespace" />
+                    </complexType>
+                </element>
+                <element name="Car">
+                    <complexType>
+                        <sequence>
+                            <element name="Make" type="string" />
+                            <element name="Model" type="string" />
+                            <element name="Year" type="gYear" />
+                        </sequence>
+                    </complexType>
+                </element>
+                <element name="Loan-Amount" type="unsignedInt" />
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

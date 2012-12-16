@@ -1,0 +1,28 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <xs:element name="X">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="list">
+			    <xs:simpleType>
+				   <xs:restriction>
+				      <xs:simpleType>
+					     <xs:list itemType="xs:int" />
+					  </xs:simpleType>
+				      <xs:assertion test="count($value) = 3" />
+					  <xs:assertion test="every $x in $value satisfies ($x mod 2 = 0)" />
+				   </xs:restriction>
+				</xs:simpleType>
+			 </xs:element>
+			 <xs:element name="a" type="MY_INT" />
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="MY_INT">
+       <xs:restriction base="xs:integer">
+	      <xs:assertion test="$value mod 2 = 0" />
+	   </xs:restriction>
+    </xs:simpleType>
+	
+</xs:schema>

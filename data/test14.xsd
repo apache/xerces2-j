@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  
+  <xs:element name="Example">
+    <xs:complexType>
+	  <xs:sequence>
+	    <xs:element name="even-number">
+		  <xs:simpleType>
+		    <xs:restriction base="xs:int">
+			  <xs:assertion test="$value mod 2 = 0" />
+			  <xs:assertion test="$value lt 500" />
+			</xs:restriction>
+		  </xs:simpleType>
+		</xs:element>
+	  </xs:sequence>
+	  <xs:assert test="even-number lt 500" />
+	</xs:complexType>
+  </xs:element>
+ 
+</xs:schema>

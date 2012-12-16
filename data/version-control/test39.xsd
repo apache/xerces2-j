@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
+	
+	<xs:element name="test" type="xs:positiveInteger">
+       <xs:alternative test="@v2 = 'true'" type="TestV2" vc:minVersion="1.1" />
+	   <xs:alternative type="xs:error" vc:minVersion="1.1" />
+    </xs:element>
+	
+	<xs:complexType name="TestV2" vc:minVersion="1.1">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:positiveInteger">		  
+		  <xs:attribute name="v2" type="xs:string" />
+		  <xs:assert test="$value mod 2 = 0" />
+		</xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+
+</xs:schema>
+

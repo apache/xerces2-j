@@ -1,0 +1,4 @@
+<!-- to be validated with, test10.xsd -->
+<message mustUnderstand="YES">
+  <body>hello..</body>
+</message>

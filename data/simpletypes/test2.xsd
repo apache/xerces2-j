@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+     
+	 <xs:element name="X">
+	    <xs:simpleType>
+		   <xs:union memberTypes="xs:int xs:anyAtomicType"/>
+		</xs:simpleType>
+	 </xs:element>
+	 
+	 <xs:element name="Y">
+	    <xs:simpleType>
+		   <xs:union memberTypes="xs:int xs:anySimpleType"/>
+		</xs:simpleType>
+	 </xs:element>
+	 
+</xs:schema>

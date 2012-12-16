@@ -1,0 +1,28 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:element name="X">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="A" type="MINIMAL_A">
+			    <xs:alternative test="@a = true()">
+				   <xs:complexType>
+				      <xs:complexContent>
+					     <xs:extension base="MINIMAL_A">
+						    <xs:assert test="B mod 2 = 0" />
+						 </xs:extension>
+					  </xs:complexContent>
+				   </xs:complexType>
+				</xs:alternative>
+			 </xs:element>
+		  </xs:sequence>
+		  <xs:attribute name="a" type="xs:boolean" inheritable="true" />
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="MINIMAL_A">
+	   <xs:sequence>
+	      <xs:element name="B" type="xs:integer" />
+	   </xs:sequence>
+	</xs:complexType>
+	
+</xs:schema>

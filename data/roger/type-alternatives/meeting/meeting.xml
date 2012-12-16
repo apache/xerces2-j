@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+        <Meeting start-time="08:00:00" end-time="09:00:00">
+            <Subject>Discuss the new project</Subject>
+            <Tea>green</Tea>
+        </Meeting>
+
+        <Meeting start-time="13:00:00" end-time="14:00:00">
+            <Subject>Discuss the new project</Subject>
+            <Juice>apple</Juice>
+        </Meeting>
+        
+</Example>

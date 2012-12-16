@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:element name="metrorail" type="xs:string" />
+
+    <xs:element name="subway" type="xs:string" />
+
+    <xs:element name="metro" substitutionGroup="metrorail subway" type="xs:normalizedString" />
+
+    <xs:element name="Example">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="metrorail" />
+                <xs:element ref="subway" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

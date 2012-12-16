@@ -1,0 +1,25 @@
+<order id="100"> 
+    <buyer>
+      <fName>Jimmy</fName>
+	  <lName>Nice</lName>
+	</buyer>
+	<billing-address>
+	   <street1>XYZ Street1</street1>
+	   <street2>Near Leapord Market</street2>
+	   <city>ABC</city>
+	   <zipcode>122001</zipcode>
+	   <state>PQR</state>
+	   <country>my country</country>
+	</billing-address>
+	<shipping-address />
+	<email>jimmy.nice@jimmy.org</email>
+	<items>
+	  <item quantity="1" price="88.10">
+	     <description>Inside Java Virtual Machine: Sun Press (James Gosling)</description>
+	  </item>
+	  <item id="105" quantity="2" price="20" /> 
+    </items>
+	<tax>10.81</tax>
+	<bill-amount>118.91</bill-amount>
+	<currency>USD</currency>
+</order>

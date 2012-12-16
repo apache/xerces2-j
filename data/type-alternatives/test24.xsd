@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="test" type="Y">
+     <xs:alternative test="@extended eq false()" type="X"/>
+   </xs:element>
+   
+   <xs:complexType name="X">
+     <xs:complexContent>
+	   <xs:restriction base="Y">
+	     <xs:sequence>
+	       <xs:element name="a" type="xs:string"/>
+	       <xs:element name="b" type="xs:string"/>
+		 </xs:sequence>
+	   </xs:restriction>
+	 </xs:complexContent>
+   </xs:complexType>
+   
+   <xs:complexType name="Y">
+     <xs:sequence>
+       <xs:element minOccurs="0" name="a" type="xs:string"/>
+	   <xs:element minOccurs="0" name="b" type="xs:string"/>
+	   <xs:element minOccurs="0" name="c" type="xs:string"/>
+	   <xs:element minOccurs="0" name="d" type="xs:string"/>
+     </xs:sequence>
+	 <xs:attribute name="extended" type="xs:boolean"/>
+   </xs:complexType>
+           
+</xs:schema>

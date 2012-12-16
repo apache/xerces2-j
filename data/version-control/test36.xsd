@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">    
+	
+	<xs:element name="test">
+        <xs:simpleType>
+           <xs:restriction base="xs:positiveInteger">
+              <xs:assertion test="$value mod 2 = 0" vc:minVersion="1.1" />
+           </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+
+</xs:schema>
+

@@ -1,0 +1,13 @@
+<X>
+   <allowed>
+      <a>a1</a>
+      <a>a2</a>
+      <a>a3</a>
+   </allowed>
+   <data>
+      <a>a1</a>
+      <a>a2</a>
+      <a>a2</a>
+      <a>a3</a>
+   </data>
+</X>

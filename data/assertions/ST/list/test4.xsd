@@ -1,0 +1,33 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+	<xs:annotation>
+	   <xs:appinfo>
+	      Demonstrates assertion evaluations with an simpleType type derivation. All of assertions from a type
+		  and it's base types are evaluated.
+	   </xs:appinfo>
+	</xs:annotation>
+	
+    <xs:element name="X">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="list">
+			    <xs:simpleType>
+				   <xs:restriction base="MY_LIST">				      
+					  <xs:assertion test="every $x in $value satisfies ($x mod 2 = 0)" />
+				   </xs:restriction>
+				</xs:simpleType>
+			 </xs:element>
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="MY_LIST">
+	    <xs:restriction>
+		   <xs:simpleType>
+			  <xs:list itemType="xs:int" />
+		   </xs:simpleType>
+		   <xs:assertion test="count($value) le 5" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>

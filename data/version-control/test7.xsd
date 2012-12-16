@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
+	
+	<xs:element name="A">
+	    <xs:complexType>
+		    <xs:sequence>
+				<xs:element name="x" type="xs:string"/>
+				<xs:element name="y" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:futureElement vc:minVersion="2.0">
+		    <xs:X>
+			   <xs:Y/>
+			</xs:X>
+		</xs:futureElement>
+	</xs:element>
+	
+</xs:schema>

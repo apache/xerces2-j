@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
+	
+	<xs:element name="A">
+	    <xs:complexType>
+		    <xs:sequence>
+				<xs:element name="x" type="xs:integer" vc:facetUnavailable="xs:assertion" />
+				<xs:element name="x">				
+				    <xs:simpleType>
+					   <xs:restriction base="xs:integer">
+					       <xs:assertion test="$value mod 2 = 0" />
+					   </xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="y" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+</xs:schema>

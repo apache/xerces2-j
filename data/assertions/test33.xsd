@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="example" type="myPrecisionDecimal"/>
+  
+  <xs:simpleType name="myPrecisionDecimal">
+    <xs:restriction base="xs:decimal">
+	  <xs:totalDigits value="6"/>
+	  <xs:fractionDigits value="4"/>
+      <xs:assertion test="string-length(substring-after(string($value), '.')) ge 2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
+</xs:schema>

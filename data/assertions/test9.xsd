@@ -1,0 +1,13 @@
+<!-- demonstrates assertions on simple type, using variable $value -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="mesgType">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="25"/>
+      <xs:assertion test="ends-with($value, 'xyz')"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="message" type="mesgType" />
+ 
+</xs:schema> 

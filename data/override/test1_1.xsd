@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  
+   <xs:complexType name="TYPE_1">
+      <xs:group ref="group_1" />
+   </xs:complexType>
+   
+   <xs:group name="group_1">
+      <xs:all>
+	     <xs:element name="x" type="xs:string" />
+		 <xs:element name="y" type="xs:string" />
+		 <xs:element name="z" type="xs:string" />
+	  </xs:all>
+   </xs:group>
+    
+</xs:schema>	

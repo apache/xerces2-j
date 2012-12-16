@@ -1,0 +1,25 @@
+<?xml version='1.0'?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+    <xs:element name="LIST">
+	   <xs:complexType>
+	      <xs:simpleContent>
+		     <xs:extension base="LST_TYPE">
+			    <xs:attribute name="x" type="xs:integer" />
+				<xs:assert test="@x = count($value)">
+				   <xs:annotation>
+				      <xs:documentation>
+					     Numeric value of attribute "x" must be equal to cardinality of the list.
+					  </xs:documentation>
+				   </xs:annotation>
+				</xs:assert>
+			 </xs:extension>
+		  </xs:simpleContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="LST_TYPE">
+	   <xs:list itemType="xs:integer" />
+	</xs:simpleType>
+	
+</xs:schema>	

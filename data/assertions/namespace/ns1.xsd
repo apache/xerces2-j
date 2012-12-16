@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.example.org"
+		   elementFormDefault="qualified">
+   
+   <xs:element name="x">
+      <xs:complexType>
+	     <xs:sequence>
+		    <xs:element name="y" type="xs:string" />
+		 </xs:sequence>
+		 <xs:assert test="y = 'Hello World'" xpathDefaultNamespace="##targetNamespace" />
+	  </xs:complexType>
+   </xs:element>
+   
+</xs:schema>

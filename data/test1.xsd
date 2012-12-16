@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X" type="XType"/>
+  
+  <xs:complexType name="XType">
+    <xs:sequence>
+	  <xs:element name="message" type="xs:string"/>
+	</xs:sequence>
+    <xs:attribute name="min" type="xs:int"/>
+    <xs:attribute name="max" type="xs:int"/>
+    <xs:assert test="@min le @max"/>
+	<xs:assert test="string-length(message) le 30"/>
+  </xs:complexType>
+  
+</xs:schema>

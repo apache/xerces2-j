@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:test2="http://test2" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://test1">
+  
+    <xs:import namespace="http://test2" schemaLocation="tns4_imp.xsd"/>
+	
+    <xs:element name="x">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element ref="test2:y"/>
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+    
+</xs:schema>

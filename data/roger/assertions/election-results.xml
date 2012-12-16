@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<ElectionResultsByPercentage>
+     <Candidate name="John">61</Candidate> 
+     <Candidate name="Sara">24</Candidate> 
+     <Candidate name="Bill">15</Candidate>
+</ElectionResultsByPercentage>

@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="emptydoc">
+	   <xs:simpleType>
+	      <xs:restriction base="xs:string">
+		     <xs:assertion test="deep-equal((1, 2), ('1', '2'))">
+			    <xs:annotation>
+			       <xs:documentation>
+				      This assertion fails, because xs:integer and xs:string values are not comparable for the "eq" operator.
+					  The deep equality as a whole fails.
+				   </xs:documentation>
+			    </xs:annotation>
+			 </xs:assertion>
+			 <xs:assertion test="deep-equal((1, 2), (1, 2))"/>
+		  </xs:restriction>
+	   </xs:simpleType>
+	</xs:element>
+
+</xs:schema>

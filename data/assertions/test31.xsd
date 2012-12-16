@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="Example">
+      <xs:complexType>
+	    <xs:sequence>
+           <xs:element name="List" type="INTLIST" />
+        </xs:sequence>
+        <xs:assert test="deep-equal(distinct-values(data(List)), data(List))" />	   
+	  </xs:complexType>
+   </xs:element>
+   
+   <xs:simpleType name="INTLIST">
+      <xs:list itemType="MYINT" />
+   </xs:simpleType>
+   
+   <xs:simpleType name="MYINT">
+	  <xs:restriction base="xs:integer">
+	    <xs:assertion test="$value mod 2 = 0" />
+	  </xs:restriction>
+   </xs:simpleType>
+
+</xs:schema>

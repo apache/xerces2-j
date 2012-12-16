@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="tns" xmlns="tns">
+    
+	<xs:redefine schemaLocation="2_1.xsd">
+        <xs:simpleType name="st">
+            <xs:restriction base="st">
+			   <xs:maxInclusive value="50"/>
+			</xs:restriction>
+        </xs:simpleType>
+    </xs:redefine>
+	
+    <xs:element name="el" type="st"/>
+</xs:schema> 

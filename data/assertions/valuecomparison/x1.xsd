@@ -1,0 +1,30 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="list">
+        <xs:complexType>
+		   <xs:sequence>
+		      <xs:element name="item" type="xs:string" maxOccurs="unbounded"/>
+		   </xs:sequence>
+		   <xs:attribute name="attr">
+		      <xs:simpleType>
+			     <xs:list itemType="xs:integer"/>
+			  </xs:simpleType>
+		   </xs:attribute>
+		   <xs:assert test="deep-equal(item/substring-after(., 'a'), data(@attr))">
+		      <xs:annotation>
+			     <xs:documentation>
+				    This assertion fails, because xs:integer and xs:string values are not comparable for the "eq" operator.
+				 </xs:documentation>
+			  </xs:annotation>
+		   </xs:assert>
+		   <xs:assert test="deep-equal(item/substring-after(., 'a'), for $att in data(@attr) return string($att))">
+		      <xs:annotation>
+			     <xs:documentation>
+				    This is right way to specify this assertion, since it ensures correct types for value comparisons.
+				 </xs:documentation>
+			  </xs:annotation>
+		   </xs:assert>
+		</xs:complexType>
+	</xs:element>
+	
+</xs:schema>

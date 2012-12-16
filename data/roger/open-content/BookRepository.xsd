@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.bookrepository.org"
+           elementFormDefault="qualified">
+
+    <xs:element name="NumPages" type="xs:nonNegativeInteger" />
+
+    <xs:element name="Binding" type="xs:string" />
+
+    <xs:element name="Size" type="xs:string" />
+
+    <xs:element name="InStock" type="xs:boolean" />
+
+    <xs:element name="Category" type="xs:string" />
+
+    <xs:element name="AvailableOnTape" type="xs:boolean" />
+
+    <xs:element name="StoreName" type="xs:string" />
+
+</xs:schema>

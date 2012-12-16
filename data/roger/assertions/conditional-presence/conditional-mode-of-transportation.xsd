@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:element name="Example">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Transportation">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="mode" type="modeType" />
+                            <xs:choice>
+                                <xs:element name="airplane" type="xs:string" />
+                                <xs:element name="boat" type="xs:string" />
+                                <xs:element name="car" type="xs:string" />
+                            </xs:choice>
+                        </xs:sequence>
+                        <xs:assert test="if (mode eq 'air') then child::airplane else
+                                         if (mode eq 'water') then child::boat else
+                                         if (mode eq 'ground') then child::car else
+                                         false()" />
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="modeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="air"/>
+            <xs:enumeration value="water"/>
+            <xs:enumeration value="ground"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

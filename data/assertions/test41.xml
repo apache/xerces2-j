@@ -1,0 +1,6 @@
+<object type="car">
+  <field name="brand" value="Honda" />
+  <field name="price" value="5000" />
+  <field name="currency" value="USD" />
+  <field name="year" value="1996" />
+</object>

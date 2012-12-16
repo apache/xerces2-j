@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="Example">
+      <xs:complexType>
+         <xs:sequence>
+		    <xs:element name="X" type="union_of_string_and_integer" maxOccurs="unbounded">			   
+			   <xs:alternative test="boolean(@code) = true()">
+			      <xs:complexType>
+				     <xs:simpleContent>
+					    <xs:extension base="xs:integer">
+						   <xs:attribute name="code" type="xs:boolean" />
+						</xs:extension>
+					 </xs:simpleContent>
+				  </xs:complexType>
+			   </xs:alternative>
+               <xs:alternative type="xs:string" />			   
+			</xs:element>
+		 </xs:sequence>
+      </xs:complexType>
+   </xs:element>
+   
+   <xs:simpleType name="union_of_string_and_integer">
+      <xs:union memberTypes="xs:integer xs:string" />
+   </xs:simpleType>
+  
+</xs:schema>

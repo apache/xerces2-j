@@ -1,0 +1,19 @@
+<!-- demonstrates assertions on a complex type definition. uses multiple asserts,
+     which all must evaluate to true, for validation to succeed. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="phonebill">
+    <xs:complexType>
+	  <xs:sequence>
+	    <xs:element name="plan" type="xs:string" />
+		<xs:element name="rent" type="xs:integer" />
+	  </xs:sequence>
+	  <xs:attribute name="custId" type="xs:string" />
+	  <xs:assert test="starts-with(@custId, 'XYZTelecom')" />
+	  <xs:assert test="(plan = 'A' and rent = 500) or 
+	                   (plan = 'B' and rent = 650) or 
+					   (plan = 'C' and rent = 1000)" />
+	</xs:complexType>
+  </xs:element>
+  
+</xs:schema>

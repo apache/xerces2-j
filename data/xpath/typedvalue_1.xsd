@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="X">
+       <xs:complexType>
+          <xs:sequence>
+             <xs:element name="Y" maxOccurs="unbounded">
+                <xs:simpleType>
+                   <xs:union memberTypes="xs:integer xs:string" />
+                </xs:simpleType>
+             </xs:element>
+          </xs:sequence>
+          <xs:assert test="data(Y[1]) eq '3.3'"/>
+          <xs:assert test="data(Y[2]) eq 10"/>
+       </xs:complexType>
+    </xs:element>
+
+</xs:schema>

@@ -1,0 +1,31 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="x">
+	   <xs:complexType>
+		  <xs:group ref="myGroup" maxOccurs="unbounded" />
+          <xs:attribute name="groupCount" type="xs:nonNegativeInteger" />
+          <xs:assert test="@groupCount = count(*) idiv 2">
+             <xs:annotation>
+			   <xs:documentation>
+			      A model group consists of a pair of elements. The numeric value of attribute "groupCount"
+				  must be equal to the number of groups.
+			   </xs:documentation>
+			 </xs:annotation>
+          </xs:assert>		  
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:group name="myGroup">
+	   <xs:sequence>
+	      <xs:element name="a" type="MYINT" />
+		  <xs:element name="b" type="MYINT" />
+	   </xs:sequence>
+	</xs:group>
+	
+	<xs:simpleType name="MYINT">
+	   <xs:restriction base="xs:integer">
+	      <xs:assertion test="$value mod 2 = 0" />
+	   </xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>

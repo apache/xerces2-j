@@ -1,0 +1,24 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X">
+    <xs:complexType>
+      <xs:sequence>
+         <xs:element name="a" type="xs:integer" maxOccurs="unbounded"/>
+         <xs:element name="b" maxOccurs="unbounded">
+            <xs:simpleType>
+                <xs:union memberTypes="xs:integer xs:string"/>
+            </xs:simpleType>
+         </xs:element>
+      </xs:sequence>
+      <xs:attribute name="attr">
+         <xs:simpleType>
+             <xs:list itemType="xs:integer"/>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:assert test="deep-equal(index-of(a, 2), (1,4))"/>
+      <xs:assert test="deep-equal(index-of(@attr, 5), (3,4,5))"/>
+      <xs:assert test="deep-equal(index-of(b, 1), (1,3))"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

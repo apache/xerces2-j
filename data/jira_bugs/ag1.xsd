@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="tns" xmlns="tns">
+    <xs:complexType name="ct">
+        <xs:attributeGroup ref="Para.Decorate"/>
+    </xs:complexType>
+    <xs:attributeGroup name="Para.Decorate"/>
+</xs:schema>

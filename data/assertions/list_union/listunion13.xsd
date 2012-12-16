@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+    <xs:element name="LIST">
+	   <xs:complexType>
+	      <xs:simpleContent>
+		     <xs:extension base="LST_TYPE">
+			    <xs:annotation>
+				   <xs:documentation>
+					  1) Numeric value of attribute "x" must be equal to cardinality of the list.
+					  2) Here different items of list may have different schema types (since item type of list has variety union)
+					     -- this is checked with assertions below.
+				   </xs:documentation>
+				</xs:annotation>
+			    <xs:attribute name="x" type="xs:integer" />
+				<xs:assert test="@x = count($value)" />
+				<xs:assert test="deep-equal(($value[1] instance of xs:integer, $value[4] instance of xs:integer,
+				                             $value[5] instance of xs:integer),(true(), true(), true()))" />
+                <xs:assert test="deep-equal(($value[2] instance of xs:date, $value[3] instance of xs:date),
+				                            (true(), true()))" />											 
+			 </xs:extension>
+		  </xs:simpleContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="LST_TYPE">
+	   <xs:list>
+	      <xs:simpleType>
+		    <xs:union memberTypes="xs:integer xs:date" />
+		  </xs:simpleType>
+	   </xs:list>
+	</xs:simpleType>
+	
+</xs:schema>	

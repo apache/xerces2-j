@@ -1,0 +1,6 @@
+<product ID="100">
+  <name>kitchen sink</name>
+  <price effective="2010-03-01">11</price>
+  <price effective="2010-03-08">15</price>
+  <price effective="2010-03-15">10</price>
+</product>

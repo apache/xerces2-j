@@ -1,0 +1,33 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xx" xmlns:test1="http://xx">
+
+    <xs:element name="X">
+	   <xs:complexType>
+	      <xs:complexContent>
+		     <xs:restriction base="test1:DUMMY_ABST_TYPE">
+	            <xs:sequence>
+		           <xs:element name="Y" targetNamespace="http://yy">
+				       <xs:complexType>
+					      <xs:complexContent>
+						     <xs:restriction base="test1:DUMMY_ABST_TYPE">
+				                <xs:sequence>
+	                               <xs:element name="Y" targetNamespace="http://yy">
+		                              <xs:complexType />
+		                           </xs:element>
+	                            </xs:sequence>
+						     </xs:restriction>
+						  </xs:complexContent>
+					   </xs:complexType>
+				   </xs:element>
+		        </xs:sequence>
+		     </xs:restriction>
+		  </xs:complexContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="DUMMY_ABST_TYPE" abstract="true">
+	   <xs:sequence>
+	      <xs:any processContents="skip" />
+	   </xs:sequence>
+	</xs:complexType>
+  
+</xs:schema>

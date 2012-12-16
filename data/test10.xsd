@@ -1,0 +1,29 @@
+<!-- demonstrates assertions on derived complex type -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:complexType name="baseType">
+    <xs:sequence>
+      <xs:element name="body" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="mustUnderstand" type="xs:string"/>
+    <xs:assert test="@mustUnderstand"/>
+  </xs:complexType>
+
+  <xs:complexType name="derivedType">
+    <xs:complexContent>
+      <xs:restriction base="baseType">
+        <xs:sequence>
+          <xs:element name="body" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="mustUnderstand" type="xs:string"/>
+        <xs:assert test="(@mustUnderstand = 'YES' and count(./body) gt 0)
+                       or (@mustUnderstand = 'NO')"/>
+     </xs:restriction>
+   </xs:complexContent>
+ </xs:complexType>
+
+ <!-- assertions of both 'derivedType' and of base type must succeed, for
+      validation to pass -->
+ <xs:element name="message" type="derivedType"/>
+ 
+</xs:schema> 

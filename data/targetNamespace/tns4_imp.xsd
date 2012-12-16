@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:test2="http://test2"
+           targetNamespace="http://test2">
+	
+	<xs:element name="y">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element ref="test2:a" maxOccurs="unbounded" />
+	      </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:element name="a">
+	   <xs:simpleType>
+	      <xs:restriction base="xs:integer" />
+	   </xs:simpleType>
+	</xs:element>
+	
+</xs:schema>		   

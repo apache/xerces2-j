@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xerces="http://xerces.apache.org">
+
+   <xs:element name="Example">
+      <xs:complexType>
+         <xs:sequence>
+		    <xs:element name="list" type="INT_LIST" maxOccurs="unbounded" />
+		 </xs:sequence>
+		 <xs:assert test="every $lst in list satisfies count(data($lst)) le 5" xerces:message="List size cannot be greater than 5" />
+      </xs:complexType>
+   </xs:element>
+   
+   <xs:simpleType name="INT_LIST">
+      <xs:list itemType="xs:integer" />
+   </xs:simpleType>
+  
+</xs:schema>

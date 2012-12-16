@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="list">
+     <xs:complexType>
+	    <xs:simpleContent>
+		   <xs:extension base="list-of-integer">
+		      <xs:assert test="count($value) gt 0">
+		         <xs:annotation>
+		            <xs:documentation>
+		               The list cannot be empty.
+		            </xs:documentation>
+		         </xs:annotation>
+		      </xs:assert>
+			  <xs:assert test="every $x in $value satisfies ($x mod 2 = 0)">
+			     <xs:annotation>
+		            <xs:documentation>
+		               Each list item must be divisible by 2.
+		            </xs:documentation>
+		         </xs:annotation>
+			  </xs:assert>
+		   </xs:extension>
+		</xs:simpleContent>
+	 </xs:complexType>
+  </xs:element>
+  
+  <xs:simpleType name="list-of-integer">
+     <xs:list itemType="xs:integer"/>
+  </xs:simpleType>
+  
+  <xs:element name="outer">
+    <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="list" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>  
+  </xs:element>
+  
+</xs:schema>

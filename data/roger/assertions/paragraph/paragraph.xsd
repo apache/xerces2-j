@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <xs:element name="Example">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="paragraph" type="paragraphType" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="paragraphType" mixed="true">
+        <xs:sequence>
+            <xs:element name="table" type="xs:string" minOccurs="0" />
+            <xs:element name="paragraph" type="paragraphType" minOccurs="0" />
+        </xs:sequence>
+        <xs:assert test="if (paragraph) then paragraph/preceding-sibling::table else true()" />
+    </xs:complexType>
+
+</xs:schema>

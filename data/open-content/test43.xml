@@ -1,0 +1,6 @@
+<Book>
+  <name>XML in a Nutsehll</name>
+  <ISBN>AB-1001</ISBN>
+  <author>Jimmy</author>
+  <NoPages>100</NoPages>
+</Book>

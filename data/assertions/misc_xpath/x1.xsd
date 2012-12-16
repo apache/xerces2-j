@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="temp">
+      <xs:complexType>
+	    <xs:attribute name="start" type="xs:dateTime"/>
+		<xs:attribute name="end" type="xs:dateTime"/>
+		<xs:assert test="(@end - @start) = xs:dayTimeDuration('P1D')"/>
+	  </xs:complexType>
+   </xs:element>
+
+</xs:schema>

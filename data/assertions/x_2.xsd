@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X">
+     <xs:complexType>
+        <xs:sequence>
+           <xs:element name="temp" type="xs:string"/>
+        </xs:sequence>
+		<xs:assert test=". instance of element(X11, xs:anyType)"/>
+     </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

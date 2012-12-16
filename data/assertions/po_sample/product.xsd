@@ -1,0 +1,41 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+   <xs:complexType name="POITEMS">
+      <xs:sequence>
+	    <xs:element name="item" type="ITEM" maxOccurs="unbounded">
+		   <xs:alternative test="@id" type="SHORT_ITEM_DEFN" />
+		   <xs:alternative type="LONG_ITEM_DEFN" />
+		</xs:element>
+	  </xs:sequence>
+   </xs:complexType>
+   
+   <xs:complexType name="ITEM">
+      <xs:attribute name="quantity" type="xs:positiveInteger" />
+      <xs:attribute name="price" type="PRICE" />
+   </xs:complexType>
+   
+   <xs:complexType name="SHORT_ITEM_DEFN">
+      <xs:complexContent>
+		 <xs:extension base="ITEM">
+		   <xs:attribute name="id" type="xs:string" />
+		 </xs:extension>
+	  </xs:complexContent>
+   </xs:complexType>
+   
+   <xs:complexType name="LONG_ITEM_DEFN">
+       <xs:complexContent>
+		  <xs:extension base="ITEM">
+		     <xs:sequence>
+			    <xs:element name="description" type="xs:string" />
+		     </xs:sequence>
+		  </xs:extension>
+	   </xs:complexContent>
+   </xs:complexType>
+   
+   <xs:simpleType name="PRICE">
+      <xs:restriction base="xs:decimal">
+	    <xs:minInclusive value="0" />
+	  </xs:restriction>
+   </xs:simpleType>
+   
+</xs:schema>

@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <xs:element name="Example">
+	  <xs:complexType>
+	    <xs:sequence>
+		  <xs:element name="x" type="xs:integer" maxOccurs="unbounded">
+		    <xs:alternative test="@kind eq 'NNI'" type="xs:nonNegativeInteger" />
+		  </xs:element>
+		</xs:sequence>
+		<xs:attribute name="kind" type="xs:string" inheritable="true" />
+	  </xs:complexType>
+	</xs:element>
+
+</xs:schema>

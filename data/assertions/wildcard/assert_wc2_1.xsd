@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:header="http://www.example.org/header" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.example.org/header">
+
+	<xs:element name="Header">
+	   <xs:annotation>
+	      <xs:documentation>
+	         An XML document having elements from more than 1 namespaces. Using complexType restriction, assertions and 
+	         {xs:element targetNamespace=".."} to specify validation constraints.
+	      </xs:documentation>
+	   </xs:annotation>
+	   <xs:complexType>
+	      <xs:complexContent>
+		     <xs:restriction base="header:TYPE_BASE">
+			    <xs:sequence>
+				   <xs:element name="Author" type="xs:string"/>
+				   <xs:element xmlns:report="http://www.example.org/report" name="Report" targetNamespace="http://www.example.org/report">
+				      <xs:complexType>
+					     <xs:sequence>
+					        <xs:any processContents="lax"/>
+						 </xs:sequence>
+					     <xs:assert test="report:Title[count(node()) = count(text())]"/>
+					  </xs:complexType>
+				   </xs:element>
+				</xs:sequence>
+			 </xs:restriction>
+		  </xs:complexContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="TYPE_BASE">
+	   <xs:sequence>
+	      <xs:any maxOccurs="2" processContents="lax"/>
+	   </xs:sequence>
+	</xs:complexType>
+  
+</xs:schema>

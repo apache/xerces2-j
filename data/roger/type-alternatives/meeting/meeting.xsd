@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <xs:element name="Example">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Meeting" type="MeetingType" maxOccurs="unbounded">
+                    <xs:alternative test="@end-time le '12:00:00'" type="MorningMeeting" />
+                    <xs:alternative test="@end-time gt '12:00:00'" type="AfternoonMeeting" />
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="MeetingType">
+        <xs:sequence>
+            <xs:element name="Subject" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="start-time" type="xs:time" />
+        <xs:attribute name="end-time" type="xs:time" />
+        <xs:assert test="@end-time gt @start-time" />
+    </xs:complexType>
+
+    <xs:complexType name="MorningMeeting">
+        <xs:complexContent>
+            <xs:extension base="MeetingType">
+                <xs:sequence>
+                    <xs:element name="Tea" type="xs:string"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AfternoonMeeting">
+        <xs:complexContent>
+            <xs:extension base="MeetingType">
+                <xs:sequence>
+                    <xs:element name="Juice" type="xs:string"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

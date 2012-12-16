@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+    <Transportation>
+        <mode>air</mode>
+        <airplane>United Airways, flight 608</airplane>
+    </Transportation>
+        
+</Example>

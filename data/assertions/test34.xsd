@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="Example">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="test1">
+           <xs:simpleType>
+	          <xs:restriction xmlns:xerces="http://xerces.apache.org" base="xs:string">
+	             <xs:assertion test="not($value castable as xs:positiveInteger)" xerces:message="The string must have atleast one, non-decimal character"/>
+	          </xs:restriction>
+	       </xs:simpleType>
+        </xs:element>
+        <xs:element name="test2">
+           <xs:simpleType>
+	          <xs:restriction base="xs:string">
+	             <xs:pattern value=".*[^\d].*"/>
+	          </xs:restriction>
+	       </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+  <xs:element name="x" type="X_TYPE"/>
+  
+  <xs:complexType name="X_TYPE">
+     <xs:sequence>
+	    <xs:any processContents="skip"/>
+	 </xs:sequence>
+	 <xs:assert test="a"/>
+  </xs:complexType>
+
+</xs:schema>

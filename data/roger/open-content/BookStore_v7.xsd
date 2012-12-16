@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.books.org"
+        xmlns:pub="http://www.books.org"
+        elementFormDefault="qualified">
+		
+	<import namespace="http://www.bookrepository.org" schemaLocation="BookRepository.xsd" />
+
+    <complexType name="Publication" abstract="true">
+        <sequence>
+            <element name="Title" type="string" />
+            <element name="Author" type="string" />
+            <element name="Date" type="gYear"/>
+        </sequence>
+    </complexType>
+
+    <complexType name="BookPublication">
+        <complexContent>
+            <extension base="pub:Publication">
+                <openContent mode="interleave">
+                    <any />
+                </openContent>
+                <sequence>
+                    <element name="ISBN" type="string"/>
+                    <element name="Publisher" type="string"/>
+                </sequence>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="BookStore">
+        <complexType>
+            <sequence>
+                <element name="Book" type="pub:BookPublication" maxOccurs="unbounded" />
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

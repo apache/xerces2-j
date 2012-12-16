@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Level_1_Manager_Signoffs>
+    <purchase-request>
+        <item>Widget 1</item>
+        <cost>5000</cost>
+    </purchase-request>
+    <purchase-request>
+        <item>Widget 2</item>
+        <cost>1500</cost>
+    </purchase-request>
+</Level_1_Manager_Signoffs>

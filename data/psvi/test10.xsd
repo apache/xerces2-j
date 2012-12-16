@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+  <xs:element name="x" type="xs:anyType">
+     <xs:alternative test="@a = 1" type="A_TYPE"/>
+     <xs:alternative type="xs:error"/>
+  </xs:element>
+  
+  <xs:complexType name="A_TYPE">
+	 <xs:simpleContent>
+		<xs:extension base="xs:integer">
+		   <xs:attribute name="a" type="xs:integer"/>
+	    </xs:extension>
+	 </xs:simpleContent>
+  </xs:complexType>
+
+</xs:schema>

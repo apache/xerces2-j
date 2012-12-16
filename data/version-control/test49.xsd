@@ -1,0 +1,46 @@
+<?xml version='1.0'?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
+   
+    <xs:element name="TEST">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="X" type="EMPTY"/>
+			 <xs:element name="Y" type="EMPTY" vc:minVersion="1.0" vc:maxVersion="1.1">
+			    <xs:annotation>
+				   <xs:documentation>
+				      This element declaration is available to XML Schema engine only in XSD 1.0 mode.
+				   </xs:documentation>
+				</xs:annotation>
+			 </xs:element>
+			 <xs:element name="Y" type="EMPTY_11" vc:minVersion="1.1">
+			    <xs:annotation>
+				   <xs:documentation>
+				      This element declaration is available to XML Schema engine only in XSD 1.1
+					  (and future versions) mode.
+				   </xs:documentation>
+				</xs:annotation>
+			 </xs:element>
+			 <xs:element name="Z" type="union_of_EMPTY_and_INTEGER"/>
+			 <xs:element name="U" type="union_of_EMPTY_and_INTEGER"/>
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="EMPTY">
+	   <xs:restriction base="xs:string">
+	      <xs:maxLength value="0"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="EMPTY_11" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+	   <xs:restriction base="xs:string">
+	      <xs:assertion test="$value = ''" xerces:message="An simple schema type defines the content to be EMPTY"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="union_of_EMPTY_and_INTEGER">
+	   <xs:union memberTypes="EMPTY xs:integer"/>
+	</xs:simpleType>
+	
+</xs:schema>	

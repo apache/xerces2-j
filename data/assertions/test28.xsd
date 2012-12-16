@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="Example" type="Y" />
+
+   <xs:simpleType name="Y">
+     <xs:restriction base="X">
+	   <xs:assertion test="$value mod 4 = 0" />
+	 </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="X">
+     <xs:restriction base="xs:positiveInteger">
+	   <xs:assertion test="$value mod 2 = 0" />
+	 </xs:restriction>
+   </xs:simpleType>
+           
+</xs:schema>

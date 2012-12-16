@@ -1,0 +1,21 @@
+<!-- demonstrates assertions on derived simple type definitions -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ 
+ <xs:simpleType name="base">
+   <xs:restriction base="xs:string">
+     <xs:maxLength value="25"/>
+     <xs:assertion test="ends-with($value, 'xyz')"/>
+   </xs:restriction>
+ </xs:simpleType>
+
+ <xs:simpleType name="derived">
+   <xs:restriction base="base">
+     <xs:assertion test="string-length($value) gt 3 "/>
+   </xs:restriction>
+ </xs:simpleType>
+ 
+ <!-- while validating this element, all asserts of
+  this type and all base types, must evaluate to true -->
+ <xs:element name="message" type="derived" />
+ 
+</xs:schema> 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="x">
+	   <xs:complexType>
+	      <xs:annotation>
+			<xs:documentation>
+			  Defining a wild-card and constraining the XML document structure with assertions.
+			</xs:documentation>
+		  </xs:annotation>
+	      <xs:sequence>
+		     <xs:any processContents="lax"/>
+		  </xs:sequence>
+		  <xs:assert test="max(for $elem in .//* return count($elem/ancestor::*)) le 2">
+		     <xs:annotation>
+			    <xs:documentation>
+				   Maximum element depth of the XML tree (including the top most element) must be 3.
+				</xs:documentation>
+			 </xs:annotation>
+		  </xs:assert>
+		  <xs:assert test="every $elem in .//* satisfies (count($elem/*) le 1 and normalize-space(string-join($elem/text(), '')) = '')">
+			 <xs:annotation>
+			    <xs:documentation>
+				   Element can only have 1 element child, and there cannot be any non white-space character anywhere with the XML document.
+				</xs:documentation>
+			 </xs:annotation>
+          </xs:assert>							 
+	   </xs:complexType>
+	</xs:element>
+	
+</xs:schema>

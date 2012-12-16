@@ -1,0 +1,30 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://yy" xmlns:yy="http://yy">
+
+    <xs:complexType name="X_TYPE">
+	   <xs:sequence>
+	      <xs:element ref="yy:Y" />
+	   </xs:sequence>
+	</xs:complexType>
+	
+	<xs:element name="Y">
+	   <xs:complexType>
+		  <xs:sequence>
+	        <xs:element ref="yy:Z" />
+		    <xs:element ref="yy:U" />
+		    <xs:element ref="yy:V" />
+		    <xs:element ref="yy:W" />
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:element name="Z" type="yy:EMPTY" />
+    
+	<xs:element name="U" type="yy:EMPTY" />
+    
+	<xs:element name="V" type="yy:EMPTY" />
+	
+	<xs:element name="W" type="yy:EMPTY" />
+	
+	<xs:complexType name="EMPTY" />
+	
+</xs:schema>

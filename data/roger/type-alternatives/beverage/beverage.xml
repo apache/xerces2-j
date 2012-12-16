@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+        <Beverage current-time="08:00:00">tea</Beverage>
+
+        <Beverage current-time="13:00:00">juice</Beverage>
+        
+</Example>

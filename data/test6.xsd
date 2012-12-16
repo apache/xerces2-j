@@ -1,0 +1,26 @@
+<!-- demonstrates assertions on a complex type definition, 
+     having complexContent -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- assertions from both derived and base type must succeed -->
+  <xs:element name="message" type="derivedType"/>
+ 
+  <xs:complexType name="baseType">
+   <xs:sequence>
+     <xs:element name="body" minOccurs="0" maxOccurs="unbounded"/>
+   </xs:sequence>
+   <xs:attribute name="mustUnderstand" type="xs:string"/>
+   <xs:assert test="string-length(body) gt 0" />
+  </xs:complexType>
+  
+  <xs:complexType name="derivedType">
+    <xs:complexContent>
+      <xs:extension base="baseType">
+		<xs:attribute name="attr1" type="xs:string"/>
+		<!-- attribute 'attr1' is mandatory -->
+		<xs:assert test="@attr1" />
+      </xs:extension>
+   </xs:complexContent>
+ </xs:complexType>
+ 
+</xs:schema> 

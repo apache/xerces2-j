@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="tns" xmlns="tns">
+    
+	<xs:redefine schemaLocation="2.xsd">
+        <xs:complexType name="ct">
+            <xs:complexContent>
+                <xs:extension base="ct">
+                    <xs:attribute name="attr" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:redefine>
+	
+    <xs:element name="el" type="ct"/>
+</xs:schema> 

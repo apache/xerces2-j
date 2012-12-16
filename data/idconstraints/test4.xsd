@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xyz" xmlns:x="http://xyz" elementFormDefault="qualified">
+   
+   <xs:element name="X">
+       <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="a" type="xs:string" maxOccurs="unbounded"/>
+		  </xs:sequence>		  
+	   </xs:complexType>
+	   <xs:key name="key_a">
+		  <xs:selector xpath="x:a">
+		     <xs:annotation>
+		        <xs:documentation>solving the problem if xpathDefaultNamespace was not available</xs:documentation>
+		     </xs:annotation>
+		  </xs:selector>
+		  <xs:field xpath="."/>
+	   </xs:key>
+   </xs:element>
+
+</xs:schema>

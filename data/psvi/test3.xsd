@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="X">
+	   <xs:complexType>
+	       <xs:attribute name="dt1">
+		      <xs:simpleType>
+	             <xs:union memberTypes="xs:int MYDATE1 xs:date" />
+	          </xs:simpleType>
+		   </xs:attribute>
+		   <xs:attribute name="dt2">
+		      <xs:simpleType>
+	             <xs:union memberTypes="xs:int MYDATE2" />
+	          </xs:simpleType>
+		   </xs:attribute>
+	   </xs:complexType>
+   </xs:element>
+   
+   <xs:simpleType name="MYDATE1">
+      <xs:restriction base="xs:date">
+	     <xs:assertion test="$value gt current-date()" />
+	  </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="MYDATE2">
+      <xs:restriction base="xs:date">
+	     <xs:assertion test="$value lt current-date()" />
+	  </xs:restriction>
+   </xs:simpleType>
+
+</xs:schema>

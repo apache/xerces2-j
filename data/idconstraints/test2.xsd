@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="X">
+       <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="a" maxOccurs="unbounded">
+		        <xs:complexType>
+		           <xs:attribute name="att" type="xs:string"/>
+		        </xs:complexType>
+		     </xs:element>
+		  </xs:sequence>		  
+	   </xs:complexType>
+	   <xs:key name="key_a">
+		  <xs:selector xpath="a"/>
+		  <xs:field xpath="@att"/>
+	   </xs:key>
+   </xs:element>
+
+</xs:schema>

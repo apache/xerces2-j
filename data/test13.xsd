@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  
+  <xs:element name="shape" type="Shape" />
+  
+  <xs:complexType name="Shape">
+    <xs:sequence>	  
+	  <xs:element name="a" type="xs:int" />
+	  <xs:element name="b" type="xs:int" />
+	  <xs:element name="c" type="xs:int" />
+      <xs:element name="d" type="xs:int" minOccurs="0" />	  
+	</xs:sequence>
+	<xs:attribute name="type" type="xs:string" use="required" />
+	<xs:assert test="if (@type eq 'square') then (a = b and b = c and c = d) else true()" />
+	<xs:assert test="if (@type eq 'rectangle') then (a = c and b = d) else true()" />
+	<xs:assert test="if (@type eq 'triangle') then not(d) else true()" />
+  </xs:complexType>
+ 
+</xs:schema>

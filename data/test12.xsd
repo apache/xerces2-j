@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xx="http://www.w3.org/2005/xpath-functions" elementFormDefault="qualified" targetNamespace="http://xyz">
+		   
+  <xsd:element name="X">
+    <xsd:complexType>
+	  <xsd:sequence>
+	    <xsd:element name="message" type="xsd:string"/>
+	  </xsd:sequence>
+      <xsd:assert test="xsd:string(message) = 'hello'" xpathDefaultNamespace="##targetNamespace"/>
+	</xsd:complexType>
+  </xsd:element>
+  
+</xsd:schema>

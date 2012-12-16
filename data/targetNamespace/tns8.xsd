@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:test1="http://test1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://test1">
+  
+    <xs:element name="x">
+	   <xs:complexType>
+	      <xs:complexContent>
+		     <xs:restriction base="test1:TEST_TYPE">
+	            <xs:sequence>
+		           <xs:element name="y" targetNamespace="http://test2">
+			          <xs:complexType/>
+			       </xs:element>
+		        </xs:sequence>
+		     </xs:restriction>
+		  </xs:complexContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="TEST_TYPE">
+	   <xs:complexContent>
+	      <xs:restriction base="xs:anyType">
+		     <xs:sequence>
+			    <xs:any processContents="lax"/>
+			 </xs:sequence>
+		  </xs:restriction>
+	   </xs:complexContent>
+	</xs:complexType>
+	
+</xs:schema>

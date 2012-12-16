@@ -1,0 +1,6 @@
+<data>
+  <timer time="30" />
+  <parent>
+    <child name="abc" dob="1997-01-01"/>
+  </parent>
+</data>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example xmlns="http://www.meeting.org"
+         xmlns:t="http://www.times.org">
+
+    <meeting-time>
+        <start-time>08:00:00</start-time>
+        <t:end-time>09:00:00</t:end-time>
+    </meeting-time>
+        
+</Example>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+    <couples>
+        <name>Jim</name>
+        <name>Diane</name>
+        <name>Bob</name>
+        <name>Helene</name>
+        <name>Ken</name>
+        <name>Mary</name>
+    </couples>
+        
+</Example>

@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="mainNS" xmlns:ns="mainNS">
+
+   <xs:include schemaLocation="1577_inc2.xsd"/>
+   
+   <xs:element name="X">
+      <xs:complexType>
+	     <xs:sequence>
+		    <xs:element ref="ns:Y"/>
+		 </xs:sequence>
+	  </xs:complexType>
+   </xs:element>
+   
+</xs:schema>

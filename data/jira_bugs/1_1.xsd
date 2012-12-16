@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="tns">
+   <xs:simpleType name="st">
+      <xs:restriction base="xs:integer">
+	     <xs:maxInclusive value="100"/>
+	  </xs:restriction>
+   </xs:simpleType>
+</xs:schema>

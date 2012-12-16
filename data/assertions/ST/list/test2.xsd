@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <xs:element name="X">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="list">
+			    <xs:complexType>
+				   <xs:attribute name="data">
+				      <xs:simpleType>
+					     <xs:list itemType="MY_INT" />
+					  </xs:simpleType>
+				   </xs:attribute>
+				</xs:complexType>
+			 </xs:element>
+			 <xs:element name="a" type="MY_INT" />
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="MY_INT">
+       <xs:restriction base="xs:integer">
+	      <xs:assertion test="$value mod 2 = 0" />
+	   </xs:restriction>
+    </xs:simpleType>
+	
+</xs:schema>

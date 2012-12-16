@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="temp">
+      <xs:complexType>
+	     <xs:attribute name="t1" type="xs:dateTime"/>
+		 <xs:assert test="exists(xs:dateTime(@t1))"/>
+	  </xs:complexType>
+   </xs:element>
+
+</xs:schema>

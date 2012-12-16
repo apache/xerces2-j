@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+    <meeting-time>
+        <start-time>08:00:00</start-time>
+        <end-time>09:00:00</end-time>
+    </meeting-time>
+        
+</Example>

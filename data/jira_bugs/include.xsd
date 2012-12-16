@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="1578_3.xsd"/>
+    <xs:override schemaLocation="1578_3.xsd"/>
+</xs:schema>

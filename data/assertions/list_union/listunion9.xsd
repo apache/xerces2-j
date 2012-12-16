@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="Example">
+      <xs:simpleType>
+	     <xs:list>
+		    <xs:simpleType>
+			   <xs:union memberTypes="MYINT xs:string" />
+			</xs:simpleType>
+		 </xs:list>
+	  </xs:simpleType>
+   </xs:element>
+   
+   <xs:simpleType name="MYINT">
+	  <xs:restriction base="xs:integer">
+		 <xs:assertion test="$value mod 2 = 0" />
+      </xs:restriction>
+   </xs:simpleType>
+
+</xs:schema>
+

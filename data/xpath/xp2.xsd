@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+     <xs:element name="E1" type="xs:anyType">
+	    <xs:alternative test="/E1" type="xs:integer"/>
+		<xs:alternative type="xs:error"/>
+	 </xs:element>
+	 
+</xs:schema>

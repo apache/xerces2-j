@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:complexType name="T1">
+      <xs:sequence>
+         <xs:element name="a"/>
+      </xs:sequence>
+      <xs:assert test="not(a/*)">
+         <xs:annotation>
+            <xs:documentation>no child elements within 'a' are allowed</xs:documentation>
+         </xs:annotation>
+       </xs:assert>
+   </xs:complexType>
+
+</xs:schema>

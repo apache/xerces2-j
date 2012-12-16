@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:test1="http://xx" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xx">
+
+    <xs:element name="X">
+	   <xs:complexType>
+	      <xs:complexContent>
+		     <xs:restriction base="test1:DUMMY_ABST_TYPE">
+	            <xs:sequence>
+		           <xs:element name="Y" targetNamespace="http://yy">
+				       <xs:complexType>
+					      <xs:complexContent>
+						     <xs:restriction base="test1:DUMMY_ABST_TYPE">
+				                <xs:sequence>
+	                               <xs:element name="Z" targetNamespace="http://yy">
+		                              <xs:complexType/>
+		                           </xs:element>
+								   <xs:element name="U" targetNamespace="http://yy">
+		                              <xs:complexType/>
+		                           </xs:element>
+								   <xs:element name="V" targetNamespace="http://zz">
+		                              <xs:complexType/>
+		                           </xs:element>
+								   <xs:element name="W" targetNamespace="http://yy">
+		                              <xs:complexType/>
+		                           </xs:element>
+	                            </xs:sequence>
+						     </xs:restriction>
+						  </xs:complexContent>
+					   </xs:complexType>
+				   </xs:element>
+		        </xs:sequence>
+		     </xs:restriction>
+		  </xs:complexContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:complexType abstract="true" name="DUMMY_ABST_TYPE">
+	   <xs:sequence>
+	      <xs:any maxOccurs="unbounded" processContents="skip"/>
+	   </xs:sequence>
+	</xs:complexType>
+  
+</xs:schema>

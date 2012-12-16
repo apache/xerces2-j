@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <xs:element name="Example">
+	  <xs:complexType>
+	    <xs:sequence>
+		  <xs:element name="x" type="xs:anyType" maxOccurs="unbounded">
+		    <xs:alternative test="@kind = 'int'" type="X_Int" />
+			<xs:alternative test="@kind = 'double'" type="X_Double" />
+			<xs:alternative test="@kind = 'str'" type="X_String" />
+			<xs:alternative type="xs:error" />
+		  </xs:element>
+		</xs:sequence>
+	  </xs:complexType>
+    </xs:element>
+	
+	<xs:attribute name="kind" type="xs:string" />
+	
+	<xs:complexType name="X_Int">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:int">
+		  <xs:attribute ref="kind" use="required" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+	
+    <xs:complexType name="X_Double">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:double">
+		  <xs:attribute ref="kind" use="required" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+	
+    <xs:complexType name="X_String">
+	  <xs:simpleContent>
+	    <xs:extension base="xs:string">
+		  <xs:attribute ref="kind" use="required" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+
+</xs:schema>

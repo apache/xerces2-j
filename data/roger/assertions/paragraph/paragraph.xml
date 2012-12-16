@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+    <paragraph>
+        <table>Table 1</table>
+        <paragraph>Paragraph 1</paragraph>
+    </paragraph>
+        
+</Example>

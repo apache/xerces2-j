@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Example>
+
+        <Publication kind="book">
+            <Title>Illusions The Adventures of a Reluctant Messiah</Title>
+            <Author>Richard Bach</Author>
+            <Date>1977</Date>
+            <ISBN>0-440-34319-4</ISBN>
+            <Publisher>Dell Publishing Co.</Publisher>
+        </Publication>
+
+        <Publication kind="magazine">
+            <Title>Natural Health</Title>
+            <Date>1999</Date>
+        </Publication>
+
+        <Publication kind="CD">
+            <Title>Time to Say Goodbye</Title>
+            <Author>Sarah Brightman</Author>
+            <Date>1997</Date>
+        </Publication>
+        
+</Example>

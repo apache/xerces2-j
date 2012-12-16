@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="shapes">
+	   <xs:complexType>
+         <xs:sequence>
+		   <xs:element name="polygon" type="Triangular" maxOccurs="unbounded">
+		     <xs:alternative test="@kind = ('square', 'rectangle')" type="Quadrilateral" />
+		   </xs:element>
+		 </xs:sequence>		 
+       </xs:complexType>	   
+    </xs:element>
+
+    <xs:complexType name="Triangular">
+       <xs:sequence>
+		 <xs:element name="a" type="xs:positiveInteger" />
+		 <xs:element name="b" type="xs:positiveInteger" />
+		 <xs:element name="c" type="xs:positiveInteger" />
+	   </xs:sequence>
+       <xs:attribute name="kind" type="xs:string" use="required" />	   
+    </xs:complexType>
+
+    <xs:complexType name="Quadrilateral">
+       <xs:complexContent>
+         <xs:extension base="Triangular">
+           <xs:sequence>
+		     <xs:element name="d" type="xs:positiveInteger" />
+	       </xs:sequence>
+		   <xs:assert test="if (@kind = 'square') then (a = b and b = c and c = d) else true()" />
+		   <xs:assert test="if (@kind = 'rectangle') then (a = c and b = d) else true()" />
+         </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

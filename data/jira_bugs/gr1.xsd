@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="tns">
+    <xs:group name="Para.Decorate">
+	   <xs:sequence/>
+	</xs:group>
+</xs:schema>

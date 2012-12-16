@@ -1,0 +1,5 @@
+<Example>
+  <x kind="int">10</x>
+  <x kind="double">10.5</x>
+  <x kind="str">hello world</x>
+</Example>

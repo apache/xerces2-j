@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+
+     <element name="Level_1_Manager_Signoffs">
+        <complexType>
+            <sequence>
+                <element name="purchase-request" maxOccurs="unbounded">
+                    <complexType>
+                        <sequence>
+                            <element name="item" type="string" />
+                            <element name="cost" type="decimal" />                                      
+                        </sequence>
+                    </complexType>
+                </element>
+            </sequence>
+            <assert test="not(purchase-request[number(cost) gt 10000])"/>
+        </complexType>
+     </element>
+
+
+</schema>

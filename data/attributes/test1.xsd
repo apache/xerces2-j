@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="Book">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Title" type="xs:string"/>
+				<xs:element name="Author" type="xs:string"/>
+				<xs:element name="Date" type="xs:gYear"/>
+				<xs:element name="ISBN" type="xs:string"/>
+				<xs:element name="Publisher" type="xs:string">
+					<xs:alternative test="@storename eq 'Barnes and Noble'">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="Wrox Press" />
+								<xs:enumeration value="New Riders" />
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:alternative>
+					<xs:alternative test="@storename eq 'Borders'">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="Norton Press" />
+								<xs:enumeration value="friendsofed" />
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:alternative>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="paperback" type="xs:string" inheritable="true" default="yes" />
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="BookStore">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Book" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="storename" type="xs:string" inheritable="true" />
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

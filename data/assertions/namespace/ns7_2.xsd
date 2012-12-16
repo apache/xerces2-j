@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="X">
+     <xs:complexType>
+        <xs:sequence>
+           <xs:any processContents="skip" maxOccurs="unbounded"/>
+        </xs:sequence>
+		<xs:assert test="namespace-uri-from-QName(node-name(*[1])) = 'http://x.y1'"/>
+		<xs:assert test="namespace-uri-from-QName(node-name(*[2])) = 'http://x.y2'"/>
+     </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

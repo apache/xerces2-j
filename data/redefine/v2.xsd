@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:simpleType name="T1">
+	   <xs:restriction base="xs:integer">
+	      <xs:maxInclusive value="10"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+	<xs:element name="a" type="T1"/>
+	
+</xs:schema>

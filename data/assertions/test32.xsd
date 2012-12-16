@@ -1,0 +1,25 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   
+   <xs:element name="X">
+      <xs:complexType>
+	     <xs:sequence>
+		    <xs:element name="x" type="MYINTEGER" maxOccurs="unbounded" />
+			<xs:element name="list">
+			   <xs:simpleType>
+			      <xs:list itemType="xs:integer" />
+			   </xs:simpleType>
+			</xs:element>
+		 </xs:sequence>
+		 <xs:assert test="count(index-of(for $x in 1 to (count(data(list)) - 1) return 
+		                       (data(list)[$x] ge data(list)[$x + 1]), true())) = 0" />
+         <xs:assert test="count(data(list)) le 5" />							   
+	  </xs:complexType>
+   </xs:element>
+
+   <xs:simpleType name="MYINTEGER">
+      <xs:restriction base="xs:positiveInteger">
+	     <xs:assertion test="$value mod 2 = 0" />
+	  </xs:restriction>
+   </xs:simpleType>
+   
+</xs:schema>

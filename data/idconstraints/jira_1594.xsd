@@ -1,0 +1,29 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="personnel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="person" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:key name="key">
+      <xs:selector xpath="person"/>
+      <xs:field xpath="@id"/>
+    </xs:key>
+    <xs:keyref refer="key" name="keyref">
+      <xs:selector xpath="person"/>
+      <xs:field xpath="ref"/>
+    </xs:keyref>
+  </xs:element>
+
+  <xs:element name="person">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="ref" type="xs:integer" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:integer" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+   <xs:include schemaLocation="typeLib.xsd" />
+   
+   <xs:element name="Book">
+      <xs:complexType>
+         <xs:complexContent>
+		   <xs:extension base="BOOK_FRAGMENT">
+		      <xs:openContent>
+			    <xs:any processContents="strict"/>
+			  </xs:openContent>
+              <xs:assert test="count(distinct-values(for $elem in (* except (name, author)) return $elem/name())) = 
+                                count(for $elem in (* except (name, author)) return $elem/name())"/>							
+		   </xs:extension>
+		 </xs:complexContent>        	 
+       </xs:complexType>
+   </xs:element>
+   
+   <xs:complexType name="BOOK_FRAGMENT">
+      <xs:sequence>
+	    <xs:element name="name" type="xs:string"/>
+		<xs:element name="author" type="xs:string"/>
+	  </xs:sequence>
+   </xs:complexType>
+
+</xs:schema>

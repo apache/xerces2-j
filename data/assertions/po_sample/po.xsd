@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:annotation>
+      <xs:documentation>
+         A sample XML schema describing a purchase order.
+      </xs:documentation>
+   </xs:annotation>
+
+   <xs:include schemaLocation="product.xsd"/>
+   
+   <xs:element name="order" type="ORDER"/>
+   
+   <xs:complexType name="ORDER">
+      <xs:complexContent>
+	     <xs:extension base="PO_BUSINESS_RULES">
+			<xs:sequence>
+			   <xs:element name="buyer" type="BUYER"/>
+		       <xs:element name="billing-address" type="ADDRESS"/>
+		       <xs:element name="shipping-address" type="ADDRESS"/>
+			   <xs:element name="email" type="EMAIL"/>
+			   <xs:element name="items" type="POITEMS"/>
+			   <xs:element name="tax" type="PRICE"/>
+			   <xs:element name="bill-amount" type="PRICE"/>
+			   <xs:element name="currency" type="xs:string"/>
+	        </xs:sequence>
+	        <xs:attribute name="id" type="xs:string" use="required"/>
+	     </xs:extension>
+      </xs:complexContent>	  
+   </xs:complexType>
+   
+   <xs:complexType name="PO_BUSINESS_RULES">
+      <xs:assert test="if (billing-address/* and not(shipping-address/*)) then (billing-address[street1 and city and country])
+                         else
+                       if (shipping-address/* and not(billing-address/*)) then (shipping-address[street1 and city and country])
+                         else
+                       if (shipping-address/* and billing-address/*) then (billing-address[street1 and city and country] and
+                         shipping-address[street1 and city and country]) else
+                       true()">
+          <xs:annotation>
+		     <xs:documentation>
+			    Business rules description:
+			    a) If contents of billing-address are empty, then shipping-address must
+				   have street1, city and country fields.
+				b) If contents of shipping-address are empty, then billing-address must
+				   have street1, city and country fields.
+                c) If contents of both billing-address and shipping-address are non-empty,
+                   then constraints for children of billing-address/shipping-address
+				   specified in (a) and (b) need to be satisfied. 				
+			 </xs:documentation>
+		  </xs:annotation>
+       </xs:assert>
+	   <xs:assert test="tax = sum(items/item/@price) * 0.1">
+	      <xs:annotation>
+		     <xs:documentation>
+			    Tax is 10% of total order amount.
+			 </xs:documentation>
+	      </xs:annotation>		 
+	   </xs:assert>
+	   <xs:assert test="bill-amount = sum(items/item/@price) + tax">
+	      <xs:annotation>
+		     <xs:documentation>
+			    Total bill amount = 'Total order amount' + tax.
+			 </xs:documentation>
+	      </xs:annotation>		 
+	   </xs:assert>
+   </xs:complexType>
+   
+   <xs:complexType name="BUYER">
+      <xs:choice>
+	     <xs:sequence>
+	        <xs:element name="fName" type="xs:string"/>
+            <xs:element minOccurs="0" name="middlName" type="xs:string"/>
+	        <xs:element name="lName" type="xs:string"/>
+	     </xs:sequence>
+		 <xs:element name="Establishment" type="xs:string"/>
+	  </xs:choice>
+   </xs:complexType>
+   
+   <xs:complexType name="ADDRESS">
+      <xs:sequence>
+	     <xs:element minOccurs="0" name="street1" type="xs:string"/>
+		 <xs:element minOccurs="0" name="street2" type="xs:string"/>
+		 <xs:element minOccurs="0" name="city" type="GEOGRAPHIC_LOCATION"/>
+		 <xs:element minOccurs="0" name="zipcode" type="GEOGRAPHIC_LOCATION"/>
+		 <xs:element minOccurs="0" name="state" type="GEOGRAPHIC_LOCATION"/>
+		 <xs:element minOccurs="0" name="country" type="GEOGRAPHIC_LOCATION"/>
+	  </xs:sequence>
+   </xs:complexType>
+   
+   <xs:simpleType name="GEOGRAPHIC_LOCATION">
+      <xs:restriction base="xs:string">
+	     <xs:minLength value="3"/>
+	     <xs:maxLength value="30"/>
+	  </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="EMAIL">
+      <xs:restriction base="xs:string">
+	     <xs:pattern value=".*@.*\..*"/>
+	  </xs:restriction>
+   </xs:simpleType>
+   
+</xs:schema>
