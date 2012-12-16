@@ -109,7 +109,7 @@ public class XercesAbstractTestCase extends TestCase implements ErrorHandler {
 	
 	
 	/*
-	 * Are error messages generated during the validation episode, as per specified in the test case.
+	 * Are error messages generated during the validation episode, as specified in the test case.
 	 */
 	public boolean areErrorMessagesConsistent(List expectedMsgList) {		
 		boolean isErrorMesgsOk = true;		
