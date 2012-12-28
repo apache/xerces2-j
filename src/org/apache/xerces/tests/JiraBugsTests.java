@@ -312,5 +312,41 @@ public class JiraBugsTests extends XercesAbstractTestCase {
 		   assertTrue(false);
 		}
 	}
+	
+	public void testJira_1599_1() {
+		String schemapath = fDataDir+"/jira_bugs/1599_1.xsd";	
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testJira_1599_2() {
+		String schemapath = fDataDir+"/jira_bugs/1599_2.xsd";	
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testJira_1599_3() {
+		String schemapath = fDataDir+"/jira_bugs/1599_3.xsd";	
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
 		
 }

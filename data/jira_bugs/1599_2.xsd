@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="schemaNS">
+    <xs:override schemaLocation="1599_override.xsd">
+        <xs:element name="person">
+            <xs:complexType>
+                <xs:sequence>
+                    <xs:element name="name"/>
+                    <xs:element name="email"/>
+                    <xs:element ref="ns:link" xmlns:ns="schemaNS"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:element>
+    </xs:override>
+
+    <xs:element name="link"/>
+</xs:schema>
