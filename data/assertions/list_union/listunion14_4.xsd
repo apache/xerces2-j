@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:element name="X">
+	   <xs:complexType>
+	      <xs:simpleContent>
+		     <xs:extension base="union_of_DtList_and_integer">
+			    <xs:assert test="$value instance of xs:integer"/>
+			 </xs:extension>
+		  </xs:simpleContent>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="union_of_DtList_and_integer">
+	   <xs:union memberTypes="xs:integer">
+	      <xs:simpleType>
+		     <xs:list itemType="xs:date"/>
+		  </xs:simpleType>
+	   </xs:union>
+	</xs:simpleType>
+	
+</xs:schema>

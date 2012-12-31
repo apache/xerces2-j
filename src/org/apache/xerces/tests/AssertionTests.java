@@ -2627,5 +2627,109 @@ public class AssertionTests extends XercesAbstractTestCase {
 		   assertTrue(false);
 		}
 	}
+	
+	public void testAssert147() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion14_1.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion14_1.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert148() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion14_1.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion14_3.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert149() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion14_2.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion14_2.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert150() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion14_2.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion14_4.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert151() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion15_1.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion15_1.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
 
+	public void testAssert152() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion15_2.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion15_1.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertTrue(failureList.size() == 2);
+            // test expected error messages
+            List expectedMsgList = new ArrayList();
+            FailureMesgFragments mesgFragments = new FailureMesgFragments();
+            mesgFragments.setMessageFragment("Assertion evaluation ('data(X[1]/@val) instance of xs:date+') for element 'Z' on schema type '#AnonType_Z' did not succeed");
+            expectedMsgList.add(mesgFragments);
+            mesgFragments = new FailureMesgFragments();
+            mesgFragments.setMessageFragment("Assertion evaluation ('count(data(X[1]/@val)) eq 3') for element 'Z' on schema type '#AnonType_Z' did not succeed");
+            expectedMsgList.add(mesgFragments);
+            assertTrue(areErrorMessagesConsistent(expectedMsgList));
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
 }
