@@ -466,7 +466,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
     /*
      * Evaluate assertion on a simpleType with variety xs:union.
      */
-    private boolean evaluateAssertionOnSTUnion(QName element, XSSimpleTypeDefinition simpleTypeDefn, boolean isTypeDerivedFromUnion, XSAssertImpl assertImpl, String value, Augmentations augs) {
+    private boolean evaluateAssertionOnSTUnion(QName element, XSSimpleTypeDefinition simpleTypeDefn, boolean isTypeDerivedFromUnion, XSAssertImpl assertImpl, String value, Augmentations augs) throws Exception {
         
         boolean isValueValid = true;
         
@@ -509,7 +509,7 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         if (value != null) {
             // complex type with simple content
             restorePsviInfoForXPathContext(elemPsvi);
-            setXDMTypedValueOf$value(fCurrentAssertDomNode, value, null, null, false, fXpath2DynamicContext);
+            setXDMValueOf$valueForCTWithSimpleContent(value, (XSComplexTypeDefinition)elemPsvi.getTypeDefinition(), fXpath2DynamicContext);
             savePsviInfoWithUntypingOfAssertRoot(elemPsvi, true);
         } else {
             // complex type with complex content. set xpath context variable $value to an empty sequence.
@@ -618,12 +618,13 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         
         boolean isValidationFailedForUnion = true;
         final int memberTypesLength = memberTypes.getLength();
+        int memberTypesHavingAsserts = 0;
         
         for (int memberTypeIdx = 0; memberTypeIdx < memberTypesLength; memberTypeIdx++) {
             XSSimpleTypeDefinition memType = (XSSimpleTypeDefinition) memberTypes.item(memberTypeIdx);
-            
             // check for assertions on types in an non-schema namespace
             if (!SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(memType.getNamespace()) && XS11TypeHelper.simpleTypeHasAsserts(memType)) {
+                memberTypesHavingAsserts++;
                 XSObjectList memberTypeFacets = memType.getMultiValueFacets();
                 final int memberTypeFacetsLength = memberTypeFacets.getLength();
                 for (int memberTypeFacetIdx = 0; memberTypeFacetIdx < memberTypeFacetsLength; memberTypeFacetIdx++) {
@@ -659,11 +660,20 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
                             else {
                                 ((AttributePSVImpl) attrPSVI).fValue.memberType = (XSSimpleType) memType;
                             }
-                            return false;  
+                            isValidationFailedForUnion = false;
+                            break; 
                         }
                     }
                 }
+                if (!isValidationFailedForUnion) {
+                    break;  
+                }
             }
+        }
+        
+        if (memberTypesHavingAsserts == 0) {
+           // none of the member types have asserts. therefore, validation cannot fail due to checks from this method.
+           isValidationFailedForUnion = false;
         }
         
         return isValidationFailedForUnion;

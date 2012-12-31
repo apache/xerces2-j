@@ -54,48 +54,58 @@ import org.w3c.dom.NodeList;
  * @version $Id$
  */
 public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
+    
+    // reference of root node of assert tree
+    private Element fRootNodeOfAssertTree = null;
 
     /*
      * Determine "string value" of XPath 2.0 context variable $value.
      */
     public String computeStringValueOf$value(Element rootNodeOfAssertTree, ElementPSVI pElemPSVI) throws DOMException {
+        String strValueOf$value = "";
         
-        NodeList childNodeList = rootNodeOfAssertTree.getChildNodes();
-        // there could be adjacent text nodes in the DOM tree. merge them to get the value.
-        StringBuffer textValueContents = new StringBuffer();
-        final int childListLength = childNodeList.getLength();
-        int textChildCount = 0;
-        // we are only interested in text & element nodes. store count of them in this variable.
-        int effectiveChildNodeCount = 0;
-        for (int childNodeIndex = 0; childNodeIndex < childListLength; childNodeIndex++) {
-            Node node = childNodeList.item(childNodeIndex);
-            short nodeType = node.getNodeType();
-            if (nodeType == Node.TEXT_NODE) {
-                textChildCount++;
-                effectiveChildNodeCount++;
-                textValueContents.append(node.getNodeValue());
-            }
-            else if (nodeType == Node.ELEMENT_NODE) {
-                effectiveChildNodeCount++;  
+        XSTypeDefinition typeDef = pElemPSVI.getTypeDefinition();
+        if (typeDef instanceof XSComplexTypeDefinition) {
+            XSComplexTypeDefinition complexTypeDef = (XSComplexTypeDefinition)typeDef;
+            if (!(complexTypeDef.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE)) {
+                strValueOf$value = null; 
             }
         }
         
-        String strValueOf$value = "";        
-        if (textChildCount == effectiveChildNodeCount) {
-            // the DOM tree we are inspecting has simple content. therefore we can find the desired string value.
-            if ((pElemPSVI.getTypeDefinition()).derivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ATTVAL_STRING, XSConstants.DERIVATION_RESTRICTION)) {
-                // if element's schema type is derived by restriction from xs:string, white-space normalization is not needed for the
-                // string value for context variable $value.
-                strValueOf$value = textValueContents.toString();  
+        if (strValueOf$value != null) {      
+            fRootNodeOfAssertTree = rootNodeOfAssertTree;
+            NodeList childNodeList = rootNodeOfAssertTree.getChildNodes();
+            // there could be adjacent text nodes in the DOM tree. merge them to get the value.
+            StringBuffer textValueContents = new StringBuffer();
+            final int childListLength = childNodeList.getLength();
+            int textChildCount = 0;
+            // we are only interested in text & element nodes. store count of them in this variable.
+            int effectiveChildNodeCount = 0;
+            for (int childNodeIndex = 0; childNodeIndex < childListLength; childNodeIndex++) {
+                Node node = childNodeList.item(childNodeIndex);
+                short nodeType = node.getNodeType();
+                if (nodeType == Node.TEXT_NODE) {
+                    textChildCount++;
+                    effectiveChildNodeCount++;
+                    textValueContents.append(node.getNodeValue());
+                }
+                else if (nodeType == Node.ELEMENT_NODE) {
+                    effectiveChildNodeCount++;  
+                }
             }
-            else {
-                // white-space normalization is needed for the string value of $value in case of derivation from non xs:string atomic types
-                strValueOf$value = XMLChar.trim(textValueContents.toString());
-            }    
-        }
-        else {
-            // the DOM tree we are inspecting has 'mixed/element only' content.
-            strValueOf$value = null; 
+
+            if (textChildCount == effectiveChildNodeCount) {
+                // the DOM tree we are inspecting has simple content. therefore we can find the desired string value.
+                if ((pElemPSVI.getTypeDefinition()).derivedFrom(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ATTVAL_STRING, XSConstants.DERIVATION_RESTRICTION)) {
+                    // if element's schema type is derived by restriction from xs:string, white-space normalization is not needed for the
+                    // string value for context variable $value.
+                    strValueOf$value = textValueContents.toString();  
+                }
+                else {
+                    // white-space normalization is needed for the string value of $value in case of derivation from non xs:string atomic types
+                    strValueOf$value = XMLChar.trim(textValueContents.toString());
+                }    
+            }
         }
         
         return strValueOf$value;
@@ -113,14 +123,19 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         short xsdTypecode = -100;
         
         if (listOrUnionType != null) {
-            if (isTypeDerivedFromList) {
+            if (isTypeDerivedFromList || listOrUnionType.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
                 // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*)
                 // tokenize the list value by a sequence of white spaces
                 StringTokenizer listStrTokens = new StringTokenizer(value, " \n\t\r");
                 List xdmItemList = new ArrayList();
                 while (listStrTokens.hasMoreTokens()) {
                     String itemValue = listStrTokens.nextToken();
-                    xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue(listOrUnionType.getBuiltInKind(), itemValue)); 
+                    if (listOrUnionType.getItemType() != null) {
+                       xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue((listOrUnionType.getItemType()).getBuiltInKind(), itemValue));
+                    }
+                    else {
+                       xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue(listOrUnionType.getBuiltInKind(), itemValue));
+                    }
                 }
                 xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XS11TypeHelper.getXPath2ResultSequence(xdmItemList));                
             }
@@ -169,16 +184,15 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
      */
     public void setXDMTypedValueOf$valueForSTVarietyList(Element rootNodeOfAssertTree, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception {
         
-        XSObjectList memberTypes = itemType.getMemberTypes();
-        if (memberTypes.getLength() > 0) {
-            // the list's item type has variety 'union'
-            XSSimpleTypeDefinition actualListItemType = getActualXDMItemTypeForSTVarietyUnion(memberTypes, listStrValue);
-            // set a schema 'typed value' to variable $value
-            setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, actualListItemType, null, false, xpath2DynamicContext);
-        } 
-        else {
-            setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, itemType, null, isTypeDerivedFromList, xpath2DynamicContext); 
-        }
+       if (itemType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+          // the list's item type has variety 'union'
+          XSSimpleTypeDefinition actualListItemType = getActualXDMItemTypeForSTVarietyUnion(itemType.getMemberTypes(), listStrValue);
+          // set a schema 'typed value' to variable $value
+          setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, actualListItemType, null, false, xpath2DynamicContext);
+       } 
+       else {
+          setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, itemType, null, isTypeDerivedFromList, xpath2DynamicContext); 
+       }
 
     } // setXDMTypedValueOf$valueForSTVarietyList
         
@@ -186,14 +200,19 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, when the value is for simpleType with variety union. 
      */
-    public void setXDMTypedValueOf$valueForSTVarietyUnion(String value, XSObjectList memberTypes, DynamicContext xpath2DynamicContext) {        
+    public void setXDMTypedValueOf$valueForSTVarietyUnion(String value, XSObjectList memberTypes, DynamicContext xpath2DynamicContext) throws Exception {        
         // check member types of union in order to find that which member type can successfully validate the string value
         // first, and set the type annotation of XPath2 context variable $value with this member type definition.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
             if (XS11TypeHelper.isStrValueValidForASimpleType(value, simpleTypeDv, Constants.SCHEMA_VERSION_1_1)) {
-               setXDMTypedValueOf$valueForSTVarietyAtomic(value, getXercesXSDTypeCodeFor$value(simpleTypeDv), xpath2DynamicContext);
-               break;
+              if (simpleTypeDv.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
+                  setXDMTypedValueOf$valueForSTVarietyList(fRootNodeOfAssertTree, value, simpleTypeDv, ((XSSimpleTypeDefinition)simpleTypeDv.getBaseType()).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST, xpath2DynamicContext);
+              }
+              else {
+                  setXDMTypedValueOf$valueForSTVarietyAtomic(value, getXercesXSDTypeCodeFor$value(simpleTypeDv), xpath2DynamicContext);
+              }
+              break;
             }            
         }        
     } // setXDMTypedValueOf$valueForSTVarietyUnion
@@ -202,7 +221,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
     /*
      * Given a string value, this method sets an XPath 2.0 typed value for variable "$value" in XPath dynamic context, if element has a complex type with simple content. 
      */
-    private void setXDMValueOf$valueForCTWithSimpleContent(String value, XSComplexTypeDefinition typeDef, DynamicContext xpath2DynamicContext) {
+    protected void setXDMValueOf$valueForCTWithSimpleContent(String value, XSComplexTypeDefinition typeDef, DynamicContext xpath2DynamicContext) throws Exception {
         
         XSComplexTypeDefinition cmplxTypeDef = (XSComplexTypeDefinition)typeDef;
         XSSimpleTypeDefinition complexTypeSimplContentType = cmplxTypeDef.getSimpleType();
@@ -236,8 +255,11 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         else if (complexTypeSimplContentType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
             // simple content type has variety xs:union
             XSSimpleTypeDefinition simpleContentTypeForUnion = getActualXDMItemTypeForSTVarietyUnion(complexTypeSimplContentType.getMemberTypes(), value);
-            if (simpleContentTypeForUnion != null) {
-                xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), SchemaTypeValueFactory.newSchemaTypeValue(simpleContentTypeForUnion.getBuiltInKind(), value));
+            if (simpleContentTypeForUnion.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
+                setXDMTypedValueOf$valueForSTVarietyList(fRootNodeOfAssertTree, value, simpleContentTypeForUnion, ((XSSimpleTypeDefinition)simpleContentTypeForUnion.getBaseType()).getVariety() == XSSimpleTypeDefinition.VARIETY_LIST, xpath2DynamicContext);
+            }
+            else {
+                setXDMTypedValueOf$valueForSTVarietyAtomic(value, getXercesXSDTypeCodeFor$value(simpleContentTypeForUnion), xpath2DynamicContext);
             }
         }
         else {
