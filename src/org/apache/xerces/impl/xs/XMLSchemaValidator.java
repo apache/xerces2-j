@@ -51,6 +51,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.XS10TypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -2850,7 +2851,7 @@ public class XMLSchemaValidator
             if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block)) {
                 reportSchemaError(
                         "cvc-elt.4.3",
-                        new Object[] { element.rawname, xsiType, fCurrentType.getName()});
+                        new Object[] { element.rawname, xsiType, XS10TypeHelper.getSchemaTypeName(fCurrentType)});
             }
         }
 
