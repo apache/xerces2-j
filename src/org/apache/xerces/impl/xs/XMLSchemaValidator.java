@@ -3220,7 +3220,7 @@ public class XMLSchemaValidator
             if (!fXSConstraints.checkTypeDerivationOk(type, fCurrentType, block)) {
                 reportSchemaError(
                         "cvc-elt.4.3",
-                        new Object[] { element.rawname, xsiType, fCurrentType.getName()});
+                        new Object[] { element.rawname, xsiType, XS11TypeHelper.getSchemaTypeName(fCurrentType)});
             }
         }
 
@@ -3295,7 +3295,7 @@ public class XMLSchemaValidator
             }
             if (!fXSConstraints.checkTypeDerivationOk(type, fCurrentType, block)) {
                 errorList.add("cvc-elt.4.3");
-                errorList.add(new Object[] { element.rawname, xsiType, fCurrentType.getName()});
+                errorList.add(new Object[] { element.rawname, xsiType, XS11TypeHelper.getSchemaTypeName(fCurrentType)});
             }
         }
 

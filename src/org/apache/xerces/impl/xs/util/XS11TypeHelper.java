@@ -266,8 +266,8 @@ public class XS11TypeHelper {
     
     
     /*
-     * Get string value of type name of an XML Schema type definition. This method is useful if XML Schema validator specific names,
-     * of anonymous types are also needed.
+     * Get name of an XSD type definition as a string value (which will typically be the value of "name" attribute of a
+     * type definition, or an internal name determined by the validator for anonymous types).
      */
     public static String getSchemaTypeName(XSTypeDefinition typeDefn) {
         
