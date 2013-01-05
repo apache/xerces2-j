@@ -27,6 +27,7 @@ import java.util.Vector;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.assertion.XMLAssertHandler;
 import org.apache.xerces.impl.xs.assertion.XSAssert;
+import org.apache.xerces.impl.xs.assertion.XSAssertConstants;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XS11TypeHelper;
@@ -116,8 +117,8 @@ public class XSDAssertionValidator {
         if (fAssertionProcessor != null) {
             // construct the augmentations object, for assertions
             AugmentationsImpl assertAugs = new AugmentationsImpl();
-            assertAugs.putItem("ASSERT", assertionList);
-            assertAugs.putItem("ATTRIBUTES-HAVE-ASSERTS", Boolean.valueOf(fAttributesHaveAsserts));
+            assertAugs.putItem(XSAssertConstants.assertList, assertionList);
+            assertAugs.putItem(XSAssertConstants.isAttrHaveAsserts, Boolean.valueOf(fAttributesHaveAsserts));
             fAttributesHaveAsserts = false;
             fAssertionProcessor.startElement(element, attributes, assertAugs);
         }

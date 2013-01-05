@@ -98,14 +98,14 @@ public class XS11TypeHelper {
     
     
     /*
-     * Determine if a string value (which will result in an XDM atomic value) is valid with respect to any of the simpleType -> union's member types 
-     * (those that are in XML Schema namespace). If this method returns a boolean 'true', then the value is valid with respect to entire union schema component. 
+     * Determine if a string value is valid with respect to any of the simpleType -> union's member types which are in XML Schema namespace.
+     * If this method returns a boolean 'true', then the value is valid with respect to entire union schema component. 
      */
     public static boolean isAtomicStrValueValidForSTUnion(XSObjectList memberTypes, String content, ValidatedInfo validatedInfo, short schemaVersion) {
         
         boolean isValueValid = false;
         
-        // check the union member types in order to check for validity of an atomic value. the validity of atomic value wrt
+        // check the union member types in order to find validity of an atomic value. the validity of atomic value wrt
         // to the 1st available type in union's member type collection, is sufficient to achieve the objective of this method.
         for (int memTypeIdx = 0; memTypeIdx < memberTypes.getLength(); memTypeIdx++) {
             XSSimpleType simpleTypeDv = (XSSimpleType) memberTypes.item(memTypeIdx);
@@ -122,8 +122,7 @@ public class XS11TypeHelper {
     
     
     /*
-     * Determine if a lexical "string value" belongs to the value space (i.e is valid according to the type) of a given schema 
-     * simpleType definition. Using Xerces API 'XSSimpleType.validate' for this need.
+     * Determine if a string value is valid with a given simpleType definition. Using Xerces API 'XSSimpleType.validate' for this need.
      */
     public static boolean isStrValueValidForASimpleType(String value, XSSimpleType simplType, short schemaVersion) {
         
