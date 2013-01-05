@@ -1,0 +1,41 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="Z">
+	   <xs:complexType>
+	      <xs:sequence>
+		     <xs:element name="X">
+			    <xs:complexType>
+				   <xs:attribute name="val">
+                      <xs:simpleType>
+					     <xs:restriction base="union_of_DtList_and_integer">
+						    <xs:assertion test="$value instance of xs:date+"/>
+		                    <xs:assertion test="count($value) eq 3"/>
+						 </xs:restriction>
+					  </xs:simpleType>
+                   </xs:attribute>				   
+				</xs:complexType>
+			 </xs:element>
+			 <xs:element name="Y">
+			    <xs:complexType>
+				   <xs:attribute name="val">
+                      <xs:simpleType>
+					     <xs:restriction base="union_of_DtList_and_integer">
+						    <xs:assertion test="$value instance of xs:integer"/>
+						 </xs:restriction>
+					  </xs:simpleType>
+                   </xs:attribute>				   
+				</xs:complexType>
+			 </xs:element>
+		  </xs:sequence>
+	   </xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="union_of_DtList_and_integer">
+	   <xs:union memberTypes="xs:integer">
+	      <xs:simpleType>
+		     <xs:list itemType="xs:date"/>
+		  </xs:simpleType>
+	   </xs:union>
+	</xs:simpleType>
+	
+</xs:schema>
