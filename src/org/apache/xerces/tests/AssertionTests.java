@@ -2764,4 +2764,20 @@ public class AssertionTests extends XercesAbstractTestCase {
 		}
 	}
 	
+	public void testAssert155() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion18.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion18.xsd";		
+		try {
+			Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
 }

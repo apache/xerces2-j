@@ -1,0 +1,27 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="X">
+	   <xs:simpleType>
+	      <xs:union memberTypes="T1 T2 T3"/>
+	   </xs:simpleType>
+	</xs:element>
+	
+	<xs:simpleType name="T1">
+	   <xs:restriction base="xs:integer">
+	      <xs:assertion test="($value mod 2) = 0"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="T2">
+	   <xs:restriction base="xs:date">
+	      <xs:assertion test="$value lt current-date()"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="T3">
+	   <xs:restriction base="xs:string">
+	      <xs:length value="5"/>
+	   </xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>
