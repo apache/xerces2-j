@@ -124,8 +124,7 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         
         if (listOrUnionType != null) {
             if (isTypeDerivedFromList || listOrUnionType.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
-                // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*)
-                // tokenize the list value by a sequence of white spaces
+                // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*). tokenize the list value by a sequence of white spaces.
                 StringTokenizer listStrTokens = new StringTokenizer(value, " \n\t\r");
                 List xdmItemList = new ArrayList();
                 while (listStrTokens.hasMoreTokens()) {
@@ -185,10 +184,17 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
     public void setXDMTypedValueOf$valueForSTVarietyList(Element rootNodeOfAssertTree, String listStrValue, XSSimpleTypeDefinition itemType, boolean isTypeDerivedFromList, DynamicContext xpath2DynamicContext) throws Exception {
         
        if (itemType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
-          // the list's item type has variety 'union'
-          XSSimpleTypeDefinition actualListItemType = getActualXDMItemTypeForSTVarietyUnion(itemType.getMemberTypes(), listStrValue);
-          // set a schema 'typed value' to variable $value
-          setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, actualListItemType, null, false, xpath2DynamicContext);
+           // itemType of xs:list has variety 'union'
+           List xdmItemList = new ArrayList();
+           XSObjectList memberTypes = itemType.getMemberTypes();
+           // tokenize the list value by a sequence of white spaces
+           StringTokenizer values = new StringTokenizer(listStrValue, " \n\t\r");
+           while (values.hasMoreTokens()) {
+               String itemValue = values.nextToken();
+               XSSimpleTypeDefinition listItemTypeForUnion = getActualXDMItemTypeForSTVarietyUnion(memberTypes, itemValue);
+               xdmItemList.add(SchemaTypeValueFactory.newSchemaTypeValue(listItemTypeForUnion.getBuiltInKind(), itemValue));
+           }
+           xpath2DynamicContext.set_variable(new org.eclipse.wst.xml.xpath2.processor.internal.types.QName("value"), XS11TypeHelper.getXPath2ResultSequence(xdmItemList));
        } 
        else {
           setXDMTypedValueOf$value(rootNodeOfAssertTree, listStrValue, itemType, null, isTypeDerivedFromList, xpath2DynamicContext); 
@@ -228,13 +234,12 @@ public class XSAssertionXPath2ValueImpl implements XSAssertionXPath2Value {
         if (complexTypeSimplContentType.getVariety() == XSSimpleTypeDefinition.VARIETY_LIST) {
             // simple content type has variety xs:list
             XSSimpleTypeDefinition listItemType = complexTypeSimplContentType.getItemType();
-            // tokenize the list value by a sequence of white spaces
-            StringTokenizer values = new StringTokenizer(value, " \n\t\r");            
-            // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*)
+            // $value is a sequence of atomic values (with type annotation xs:anyAtomicType*). tokenize the list value by a sequence of white spaces.
+            StringTokenizer values = new StringTokenizer(value, " \n\t\r");
             List xdmItemList = new ArrayList();
-            final XSObjectList memberTypes = listItemType.getMemberTypes();
-            if (memberTypes.getLength() > 0) {
-               // itemType of xs:list has variety 'union'. here list items may have different types which are determined below.
+            if (listItemType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION) {
+               // itemType of xs:list has variety 'union'
+               final XSObjectList memberTypes = listItemType.getMemberTypes();
                while (values.hasMoreTokens()) {
                    String itemValue = values.nextToken();
                    XSSimpleTypeDefinition listItemTypeForUnion = getActualXDMItemTypeForSTVarietyUnion(memberTypes, itemValue);
