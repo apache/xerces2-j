@@ -2765,7 +2765,7 @@ public class AssertionTests extends XercesAbstractTestCase {
 	}
 	
 	public void testAssert155() {
-		String xmlfile = fDataDir+"/assertions/list_union/listunion18.xml";
+		String xmlfile = fDataDir+"/assertions/list_union/listunion18_1.xml";
 		String schemapath = fDataDir+"/assertions/list_union/listunion18.xsd";		
 		try {
 			Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
@@ -2774,6 +2774,52 @@ public class AssertionTests extends XercesAbstractTestCase {
             v.validate(new StreamSource(xmlfile));
             assertNull(fErrSysId);
             assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert156() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion18_2.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion18.xsd";		
+		try {
+			Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertTrue(failureList.size() == 3);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert157() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion19_1.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion19.xsd";		
+		try {
+			Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testAssert158() {
+		String xmlfile = fDataDir+"/assertions/list_union/listunion19_2.xml";
+		String schemapath = fDataDir+"/assertions/list_union/listunion19.xsd";		
+		try {
+			Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertTrue(failureList.size() == 4);
 		} catch(Exception ex) {
 		   ex.printStackTrace();
 		   assertTrue(false);
