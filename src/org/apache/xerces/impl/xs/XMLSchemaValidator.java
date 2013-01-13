@@ -2771,11 +2771,11 @@ public class XMLSchemaValidator
                         ValueStoreBase values =
                             fValueStoreCache.getValueStoreFor(id, selMatcher.getInitialDepth());
                         if (values != null) {    
-                            values.endDocumentFragment();   // nothing to do if nothing matched
-                            // report error if not all fields are present                       
-                            if (values.fValuesCount != values.fFieldCount) {
+                            values.endDocumentFragment();   // nothing to do if nothing matched                                         
+                            /*if (values.fValuesCount != values.fFieldCount) {
+                                // report error if not all fields are present
                                 reportSchemaError("KeyRefNotEnoughValues", new Object[] { element.rawname, values.getIdentityConstraint().getName() }); 
-                            }
+                            } */
                         }                                               
                     }
                 }
