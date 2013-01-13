@@ -303,13 +303,10 @@ public class IDConstraintTests extends XercesAbstractTestCase {
             Validator v = s.newValidator();
 		    v.setErrorHandler(this);
             v.validate(new StreamSource(xmlfile));
-            assertTrue(failureList.size() == 2);
+            assertTrue(failureList.size() == 1);
             // test expected error messages
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
-            mesgFragments.setMessageFragment("cvc-identity-constraint.4.3.b: Not enough values specified for <keyref name=\"newKeyref\"> identity constraint specified for element \"Sub_1a\"");
-            expectedMsgList.add(mesgFragments);
-            mesgFragments = new FailureMesgFragments();
             mesgFragments.setMessageFragment("the keyref identity constraint \"newKeyref\" refers to a key or unique that is out of scope");
             expectedMsgList.add(mesgFragments);
             assertTrue(areErrorMessagesConsistent(expectedMsgList));
@@ -327,13 +324,10 @@ public class IDConstraintTests extends XercesAbstractTestCase {
             Validator v = s.newValidator();
 		    v.setErrorHandler(this);
             v.validate(new StreamSource(xmlfile));
-            assertTrue(failureList.size() == 2);
+            assertTrue(failureList.size() == 1);
             // test expected error messages
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
-            mesgFragments.setMessageFragment("cvc-identity-constraint.4.3.b: Not enough values specified for <keyref name=\"keyref\"> identity constraint specified for element \"personnel\"");
-            expectedMsgList.add(mesgFragments);
-            mesgFragments = new FailureMesgFragments();
             mesgFragments.setMessageFragment("cvc-identity-constraint.4.3: Key 'keyref' with value '1' not found for identity constraint of element 'personnel'");
             expectedMsgList.add(mesgFragments);
             assertTrue(areErrorMessagesConsistent(expectedMsgList));

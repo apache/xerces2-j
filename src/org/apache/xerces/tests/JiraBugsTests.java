@@ -117,7 +117,7 @@ public class JiraBugsTests extends XercesAbstractTestCase {
             Validator v = s.newValidator();
 		    v.setErrorHandler(this);
             v.validate(new StreamSource(xmlfile));
-            assertTrue(failureList.size() == 2);
+            assertTrue(failureList.size() == 1);
             // test expected error messages
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
