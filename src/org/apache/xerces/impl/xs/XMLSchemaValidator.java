@@ -1411,12 +1411,13 @@ public class XMLSchemaValidator
     // assertion validator subcomponent
     private XSDAssertionValidator fAssertionValidator = null;
 
-    // variable to track validity of element simple content for union types. if a member type of union in XML Schema namespace can
-    // successfully validate an atomic value, we don't process assertions for such union types in downstream checks. i.e, a known
-    // valid element doesn't require assertion evaluations.
+    // variable to track validity of element content for simpleType->union. if a member type of union in XSD namespace can
+    // successfully validate an element instance value, we don't process assertions for such union types in downstream checks. i.e.,
+    // an element instance known to be valid doesn't require assertion evaluations.
     private boolean fIsAssertProcessingNeededForSTUnionElem = true;
     
-    // a similar variable as above to track union type validity for attributes of one element.
+    // variable with similar semantics as fIsAssertProcessingNeededForSTUnionElem, but for attributes of an element instance (i.e.,
+    // all attributes of one element instance).
     private List fIsAssertProcessingNeededForSTUnionAttrs = new ArrayList();
     
     // 'type alternative' validator subcomponent
