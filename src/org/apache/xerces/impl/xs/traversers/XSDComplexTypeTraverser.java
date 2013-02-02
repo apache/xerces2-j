@@ -1298,7 +1298,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //             Union (3.10.6.3).
 
                 // If explicit open content is null, no need to make any changes
-                if (explicitOpenContent != null) {
+                if (explicitOpenContent != null && fOpenContent.fWildcard != null) {
                     XSOpenContentDecl oc = new XSOpenContentDecl();
                     oc.fMode = fOpenContent.fMode; // interleave by default
                     oc.fWildcard = fSchemaHandler.fXSConstraints.performUnionWith(fOpenContent.fWildcard, explicitOpenContent.fWildcard, fOpenContent.fWildcard.fProcessContents);
