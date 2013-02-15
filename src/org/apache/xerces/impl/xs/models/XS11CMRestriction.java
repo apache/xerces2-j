@@ -32,6 +32,7 @@ import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSOpenContentDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamedMap;
@@ -498,8 +499,8 @@ public final class XS11CMRestriction implements XSElementDeclHelper {
         
         // 4.6 S.{type table} and G.{type table} either are both absent or
         //     are both present and equivalent. 
-        if (!xsc.isTypeTablesEquivalent(eb, ed)) {
-            return false;
+        if (XS11TypeHelper.isTypeTablesComparable(eb.getTypeAlternatives(), ed.getTypeAlternatives()) && !xsc.isTypeTablesEquivalent(eb, ed)) {
+           return false;
         }
 
         return true;

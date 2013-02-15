@@ -29,6 +29,7 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XS11CMRestriction;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolHash;
@@ -133,8 +134,8 @@ class XS11Constraints extends XSConstraints {
             // Types are not the same
             throw new XMLSchemaException("cos-element-consistent", new Object[] {type.fName, elem.fName});
         }
-
-        if (!isTypeTablesEquivalent(elem, existingElem)) {
+        
+        if (XS11TypeHelper.isTypeTablesComparable(elem.getTypeAlternatives(), existingElem.getTypeAlternatives()) && !isTypeTablesEquivalent(elem, existingElem)) {
             // Type tables are not equivalent
             throw new XMLSchemaException("cos-element-consistent.4.b", new Object[] {type.fName, elem.fName});  
         }
@@ -185,7 +186,7 @@ class XS11Constraints extends XSConstraints {
                 if (grammar != null) {
                     final XSElementDecl gElem = grammar.getGlobalElementDecl(elem.fName);
                     if (gElem != null) {
-                        if (gElem != elem && !isTypeTablesEquivalent(elem, gElem)) {
+                        if (gElem != elem && XS11TypeHelper.isTypeTablesComparable(elem.getTypeAlternatives(), gElem.getTypeAlternatives()) && !isTypeTablesEquivalent(elem, gElem)) {
                             // Type tables are not equivalent
                             throw new XMLSchemaException("cos-element-consistent.4.b", new Object[] {type.fName, elem.fName});
                         }
@@ -200,29 +201,33 @@ class XS11Constraints extends XSConstraints {
      */
     final public boolean isTypeTablesEquivalent(XSElementDecl elementDecl1, XSElementDecl elementDecl2) {
         
+        boolean typeTablesEquivalent = true;
+        
         final XSTypeAlternativeImpl[] typeTable1 = elementDecl1.getTypeAlternatives();
         final XSTypeAlternativeImpl[] typeTable2 = elementDecl2.getTypeAlternatives();
-
-        // both tables are absent
-        if (typeTable1 == typeTable2) {
-            return true;
-        }
         
-        // one of the tables is absent or has a different length
-        if (typeTable1 == null || typeTable2 == null 
-                || typeTable1.length != typeTable2.length) {
-            return false;
+        // if two type tables have different length
+        if (typeTable1.length != typeTable2.length) {
+            typeTablesEquivalent = false;
         }
 
-        for (int typeAltIdx = 0; typeAltIdx < typeTable1.length; typeAltIdx++) {
-            final XSTypeAlternativeImpl typeAlt1 = typeTable1[typeAltIdx];
-            final XSTypeAlternativeImpl typeAlt2 = typeTable2[typeAltIdx];
-            if (!isTypeAlternativesEquivalent(typeAlt1, typeAlt2)) {
-                return false;
+        if (typeTablesEquivalent) {
+            for (int typeAltIdx = 0; typeAltIdx < typeTable1.length; typeAltIdx++) {
+                final XSTypeAlternativeImpl typeAlt1 = typeTable1[typeAltIdx];
+                final XSTypeAlternativeImpl typeAlt2 = typeTable2[typeAltIdx];
+                if (!isTypeAlternativesEquivalent(typeAlt1, typeAlt2)) {
+                    typeTablesEquivalent = false;
+                    break;
+                }
             }
         }
 
-        return isTypeAlternativesEquivalent(elementDecl1.getDefaultTypeDefinition(), elementDecl2.getDefaultTypeDefinition());        
+        if (typeTablesEquivalent && !elementDecl1.isTypeTableOK()) {
+            typeTablesEquivalent = isTypeAlternativesEquivalent(elementDecl1.getDefaultTypeDefinition(), elementDecl2.getDefaultTypeDefinition()); 
+        }
+        
+        return typeTablesEquivalent;
+        
     } // isTypeTablesEquivalent
 
     /*

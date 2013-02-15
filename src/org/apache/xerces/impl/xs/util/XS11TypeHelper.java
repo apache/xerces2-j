@@ -32,6 +32,7 @@ import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -310,6 +311,20 @@ public class XS11TypeHelper {
         return xpath2Seq;
         
     } // getXPath2ResultSequence
+    
+    
+    /*
+     * Check if two type tables can be compared.
+     */
+    public static boolean isTypeTablesComparable(XSTypeAlternativeImpl[] typeTable1, XSTypeAlternativeImpl[] typeTable2) {
+       boolean typeTablesComparable = true;
+       
+       if (typeTable1 == null && typeTable2 == null) {
+           typeTablesComparable = false;  
+       }
+       
+       return typeTablesComparable; 
+    } // isTypeTablesComparable
     
     
 } // class XS11TypeHelper
