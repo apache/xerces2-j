@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:defaultOpenContent mode="interleave">
+        <xs:any namespace="##targetNamespace"/>
+    </xs:defaultOpenContent>
+    <xs:complexType name="mainCT">
+        <xs:all>
+            <xs:element name="elemA" type="mainCT"/>
+        </xs:all>
+    </xs:complexType>
+    <xs:complexType name="bCT">
+        <xs:complexContent>
+            <xs:extension base="mainCT">
+                <xs:openContent mode="interleave">
+                </xs:openContent>
+                <xs:all>
+                    <xs:element name="elemB"/>
+                </xs:all>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,26 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:complexType name="type1">
+        <xsd:choice>
+            <xsd:sequence>
+                <xsd:element name="Element1">
+                    <xsd:alternative test="@index='3'" type="TypeI3"/>
+                    <xsd:alternative type="TypeI5"/>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:sequence>
+                <xsd:element name="Element1">
+                    <xsd:alternative test="@index='3'" type="TypeI3"/>
+                    <xsd:alternative type="TypeI5"/>
+                    <xsd:unique name="TypeI5_U">
+                        <xsd:selector xpath="*"/>
+                        <xsd:field xpath="@index"/>
+                    </xsd:unique>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:choice>
+    </xsd:complexType>
+    <xsd:complexType name="TypeI3"/>
+    <xsd:complexType name="TypeI5"/>
+	
+</xsd:schema>

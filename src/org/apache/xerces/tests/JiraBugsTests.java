@@ -25,6 +25,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.xml.sax.SAXException;
+
 /**
  * @xerces.internal
  * 
@@ -346,6 +348,26 @@ public class JiraBugsTests extends XercesAbstractTestCase {
 		} catch(Exception ex) {
 		   ex.printStackTrace();
 		   assertTrue(false);
+		}
+	}
+	
+	public void testJira_1603() {
+		String schemapath = fDataDir+"/jira_bugs/1603_1.xsd";	
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+		} catch(SAXException ex) {
+			// test expected error messages
+			assertEquals("src-ct.5: Complex Type Definition Representation Error for type 'bCT'. If <openContent> is present and the actual value of its mode [attribute] is not none, then there must be an <any> among the [children] of <openContent>.", ex.getMessage());
+		}
+	}
+	
+	public void testJira_1605() {
+		String schemapath = fDataDir+"/jira_bugs/1605_1.xsd";	
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+		} catch(SAXException ex) {
+			// test expected error messages
+            assertEquals("cos-nonambig: Element1 and Element1 (or elements from their substitution group) violate \"Unique Particle Attribution\". During validation against this schema, ambiguity would be created for those two particles.", ex.getMessage());
 		}
 	}
 		
