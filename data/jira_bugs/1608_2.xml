@@ -1,0 +1,5 @@
+<test xmlns="http://www.rackspace.com/test/duration">
+    <d>PT24H</d>
+    <d>PT1H</d>
+    <d>PT1H</d>
+</test>

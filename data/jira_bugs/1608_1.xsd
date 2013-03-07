@@ -1,0 +1,16 @@
+<schema
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tst="http://www.rackspace.com/test/duration"
+    targetNamespace="http://www.rackspace.com/test/duration">
+    <element name="test" type="tst:SumDuration24H"/>
+    <complexType name="SumDuration24H">
+        <sequence>
+            <element name="d" type="xsd:dayTimeDuration" maxOccurs="unbounded"/>
+        </sequence>
+		<assert test="xsd:dayTimeDuration('PT24H') = sum(tst:d)"/>
+        <assert test="xsd:dayTimeDuration('PT24H') = sum(for $d in element(tst:d) return $d)"/>
+    </complexType>
+</schema>

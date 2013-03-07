@@ -370,5 +370,36 @@ public class JiraBugsTests extends XercesAbstractTestCase {
             assertEquals("cos-nonambig: Element1 and Element1 (or elements from their substitution group) violate \"Unique Particle Attribution\". During validation against this schema, ambiguity would be created for those two particles.", ex.getMessage());
 		}
 	}
+	
+	public void testJira_1608_1() {
+		String xmlfile = fDataDir+"/jira_bugs/1608_1.xml";
+		String schemapath = fDataDir+"/jira_bugs/1608_1.xsd";		
+		try {
+		    Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertNull(fErrSysId);
+            assertNull(fFatErrSysId);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
+	
+	public void testJira_1608_2() {
+		String xmlfile = fDataDir+"/jira_bugs/1608_2.xml";
+		String schemapath = fDataDir+"/jira_bugs/1608_1.xsd";		
+		try {
+			Schema s = fSchemaFactory.newSchema(new StreamSource(schemapath));
+            Validator v = s.newValidator();
+		    v.setErrorHandler(this);
+            v.validate(new StreamSource(xmlfile));
+            assertTrue(failureList.size() == 2);
+		} catch(Exception ex) {
+		   ex.printStackTrace();
+		   assertTrue(false);
+		}
+	}
 		
 }
