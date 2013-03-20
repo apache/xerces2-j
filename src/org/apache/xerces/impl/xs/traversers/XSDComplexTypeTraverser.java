@@ -1447,8 +1447,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             
             // invoke the method recursively (traverse up the type hierarchy)
             XSTypeDefinition ancestorType = baseSchemaType.getBaseType();
-            if (ancestorType != null && !(ancestorType.getName().equals(SchemaSymbols.ATTVAL_ANYTYPE) || 
-                                          ancestorType.derivedFrom(Constants.NS_XMLSCHEMA, SchemaSymbols.ATTVAL_ANYATOMICTYPE, XSConstants.DERIVATION_RESTRICTION))) {              
+            
+            if (ancestorType != null && !((XS11TypeHelper.getSchemaTypeName(ancestorType)).equals(SchemaSymbols.ATTVAL_ANYTYPE) || 
+                                           ancestorType.derivedFrom(Constants.NS_XMLSCHEMA, SchemaSymbols.ATTVAL_ANYATOMICTYPE, XSConstants.DERIVATION_RESTRICTION))) {              
                  addAssertsFromBaseTypes(ancestorType);
             }
         }
