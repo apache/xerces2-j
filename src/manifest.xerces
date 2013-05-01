@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Created-By: @java.version@ (@java.vendor@)
 
-Name: org/apache/xerces/impl/Version.class
+Name: org/apache/xerces/impl/
 Comment: @impl.name@ 
 Implementation-Title: org.apache.xerces.impl.Version
 Implementation-Version: @impl.version@
