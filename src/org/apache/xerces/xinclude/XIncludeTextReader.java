@@ -149,12 +149,12 @@ public class XIncludeTextReader {
                 stream = new BufferedInputStream(urlCon.getInputStream());
                 
                 // content type will be string like "text/xml; charset=UTF-8" or "text/xml"
-                String rawContentType = urlCon.getContentType();
+                final String rawContentType = urlCon.getContentType();
                 
                 // text/xml and application/xml offer only one optional parameter
-                int index = (rawContentType != null) ? rawContentType.indexOf(';') : -1;
+                final int index = (rawContentType != null) ? rawContentType.indexOf(';') : -1;
 
-                String contentType = null;
+                final String contentType;
                 String charset = null;
                 if (index != -1) {
                     // this should be something like "text/xml"
@@ -181,7 +181,7 @@ public class XIncludeTextReader {
                     }
                 }
                 else {
-                    contentType = rawContentType.trim();
+                    contentType = (rawContentType != null) ? rawContentType.trim() : "";
                 }
 
                 String detectedEncoding = null;
