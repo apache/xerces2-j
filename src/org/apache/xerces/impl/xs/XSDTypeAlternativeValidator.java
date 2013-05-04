@@ -149,7 +149,7 @@ public class XSDTypeAlternativeValidator {
                     XSAttributeDeclaration attrDecl = (XSAttributeDeclaration) attrUse.getAttrDeclaration();
                     Augmentations attrAugs = attributes.getAugmentations(attrDecl.getNamespace(), attrDecl.getName());
                     if (attrAugs != null) {
-                        fXmlSchemaValidator.fInheritableAttrList.add((AttributePSVI)attrAugs.getItem(Constants.ATTRIBUTE_PSVI));
+                        (fXmlSchemaValidator.getInheritableAttrList()).add((AttributePSVI)attrAugs.getItem(Constants.ATTRIBUTE_PSVI));
                     }
                 }
             }                      
@@ -163,11 +163,12 @@ public class XSDTypeAlternativeValidator {
     ObjectList getInheritedAttributesForPSVI() {
         
         ObjectList inheritedAttributesList = null;
+        Vector inheritableAttrList = fXmlSchemaValidator.getInheritableAttrList();
         
-        if (fXmlSchemaValidator.fInheritableAttrList.size() > 0) {
-            Object[] inheritedAttributesArray = new Object[fXmlSchemaValidator.fInheritableAttrList.size()]; 
-            for (int inhrAttrIdx = 0; inhrAttrIdx < fXmlSchemaValidator.fInheritableAttrList.size(); inhrAttrIdx++) {
-                inheritedAttributesArray[inhrAttrIdx] = fXmlSchemaValidator.fInheritableAttrList.get(inhrAttrIdx);  
+        if (inheritableAttrList.size() > 0) {
+            Object[] inheritedAttributesArray = new Object[inheritableAttrList.size()]; 
+            for (int inhrAttrIdx = 0; inhrAttrIdx < inheritableAttrList.size(); inhrAttrIdx++) {
+                inheritedAttributesArray[inhrAttrIdx] = inheritableAttrList.get(inhrAttrIdx);  
             }  
             inheritedAttributesList = new ObjectListImpl(inheritedAttributesArray, inheritedAttributesArray.length); 
         } 

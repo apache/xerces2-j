@@ -5139,16 +5139,24 @@ public class XMLSchemaValidator
         return fIsAssertProcessingNeededForSTUnionElem;
     }
 
-    void setIsAssertProcessingNeededForSTUnionElem(boolean fIsAssertProcessingNeededForSTUnionElem) {
-        this.fIsAssertProcessingNeededForSTUnionElem = fIsAssertProcessingNeededForSTUnionElem;
+    void setIsAssertProcessingNeededForSTUnionElem(boolean isAssertProcessingNeededForSTUnionElem) {
+        this.fIsAssertProcessingNeededForSTUnionElem = isAssertProcessingNeededForSTUnionElem;
     }
 
     List getIsAssertProcessingNeededForSTUnionAttrs() {
         return fIsAssertProcessingNeededForSTUnionAttrs;
     }
 
-    void setIsAssertProcessingNeededForSTUnionAttrs(List fIsAssertProcessingNeededForSTUnionAttrs) {
-        this.fIsAssertProcessingNeededForSTUnionAttrs = fIsAssertProcessingNeededForSTUnionAttrs;
+    void setIsAssertProcessingNeededForSTUnionAttrs(List isAssertProcessingNeededForSTUnionAttrs) {
+        this.fIsAssertProcessingNeededForSTUnionAttrs = isAssertProcessingNeededForSTUnionAttrs;
+    }
+    
+    Vector getInheritableAttrList() {
+        return fInheritableAttrList;
+    }
+
+    void setInheritableAttrList(Vector inheritableAttrList) {
+        this.fInheritableAttrList = inheritableAttrList;
     }
     
 } // class XMLSchemaValidator
