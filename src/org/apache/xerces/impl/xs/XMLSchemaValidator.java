@@ -54,9 +54,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
-import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.XS11TypeHelper;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -87,11 +85,8 @@ import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
-import org.apache.xerces.xs.XSAttributeDeclaration;
-import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeAlternative;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.datatypes.ObjectList;
@@ -1414,17 +1409,17 @@ public class XMLSchemaValidator
     // variable to track validity of element content for simpleType->union. if a member type of union in XSD namespace can
     // successfully validate an element instance value, we don't process assertions for such union types in downstream checks. i.e.,
     // an element instance known to be valid doesn't require assertion evaluations.
-    private boolean fIsAssertProcessingNeededForSTUnionElem = true;
-    
+    boolean fIsAssertProcessingNeededForSTUnionElem = true;
+
     // variable with similar semantics as fIsAssertProcessingNeededForSTUnionElem, but for attributes of an element instance (i.e.,
     // all attributes of one element instance).
-    private List fIsAssertProcessingNeededForSTUnionAttrs = new ArrayList();
+    List fIsAssertProcessingNeededForSTUnionAttrs = new ArrayList();
     
     // 'type alternative' validator subcomponent
     private XSDTypeAlternativeValidator fTypeAlternativeValidator = null;
     
     // a Vector list storing inheritable attributes
-    private Vector fInheritableAttrList = new Vector();
+    Vector fInheritableAttrList = new Vector();
     
     // a Stack storing inheritable attribute count for the elements
     private IntStack fInhrAttrCountStack = new IntStack();
@@ -1439,7 +1434,7 @@ public class XMLSchemaValidator
         fState4ApplyDefault.setFacetChecking(false);
         fSchemaVersion = fSchemaLoader.getSchemaVersion();
         fXSConstraints = fSchemaLoader.getXSConstraints();        
-        fTypeAlternativeValidator = new XSDTypeAlternativeValidator();
+        fTypeAlternativeValidator = new XSDTypeAlternativeValidator(this);
     } // <init>()
 
     /*
@@ -2564,7 +2559,7 @@ public class XMLSchemaValidator
         
         // assert check for union types, for attributes
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-           extraCheckForSTUnionAssertsAttrs(attributes);
+            fAssertionValidator.extraCheckForSTUnionAssertsAttrs(attributes);
         }
         
         // Set ID scope to parent
@@ -2598,7 +2593,7 @@ public class XMLSchemaValidator
                fCurrentPSVI.fTypeAlternative = fTypeAlternative;
                // PSVI: add inherited attributes
                fInhrAttrCountStack.push(fInheritableAttrList.size());
-               fCurrentPSVI.fInheritedAttributes = getInheritedAttributesForPSVI();               
+               fCurrentPSVI.fInheritedAttributes = fTypeAlternativeValidator.getInheritedAttributesForPSVI();               
                // PSVI: add failed assertions
                fCurrentPSVI.fFailedAssertions = fFailedAssertions;               
             }
@@ -2606,7 +2601,7 @@ public class XMLSchemaValidator
                 
         if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             // find attributes among the attributes of the current element which are declared inheritable, and store them for later processing
-            saveInheritableAttributes(fCurrentElemDecl, attributes);
+            fTypeAlternativeValidator.saveInheritableAttributes(fCurrentElemDecl, attributes);
             // for each attribute, update its augmentation information to tell if its simpleType->union requires assertion evaluations
             XMLAttributesImpl attrsImpl = (XMLAttributesImpl)attributes;
             for (int attrIdx = 0; attrIdx < attrsImpl.getLength(); attrIdx++) {
@@ -2908,7 +2903,7 @@ public class XMLSchemaValidator
                 ObjectList inheritedAttributesForPsvi = null;
                 if (fInhrAttrCountStack.size() > 0) {
                     fInheritableAttrList.setSize(fInhrAttrCountStack.pop());
-                    inheritedAttributesForPsvi = getInheritedAttributesForPSVI();
+                    inheritedAttributesForPsvi = fTypeAlternativeValidator.getInheritedAttributesForPSVI();
                 }
                 fCurrentPSVI.fInheritedAttributes = inheritedAttributesForPsvi;
                 fCurrentPSVI.fFailedAssertions = this.fFailedAssertions;
@@ -3933,7 +3928,7 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having variety 'union'                    
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        extraCheckForSTUnionAssertsElem(dv, String.valueOf(textContent), fValidatedInfo);
+                        fAssertionValidator.extraCheckForSTUnionAssertsElem(dv, String.valueOf(textContent), fValidatedInfo);
                     }
                 } catch (InvalidDatatypeValueException e) {
                     fIsAssertProcessingNeededForSTUnionElem = false;
@@ -3978,7 +3973,7 @@ public class XMLSchemaValidator
                     
                     // additional check for assertions processing, for simple type having variety 'union'                    
                     if (fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                        extraCheckForSTUnionAssertsElem(dv, String.valueOf(textContent), fValidatedInfo);
+                        fAssertionValidator.extraCheckForSTUnionAssertsElem(dv, String.valueOf(textContent), fValidatedInfo);
                     }
                 } catch (InvalidDatatypeValueException e) {
                     fIsAssertProcessingNeededForSTUnionElem = false;
@@ -5136,92 +5131,24 @@ public class XMLSchemaValidator
         }
     }
     
-    /**
-     * @return the fAssertionValidator
-     */
     public XSDAssertionValidator getAssertionValidator() {
         return fAssertionValidator;
     }
     
-    /*
-     * Extra checks for assertion evaluations for simpleType definitions with variety union, for attributes of one element.
-     */
-    private void extraCheckForSTUnionAssertsAttrs(XMLAttributes attributes) {
-        
-        XMLAttributes attrsImpl = (XMLAttributesImpl)attributes;
-        
-        for (int attrIdx = 0; attrIdx < attrsImpl.getLength(); attrIdx++) {
-            Augmentations attrAugs = attrsImpl.getAugmentations(attrIdx);
-            AttributePSVImpl attrPsvi = (AttributePSVImpl)attrAugs.getItem(Constants.ATTRIBUTE_PSVI);            
-            XSSimpleTypeDefinition attrSimpleType = (XSSimpleTypeDefinition) attrPsvi.getTypeDefinition();
-            if (attrSimpleType != null && attrSimpleType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-                if (XS11TypeHelper.isAtomicStrValueValidForSTUnion(attrSimpleType.getMemberTypes(), attrsImpl.getValue(attrIdx), attrPsvi.fValue, Constants.SCHEMA_VERSION_1_1)) {
-                    fIsAssertProcessingNeededForSTUnionAttrs.add(Boolean.valueOf(false));  
-                }
-                else {
-                    fIsAssertProcessingNeededForSTUnionAttrs.add(Boolean.valueOf(true)); 
-                }
-            }
-            else {
-                fIsAssertProcessingNeededForSTUnionAttrs.add(Boolean.valueOf(true)); 
-            }
-        }
-        
-    } // extraCheckForSTUnionAssertsAttrs
-    
-    /*
-     * Extra checks for assertion evaluations for simpleType definitions with variety union, for an element.
-     */
-    private void extraCheckForSTUnionAssertsElem(XSSimpleType simpleTypeDv, String content, ValidatedInfo validatedInfo) {
-        if (simpleTypeDv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) simpleTypeDv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
-            if (XS11TypeHelper.isAtomicStrValueValidForSTUnion(simpleTypeDv.getMemberTypes(), content, validatedInfo, Constants.SCHEMA_VERSION_1_1)) {
-                fIsAssertProcessingNeededForSTUnionElem = false;
-            }
-        }
-    } // extraCheckForSTUnionAssertsElem
-    
-    /*
-     * For the current element being handled by the XML Schema validator, find all inheritable attributes for this element.
-     * Save these inheritable attributes, into a global Vector list for later processing.
-     */
-    private void saveInheritableAttributes(XSElementDecl currentElemDecl, XMLAttributes attributes) {
-        
-        if (currentElemDecl != null && currentElemDecl.fType instanceof XSComplexTypeDecl) {
-            XSComplexTypeDecl complexTypeDecl = (XSComplexTypeDecl) currentElemDecl.fType;
-            XSObjectListImpl attributeUses = (XSObjectListImpl) complexTypeDecl.getAttributeUses();
-            // iterate all the attribute declarations of the complex type, for the current element
-            for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
-                XSAttributeUse attrUse = (XSAttributeUse) attributeUses.get(attrUsesIndx);                 
-                if (attrUse.getInheritable()) {                   
-                    // this is an inheritable attribute. copy into an global Vector list.
-                    XSAttributeDeclaration attrDecl = (XSAttributeDeclaration) attrUse.getAttrDeclaration();
-                    Augmentations attrAugs = attributes.getAugmentations(attrDecl.getNamespace(), attrDecl.getName());
-                    if (attrAugs != null) {
-                       fInheritableAttrList.add((AttributePSVI)attrAugs.getItem(Constants.ATTRIBUTE_PSVI));
-                    }
-                }
-            }                      
-        }
-       
-    } // saveInheritableAttributes
-    
-    /*
-     * Get inherited attributes for copying into an element PSVI.
-     */
-    private ObjectList getInheritedAttributesForPSVI() {
-        
-        ObjectList inheritedAttributesList = null;
-        
-        if (fInheritableAttrList.size() > 0) {
-            Object[] inheritedAttributesArray = new Object[fInheritableAttrList.size()]; 
-            for (int inhrAttrIdx = 0; inhrAttrIdx < fInheritableAttrList.size(); inhrAttrIdx++) {
-                inheritedAttributesArray[inhrAttrIdx] = fInheritableAttrList.get(inhrAttrIdx);  
-            }  
-            inheritedAttributesList = new ObjectListImpl(inheritedAttributesArray, inheritedAttributesArray.length); 
-        } 
-        
-        return inheritedAttributesList;
-        
-    } // getInheritedAttributesForPSVI
+    boolean getIsAssertProcessingNeededForSTUnionElem() {
+        return fIsAssertProcessingNeededForSTUnionElem;
+    }
+
+    void setIsAssertProcessingNeededForSTUnionElem(boolean fIsAssertProcessingNeededForSTUnionElem) {
+        this.fIsAssertProcessingNeededForSTUnionElem = fIsAssertProcessingNeededForSTUnionElem;
+    }
+
+    List getIsAssertProcessingNeededForSTUnionAttrs() {
+        return fIsAssertProcessingNeededForSTUnionAttrs;
+    }
+
+    void setIsAssertProcessingNeededForSTUnionAttrs(List fIsAssertProcessingNeededForSTUnionAttrs) {
+        this.fIsAssertProcessingNeededForSTUnionAttrs = fIsAssertProcessingNeededForSTUnionAttrs;
+    }
     
 } // class XMLSchemaValidator

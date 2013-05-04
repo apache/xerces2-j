@@ -19,16 +19,22 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.alternative.Test;
 import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
+import org.apache.xerces.impl.xs.util.ObjectListImpl;
 import org.apache.xerces.impl.xs.util.XS11TypeHelper;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSTypeAlternative;
+import org.apache.xerces.xs.datatypes.ObjectList;
 
 /**
  * An XML Schema validator subcomponent handling "type alternative" processing.
@@ -41,12 +47,14 @@ import org.apache.xerces.xs.XSTypeAlternative;
  */
 public class XSDTypeAlternativeValidator {          
     
+    // the context XMLSchemaValidator instance
+    XMLSchemaValidator fXmlSchemaValidator = null;
     
     /*
      * Class constructor.
      */
-    public XSDTypeAlternativeValidator() {
-       // NO OP ...
+    public XSDTypeAlternativeValidator(XMLSchemaValidator xmlSchemaValidator) {
+       this.fXmlSchemaValidator = xmlSchemaValidator;
     }
     
     
@@ -123,5 +131,49 @@ public class XSDTypeAlternativeValidator {
         }
         return attrExists;      
     } // isInheritedAttributeOverridden
+    
+    /*
+     * For the current element being processed by XML Schema validator, find all inheritable attributes for this element.
+     * Save these inheritable attributes, into a global Vector list for later processing.
+     */
+    void saveInheritableAttributes(XSElementDecl currentElemDecl, XMLAttributes attributes) {
+        
+        if (currentElemDecl != null && currentElemDecl.fType instanceof XSComplexTypeDecl) {
+            XSComplexTypeDecl complexTypeDecl = (XSComplexTypeDecl) currentElemDecl.fType;
+            XSObjectListImpl attributeUses = (XSObjectListImpl) complexTypeDecl.getAttributeUses();
+            // iterate all the attribute declarations of the complex type, for the current element
+            for (int attrUsesIndx = 0; attrUsesIndx < attributeUses.getLength(); attrUsesIndx++) {
+                XSAttributeUse attrUse = (XSAttributeUse) attributeUses.get(attrUsesIndx);                 
+                if (attrUse.getInheritable()) {                   
+                    // this is an inheritable attribute. copy into an global Vector list.
+                    XSAttributeDeclaration attrDecl = (XSAttributeDeclaration) attrUse.getAttrDeclaration();
+                    Augmentations attrAugs = attributes.getAugmentations(attrDecl.getNamespace(), attrDecl.getName());
+                    if (attrAugs != null) {
+                        fXmlSchemaValidator.fInheritableAttrList.add((AttributePSVI)attrAugs.getItem(Constants.ATTRIBUTE_PSVI));
+                    }
+                }
+            }                      
+        }
+       
+    } // saveInheritableAttributes
+    
+    /*
+     * Get inherited attributes for copying into an element PSVI.
+     */
+    ObjectList getInheritedAttributesForPSVI() {
+        
+        ObjectList inheritedAttributesList = null;
+        
+        if (fXmlSchemaValidator.fInheritableAttrList.size() > 0) {
+            Object[] inheritedAttributesArray = new Object[fXmlSchemaValidator.fInheritableAttrList.size()]; 
+            for (int inhrAttrIdx = 0; inhrAttrIdx < fXmlSchemaValidator.fInheritableAttrList.size(); inhrAttrIdx++) {
+                inheritedAttributesArray[inhrAttrIdx] = fXmlSchemaValidator.fInheritableAttrList.get(inhrAttrIdx);  
+            }  
+            inheritedAttributesList = new ObjectListImpl(inheritedAttributesArray, inheritedAttributesArray.length); 
+        } 
+        
+        return inheritedAttributesList;
+        
+    } // getInheritedAttributesForPSVI
     
 } // class XSDTypeAlternativeValidator

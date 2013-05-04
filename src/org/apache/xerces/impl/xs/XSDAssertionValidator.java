@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.assertion.XMLAssertHandler;
 import org.apache.xerces.impl.xs.assertion.XSAssert;
 import org.apache.xerces.impl.xs.assertion.XSAssertConstants;
@@ -33,6 +35,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -56,8 +59,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
  */
 public class XSDAssertionValidator {
     
-    // XMLSchemaValidator instance that acts as context for the present assertion validator subcomponent.
-    // Passed into the constructor of this object.
+    // the context XMLSchemaValidator instance
     XMLSchemaValidator fXmlSchemaValidator = null;
     
     // assertion processor object reference
@@ -369,5 +371,43 @@ public class XSDAssertionValidator {
         fAssertionProcessor.setProperty("http://apache.org/xml/properties/assert/validator", fXmlSchemaValidator);
         
     } // initializeAssertProcessor
+    
+    /*
+     * Extra checks for assertion evaluations for simpleType definitions with variety union, for attributes of one element.
+     */
+    void extraCheckForSTUnionAssertsAttrs(XMLAttributes attributes) {
+        
+        XMLAttributes attrsImpl = (XMLAttributesImpl)attributes;
+        
+        for (int attrIdx = 0; attrIdx < attrsImpl.getLength(); attrIdx++) {
+            Augmentations attrAugs = attrsImpl.getAugmentations(attrIdx);
+            AttributePSVImpl attrPsvi = (AttributePSVImpl)attrAugs.getItem(Constants.ATTRIBUTE_PSVI);            
+            XSSimpleTypeDefinition attrSimpleType = (XSSimpleTypeDefinition) attrPsvi.getTypeDefinition();
+            List isAssertProcessingNeededForSTUnionAttrs = fXmlSchemaValidator.getIsAssertProcessingNeededForSTUnionAttrs();
+            if (attrSimpleType != null && attrSimpleType.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) attrSimpleType.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
+                if (XS11TypeHelper.isAtomicStrValueValidForSTUnion(attrSimpleType.getMemberTypes(), attrsImpl.getValue(attrIdx), attrPsvi.fValue, Constants.SCHEMA_VERSION_1_1)) {
+                    isAssertProcessingNeededForSTUnionAttrs.add(Boolean.valueOf(false));  
+                }
+                else {
+                    isAssertProcessingNeededForSTUnionAttrs.add(Boolean.valueOf(true)); 
+                }
+            }
+            else {
+                isAssertProcessingNeededForSTUnionAttrs.add(Boolean.valueOf(true)); 
+            }
+        }
+        
+    }  // extraCheckForSTUnionAssertsAttrs
+    
+    /*
+     * Extra checks for assertion evaluations for simpleType definitions with variety union, for an element.
+     */
+    void extraCheckForSTUnionAssertsElem(XSSimpleType simpleTypeDv, String content, ValidatedInfo validatedInfo) {
+        if (simpleTypeDv.getVariety() == XSSimpleTypeDefinition.VARIETY_UNION && ((XSSimpleType) simpleTypeDv.getBaseType()).getVariety() != XSSimpleTypeDefinition.VARIETY_UNION) {
+            if (XS11TypeHelper.isAtomicStrValueValidForSTUnion(simpleTypeDv.getMemberTypes(), content, validatedInfo, Constants.SCHEMA_VERSION_1_1)) {
+                fXmlSchemaValidator.setIsAssertProcessingNeededForSTUnionElem(false);
+            }
+        }
+    } // extraCheckForSTUnionAssertsElem
     
 } // class XSDAssertionValidator
