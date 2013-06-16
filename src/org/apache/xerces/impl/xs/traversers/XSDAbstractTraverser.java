@@ -17,7 +17,11 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -37,8 +41,8 @@ import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.assertion.Test;
 import org.apache.xerces.impl.xs.assertion.XSAssertImpl;
 import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XS11TypeHelper;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -789,6 +793,7 @@ abstract class XSDAbstractTraverser {
         XSAttributeUseImpl tempAttrUse = null;
         XSAttributeUse otherUse = null;
         String childName;
+        Map attrGroupCounts = new HashMap();
         
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
             childName = DOMUtil.getLocalName(child);
@@ -826,6 +831,7 @@ abstract class XSDAbstractTraverser {
                 //REVISIT: do we need to save some state at this point??
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
                         child, schemaDoc, grammar);
+                setAttributeGroupCount(attrGroupCounts, tempAttrGrp.getName(), tempAttrGrp.getNamespace());
                 if(tempAttrGrp == null ) continue;
                 XSObjectList attrUseS = tempAttrGrp.getAttributeUses();
                 XSAttributeUseImpl oneAttrUse;
@@ -877,6 +883,16 @@ abstract class XSDAbstractTraverser {
                 break;
         } // for
         
+        // check if any <attributeGroup> QName occurs more than once. display a warning for each such occurrence.
+        Set keySet = attrGroupCounts.keySet();
+        for (Iterator iter = keySet.iterator(); iter.hasNext();) {
+            QName qname = (QName)iter.next();
+            Integer count = (Integer)attrGroupCounts.get(qname);
+            if (count.intValue() > 1) {
+                reportSchemaWarning("src-ct.7", new Object[]{qname.localpart, enclosingParent.getName()}, (Element)firstAttr.getParentNode()); 
+            }
+        }
+        
         if (child != null) {
             childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
@@ -903,9 +919,27 @@ abstract class XSDAbstractTraverser {
         return child;
         
     }
-    
+
+    /*
+     * Store the count of <attributeGroup> keyed by its QName, encountered within a complex type definition.
+     */
+    private void setAttributeGroupCount(Map attrGroupCounts, String name, String namespace) {
+       QName qName = new QName(null, name, name, namespace);
+       if (attrGroupCounts.containsKey(qName)) {
+           Integer count =  (Integer)attrGroupCounts.get(qName);
+           attrGroupCounts.put(qName, new Integer(count.intValue() + 1));  
+       }
+       else {
+           attrGroupCounts.put(qName, new Integer(1));  
+       }
+    }
+
     void reportSchemaError (String key, Object[] args, Element ele) {
         fSchemaHandler.reportSchemaError(key, args, ele);
+    }
+    
+    void reportSchemaWarning (String key, Object[] args, Element ele) {
+        fSchemaHandler.reportSchemaWarning(key, args, ele);
     }
     
     /**
