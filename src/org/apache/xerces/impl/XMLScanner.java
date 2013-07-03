@@ -542,7 +542,7 @@ public abstract class XMLScanner
         // document is until we scan the encoding declaration
         // you cannot reliably read any characters outside
         // of the ASCII range here. -- mrglavas
-        String name = fEntityScanner.scanName();
+        String name = scanPseudoAttributeName();
         XMLEntityManager.print(fEntityManager.getCurrentEntity());
         if (name == null) {
             reportFatalError("PseudoAttrNameExpected", null);
@@ -597,6 +597,35 @@ public abstract class XMLScanner
         return name;
 
     } // scanPseudoAttribute(XMLString):String
+    
+    /**
+     * Scans the name of a pseudo attribute. The only legal names
+     * in XML 1.0/1.1 documents are 'version', 'encoding' and 'standalone'.
+     * 
+     * @return the name of the pseudo attribute or <code>null</code>
+     * if a legal pseudo attribute name could not be scanned.
+     */
+    private String scanPseudoAttributeName() throws IOException, XNIException {
+        final int ch = fEntityScanner.peekChar();
+        switch (ch) {
+            case 'v':
+                if (fEntityScanner.skipString(fVersionSymbol)) {
+                    return fVersionSymbol;
+                }
+                break;
+            case 'e':
+                if (fEntityScanner.skipString(fEncodingSymbol)) {
+                    return fEncodingSymbol;
+                }
+                break;
+            case 's':
+                if (fEntityScanner.skipString(fStandaloneSymbol)) {
+                    return fStandaloneSymbol;
+                }
+                break;
+        }
+        return null;
+    } // scanPseudoAttributeName()
     
     /**
      * Scans a processing instruction.
