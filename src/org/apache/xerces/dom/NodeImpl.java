@@ -1631,10 +1631,10 @@ public abstract class NodeImpl
             int length = map.getLength();
             for (int i=0;i<length;i++) {
                 Node attr = map.item(i);
-                String attrPrefix = attr.getPrefix();
-                String value = attr.getNodeValue();
                 namespace = attr.getNamespaceURI();
                 if (namespace !=null && namespace.equals("http://www.w3.org/2000/xmlns/")) {
+                    String attrPrefix = attr.getPrefix();
+                    String value = attr.getNodeValue();
                     // DOM Level 2 nodes
                     if (((attr.getNodeName().equals("xmlns")) ||
                          (attrPrefix !=null && attrPrefix.equals("xmlns")) &&
