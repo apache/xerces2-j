@@ -30,8 +30,8 @@ import org.apache.xerces.xni.XMLString;
  * 
  * @xerces.internal
  * 
- * @author Mukul Gandhi, IBM
  * @author Ken Cai, IBM
+ * @author Mukul Gandhi, IBM
  * 
  * @version $Id$
  */
