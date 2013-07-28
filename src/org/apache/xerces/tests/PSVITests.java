@@ -30,7 +30,7 @@ import javax.xml.validation.Validator;
 import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.assertion.XSAssert;
-import org.apache.xerces.impl.xs.util.XSTypeHelper;
+import org.apache.xerces.impl.xs.util.XS11TypeHelper;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
@@ -213,7 +213,7 @@ public class PSVITests extends XercesAbstractTestCase {
             ObjectList failedAssertions = getFailedAssertions(resultDoc, "x");
             assertTrue(failedAssertions.getLength() == 1);
             XSAssert failedAssert = (XSAssert) failedAssertions.item(0);            
-            assertEquals("#AnonType_x", XSTypeHelper.getSchemaTypeName(failedAssert.getTypeDefinition()));
+            assertEquals("#AnonType_x", XS11TypeHelper.getSchemaTypeName(failedAssert.getTypeDefinition()));
             assertEquals("a = 'hello'", failedAssert.getTest().getXPathStr());
 		} catch(Exception ex) {		   
 		   assertTrue(false);
@@ -233,7 +233,7 @@ public class PSVITests extends XercesAbstractTestCase {
             ObjectList failedAssertions = getFailedAssertions(resultDoc, "x");
             assertTrue(failedAssertions.getLength() == 1);
             XSAssert failedAssert = (XSAssert) failedAssertions.item(0);
-            assertEquals("MY_INT", XSTypeHelper.getSchemaTypeName(failedAssert.getTypeDefinition()));
+            assertEquals("MY_INT", XS11TypeHelper.getSchemaTypeName(failedAssert.getTypeDefinition()));
             assertEquals("$value mod 2 = 0", failedAssert.getTest().getXPathStr());
 		} catch(Exception ex) {		   
 		   assertTrue(false);
@@ -253,10 +253,10 @@ public class PSVITests extends XercesAbstractTestCase {
             ObjectList failedAssertions = getFailedAssertions(resultDoc, "x");
             assertTrue(failedAssertions.getLength() == 2);
             XSAssert failedAssert1 = (XSAssert) failedAssertions.item(0);
-            assertEquals("MY_INT", XSTypeHelper.getSchemaTypeName(failedAssert1.getTypeDefinition()));
+            assertEquals("MY_INT", XS11TypeHelper.getSchemaTypeName(failedAssert1.getTypeDefinition()));
             assertEquals("($value + 1) mod 2 = 0", failedAssert1.getTest().getXPathStr());
             XSAssert failedAssert2 = (XSAssert) failedAssertions.item(1);
-            assertEquals("MY_INT", XSTypeHelper.getSchemaTypeName(failedAssert2.getTypeDefinition()));
+            assertEquals("MY_INT", XS11TypeHelper.getSchemaTypeName(failedAssert2.getTypeDefinition()));
             assertEquals("($value + 3) mod 2 = 0", failedAssert2.getTest().getXPathStr());
 		} catch(Exception ex) {		   
 		   assertTrue(false);
@@ -276,7 +276,7 @@ public class PSVITests extends XercesAbstractTestCase {
             ObjectList failedAssertions = getFailedAssertions(resultDoc, "x");
             assertTrue(failedAssertions.getLength() == 1);
             XSAssert failedAssert = (XSAssert) failedAssertions.item(0);
-            assertEquals("X_TYPE", XSTypeHelper.getSchemaTypeName(failedAssert.getTypeDefinition()));
+            assertEquals("X_TYPE", XS11TypeHelper.getSchemaTypeName(failedAssert.getTypeDefinition()));
             assertEquals("a", failedAssert.getTest().getXPathStr());
 		} catch(Exception ex) {		   
 		   assertTrue(false);
@@ -296,7 +296,7 @@ public class PSVITests extends XercesAbstractTestCase {
             v.validate(new DOMSource(getDomDocument(xmlfile)), new DOMResult(resultDoc));
             XSTypeAlternative typeAlternative = getTypeAlternative(resultDoc, "x");
             assertEquals("@a = 1", typeAlternative.getTestStr());
-            assertEquals("A_TYPE", XSTypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
+            assertEquals("A_TYPE", XS11TypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
 		} catch(Exception ex) {		   
 		   assertTrue(false);
 		   ex.printStackTrace();
@@ -314,7 +314,7 @@ public class PSVITests extends XercesAbstractTestCase {
             v.validate(new DOMSource(getDomDocument(xmlfile)), new DOMResult(resultDoc));
             XSTypeAlternative typeAlternative = getTypeAlternative(resultDoc, "x");
             assertNull(typeAlternative.getTestStr());
-            assertEquals("anyType", XSTypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
+            assertEquals("anyType", XS11TypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
 		} catch(Exception ex) {		   
 		   assertTrue(false);
 		   ex.printStackTrace();
@@ -333,7 +333,7 @@ public class PSVITests extends XercesAbstractTestCase {
             v.validate(new DOMSource(getDomDocument(xmlfile)), new DOMResult(resultDoc));
             XSTypeAlternative typeAlternative = getTypeAlternative(resultDoc, "x");
             assertEquals("@a = 1", typeAlternative.getTestStr());
-            assertEquals("A_TYPE", XSTypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
+            assertEquals("A_TYPE", XS11TypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
 		} catch(Exception ex) {		   
 		   assertTrue(false);
 		   ex.printStackTrace();
@@ -351,7 +351,7 @@ public class PSVITests extends XercesAbstractTestCase {
             v.validate(new DOMSource(getDomDocument(xmlfile)), new DOMResult(resultDoc));
             XSTypeAlternative typeAlternative = getTypeAlternative(resultDoc, "x");
             assertNull(typeAlternative.getTestStr());
-            assertEquals("error", XSTypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
+            assertEquals("error", XS11TypeHelper.getSchemaTypeName(typeAlternative.getTypeDefinition()));
 		} catch(Exception ex) {		   
 		   assertTrue(false);
 		   ex.printStackTrace();
