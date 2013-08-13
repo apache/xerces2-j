@@ -473,12 +473,13 @@ public class XMLEntityManager
      *
      * @param name The name of the entity.
      * @param text The text of the entity.
+     * @param paramEntityRefs Count of direct and indirect references to parameter entities in the value of the entity.
      *
      * @see SymbolTable
      */
-    public void addInternalEntity(String name, String text) {
+    public void addInternalEntity(String name, String text, int paramEntityRefs) {
         if (!fEntities.containsKey(name)) {
-            Entity entity = new InternalEntity(name, text, fInExternalSubset);
+            Entity entity = new InternalEntity(name, text, fInExternalSubset, paramEntityRefs);
             fEntities.put(name, entity);
         }
         else{
@@ -490,8 +491,46 @@ public class XMLEntityManager
             }
         }
 
+    } // addInternalEntity(String,String,int)    
+    
+    /**
+     * Adds an internal entity declaration.
+     * <p>
+     * <strong>Note:</strong> This method ignores subsequent entity
+     * declarations.
+     * <p>
+     * <strong>Note:</strong> The name should be a unique symbol. The
+     * SymbolTable can be used for this purpose.
+     *
+     * @param name The name of the entity.
+     * @param text The text of the entity.
+     *
+     * @see SymbolTable
+     */
+    public void addInternalEntity(String name, String text) {
+        addInternalEntity(name, text, 0);
     } // addInternalEntity(String,String)
-
+    
+    /**
+     * Returns the number of direct and indirect references to parameter 
+     * entities in the value of the entity. This value will only be
+     * non-zero for an internal parameter entity.
+     * 
+     * @param entityName The name of the entity to check.
+     * @return Count of direct and indirect references to parameter entities in the value of the entity
+     */
+    public int getParamEntityRefCount(String entityName) {
+        if (entityName != null && 
+            entityName.length() > 0 && 
+            entityName.charAt(0) == '%') {
+            final Entity entity = (Entity) fEntities.get(entityName);
+            if (entity != null && !entity.isExternal()) {
+                return ((InternalEntity) entity).paramEntityRefs;
+            }
+        }
+        return 0;
+    } // getParamEntityRefCount(String)
+    
     /**
      * Adds an external entity declaration.
      * <p>
@@ -901,20 +940,23 @@ public class XMLEntityManager
 
         String encoding = setupCurrentEntity(name, xmlInputSource, literal, isExternal);
 
-        //when entity expansion limit is set by the Application, we need to
-        //check for the entity expansion limit set by the parser, if number of entity
-        //expansions exceeds the entity expansion limit, parser will throw fatal error.
+        // when entity expansion limit is set by the Application, we need to
+        // check for the entity expansion limit set by the parser, if number of entity
+        // expansions exceeds the entity expansion limit, parser will throw fatal error.
         // Note that this is intentionally unbalanced; it counts
         // the number of expansions *per document*.
-        if( fSecurityManager != null && fEntityExpansionCount++ > fEntityExpansionLimit ){
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                             "EntityExpansionLimitExceeded",
-                                             new Object[]{new Integer(fEntityExpansionLimit) },
-                                             XMLErrorReporter.SEVERITY_FATAL_ERROR );
-            // is there anything better to do than reset the counter?
-            // at least one can envision debugging applications where this might
-            // be useful...
-            fEntityExpansionCount = 0;
+        if (fSecurityManager != null) {
+            fEntityExpansionCount += getParamEntityRefCount(name);
+            if (fEntityExpansionCount++ > fEntityExpansionLimit) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                        "EntityExpansionLimitExceeded",
+                        new Object[]{new Integer(fEntityExpansionLimit) },
+                        XMLErrorReporter.SEVERITY_FATAL_ERROR );
+                // is there anything better to do than reset the counter?
+                // at least one can envision debugging applications where this might
+                // be useful...
+                fEntityExpansionCount = 0;
+            }
         }
         
         // call handler
@@ -2473,6 +2515,9 @@ public class XMLEntityManager
 
         /** Text value of entity. */
         public String text;
+        
+        /** Count of direct and indirect references to parameter entities in the value of the entity. */
+        public int paramEntityRefs;
 
         //
         // Constructors
@@ -2488,6 +2533,12 @@ public class XMLEntityManager
             super(name,inExternalSubset);
             this.text = text;
         } // <init>(String,String)
+        
+        /** Constructs an internal entity. */
+        public InternalEntity(String name, String text, boolean inExternalSubset, int paramEntityRefs) {
+            this(name, text, inExternalSubset);
+            this.paramEntityRefs = paramEntityRefs;
+        } // <init>(String,String,int)
 
         //
         // Entity methods
