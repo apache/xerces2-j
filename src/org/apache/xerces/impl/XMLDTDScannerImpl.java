@@ -630,6 +630,8 @@ public class XMLDTDScannerImpl
      *
      * @param name The name of the parameter entity to start (without the '%')
      * @param literal Whether this is happening within a literal
+     * 
+     * @return The name of the parameter entity (with the '%')
      */
     protected String startPE(String name, boolean literal) 
         throws IOException, XNIException {
@@ -1569,15 +1571,17 @@ public class XMLDTDScannerImpl
     } // scanEntityDecl()
 
     /**
-     * Scans an entity value.
+     * <p>Scans an entity value.</p>
+     * 
+     * <p><strong>Note:</strong> This method uses fString, fStringBuffer (through
+     * the use of scanCharReferenceValue), and fStringBuffer2, anything in them
+     * at the time of calling is lost.</p>
      *
      * @param value The string to fill in with the value.
      * @param nonNormalizedValue The string to fill in with the 
      *                           non-normalized value.
-     *
-     * <strong>Note:</strong> This method uses fString, fStringBuffer (through
-     * the use of scanCharReferenceValue), and fStringBuffer2, anything in them
-     * at the time of calling is lost.
+     *                           
+     * @return Count of direct and indirect references to parameter entities in the value of the entity.              
      */
     protected final int scanEntityValue(XMLString value, 
                                         XMLString nonNormalizedValue)
