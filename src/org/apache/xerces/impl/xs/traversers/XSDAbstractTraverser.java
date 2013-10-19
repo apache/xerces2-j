@@ -829,10 +829,9 @@ abstract class XSDAbstractTraverser {
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //REVISIT: do we need to save some state at this point??
-                tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
-                        child, schemaDoc, grammar);
-                setAttributeGroupCount(attrGroupCounts, tempAttrGrp.getName(), tempAttrGrp.getNamespace());
-                if(tempAttrGrp == null ) continue;
+                tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(child, schemaDoc, grammar);
+                if(tempAttrGrp == null) continue;
+                setAttributeGroupCount(attrGroupCounts, tempAttrGrp.getName(), tempAttrGrp.getNamespace());                
                 XSObjectList attrUseS = tempAttrGrp.getAttributeUses();
                 XSAttributeUseImpl oneAttrUse;
                 int attrCount = attrUseS.getLength();
