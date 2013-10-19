@@ -78,8 +78,9 @@ import org.apache.xerces.xs.datatypes.ObjectList;
  * @xerces.internal
  * 
  * @author Sandy Gao IBM
+ * @author Elena Litani IBM
  * @author Andy Clark IBM
- * @author Mukul Gandhi IBM
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @version $Id$
  */
 public class SchemaValidatorHelper implements XSElementDeclHelper, FieldActivator {
