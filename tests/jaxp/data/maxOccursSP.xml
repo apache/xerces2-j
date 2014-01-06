@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation='maxOccursSP.xsd'>
+ <child>val1</child>
+ <child>val2</child>
+ <child>val3</child>
+ <child>val4</child>
+ <child>val5</child>
+</root>
