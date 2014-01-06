@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+ <xs:element name="root">
+  <xs:complexType>
+   <xs:sequence maxOccurs="1000">
+    <xs:sequence maxOccurs="1000">
+     <xs:element name="child" type="xs:string" maxOccurs='1000'/>
+    </xs:sequence>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+</xs:schema>
