@@ -67,6 +67,18 @@ public final class SecureProcessingConfiguration extends
     private static final String ENTITY_RESOLVER_PROPERTY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
     
+    /** Feature identifier: external general entities. */
+    private static final String EXTERNAL_GENERAL_ENTITIES =
+        Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+
+    /** Feature identifier: external parameter entities. */
+    private static final String EXTERNAL_PARAMETER_ENTITIES =
+        Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+    
+    /** Feature identifier: load external DTD. */
+    private static final String LOAD_EXTERNAL_DTD =
+        Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+    
     /** Set to true for debugging */
     private static final boolean DEBUG = isDebugEnabled();
     
@@ -87,18 +99,21 @@ public final class SecureProcessingConfiguration extends
     private static final String TOTAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.totalEntitySizeLimit";
     private static final String MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.maxGeneralEntitySizeLimit";
     private static final String MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.maxParameterEntitySizeLimit";
+    private static final String RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME = "jdk.xml.resolveExternalEntities";
     
     private static final int ENTITY_EXPANSION_LIMIT_DEFAULT_VALUE = 64000;
     private static final int MAX_OCCUR_LIMIT_DEFAULT_VALUE = 5000;
     private static final int TOTAL_ENTITY_SIZE_LIMIT_DEFAULT_VALUE = 50000000;
     private static final int MAX_GENERAL_ENTITY_SIZE_LIMIT_DEFAULT_VALUE = Integer.MAX_VALUE;
     private static final int MAX_PARAMETER_ENTITY_SIZE_LIMIT_DEFAULT_VALUE = Integer.MAX_VALUE;
+    private static final boolean RESOLVE_EXTERNAL_ENTITIES_DEFAULT_VALUE = true;
     
     protected final int ENTITY_EXPANSION_LIMIT_SYSTEM_VALUE;
     protected final int MAX_OCCUR_LIMIT_SYSTEM_VALUE;
     protected final int TOTAL_ENTITY_SIZE_LIMIT_SYSTEM_VALUE;
     protected final int MAX_GENERAL_ENTITY_SIZE_LIMIT_SYSTEM_VALUE;
     protected final int MAX_PARAMETER_ENTITY_SIZE_LIMIT_SYSTEM_VALUE;
+    protected final boolean RESOLVE_EXTERNAL_ENTITIES_SYSTEM_VALUE;
     
     //
     // Fields
@@ -159,11 +174,17 @@ public final class SecureProcessingConfiguration extends
         TOTAL_ENTITY_SIZE_LIMIT_SYSTEM_VALUE = getPropertyValue(TOTAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, TOTAL_ENTITY_SIZE_LIMIT_DEFAULT_VALUE);
         MAX_GENERAL_ENTITY_SIZE_LIMIT_SYSTEM_VALUE = getPropertyValue(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, MAX_GENERAL_ENTITY_SIZE_LIMIT_DEFAULT_VALUE);
         MAX_PARAMETER_ENTITY_SIZE_LIMIT_SYSTEM_VALUE = getPropertyValue(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, MAX_PARAMETER_ENTITY_SIZE_LIMIT_DEFAULT_VALUE);
+        RESOLVE_EXTERNAL_ENTITIES_SYSTEM_VALUE = getPropertyValue(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, RESOLVE_EXTERNAL_ENTITIES_DEFAULT_VALUE);
         if (fJavaSecurityManagerEnabled || fLimitSpecified) {
+            if (!RESOLVE_EXTERNAL_ENTITIES_SYSTEM_VALUE) {
+                super.setFeature(EXTERNAL_GENERAL_ENTITIES, false);
+                super.setFeature(EXTERNAL_PARAMETER_ENTITIES, false);
+                super.setFeature(LOAD_EXTERNAL_DTD, false);
+            }
             fSecurityManager = new org.apache.xerces.util.SecurityManager();
             fSecurityManager.setEntityExpansionLimit(ENTITY_EXPANSION_LIMIT_SYSTEM_VALUE);
             fSecurityManager.setMaxOccurNodeLimit(MAX_OCCUR_LIMIT_SYSTEM_VALUE);
-            super.setProperty(SECURITY_MANAGER_PROPERTY, fSecurityManager);
+            super.setProperty(SECURITY_MANAGER_PROPERTY, fSecurityManager);   
         }
         fExternalEntityMonitor = new ExternalEntityMonitor();
         super.setProperty(ENTITY_RESOLVER_PROPERTY, fExternalEntityMonitor);
@@ -397,6 +418,144 @@ public final class SecureProcessingConfiguration extends
                     }
                     // Treat 0 and negative numbers as no limit (i.e. max integer).
                     return Integer.MAX_VALUE;
+                }
+            }
+        }
+        // The VM ran out of memory or there was some other serious problem. Re-throw.
+        catch (VirtualMachineError vme) {
+            throw vme;
+        }
+        // ThreadDeath should always be re-thrown
+        catch (ThreadDeath td) {
+            throw td;
+        }
+        catch (Throwable e) {
+            // Ignore all other exceptions/errors and return the default value.
+            if (DEBUG) {
+                debugPrintln(e.getClass().getName() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        
+        // Step #3: Return the default value.
+        return defaultValue;
+    }
+    
+    private boolean getPropertyValue(String propertyName, boolean defaultValue) {
+        
+        // Step #1: Use the system property first
+        try {
+            String propertyValue = SecuritySupport.getSystemProperty(propertyName);
+            if (propertyValue != null && propertyValue.length() > 0) {
+                if (DEBUG) {
+                    debugPrintln("found system property \"" + propertyName + "\", value=" + propertyValue);
+                }
+                final boolean booleanValue = Boolean.valueOf(propertyValue).booleanValue();
+                fLimitSpecified = true;
+                return booleanValue;
+            }
+        }
+        // The VM ran out of memory or there was some other serious problem. Re-throw.
+        catch (VirtualMachineError vme) {
+            throw vme;
+        }
+        // ThreadDeath should always be re-thrown
+        catch (ThreadDeath td) {
+            throw td;
+        }
+        catch (Throwable e) {
+            // Ignore all other exceptions/errors and continue w/ next location
+            if (DEBUG) {
+                debugPrintln(e.getClass().getName() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        
+        // Step #2: Use $java.home/lib/jaxp.properties
+        try {
+            boolean fExists = false;
+            File f = null;
+            try {               
+                String javah = SecuritySupport.getSystemProperty("java.home");
+                String configFile = javah + File.separator +
+                        "lib" + File.separator + "jaxp.properties";
+
+                f = new File(configFile);
+                fExists = SecuritySupport.getFileExists(f);
+
+            }
+            catch (SecurityException se) {
+                // If there is a security exception, move on to next location.
+                lastModified = -1;
+                jaxpProperties = null;            
+            }
+
+            synchronized (SecureProcessingConfiguration.class) {    
+
+                boolean runBlock = false;
+                FileInputStream fis = null;
+
+                try {
+                    if (lastModified >= 0) {
+                        // File has been modified, or didn't previously exist. 
+                        // Need to reload properties    
+                        if ((fExists) &&
+                            (lastModified < (lastModified = SecuritySupport.getLastModified(f)))) {  
+                            runBlock = true;
+                        } 
+                        else {
+                            if (!fExists) {
+                                // file existed, but it's been deleted.
+                                lastModified = -1;
+                                jaxpProperties = null;
+                            }
+                        }        
+                    } 
+                    else {
+                        if (fExists) { 
+                            // File didn't exist, but it does now.
+                            runBlock = true;
+                            lastModified = SecuritySupport.getLastModified(f);
+                        }    
+                    }
+
+                    if (runBlock == true) {
+                        // Try to read from $java.home/lib/jaxp.properties
+                        jaxpProperties = new Properties();
+
+                        fis = SecuritySupport.getFileInputStream(f);
+                        jaxpProperties.load(fis);
+                    }       
+
+                }
+                catch (Exception x) {
+                    lastModified = -1;
+                    jaxpProperties = null;
+                    // assert(x instanceof FileNotFoundException
+                    //        || x instanceof SecurityException)
+                    // In both cases, ignore and return the default value
+                }
+                finally {
+                    // try to close the input stream if one was opened.
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        }
+                        // Ignore the exception.
+                        catch (IOException exc) {}
+                    }
+                }
+            }
+
+            if (jaxpProperties != null) {            
+                String propertyValue = jaxpProperties.getProperty(propertyName);
+                if (propertyValue != null && propertyValue.length() > 0) {
+                    if (DEBUG) {
+                        debugPrintln("found \"" + propertyName + "\" in jaxp.properties, value=" + propertyValue);
+                    }
+                    final boolean booleanValue = Boolean.valueOf(propertyValue).booleanValue();
+                    fLimitSpecified = true;
+                    return booleanValue;
                 }
             }
         }
