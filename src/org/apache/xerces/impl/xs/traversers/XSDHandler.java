@@ -1601,73 +1601,11 @@ public class XSDHandler {
             boolean sawAnnotation = false;
 
             // traverse this schema's global decls
-            for (Element globalComp =
-                DOMUtil.getFirstVisibleChildElement(currRoot, fHiddenNodes);
-            globalComp != null;
-            globalComp = DOMUtil.getNextVisibleSiblingElement(globalComp, fHiddenNodes)) {
-                DOMUtil.setHidden(globalComp, fHiddenNodes); 
-                String componentType = DOMUtil.getLocalName(globalComp);
-                // includes and imports will not show up here!
-                if (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
-                    // use the namespace decls for the redefine, instead of for the parent <schema>
-                    currSchemaDoc.backupNSSupport((SchemaNamespaceSupport)fRedefine2NSSupport.get(globalComp));
-                    for (Element redefinedComp = DOMUtil.getFirstVisibleChildElement(globalComp, fHiddenNodes);
-                    redefinedComp != null;
-                    redefinedComp = DOMUtil.getNextVisibleSiblingElement(redefinedComp, fHiddenNodes)) {
-                        String redefinedComponentType = DOMUtil.getLocalName(redefinedComp);
-                        DOMUtil.setHidden(redefinedComp, fHiddenNodes);
-                        if (redefinedComponentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                            fAttributeGroupTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
-                        }
-                        else if (redefinedComponentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                            fComplexTypeTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
-                        }
-                        else if (redefinedComponentType.equals(SchemaSymbols.ELT_GROUP)) {
-                            fGroupTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
-                        }
-                        else if (redefinedComponentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                            fSimpleTypeTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
-                        }
-                        // annotations will have been processed already; this is now
-                        // unnecessary
-                        //else if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        //    fElementTraverser.traverseAnnotationDecl(redefinedComp, null, true, currSchemaDoc);
-                        //}
-                        else {
-                            reportSchemaError("s4s-elt-must-match.1", new Object [] {DOMUtil.getLocalName(globalComp), "(annotation | (simpleType | complexType | group | attributeGroup))*", redefinedComponentType}, redefinedComp);
-                        }
-                    } // end march through <redefine> children
-                    currSchemaDoc.restoreNSSupport();
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
-                    fAttributeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                    fAttributeGroupTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                    fComplexTypeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_ELEMENT)) {
-                    fElementTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_GROUP)) {
-                    fGroupTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_NOTATION)) {
-                    fNotationTraverser.traverse(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                    fSimpleTypeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
-                }
-                else if (componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    currSG.addAnnotation(fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
-                    sawAnnotation = true;
-                }
-                else {
-                    reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
-                }
-            } // end for
+            for (Element globalComp = DOMUtil.getFirstVisibleChildElement(currRoot, fHiddenNodes);
+                         globalComp != null;
+                         globalComp = DOMUtil.getNextVisibleSiblingElement(globalComp, fHiddenNodes)) {
+                sawAnnotation = traverseXSDSchemaGlobalDecls(currSchemaDoc, currSG, sawAnnotation, globalComp);
+            }
             
             if (!sawAnnotation) {
                 String text = DOMUtil.getSyntheticAnnotation(currRoot);
@@ -1696,6 +1634,79 @@ public class XSDHandler {
             }
         } // while
     } // end traverseSchemas
+
+    /*
+     * Given a set of XSD schema documents to process, this method traverses global declarations of one of schema documents from this set.
+     */
+    private boolean traverseXSDSchemaGlobalDecls(XSDocumentInfo schemaDoc, SchemaGrammar schGrammar, boolean sawAnnotation, Element globalComp) {
+        
+        DOMUtil.setHidden(globalComp, fHiddenNodes); 
+        String componentType = DOMUtil.getLocalName(globalComp);
+
+        // includes and imports will not show up here!
+        if (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
+            // use the namespace decls for the redefine, instead of for the parent <schema>
+            schemaDoc.backupNSSupport((SchemaNamespaceSupport)fRedefine2NSSupport.get(globalComp));
+            for (Element redefinedComp = DOMUtil.getFirstVisibleChildElement(globalComp, fHiddenNodes);
+                    redefinedComp != null;
+                    redefinedComp = DOMUtil.getNextVisibleSiblingElement(redefinedComp, fHiddenNodes)) {
+                String redefinedComponentType = DOMUtil.getLocalName(redefinedComp);
+                DOMUtil.setHidden(redefinedComp, fHiddenNodes);
+                if (redefinedComponentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                    fAttributeGroupTraverser.traverseGlobal(redefinedComp, schemaDoc, schGrammar);
+                }
+                else if (redefinedComponentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+                    fComplexTypeTraverser.traverseGlobal(redefinedComp, schemaDoc, schGrammar);
+                }
+                else if (redefinedComponentType.equals(SchemaSymbols.ELT_GROUP)) {
+                    fGroupTraverser.traverseGlobal(redefinedComp, schemaDoc, schGrammar);
+                }
+                else if (redefinedComponentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+                    fSimpleTypeTraverser.traverseGlobal(redefinedComp, schemaDoc, schGrammar);
+                }
+                // annotations will have been processed already; this is now
+                // unnecessary
+                //else if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                //    fElementTraverser.traverseAnnotationDecl(redefinedComp, null, true, currSchemaDoc);
+                //}
+                else {
+                    reportSchemaError("s4s-elt-must-match.1", new Object [] {DOMUtil.getLocalName(globalComp), "(annotation | (simpleType | complexType | group | attributeGroup))*", redefinedComponentType}, redefinedComp);
+                }
+            } // end march through <redefine> children
+            schemaDoc.restoreNSSupport();
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+            fAttributeTraverser.traverseGlobal(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+            fAttributeGroupTraverser.traverseGlobal(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+            fComplexTypeTraverser.traverseGlobal(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_ELEMENT)) {
+            fElementTraverser.traverseGlobal(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_GROUP)) {
+            fGroupTraverser.traverseGlobal(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_NOTATION)) {
+            fNotationTraverser.traverse(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+            fSimpleTypeTraverser.traverseGlobal(globalComp, schemaDoc, schGrammar);
+        }
+        else if (componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+            schGrammar.addAnnotation(fElementTraverser.traverseAnnotationDecl(globalComp, schemaDoc.getSchemaAttrs(), true, schemaDoc));
+            sawAnnotation = true;
+        }
+        else {
+            reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
+        }
+
+        return sawAnnotation;
+        
+    } // traverseXSDSchemaGlobalDecls
     
     // store whether we have reported an error about that no grammar
     // is found for the given namespace uri
