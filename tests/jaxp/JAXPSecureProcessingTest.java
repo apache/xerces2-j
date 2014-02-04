@@ -17,6 +17,8 @@
 
 package jaxp;
 
+import java.io.IOException;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,6 +27,14 @@ import javax.xml.validation.SchemaFactory;
 
 import junit.framework.TestCase;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
@@ -41,6 +51,7 @@ public class JAXPSecureProcessingTest extends TestCase {
     private static final String TOTAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.totalEntitySizeLimit";
     private static final String MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.maxGeneralEntitySizeLimit";
     private static final String MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.maxParameterEntitySizeLimit";
+    private static final String RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME = "jdk.xml.resolveExternalEntities";
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -55,6 +66,7 @@ public class JAXPSecureProcessingTest extends TestCase {
         System.setProperty(TOTAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "0");
         System.setProperty(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "0");
         System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "0");
+        System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "true");
     }
     
     protected void tearDown() throws Exception {
@@ -371,7 +383,99 @@ public class JAXPSecureProcessingTest extends TestCase {
         catch (SAXParseException se) {
             assertTrue(se.getMessage().indexOf("3,500") != -1);
         }
-    } 
+    }
+    
+    public void testSAXEnableExternalEntityResolution() throws Exception {
+        System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "true");
+        XMLReader reader = newSecureXMLReader();
+        try {
+            reader.parse(new InputData("badExternalEntity.xml"));
+            fail("Expected IOException");
+        }
+        catch (IOException ioe) {}
+    }
+    
+    public void testDOMEnableExternalEntityResolution() throws Exception {
+        System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "true");
+        DocumentBuilder reader = newSecureDocumentBuilder();
+        try {
+            reader.parse(new InputData("badExternalEntity.xml"));
+            fail("Expected IOException");
+        }
+        catch (IOException ioe) {}
+    }
+    
+    public void testSAXDisableExternalEntityResolution() throws Exception {
+        System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "false");
+        XMLReader reader = newSecureXMLReader();
+        reader.setContentHandler(new ContentHandler() {
+            final int START_DOCUMENT = 0;
+            final int START_ELEMENT = 1;
+            final int SKIPPED_ENTITY = 2;
+            final int END_ELEMENT = 3;
+            final int END_DOCUMENT = 4;
+            int state = START_DOCUMENT;
+            public void startPrefixMapping(String prefix, String uri) {
+                fail("startPrefixMapping not expected.");
+            }
+            public void startElement(String uri, String localName, 
+                    String qName, Attributes atts) throws SAXException {
+                assertEquals(START_ELEMENT, state);
+                assertEquals("root", localName);
+                state = SKIPPED_ENTITY; 
+            }
+            public void startDocument() throws SAXException {
+                assertEquals(START_DOCUMENT, state);
+                state = START_ELEMENT;
+            }
+            public void skippedEntity(String name) throws SAXException {
+                assertEquals(SKIPPED_ENTITY, state);
+                assertEquals("badEntity", name);
+                state = END_ELEMENT;  
+            }
+            public void setDocumentLocator(Locator locator) {
+                // NO-OP
+            }
+            public void processingInstruction(String target, String data)
+                    throws SAXException {
+                fail("processingInstruction not expected.");
+            }
+            public void ignorableWhitespace(char[] ch, int start, int length)
+                    throws SAXException {
+                fail("ignorableWhitespace not expected.");
+            }
+            public void endPrefixMapping(String arg0) throws SAXException {
+                fail("endPrefixMapping not expected.");
+            }
+            public void endElement(String uri, String localName, String qName)
+                    throws SAXException {
+                assertEquals(END_ELEMENT, state);
+                assertEquals("root", localName);
+                state = END_DOCUMENT;
+            }
+            public void endDocument() throws SAXException {
+                assertEquals(END_DOCUMENT, state); 
+            }
+            public void characters(char[] ch, int start, int length) throws SAXException {
+                fail("characters not expected.");
+            }
+        });
+        reader.parse(new InputData("badExternalEntity.xml"));
+    }
+    
+    public void testDOMDisableExternalEntityResolution() throws Exception {
+        System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "false");
+        DocumentBuilder reader = newSecureDocumentBuilder();
+        Document doc = reader.parse(new InputData("badExternalEntity.xml"));
+        Element e = doc.getDocumentElement();
+        assertEquals("root", e.getLocalName());
+        NodeList nl = e.getChildNodes();
+        assertEquals(1, nl.getLength());
+        Node n = nl.item(0);
+        assertEquals(Node.ENTITY_REFERENCE_NODE, n.getNodeType());
+        assertEquals("badEntity", n.getNodeName());
+        assertEquals(0, n.getChildNodes().getLength());
+    }
     
     private static XMLReader newSecureXMLReader() throws Exception {
         SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -399,6 +503,7 @@ public class JAXPSecureProcessingTest extends TestCase {
     private static DocumentBuilder newSecureDocumentBuilder() throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
+        dbf.setExpandEntityReferences(false);
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         return dbf.newDocumentBuilder();
     }
@@ -408,6 +513,7 @@ public class JAXPSecureProcessingTest extends TestCase {
         sf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
+        dbf.setExpandEntityReferences(false);
         dbf.setSchema(sf.newSchema());
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         return dbf.newDocumentBuilder();
@@ -416,6 +522,7 @@ public class JAXPSecureProcessingTest extends TestCase {
     private static DocumentBuilder newDefaultDocumentBuilder() throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
+        dbf.setExpandEntityReferences(false);
         return dbf.newDocumentBuilder();
     }
 }
