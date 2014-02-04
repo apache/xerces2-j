@@ -33,6 +33,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -388,6 +390,13 @@ public class JAXPSecureProcessingTest extends TestCase {
     public void testSAXEnableExternalEntityResolution() throws Exception {
         System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "true");
         XMLReader reader = newSecureXMLReader();
+        reader.setEntityResolver(new EntityResolver() {
+            public InputSource resolveEntity(String publicId, String systemId)
+                    throws SAXException, IOException {
+                assertEquals("xerces:///x:/this/does/not/exist.xml", systemId);
+                return null;
+            }
+        });
         try {
             reader.parse(new InputData("badExternalEntity.xml"));
             fail("Expected IOException");
@@ -398,6 +407,13 @@ public class JAXPSecureProcessingTest extends TestCase {
     public void testDOMEnableExternalEntityResolution() throws Exception {
         System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "true");
         DocumentBuilder reader = newSecureDocumentBuilder();
+        reader.setEntityResolver(new EntityResolver() {
+            public InputSource resolveEntity(String publicId, String systemId)
+                    throws SAXException, IOException {
+                assertEquals("xerces:///x:/this/does/not/exist.xml", systemId);
+                return null;
+            }
+        });
         try {
             reader.parse(new InputData("badExternalEntity.xml"));
             fail("Expected IOException");
@@ -408,6 +424,13 @@ public class JAXPSecureProcessingTest extends TestCase {
     public void testSAXDisableExternalEntityResolution() throws Exception {
         System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "false");
         XMLReader reader = newSecureXMLReader();
+        reader.setEntityResolver(new EntityResolver() {
+            public InputSource resolveEntity(String publicId, String systemId)
+                    throws SAXException, IOException {
+                fail("resolveEntity call not expected.");
+                return null;
+            }
+        });
         reader.setContentHandler(new ContentHandler() {
             final int START_DOCUMENT = 0;
             final int START_ELEMENT = 1;
@@ -466,6 +489,13 @@ public class JAXPSecureProcessingTest extends TestCase {
     public void testDOMDisableExternalEntityResolution() throws Exception {
         System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "false");
         DocumentBuilder reader = newSecureDocumentBuilder();
+        reader.setEntityResolver(new EntityResolver() {
+            public InputSource resolveEntity(String publicId, String systemId)
+                    throws SAXException, IOException {
+                fail("resolveEntity call not expected.");
+                return null;
+            }
+        });
         Document doc = reader.parse(new InputData("badExternalEntity.xml"));
         Element e = doc.getDocumentElement();
         assertEquals("root", e.getLocalName());
