@@ -51,6 +51,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * This configuration enhances Xerces support for the JAXP secure processing feature.
  * 
  * @author Michael Glavassevich, IBM
+ * 
+ * @version $Id$
  */
 public final class SecureProcessingConfiguration extends
         XIncludeAwareParserConfiguration {
