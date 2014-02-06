@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.impl.xs.traversers.override;
+package org.apache.xerces.impl.xs.traversers;
 
 /**
  * @xerces.internal

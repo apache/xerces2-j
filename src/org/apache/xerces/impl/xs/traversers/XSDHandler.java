@@ -61,8 +61,6 @@ import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaDOMParser;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
-import org.apache.xerces.impl.xs.traversers.override.DOMOverrideImpl;
-import org.apache.xerces.impl.xs.traversers.override.OverrideTransformationManager;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.XSInputSource;
 import org.apache.xerces.parsers.SAXParser;

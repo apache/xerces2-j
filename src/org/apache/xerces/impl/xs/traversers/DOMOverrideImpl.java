@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.xerces.impl.xs.traversers.override;
+package org.apache.xerces.impl.xs.traversers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.util.DOMUtil;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
