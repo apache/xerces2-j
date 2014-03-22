@@ -578,7 +578,7 @@ abstract class XSDAbstractTraverser {
                 else if (facet.equals(SchemaSymbols.ELT_MINSCALE)) {  //XML Schema 1.1
                     currentFacet = XSSimpleType.FACET_MINSCALE;
                 }
-                else if (facet.equals(SchemaSymbols.ELT_EXPLICITTIMEZONE)){
+                else if (facet.equals(SchemaSymbols.ELT_EXPLICITTIMEZONE) && fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1){  //XML Schema 1.1
                     currentFacet = XSSimpleType.FACET_EXPLICITTIMEZONE;
                 }
                 else {
