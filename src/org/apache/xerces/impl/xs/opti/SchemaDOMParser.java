@@ -633,7 +633,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "s4s-att-invalid-value",
-                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
+                                                   new Object[] {element.localpart, attrLocalName, attrValue}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_MAXVERSION.equals(attrLocalName)) {
@@ -642,7 +642,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     }
                     catch (NumberFormatException nfe) {
                         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "s4s-att-invalid-value",
-                                                   new Object[] {element.localpart, attrLocalName, nfe.getMessage()}, XMLErrorReporter.SEVERITY_ERROR);
+                                                   new Object[] {element.localpart, attrLocalName, attrValue}, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
                 else if (SchemaSymbols.ATT_TYPEAVAILABLE.equals(attrLocalName)) {
