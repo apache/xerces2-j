@@ -8,9 +8,9 @@
       </xs:sequence>
 	  <xs:assert test="count(distinct-values(a)) eq 3"/>
 	  <xs:assert test="deep-equal(distinct-values(a), (2,3.5,xs:double('NaN')))"/>
-	  <xs:assert test="count(distinct-values(b)) eq 3"/>
-	  <xs:assert test="count(distinct-values(a | b)) eq 6"/>
-	  <xs:assert test="b[4] ne b[5]"/>
+	  <xs:assert test="count(distinct-values(b)) eq 2"/>
+	  <xs:assert test="count(distinct-values(a | b)) eq 5"/>
+	  <xs:assert test="b[4] eq b[5]"/>
     </xs:complexType>
   </xs:element>
 
