@@ -24,8 +24,8 @@ import java.util.LinkedList;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.traversers.override.DOMOverrideImpl;
-import org.apache.xerces.impl.xs.traversers.override.OverrideTransformationManager;
+import org.apache.xerces.impl.xs.traversers.DOMOverrideImpl;
+import org.apache.xerces.impl.xs.traversers.OverrideTransformationManager;
 import org.apache.xerces.util.DOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
