@@ -83,9 +83,9 @@ import org.apache.xerces.xs.datatypes.ObjectList;
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @version $Id$
  */
-public class SchemaValidatorHelper implements XSElementDeclHelper, FieldActivator {
+public class XSValidatorHelper implements XSElementDeclHelper, FieldActivator {
     
-    protected SchemaValidatorHelper() {
+    protected XSValidatorHelper() {
        // NO OP  
     }
     
@@ -2010,4 +2010,4 @@ public class SchemaValidatorHelper implements XSElementDeclHelper, FieldActivato
         return fInheritableAttrList;
     }
 
-} // SchemaValidatorHelper
+} // XSValidatorHelper
