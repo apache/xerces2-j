@@ -379,10 +379,6 @@ public class IteratorView
             }
             TreePath path = new TreePath(
                     ((DefaultTreeModel)jtree.getModel()).getPathToRoot(treeNode));
-            if (path == null) {
-                setMessage("Could not create a path.");
-                return;
-            }
             if(!jtree.getSelectionModel().isPathSelected(path))
                 return;
             Node node = jtree.getNode(treeNode);
@@ -452,10 +448,6 @@ public class IteratorView
             }
             TreePath path = new TreePath(
                     ((DefaultTreeModel)jtree.getModel()).getPathToRoot(treeNode));
-            if (path == null) {
-                setMessage("Could not create a path.");
-                return;
-            }
             if(!jtree.getSelectionModel().isPathSelected(path))
                 return;
             Node node = jtree.getNode(treeNode);
