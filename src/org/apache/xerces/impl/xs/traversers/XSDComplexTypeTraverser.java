@@ -17,7 +17,6 @@
 package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
-import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
@@ -571,7 +570,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             short fixedFacets = 0 ;
             
             if (simpleContent!=null) {
-                FacetInfo fi = traverseFacets(simpleContent, baseValidator, schemaDoc);
+                FacetInfo fi = traverseFacets(simpleContent, fComplexTypeDecl, baseValidator, schemaDoc);
                 attrNode = fi.nodeAfterFacets;
                 facetData = fi.facetdata;
                 presentFacets = fi.fPresentFacets;
