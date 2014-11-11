@@ -803,6 +803,7 @@ class Token implements java.io.Serializable {
                     ranges[type].addRange(i, i);
                 } // for all characters
                 ranges[Character.UNASSIGNED].addRange(0x10000, Token.UTF16_MAX);
+                ranges[CHAR_OTHER].addRange(0x10000, Token.UTF16_MAX);
 
                 for (int i = 0;  i < ranges.length;  i ++) {
                     if (Token.categoryNames[i] != null) {
