@@ -354,7 +354,12 @@ final class StAXValidatorHelper implements ValidatorHelper, EntityState {
                             "StAXIllegalInitialState", null));
                 }
                 fXMLStreamReaderLocation.setXMLStreamReader(reader);
-                setup(fXMLStreamReaderLocation, result, Boolean.TRUE.equals(reader.getProperty(STRING_INTERNING)));
+                Object isInterning = Boolean.FALSE;
+                try {
+                    isInterning = reader.getProperty(STRING_INTERNING);
+                }
+                catch (Exception e) {}
+                setup(fXMLStreamReaderLocation, result, Boolean.TRUE.equals(isInterning));
                 fSchemaValidator.startDocument(fStAXLocationWrapper, null, fNamespaceContext, null);
                 do {
                     switch (eventType) {
