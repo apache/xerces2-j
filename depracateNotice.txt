@@ -1,0 +1,5 @@
+05/04/2015 : These unit tests are proprietary to Apache Xerces, and are not mandatory conditions to be checked while developing with XercesJ2 XML Schema 1.1 implementation. The most important Apache Xerces XML Schema 1.1 tests are the W3C XML Schema 1.1 tests.
+
+Due to these aspects, these XML Schema 1.1 unit tests in the folder, xerces/java/branches/xs-1.1-tests are now depracated. This means that, the Apache XercesJ2 developers need not maintain and run these tests as a necessary condition for working with XercesJ2's XML Schema 1.1 implementation. Although good to have, any further deviations from these existing tests will not be monitored and attempted to be rectified.
+
+This is intended to make contributing to XercesJ2's XML Schema 1.1 implementation easier.
