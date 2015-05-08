@@ -18,6 +18,7 @@
 package jaxp;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -54,14 +55,16 @@ public class JAXPSecureProcessingTest extends TestCase {
     private static final String MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.maxGeneralEntitySizeLimit";
     private static final String MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME = "jdk.xml.maxParameterEntitySizeLimit";
     private static final String RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME = "jdk.xml.resolveExternalEntities";
+
+    private static final Locale DEFAULT_LOCALE = Locale.getDefault();
     
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
         System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-        System.setProperty("javax.xml.validation.SchemaFactory:" + XMLConstants.W3C_XML_SCHEMA_NS_URI, 
+        System.setProperty("javax.xml.validation.SchemaFactory:" + XMLConstants.W3C_XML_SCHEMA_NS_URI,
                 "org.apache.xerces.jaxp.validation.XMLSchemaFactory");
-        System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration", 
+        System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration",
                 "org.apache.xerces.parsers.SecureProcessingConfiguration");
         System.setProperty(ENTITY_EXPANSION_LIMIT_PROPERTY_NAME, "0");
         System.setProperty(MAX_OCCUR_LIMIT_PROPERTY_NAME, "0");
@@ -69,10 +72,13 @@ public class JAXPSecureProcessingTest extends TestCase {
         System.setProperty(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "0");
         System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "0");
         System.setProperty(RESOLVE_EXTERNAL_ENTITIES_PROPERTY_NAME, "true");
+        // English Locale required for the exception message assertions to match the correct number format
+        Locale.setDefault(Locale.ENGLISH);
     }
     
     protected void tearDown() throws Exception {
         super.tearDown();
+        Locale.setDefault(DEFAULT_LOCALE);
     }
     
     public void testSAXEntityExpansionLimitSG() throws Exception {
