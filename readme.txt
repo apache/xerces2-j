@@ -15,11 +15,11 @@
  * limitations under the License.
  */
  
-This SVN branch contains unit test cases, related to Xerces XML Schema (XSD) 1.1 functionality.
+This SVN branch contains Xerces proprietary unit test cases for the Xerces XML Schema (XSD) 1.1 functionality.
 
-Configuration notes: These unit tests contain a folder "data" parallel to the "src" folder, that contain the
-XML and XSD documents needed by the unit tests. Before invoking this unit test suite, the following argument
-needs to be provided to the Java VM,
+Configuration notes: Minimum JRE needed to run these tests is 1.5. These unit tests contain a folder "data" parallel 
+to the "src" folder, that contain the XML and XSD documents needed by the unit tests. Before invoking this unit test 
+suite, the following argument needs to be provided to the Java VM,
 -Dorg.apache.xerces.tests.dataDir=<path to data directory>
 relative to which the unit tests would retrieve XML and XSD documents.
 
