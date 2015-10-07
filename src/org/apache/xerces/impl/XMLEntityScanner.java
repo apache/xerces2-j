@@ -1778,6 +1778,11 @@ public class XMLEntityScanner implements XMLLocator {
 
     } // load(int, boolean):boolean
     
+    /**
+     * This method is invoked to increase the size of the current entity's
+     * buffer if an XML name is being scanned is too large to fit within
+     * the buffer at its current size. 
+     */
     final void resizeBuffer(int offset, int length) {
         char[] tmp = new char[fCurrentEntity.ch.length << 1];
         System.arraycopy(fCurrentEntity.ch, offset,
