@@ -153,10 +153,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -173,10 +170,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -199,10 +193,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -307,10 +298,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -327,10 +315,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -353,10 +338,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -462,10 +444,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -482,10 +461,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -508,10 +484,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -633,10 +606,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -656,10 +626,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -687,10 +654,7 @@ public class XML11EntityScanner
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         tmp, 0, length);
-                        fCurrentEntity.ch = tmp;
+                        resizeBuffer(offset, length);
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
