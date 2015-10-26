@@ -152,7 +152,12 @@ public class DOMNormalizer implements XMLDocumentHandler {
     /**
      * If the user stops the process, this exception will be thrown.
      */
-    public static final RuntimeException abort = new RuntimeException();
+    public static final RuntimeException abort = new RuntimeException() {
+        private static final long serialVersionUID = 5361322877988412432L;
+        public Throwable fillInStackTrace() {
+            return this;
+        }
+    };
     
     /** Empty string to pass to the validator. **/
     public static final XMLString EMPTY_STRING = new XMLString();
