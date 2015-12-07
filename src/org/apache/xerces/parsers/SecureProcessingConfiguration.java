@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityDescription;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dtd.XMLDTDProcessor;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
@@ -43,6 +44,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDTDFilter;
+import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLDTDSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -274,26 +276,36 @@ public final class SecureProcessingConfiguration extends
     /** Configures the XML 1.0 pipeline. */
     protected void configurePipeline() {
         super.configurePipeline();
-        configurePipelineCommon();
+        configurePipelineCommon(true);
     }
     
     /** Configures the XML 1.1 pipeline. */
     protected void configureXML11Pipeline() {
         super.configureXML11Pipeline();
-        configurePipelineCommon();
+        configurePipelineCommon(false);
     }
     
-    private void configurePipelineCommon() {
+    private void configurePipelineCommon(boolean isXML10) {
         if (fSecurityManager != null) {
             fTotalEntitySize = 0;
             if (fInternalEntityMonitor == null) {
                 fInternalEntityMonitor = new InternalEntityMonitor();
             }
             // Reconfigure DTD pipeline. Insert internal entity decl monitor.
-            fDTDScanner.setDTDHandler(fInternalEntityMonitor);
-            fInternalEntityMonitor.setDTDSource(fDTDScanner);
-            fInternalEntityMonitor.setDTDHandler(fDTDProcessor);
-            fDTDProcessor.setDTDSource(fInternalEntityMonitor);
+            final XMLDTDScanner dtdScanner;
+            final XMLDTDProcessor dtdProcessor;
+            if (isXML10) {
+                dtdScanner = fDTDScanner;
+                dtdProcessor = fDTDProcessor;
+            }
+            else {
+                dtdScanner = fXML11DTDScanner;
+                dtdProcessor = fXML11DTDProcessor;
+            }
+            dtdScanner.setDTDHandler(fInternalEntityMonitor);
+            fInternalEntityMonitor.setDTDSource(dtdScanner);
+            fInternalEntityMonitor.setDTDHandler(dtdProcessor);
+            dtdProcessor.setDTDSource(fInternalEntityMonitor);
         }
     }
     
