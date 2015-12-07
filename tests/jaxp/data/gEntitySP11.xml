@@ -1,0 +1,35 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!DOCTYPE root [
+ <!ENTITY x0 "x">
+ <!ENTITY x1 "&x0;&x0;">
+ <!ENTITY x2 "&x1;&x1;">
+ <!ENTITY x3 "&x2;&x2;">
+ <!ENTITY x4 "&x3;&x3;">
+ <!ENTITY x5 "&x4;&x4;">
+ <!ENTITY x6 "&x5;&x5;">
+ <!ENTITY x7 "&x6;&x6;">
+ <!ENTITY x8 "&x7;&x7;">
+ <!ENTITY x9 "&x8;&x8;">
+ <!ENTITY x10 "&x9;&x9;">
+ <!ENTITY x11 "&x10;&x10;">
+ <!ENTITY x12 "&x11;&x11;">
+ <!ENTITY x13 "&x12;&x12;">
+ <!ENTITY x14 "&x13;&x13;">
+ <!ENTITY x15 "&x14;&x14;">
+ <!ENTITY x16 "&x15;&x15;">
+ <!ENTITY x17 "&x16;&x16;">
+ <!ENTITY x18 "&x17;&x17;">
+ <!ENTITY x19 "&x18;&x18;">
+ <!ENTITY x20 "&x19;&x19;">
+ <!ENTITY x21 "&x20;&x20;">
+ <!ENTITY x22 "&x21;&x21;">
+ <!ENTITY x23 "&x22;&x22;">
+ <!ENTITY x24 "&x23;&x23;">
+ <!ENTITY x25 "&x24;&x24;">
+ <!ENTITY x26 "&x25;&x25;">
+ <!ENTITY x27 "&x26;&x26;">
+ <!ENTITY x28 "&x27;&x27;">
+ <!ENTITY x29 "&x28;&x28;">
+ <!ENTITY x30 "&x29;&x29;">
+]>
+<root>&x30;</root>

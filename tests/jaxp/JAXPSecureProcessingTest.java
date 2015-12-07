@@ -285,11 +285,35 @@ public class JAXPSecureProcessingTest extends TestCase {
         }
     }
     
+    public void testSAXEntitySizeLimitSG11() throws Exception {
+        System.setProperty(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "1");
+        XMLReader reader = newSecureXMLReader();
+        try {
+            reader.parse(new InputData("gEntitySP11.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"1\"") != -1);
+        }
+    }
+    
     public void testSAXEntitySizeLimitSP() throws Exception {
         System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "10000");
         XMLReader reader = newSecureXMLReader();
         try {
             reader.parse(new InputData("pEntitySP.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"10,000\"") != -1);
+        }
+    }
+    
+    public void testSAXEntitySizeLimitSP11() throws Exception {
+        System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "10000");
+        XMLReader reader = newSecureXMLReader();
+        try {
+            reader.parse(new InputData("pEntitySP11.xml"));
             fail("Expected SAXParseException");
         }
         catch (SAXParseException se) {
@@ -309,11 +333,35 @@ public class JAXPSecureProcessingTest extends TestCase {
         }
     }
     
+    public void testSAXEntitySizeLimitDG11() throws Exception {
+        System.setProperty(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "2");
+        XMLReader reader = newDefaultXMLReader();
+        try {
+            reader.parse(new InputData("gEntitySP11.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"2\"") != -1);
+        }
+    }
+    
     public void testSAXEntitySizeLimitDP() throws Exception {
         System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "20000");
         XMLReader reader = newDefaultXMLReader();
         try {
             reader.parse(new InputData("pEntitySP.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"20,000\"") != -1);
+        }
+    }
+    
+    public void testSAXEntitySizeLimitDP11() throws Exception {
+        System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "20000");
+        XMLReader reader = newDefaultXMLReader();
+        try {
+            reader.parse(new InputData("pEntitySP11.xml"));
             fail("Expected SAXParseException");
         }
         catch (SAXParseException se) {
@@ -333,11 +381,35 @@ public class JAXPSecureProcessingTest extends TestCase {
         }
     }
     
+    public void testDOMEntitySizeLimitSG11() throws Exception {
+        System.setProperty(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "3");
+        DocumentBuilder reader = newSecureDocumentBuilder();
+        try {
+            reader.parse(new InputData("gEntitySP11.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"3\"") != -1);
+        }
+    }
+    
     public void testDOMEntitySizeLimitSP() throws Exception {
         System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "30000");
         DocumentBuilder reader = newSecureDocumentBuilder();
         try {
             reader.parse(new InputData("pEntitySP.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"30,000\"") != -1);
+        }
+    }
+    
+    public void testDOMEntitySizeLimitSP11() throws Exception {
+        System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "30000");
+        DocumentBuilder reader = newSecureDocumentBuilder();
+        try {
+            reader.parse(new InputData("pEntitySP11.xml"));
             fail("Expected SAXParseException");
         }
         catch (SAXParseException se) {
@@ -357,11 +429,35 @@ public class JAXPSecureProcessingTest extends TestCase {
         }
     }
     
+    public void testDOMEntitySizeLimitDG11() throws Exception {
+        System.setProperty(MAX_GENERAL_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "4");
+        DocumentBuilder reader = newDefaultDocumentBuilder();
+        try {
+            reader.parse(new InputData("gEntitySP11.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"4\"") != -1);
+        }
+    }
+    
     public void testDOMEntitySizeLimitDP() throws Exception {
         System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "40000");
         DocumentBuilder reader = newDefaultDocumentBuilder();
         try {
             reader.parse(new InputData("pEntitySP.xml"));
+            fail("Expected SAXParseException");
+        }
+        catch (SAXParseException se) {
+            assertTrue(se.getMessage().indexOf("\"40,000\"") != -1);
+        }
+    }
+    
+    public void testDOMEntitySizeLimitDP11() throws Exception {
+        System.setProperty(MAX_PARAMETER_ENTITY_SIZE_LIMIT_PROPERTY_NAME, "40000");
+        DocumentBuilder reader = newDefaultDocumentBuilder();
+        try {
+            reader.parse(new InputData("pEntitySP11.xml"));
             fail("Expected SAXParseException");
         }
         catch (SAXParseException se) {
