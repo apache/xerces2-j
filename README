@@ -57,3 +57,10 @@ building, these files will be located in the build/ directory.
 If you want to build everything, including the documentation,
 run the build batch file (or shell script) specifying the "all"
 target instead of "jars".
+
+Details about proprietary XML Schema 1.1 unit tests:
+The XercesJ XML Schema 1.1 deliverables, include a proprietary unit test suite located in the branch "xs-1.1-tests".
+This is in addition to the Xerces tests that are located at /xerces-java-xml-schema-1.1-dev/tests. It is advisable
+to always comply to tests in the branch "xs-1.1-tests" whenever changing the code (in addition to the tests /xerces-java-xml-schema-1.1-dev/tests),
+since the functionality these tests are testing are core part of Xerces deliverables (one of the important things the 
+"xs-1.1-tests" tests test, are the error/warning messages generated during XML Schema 1.1 validation assessments.
