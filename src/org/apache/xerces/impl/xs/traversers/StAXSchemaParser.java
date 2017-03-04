@@ -64,7 +64,7 @@ final class StAXSchemaParser {
     private final char [] fCharBuffer = new char[CHUNK_SIZE];
     
     /** Symbol table **/
-    private SymbolTable fSymbolTable;
+    private SymbolTable fSymbolTable = new SymbolTable();
     
     /** SchemaDOMParser, events will be delegated to SchemaDOMParser to pass */
     private SchemaDOMParser fSchemaDOMParser;
