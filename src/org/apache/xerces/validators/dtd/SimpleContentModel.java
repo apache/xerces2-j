@@ -92,7 +92,7 @@ public class SimpleContentModel implements XMLContentModel
      * Constructs a simple content model.
      *
      * @param firstChildIndex The first child index
-     * @parma secondChildIndex The second child index.
+     * @param secondChildIndex The second child index.
      * @param cmOp The content model operator.
      *
      * @see XMLContentSpecNode
