@@ -22,7 +22,8 @@
     <q>How do I validate against XML schema?</q>
     <a>
       <p>XML Schema 1.0 validation has been integrated with the 
-	regular SAXParser and DOMParser classes. No special classes are 
+	regular SAXParser and DOMParser classes, and also with the JAXP
+      validation API using the XSD 1.0 Schema factory. No special classes are 
 	required to parse documents that use a schema.</p>
       <p>For XML Schema 1.1 validation, you'll need to use the JAXP
       validation API, using the XSD 1.1 Schema factory. Here's an example: </p>
