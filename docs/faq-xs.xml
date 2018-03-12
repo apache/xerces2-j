@@ -103,6 +103,16 @@ v.validate(instanceDocument);
   	   (for XSD 1.1 assertions, and optionally for CTAs), Xerces-J uses the <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
   	   Xerces-J does bundle along a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later).
   	   </p>
+  	   <p>
+  	      We would like to acknowledge, work of following people for the XPath 2.0 support that comes with Xerces's
+  	      XML Schema 1.1 processor: Andrea Bittau (responsible for the original design and implementation, of XPath 2.0
+  	      processor that's been used by Xerces. Andrea donated his XPath 2.0 processor to the Eclipse Foundation, that
+  	      Xerces uses.), Dave Carver (Dave helped to set up software infrastructure at Eclipse Foundation's Web Tools Platform project,
+  	      for testing the XPath 2.0 processor as per W3C XPath 2.0 test suite. He also helped to improve compliance of
+  	      XPath 2.0 processor, to the W3C XPath 2.0 test suite by providing numerous bug fixes and implementation.),
+  	      Jesper Steen Moeller (Jesper as an Eclipse's Web Tools Platform committer, helped improve the implementation
+  	      of the XPath 2.0 processor).
+  	   </p>
   	</a>
   </faq>
   <faq title="User defined error messages, for XML Schema 1.1 assertion failures">
