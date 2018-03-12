@@ -74,30 +74,54 @@ v.validate(instanceDocument);
     </a>
   </faq>
   <faq title="XPath 2.0 support for XML Schema 1.1 validation">
-  	<q>How Xerces-J uses an XPath 2.0 engine for XML Schema 1.1 assertions and type alternatives?</q>
+  	<q>How an XPath 2.0 engine is used for XML Schema 1.1 assertions and CTAs?</q>
   	<a>
-  	   <p>XML Schema 1.1 'assertions' and 'type alternatives' require an <jump href="http://www.w3.org/TR/xpath20/">XPath 2.0</jump> processor
-  	   for evaluation. For XSD 1.1 assertions, full XPath 2.0 support is required. For XSD 1.1 type alternatives, XML schema engines can
-  	   provide full XPath 2.0 support or they can implement a smaller XPath 2.0 subset, as defined by the XSD 1.1 language.
-  	   Within the type alternatives implementation, Xerces-J first attempts to compile the XPath expression with a native Xerces "XPath subset"
-  	   parser. If parsing with the native Xerces "XPath subset" parser fails, Xerces-J transparently switches over to another processor which 
-  	   supports all of XPath 2.0. The native processor in Xerces-J was written for efficiency, so you will likely get better performance if your
-  	   XPath expressions fall within the minimum subset defined by the XML Schema 1.1 specification. For full XPath 2.0 evaluation 
-  	   (for XSD 1.1 'assertions', and optionally for 'type alternatives'), Xerces-J uses the 
-  	   <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
+  	   <p>XML Schema 1.1 assertions and CTAs require an XPath processor during evaluation. For XSD 1.1 assertions,
+  	   full <jump href="http://www.w3.org/TR/xpath20/">XPath 2.0</jump> support is required. For XSD 1.1 CTAs the XSD schema engines can
+  	   provide full XPath 2.0 support, or they can implement a <jump href="http://www.w3.org/TR/xmlschema11-1/#coss-ta">smaller XPath subset</jump>
+  	   as defined by the XSD 1.1 language. For CTAs Xerces uses the XSD 1.1 CTA XPath subset language by default, but can be made to use the full XPath 2.0 support by
+  	   setting the value of Xerces feature <code>http://apache.org/xml/features/validation/cta-full-xpath-checking</code> to 'true'.
+  	   The native CTA XPath processor in Xerces-J was written for efficiency, so you will likely get better performance if your
+  	   XPath expressions fall within the minimum subset defined by the XML Schema 1.1 specification. For full XPath 2.0 evaluation
+  	   (for XSD 1.1 assertions, and optionally for CTAs), Xerces-J uses the <jump href="http://wiki.eclipse.org/PsychoPathXPathProcessor">Eclipse/PsychoPath XPath 2.0 engine</jump>.
+  	   Xerces-J does bundle along a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later).
   	   </p>
   	   <p>
-  	   Xerces-J bundles a PsychoPath XPath 2.0 jar (which requires JDK 1.4 or later).
+  	      We would like to acknowledge, work of following people for the XPath 2.0 support that comes with Xerces's
+  	      XML Schema 1.1 processor: Andrea Bittau (responsible for the original design and implementation, of XPath 2.0
+  	      processor that's been used by Xerces. Andrea donated his XPath 2.0 processor to the Eclipse Foundation, that
+  	      Xerces uses.), Dave Carver (Dave helped to set up software infrastructure at Eclipse Foundation's Web Tools Platform project,
+  	      for testing the XPath 2.0 processor as per W3C XPath 2.0 test suite. He also helped to improve compliance of
+  	      XPath 2.0 processor, to the W3C XPath 2.0 test suite by providing numerous bug fixes and implementation.),
+  	      Jesper Steen Moeller (Jesper as an Eclipse's Web Tools Platform committer, helped improve the implementation
+  	      of the XPath 2.0 processor).
   	   </p>
-  	   <note>
-  	   Users should be aware that more recent releases of the PsychoPath
-  	   XPath engine may have better conformance to the W3C XPath 2.0 language than the PsychoPath XPath 2.0 jar that's bundled with Apache Xerces-J.
-  	   Builds of the PsychoPath XPath 2.0 jar are available for download from following location,  	   
-  	   <jump href="http://www.eclipse.org/webtools/">Eclipse Web Tools Platform (WTP) Project</jump> - The latest 'Released' or a 'Stable milestone' 
-  	   WTP version can be downloaded from here (from which the PsychoPath XPath 2.0 jar can be extracted). The latest PsychoPath XPath 2.0 engine
-  	   builds at Eclipse require a minimum JDK level of 1.5.
-  	   </note>
   	</a>
+  </faq>
+  <faq title="User defined error messages, for XML Schema 1.1 assertion failures">
+     <q>How to specify a user defined error message, when an XML Schema 1.1 assertion returns a 'false' result?</q>
+     <a>
+        <p>When evaluation of an XSD 1.1 assertion fails the Xerces XML Schema validator would produce a default error message,
+        which would say that which element or attribute was not validated successfully by an assertion and the schema type involved 
+        during validation. It is however possible to, specify an user-defined error message for assertion failures. This is done by 
+        specifying an attribute <code>"message"</code> in the XML namespace <code>'http://xerces.apache.org'</code> on an 
+        <code>xs:assert</code> or <code>xs:assertion</code> element in the schema. In this case, the value of attribute <code>"message"</code> 
+        is a text of user-defined assertion error message which is generated by the Xerces XML Schema validator when an assertion fails.
+        </p>
+        <p>
+        While using <code>xs:assertion</code> facet within simple types, if a user defined error message is used, a user may
+        dynamically construct the assertion error message by getting the value of XPath 2.0 context variable 
+        <code>$value</code> into the error message. Following is an example of such an assertion error message:
+        <code>xerces:message="The number {$value} is not divisible by 2"</code>. With such a description of assertion error message, 
+        a value from XML instance document is assigned to a variable reference <code>{$value}</code> which is a defined keyword.
+        During a validation failure, an error message for this example would be produced as follows,
+        <code>"The number 3 is not divisible by 2"</code> (the variable reference <code>{$value}</code> is assigned a value 3).     
+        </p>
+        <note>
+           User-defined error messages for assertion failures are not a standard feature of the XML Schema 1.1 specification, and 
+           are a Xerces extension to help XML Schema document authors to specify a problem domain specific error messages.
+        </note>
+     </a>
   </faq>
   <faq title="Using Entities and CDATA Sections">
     <q>How does the XML Schema processor treat entities and CDATA sections?</q>
