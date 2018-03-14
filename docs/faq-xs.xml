@@ -25,7 +25,7 @@
 	regular SAXParser and DOMParser classes, and also with the JAXP
       validation API using the XSD 1.0 Schema factory. No special classes are 
 	required to parse documents that use a schema.</p>
-      <p>For XML Schema 1.1 validation, you'll need to use the JAXP
+      <p>For XML Schema 1.1 validation, the preferred way is to use the JAXP
       validation API, using the XSD 1.1 Schema factory. Here's an example: </p>
       <source>import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -44,6 +44,12 @@ Schema s = sf.newSchema(schemaDocuments);
 Validator v = s.newValidator();
 v.validate(instanceDocument);
 </source>
+      <p>Similar to XML Schema 1.0 validation using SAXParser and DOMParser classes that was
+         available earlier with Xerces, the same has been enhanced to support XML Schema 1.1
+         validation as well. To be able to do this, we need to construct the XSD 1.1 Schema factory
+         with the following java statement, SchemaFactory.newInstance("http://www.w3.org/XML/XMLSchema/v1.1")
+         and do the subsequent validation. 
+      </p>
       <p>You can also refer to the JAXP sample, SourceValidator, where you
          can validate XML documents against 1.1 schemas by specifying the "-xsd11"
          flag when running the sample.</p>
@@ -51,8 +57,7 @@ v.validate(instanceDocument);
 	grammars it uses by using an xsi:schemaLocation attribute if they use
 	namespaces, and an xsi:noNamespaceSchemaLocation attribute
 	otherwise.  These are usually placed on the root / top-level element 
-	in the document, though they may occur on any element; for more details see XML
-	Schema Part 1 section 4.3.2. 
+	in the document, though they may occur on any element; for more details see <jump href="https://www.w3.org/TR/xmlschema-1/#composition-instances">XML Schema Part 1 section 4.3.2</jump>. 
 	Here is an example with no target namespace: </p>
       <source>&lt;document
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
