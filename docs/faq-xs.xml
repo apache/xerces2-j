@@ -98,10 +98,27 @@ v.validate(instanceDocument);
   	      Xerces uses.), Dave Carver (Dave helped to set up software infrastructure at Eclipse Foundation's Web Tools Platform project,
   	      for testing the XPath 2.0 processor as per W3C XPath 2.0 test suite. He also helped to improve compliance of
   	      XPath 2.0 processor, to the W3C XPath 2.0 test suite by providing numerous bug fixes and implementation.),
-  	      Jesper Steen Moeller (Jesper as an Eclipse's Web Tools Platform committer, helped improve the implementation
+  	      Jesper Steen Moeller (Jesper as an Eclipse's Web Tools Platform committer, helped to improve the implementation
   	      of the XPath 2.0 processor).
   	   </p>
   	</a>
+  </faq>
+  <faq title="Using Entities and CDATA Sections">
+    <q>How does the XML Schema processor treat entities and CDATA sections?</q>
+    <a> 
+      <p>According to the XML Infoset the infoset items contributing to the 
+	<jump href='http://www.w3.org/TR/xml-infoset/#infoitem.character'>[character
+	  information item]</jump> are: characters in the document, whether literally, as
+	a character reference, or within a CDATA section, or within Entity
+	Reference. The XML Schema specification 
+	"requires as a precondition for assessment
+	an information set as defined in [XML-Infoset]" 
+	<jump href='http://www.w3.org/TR/xmlschema-1/#infoset'>(Appendix D)</jump> and thus Xerces might attempt to normalize data in an entity
+	reference or CDATA section.  To preserve character data within entity references and 
+	CDATA sections, 
+	turn off http://apache.org/xml/features/validation/schema/normalized-value feature.
+      </p>
+    </a>
   </faq>
   <faq title="User defined error messages, for XML Schema 1.1 assertion failures">
      <q>How to specify a user defined error message, when an XML Schema 1.1 assertion returns a 'false' result?</q>
@@ -128,24 +145,6 @@ v.validate(instanceDocument);
         </note>
      </a>
   </faq>
-  <faq title="Using Entities and CDATA Sections">
-    <q>How does the XML Schema processor treat entities and CDATA sections?</q>
-    <a> 
-      <p>According to the XML Infoset the infoset items contributing to the 
-	<jump href='http://www.w3.org/TR/xml-infoset/#infoitem.character'>[character
-	  information item]</jump> are: characters in the document, whether literally, as
-	a character reference, or within a CDATA section, or within Entity
-	Reference. The XML Schema specification 
-	"requires as a precondition for assessment
-	an information set as defined in [XML-Infoset]" 
-	<jump href='http://www.w3.org/TR/xmlschema-1/#infoset'>(Appendix D)</jump> and thus Xerces might attempt to normalize data in an entity
-	reference or CDATA section.  To preserve character data within entity references and 
-	CDATA sections, 
-	turn off http://apache.org/xml/features/validation/schema/normalized-value feature.
-      </p>
-    </a>
-  </faq>
-
   <faq title="XML Schema API">
     <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
     <a>
