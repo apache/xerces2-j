@@ -57,9 +57,9 @@ Authors:
     <property name='parser.Name' value='Xerces-J'/>
     <property name='parser.name' value='xerces-j'/>
     <property name='parser.shortname' value='xerces'/>
-    <property name='parser.Version' value='2.11.0'/>
-    <property name='parser.version' value='2.11.0'/>
-    <property name='parser_version' value='2_11_0'/>
+    <property name='parser.Version' value='2.12.0'/>
+    <property name='parser.version' value='2.12.0'/>
+    <property name='parser_version' value='2_12_0'/>
 
     <property name='deprecatedjar.parser' value='xerces.jar'/>
     <property name='jar.apis' value='xml-apis.jar'/>
@@ -76,7 +76,7 @@ Authors:
     <property name='default.parser.config.name' value='XIncludeAwareParserConfiguration'/>
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XIncludeAwareParserConfiguration'/>
 
-    <property name="year" value="1999-2015"/>
+    <property name="year" value="1999-2018"/>
     <property name="copyright" value="Copyright &#169; ${year} The Apache Software Foundation. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
