@@ -18,6 +18,89 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.12.0'>
+   <desc>
+    <p>
+     This release expands on Xerces-J's experimental support for XML Schema 1.1
+      by providing a fully compliant XML Schema 1.1 implementation. It fixes several bugs 
+      which were present in &ParserName; 2.11.0 and also includes a few other minor enhancements.      
+    </p>
+   </desc>
+   <changes>       
+       <add>
+     	 <note>
+           Report all id/idref problems when validating XML against DTD or XML Schema.
+     	 </note>
+     	 <submitter name='Michael Glavassevich'/>
+       </add>
+       <add>
+     	 <note>
+           Implemented improvements to XML Schema 1.1 CTA implementation and inheritable attributes.
+     	 </note>
+     	 <submitter name='Mukul Gandhi'/>
+       </add>
+       <update>
+         <note>
+      		Implemented improved error/warning message reporting for various XML Schema use cases.
+     	 </note>
+         <submitter name='Mukul Gandhi'/>
+       </update>
+       <update>
+         <note>
+            Optimization for the call NodeImpl.lookupNamespaceURI(String) in implementation.
+         </note>
+         <submitter name='Michael Glavassevich, Chris Simmons'/>         
+       </update>
+       <update>
+         <note>
+            Implemented few performance enhancements (affecting parsing/validation latency and memory footprint) to the implementation.
+         </note>
+         <submitter name='Michael Glavassevich'/>         
+       </update>
+       <fix>
+     	<note>
+      		Fixed minor bugs in Xerces-J's regex support in XML Schema &lt;pattern&gt; facet.
+     	</note>
+     	<submitter name='Michael Glavassevich, Khaled Noaman, Sandy Gao'/>
+       </fix>       
+       <fix>
+     	<note>
+      		Implemented various fixes to XML Schema 1.1 assert/assertion implementation.
+     	</note>
+     	<submitter name='Mukul Gandhi'/>
+       </fix>
+       <fix>
+     	<note>
+      		Implemented minor and major fixes in certain areas, to XML Schema 1.0 and 1.1 implementations.
+     	</note>
+     	<submitter name='Michael Glavassevich, Khaled Noaman, Sandy Gao, Mukul Gandhi'/>
+       </fix>       
+       <fix>
+     	<note>
+      		Fixed the issue related to, XIncludeTextReader doesn't handle null Content Types properly.
+     	</note>
+     	<submitter name='Michael Glavassevich'/>
+       </fix>       
+       <fix>
+     	<note>
+      		Fixed minor problems in the DOM (Level 3 Core) implementation.
+     	</note>
+     	<submitter name='Michael Glavassevich'/>
+       </fix>
+       <fix>
+     	<note>
+      		Fixed few errors related to Xerces-J's build component.
+     	</note>
+     	<submitter name='Michael Glavassevich'/>
+       </fix>       
+       <fix>
+     	<note>
+      		Solved a minor bug in SoftReferenceSymbolTable implementation component.
+     	</note>
+     	<submitter name='Michael Glavassevich'/>
+       </fix>       
+   </changes>
+  </release>
   <release version='&ParserName; 2.11.0'>
    <desc>
     <p>
