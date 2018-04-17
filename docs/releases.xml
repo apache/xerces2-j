@@ -37,19 +37,13 @@
      	 <note>
            Implemented improvements to XML Schema 1.1 CTA implementation and inheritable attributes.
      	 </note>
-     	 <submitter name='Mukul Gandhi'/>
+     	 <submitter name='Mukul Gandhi, Hiranya Jayathilaka'/>
        </add>
        <update>
          <note>
       		Implemented improved error/warning message reporting for various XML Schema use cases.
      	 </note>
          <submitter name='Mukul Gandhi'/>
-       </update>
-       <update>
-         <note>
-            Optimization for the call NodeImpl.lookupNamespaceURI(String) in implementation.
-         </note>
-         <submitter name='Michael Glavassevich, Chris Simmons'/>         
        </update>
        <update>
          <note>
