@@ -92,6 +92,13 @@
       		Solved a minor bug in SoftReferenceSymbolTable implementation component.
      	</note>
      	<submitter name='Michael Glavassevich'/>
+       </fix>
+       <fix>
+     	<note>
+      	   Octavian and Radu, from Oxygen XML Editor team have contributed much by way of intimating numerous bugs
+      	   and implementation ideas, for Xerces-J's XML Schema 1.0 and 1.1 implementations.
+     	</note>
+     	<submitter name='Octavian Nadolu, Radu Coravu'/>
        </fix>       
    </changes>
   </release>
