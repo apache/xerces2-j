@@ -355,7 +355,7 @@ public abstract class BaseMarkupSerializer
             _writer = _encodingInfo.getWriter(_output);
         }
 
-        if ( _format.getIndenting() ) {
+        if ( _format.isIndenting() ) {
             _indenting = true;
             _printer = new IndentPrinter( _writer, _format );
         } else {
