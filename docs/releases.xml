@@ -21,9 +21,9 @@
   <release version='&ParserName; 2.12.0'>
    <desc>
     <p>
-     This release expands on Xerces-J's experimental support for XML Schema 1.1
-      by providing a fully compliant XML Schema 1.1 implementation. It fixes several bugs 
-      which were present in &ParserName; 2.11.0 and also includes a few other minor enhancements.      
+     This release expands on Xerces-J's experimental support for XML Schema 1.1 by providing a 
+     fully compliant XML Schema 1.1 implementation. It fixes several bugs which were present in 
+     Xerces-J 2.11.0 and also includes a few other enhancements and performance improvements.      
     </p>
    </desc>
    <changes>       
@@ -95,10 +95,9 @@
        </fix>
        <fix>
      	<note>
-      	   Octavian and Radu, from Oxygen XML Editor team have contributed much by way of intimating numerous bugs
-      	   and implementation ideas, for Xerces-J's XML Schema 1.0 and 1.1 implementations.
+      	   Fixed various bugs and made various improvements.
      	</note>
-     	<submitter name='Octavian Nadolu, Radu Coravu'/>
+     	<submitter name='Mukul Gandhi, Jorge L. Williams, Octavian Nadolu, Radu Coravu'/>
        </fix>       
    </changes>
   </release>
