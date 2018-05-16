@@ -71,9 +71,10 @@ import org.apache.xerces.xs.datatypes.ObjectList;
 
 /**
  * 
- * A class providing functionalities and object state data to XML Schema validator. Important
- * functionalities provided by this class are IDC constraint primitives, schema error handling
- * routines and CTA/assertion interfaces with the XML Schema validator.
+ * A class providing certain functionalities and has validation session data for the 
+ * XML Schema validator. Important functionalities provided by this class are IDC constraint 
+ * implementation, schema error handling routines and CTA/assertion interfaces with the 
+ * XML Schema validator.
  * 
  * @xerces.internal
  * 
