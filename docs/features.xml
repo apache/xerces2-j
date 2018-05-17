@@ -330,7 +330,7 @@ catch (SAXException e) {
    <note>
      Setting this feature to 'true', would allow CTA XPath expressions to have full XPath 2.0 syntax. The default
      is to recognize the CTA XPath subset, defined by XSD 1.1 language. If the CTA XPath expressions in a schema document
-     fall within the subset, then the use of default Xerces CTA XPath processor may result in an efficient schema 
+     falls within the XPath subset, then the use of default Xerces CTA XPath processor may result in an efficient schema 
      processing. 
    </note>
    <see idref='validation'/>
@@ -338,8 +338,8 @@ catch (SAXException e) {
   </feature>
   <feature name='http://apache.org/xml/features/validation/assert-comments-and-pi-checking'
            id='validation.xs11-assert-comments-pi-checking'>
-   <true>Enable occurrence of comments and PIs within XDM model instance, for XSD 1.1 assertion processing.</true>
-   <false>Disable occurrence of comments and PIs within XDM model instance, for XSD 1.1 assertion processing.</false>
+   <true>Enable occurrence of comments and PIs within XPath Data Model (XDM) instance, for XSD 1.1 assertion processing.</true>
+   <false>Disable occurrence of comments and PIs within XPath Data Model (XDM) instance, for XSD 1.1 assertion processing.</false>
    <default value='false'/>
    <access parsing='read-only' not-parsing='read-write'/>
    <since value='&ParserName; 2.12.0'/>
