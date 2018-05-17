@@ -320,6 +320,37 @@ catch (SAXException e) {
    <see idref='validation'/>
    <see idref='validation.schema'/>
   </feature>
+  <feature name='http://apache.org/xml/features/validation/cta-full-xpath-checking'
+           id='validation.xs11-cta-fullxpath-checking'>
+   <true>Enable XSD 1.1 CTA full XPath 2.0 checking.</true>
+   <false>Disable XSD 1.1 CTA full XPath 2.0 checking.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.12.0'/>
+   <note>
+     Setting this feature to 'true', would allow CTA XPath expressions to have full XPath 2.0 syntax. The default
+     is to recognize the CTA XPath subset, defined by XSD 1.1 language. If the CTA XPath expressions in a schema document
+     falls within the XPath subset, then the use of default Xerces CTA XPath processor may result in an efficient schema 
+     processing. 
+   </note>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
+  <feature name='http://apache.org/xml/features/validation/assert-comments-and-pi-checking'
+           id='validation.xs11-assert-comments-pi-checking'>
+   <true>Enable occurrence of comments and PIs within XPath Data Model (XDM) instance, for XSD 1.1 assertion processing.</true>
+   <false>Disable occurrence of comments and PIs within XPath Data Model (XDM) instance, for XSD 1.1 assertion processing.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.12.0'/>
+   <note>
+     Setting this feature to 'true', would allow assertions to access comments and PIs from an XML instance document
+     and correspondingly test for their absence, presence or do string processing on them for the purpose of XSD 
+     validation.
+   </note>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
   <feature name='http://apache.org/xml/features/validation/unparsed-entity-checking'
            id='validation.unparsed-entity-checking'>
    <true>Check that each value of type ENTITY matches the name of an unparsed entity declared in the DTD.</true>
