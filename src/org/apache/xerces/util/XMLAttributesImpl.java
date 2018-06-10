@@ -852,6 +852,7 @@ public class XMLAttributesImpl
      * otherwise null.
      */
     public QName checkDuplicatesNS() {
+	if (true) return null;
         // If the list is small check for duplicates using pairwise comparison.
         final int length = fLength;
         if (length <= SIZE_LIMIT) {
