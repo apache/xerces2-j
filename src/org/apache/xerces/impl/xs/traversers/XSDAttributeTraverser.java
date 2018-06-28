@@ -184,7 +184,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         
         // 5 If fixed and use are both present, use must not have the actual value prohibited
         if (consType == XSConstants.VC_FIXED &&
-                useAtt != null && useAtt.intValue() == SchemaSymbols.USE_PROHIBITED) {
+                useAtt != null && useAtt.intValue() == SchemaSymbols.USE_PROHIBITED && fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
             reportSchemaError("src-attribute.5", new Object[]{nameAtt}, attrDecl);
             // Recover by honouring the default value
             attrUse.fUse = SchemaSymbols.USE_OPTIONAL;
