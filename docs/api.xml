@@ -158,7 +158,9 @@
    specification defines a set of interfaces for accessing and querying the post schema 
    validation infoset (PSVI) defined in 
    <jump href="http://www.w3.org/TR/xmlschema-1/#PSVI_contributions">Contributions 
-   to the post-schema-validation infoset (Appendix C.2)</jump>. These interfaces
+   to the post-schema-validation infoset (Appendix C.2) [XML Schema 1.0]</jump> and 
+   <jump href="http://www.w3.org/TR/xmlschema11-1/#PSVI_contributions">Contributions 
+   to the post-schema-validation infoset (Appendix B.2) [XML Schema 1.1]</jump>. These interfaces
    provide access to the XML Schema components, which follow as a consequence of 
    validation and/or assessment and also provide a means for accessing the PSVI 
    from a document instance.
@@ -194,5 +196,13 @@
   <ul>
    <li><jump href='javadocs/other/index.html'>Other Classes</jump></li>
   </ul>
+ </s2>
+ <s2 title='XML Schema 1.1 API documentation'>
+  <p>
+   Xerces-J's XML Schema 1.1 API documentation, would have some differences as compared to 
+   API documentation of XML Schema 1.0 implementation. To view the API documentation of
+   Xerces-J's XML Schema 1.1 implementation, the reader would have to view 'docs' folder within our
+   XML Schema 1.1 download package.
+  </p>
  </s2>
 </s1>
