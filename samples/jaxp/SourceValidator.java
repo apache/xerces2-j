@@ -67,8 +67,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  *
  * @version $Id$
  */
-public class SourceValidator 
-    implements ErrorHandler {
+public class SourceValidator implements ErrorHandler {
     
     //
     // Constants
