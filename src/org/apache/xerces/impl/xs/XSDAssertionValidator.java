@@ -65,7 +65,7 @@ public class XSDAssertionValidator {
     // assertion processor object reference
     XMLAssertHandler fAssertionProcessor = null;
     
-    // control variable to track if attributes on current element, have assertions.
+    // variable to track if attributes on current element, have assertions.
     boolean fAttributesHaveAsserts = false;
     
     

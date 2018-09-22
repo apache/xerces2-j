@@ -82,11 +82,12 @@ import org.apache.xerces.xs.datatypes.ObjectList;
  * @author Elena Litani IBM
  * @author Andy Clark IBM
  * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Mukul Gandhi IBM
  * @version $Id$
  */
-public class XSValidatorHelper implements XSElementDeclHelper, FieldActivator {
+public class XMLSchemaValidatorBase implements XSElementDeclHelper, FieldActivator {
     
-    protected XSValidatorHelper() {
+    protected XMLSchemaValidatorBase() {
        // NO OP  
     }
     
@@ -2011,4 +2012,4 @@ public class XSValidatorHelper implements XSElementDeclHelper, FieldActivator {
         return fInheritableAttrList;
     }
 
-} // XSValidatorHelper
+} // XMLSchemaValidatorBase
