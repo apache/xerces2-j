@@ -65,6 +65,14 @@
        </fix>
        <fix>
      	<note>
+      		Fixed possible security issue: an implementation of the NamedNodeMapImpl class in the JAXP component did not 
+      		limit the amount of memory allocated when creating object instance from a serialized form. A specially-crafted 
+      		input could cause a java application to use an excessive amount of memory when deserialized.
+     	</note>
+     	<submitter name='David Dillard, Michael Glavassevich, Mukul Gandhi'/>
+       </fix>
+       <fix>
+     	<note>
       		Implemented minor and major fixes in certain areas, to XML Schema 1.0 and 1.1 implementations.
      	</note>
      	<submitter name='Michael Glavassevich, Khaled Noaman, Sandy Gao, Mukul Gandhi'/>
