@@ -59,9 +59,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Class implementing an XPath interface for XML Schema 1.1 "assertions" evaluation.
- * This class interfaces with the "Eclipse/PsychoPath XPath 2.0" engine for XPath 
- * expression evaluations for XSD assertions.
+ * A class implementing an XPath interface for XML Schema 1.1 "assertions" evaluation. This class interfaces with 
+ * the "PsychoPath XPath 2.0" engine (https://wiki.eclipse.org/PsychoPathXPathProcessor) for XPath expression 
+ * evaluations for XSD assertions.
  * 
  * An instance of this class constructs Xerces PSVI enabled DOM trees (which are in-memory XDM 
  * representation for PsychoPath XPath 2.0 engine) from XNI event calls. XSD assertions 

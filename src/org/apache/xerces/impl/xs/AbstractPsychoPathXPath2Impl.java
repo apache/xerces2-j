@@ -52,7 +52,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A class providing common services for XPath expression evaluation, with 'PsychoPath XPath 2.0' engine.
+ * A class providing common services for XPath expression evaluation, with 
+ * "PsychoPath XPath 2.0" engine (https://wiki.eclipse.org/PsychoPathXPathProcessor).
  * 
  * @xerces.internal
  * 
