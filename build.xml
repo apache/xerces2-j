@@ -286,7 +286,7 @@ Authors:
       </fileset>
     </copy>
 
-    <xjavac srcdir="${build.src}"
+    <javac srcdir="${build.src}"
            destdir="${build.dest}"
            source="${javac.source}"
            target="${javac.target}"

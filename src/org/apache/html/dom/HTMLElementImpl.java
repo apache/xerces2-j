@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import org.apache.xerces.dom.ElementImpl;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLElement;
@@ -58,7 +59,11 @@ public class HTMLElementImpl
     public HTMLElementImpl( HTMLDocumentImpl owner, String tagName ) {
         super( owner, tagName.toUpperCase(Locale.ENGLISH) );
     }
-    
+
+    public Document getContentDocument() {
+        return ownerDocument.getOwnerDocument();
+    }
+
     public String getId() {
         return getAttribute( "id" );
     }
