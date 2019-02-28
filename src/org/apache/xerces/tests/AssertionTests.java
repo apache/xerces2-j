@@ -2073,7 +2073,7 @@ public class AssertionTests extends XercesAbstractTestCase {
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
             mesgFragments.setMessageFragment("cvc-assertion: Assertion evaluation ('countxx(a) gt 1') for element 'X' on schema type '#AnonType_X' did not succeed");
-            mesgFragments.setMessageFragment("XPST0017 - Function does not exist: countxx arity: 1");
+            mesgFragments.setMessageFragment("XPST0017 : Function does not exist: countxx arity: 1");
             expectedMsgList.add(mesgFragments);
             assertTrue(areErrorMessagesConsistent(expectedMsgList));
 		} catch(Exception ex) {
@@ -2095,11 +2095,11 @@ public class AssertionTests extends XercesAbstractTestCase {
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
             mesgFragments.setMessageFragment("cvc-assertions-valid: Value '100' is not facet-valid with respect to assertion '. = 100'");
-            mesgFragments.setMessageFragment("XPDY0002 - Context is undefined");
+            mesgFragments.setMessageFragment("XPDY0002 : Context is undefined");
             expectedMsgList.add(mesgFragments);
             mesgFragments = new FailureMesgFragments();
             mesgFragments.setMessageFragment("cvc-assertion: Assertion evaluation ('. = 100') for element 'X' on schema type '#AnonType_X' did not succeed");
-            mesgFragments.setMessageFragment("XPDY0002 - Context is undefined");
+            mesgFragments.setMessageFragment("XPDY0002 : Context is undefined");
             expectedMsgList.add(mesgFragments);
             assertTrue(areErrorMessagesConsistent(expectedMsgList));
 		} catch(Exception ex) {
@@ -2121,7 +2121,7 @@ public class AssertionTests extends XercesAbstractTestCase {
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
             mesgFragments.setMessageFragment("cvc-assertion: Assertion evaluation ('xx:my = 'http://xx'') for element 'X' on schema type '#AnonType_X' did not succeed");
-            mesgFragments.setMessageFragment("XPST0081 - Unknown prefix: xx");
+            mesgFragments.setMessageFragment("XPST0081 : Unknown prefix: xx");
             expectedMsgList.add(mesgFragments);
             assertTrue(areErrorMessagesConsistent(expectedMsgList));
 		} catch(Exception ex) {
@@ -2474,16 +2474,16 @@ public class AssertionTests extends XercesAbstractTestCase {
             // test expected error messages
             List expectedMsgList = new ArrayList();
             FailureMesgFragments mesgFragments = new FailureMesgFragments();
-            mesgFragments.setMessageFragment("Value '' is not facet-valid with respect to assertion '1 eq '1''. XPTY0004 - Value does not match a required type");
+            mesgFragments.setMessageFragment("Value '' is not facet-valid with respect to assertion '1 eq '1''. XPTY0004 : Value does not match a required type");
             expectedMsgList.add(mesgFragments);
             mesgFragments = new FailureMesgFragments();
-            mesgFragments.setMessageFragment("Assertion evaluation ('1 eq '1'') for element 'emptydoc' on schema type '#AnonType_emptydoc' did not succeed. XPTY0004 - Value does not match a required type");
+            mesgFragments.setMessageFragment("Assertion evaluation ('1 eq '1'') for element 'emptydoc' on schema type '#AnonType_emptydoc' did not succeed. XPTY0004 : Value does not match a required type");
             expectedMsgList.add(mesgFragments);
             mesgFragments = new FailureMesgFragments();
-            mesgFragments.setMessageFragment("Value '' is not facet-valid with respect to assertion ''1' eq 1'. XPTY0004 - Value does not match a required type");
+            mesgFragments.setMessageFragment("Value '' is not facet-valid with respect to assertion ''1' eq 1'. XPTY0004 : Value does not match a required type");
             expectedMsgList.add(mesgFragments);
             mesgFragments = new FailureMesgFragments();
-            mesgFragments.setMessageFragment("Assertion evaluation (''1' eq 1') for element 'emptydoc' on schema type '#AnonType_emptydoc' did not succeed. XPTY0004 - Value does not match a required type");
+            mesgFragments.setMessageFragment("Assertion evaluation (''1' eq 1') for element 'emptydoc' on schema type '#AnonType_emptydoc' did not succeed. XPTY0004 : Value does not match a required type");
             expectedMsgList.add(mesgFragments);
             assertTrue(areErrorMessagesConsistent(expectedMsgList));
 		} catch(Exception ex) {
