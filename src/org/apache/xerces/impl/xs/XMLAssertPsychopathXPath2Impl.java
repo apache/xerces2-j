@@ -703,10 +703,10 @@ public class XMLAssertPsychopathXPath2Impl extends XMLAssertAdapter {
         String exceptionMesg = "";
         Exception exception = assertError.getException();        
         if (exception instanceof DynamicError) {
-            exceptionMesg = ((DynamicError) exception).code() + " - " + ((DynamicError) exception).getMessage();   
+            exceptionMesg = ((DynamicError) exception).code() + " : " + ((DynamicError) exception).getMessage();   
         }
         else if (exception instanceof StaticError) {
-            exceptionMesg = ((StaticError) exception).code() + " - " + ((StaticError) exception).getMessage();
+            exceptionMesg = ((StaticError) exception).code() + " : " + ((StaticError) exception).getMessage();
         }
         if (!"".equals(exceptionMesg) && !exceptionMesg.endsWith(".")) {
             exceptionMesg = exceptionMesg + ".";  
