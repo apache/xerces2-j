@@ -199,10 +199,10 @@
  </s2>
  <s2 title='XML Schema 1.1 API Documentation'>
   <p>
-   Xerces-J's XML Schema 1.1 API documentation, would have some differences as compared to 
+   Xerces-J's XML Schema 1.1 API documentation would have some differences as compared to 
    API documentation of XML Schema 1.0 implementation. To view the API documentation of
-   Xerces-J's XML Schema 1.1 implementation, the reader would have to view 'docs' folder within our
-   XML Schema 1.1 download package.
+   Xerces-J's XML Schema 1.1 implementation, you would have to view 'docs' folder within 
+   Xerces's XML Schema 1.1 download package.
   </p>
  </s2>
 </s1>
