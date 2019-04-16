@@ -16,6 +16,7 @@
  */
 package org.apache.html.dom;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.html.HTMLObjectElement;
 
 /**
