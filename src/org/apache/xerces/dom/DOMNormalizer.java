@@ -1469,7 +1469,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 fAugmentations.setSize(length);
                 // REVISIT: this implementation does not store any value in augmentations
                 //          and basically not keeping augs in parallel to attributes map
-                //          untill all attributes are added (default attributes)
+                //          until all attributes are added (default attributes)
                 for (int i = 0; i < length; i++) {
                     fAugmentations.setElementAt(new AugmentationsImpl(), i);
                 }
