@@ -334,10 +334,10 @@ public final class Constants {
     /** Feature to ignore errors caused by type alternatives */
     public static final String TYPE_ALTERNATIVES_CHEKING_FEATURE = "validation/type-alternative-checking";
     
-    /** Feature to control full XPath 2.0 checking for CTA processing */
+    /** Feature to allow full XPath 2.0 checking for CTA processing */
     public static final String CTA_FULL_XPATH_CHECKING_FEATURE = "validation/cta-full-xpath-checking";
     
-    /** Feature to control, if comments and PIs should be available in <assert> XDM trees */
+    /** Feature to allow if comments and PIs should be available in <assert> XDM trees */
     public static final String ASSERT_COMMENT_PI_CHECKING_FEATURE = "validation/assert-comments-and-pi-checking";
     
     /** Feature to ignore errors caused by unparsed entities ("validation/unparsed-entity-checking") */

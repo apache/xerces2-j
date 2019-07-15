@@ -185,6 +185,10 @@ public class XMLSchemaValidatorBase implements XSElementDeclHelper, FieldActivat
     protected static final String TYPE_ALTERNATIVES_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.TYPE_ALTERNATIVES_CHEKING_FEATURE;
     
+    /** Feature identifier: whether to allow full XPath 2.0 checking for CTA processing */
+    protected static final String CTA_FULL_XPATH_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CTA_FULL_XPATH_CHECKING_FEATURE;
+    
     /** Feature identifier: whether to allow comment and PI nodes to be visible during <assert> processing */
     protected static final String ASSERT_COMMENT_PI_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.ASSERT_COMMENT_PI_CHECKING_FEATURE;
@@ -272,6 +276,7 @@ public class XMLSchemaValidatorBase implements XSElementDeclHelper, FieldActivat
             NAMESPACE_GROWTH,
             TOLERATE_DUPLICATES,
             TYPE_ALTERNATIVES_CHECKING,
+            CTA_FULL_XPATH_CHECKING,
             ASSERT_COMMENT_PI_CHECKING
         };
 

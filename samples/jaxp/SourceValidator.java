@@ -87,7 +87,7 @@ public class SourceValidator implements ErrorHandler {
     /** Generate synthetic schema annotations feature id (http://apache.org/xml/features/generate-synthetic-annotations). */
     protected static final String GENERATE_SYNTHETIC_ANNOTATIONS_ID = "http://apache.org/xml/features/generate-synthetic-annotations";
     
-    /** XSD 1.1 CTA full XPath checking feature id (http://apache.org/xml/features/validation/cta-full-xpath-checking). */
+    /** XSD 1.1 CTA full XPath 2.0 checking feature id (http://apache.org/xml/features/validation/cta-full-xpath-checking). */
     protected static final String XS11_CTA_FULL_XPATH_CHECKING_ID = "http://apache.org/xml/features/validation/cta-full-xpath-checking";
     
     /** XSD 1.1 assert comments and PI checking feature id (http://apache.org/xml/features/validation/assert-comments-and-pi-checking). */
@@ -543,6 +543,18 @@ public class SourceValidator implements ErrorHandler {
             }
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Validator does not support feature ("+GENERATE_SYNTHETIC_ANNOTATIONS_ID+")");
+            }
+            
+            if (XSD11_SCHEMA_LANGUAGE.equals(schemaLanguage)) {
+                try {
+                    validator.setFeature(XS11_CTA_FULL_XPATH_CHECKING_ID, xs11CtaFullxpathchecking);
+                }
+                catch (SAXNotRecognizedException e) {
+                    System.err.println("warning: Validator does not recognize feature ("+XS11_CTA_FULL_XPATH_CHECKING_ID+")");
+                }
+                catch (SAXNotSupportedException e) {
+                    System.err.println("warning: Validator does not support feature ("+XS11_CTA_FULL_XPATH_CHECKING_ID+")");
+                }
             }
             
             if (XSD11_SCHEMA_LANGUAGE.equals(schemaLanguage)) {
