@@ -385,7 +385,7 @@ public class OutputFormat
     /**
      * Returns true if indentation was specified.
      */
-    public boolean getIndenting()
+    public boolean isIndenting()
     {
         return ( _indent > 0 );
     }
