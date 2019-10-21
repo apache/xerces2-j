@@ -2211,15 +2211,15 @@ extends ParentNode implements Document  {
      * utility class
      */
 
-    public static final boolean isXMLName(String s, boolean xml11Version) {
+    public static final boolean isXMLName(String name, boolean xml11Version) {
 
-        if (s == null) {
+        if (name == null) {
             return false;
         }
         if(!xml11Version)
-            return XMLChar.isValidName(s);
+            return XMLChar.isValidName(name);
         else
-            return XML11Char.isXML11ValidName(s);
+            return XML11Char.isXML11ValidName(name);
 
     } // isXMLName(String):boolean
 

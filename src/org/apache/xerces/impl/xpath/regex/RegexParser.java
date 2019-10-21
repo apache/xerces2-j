@@ -58,10 +58,10 @@ class RegexParser {
 
     static class ReferencePosition {
         int refNumber;
-        int position;
-        ReferencePosition(int n, int pos) {
+        int offset;
+        ReferencePosition(int n, int offset) {
             this.refNumber = n;
-            this.position = pos;
+            this.offset = offset;
         }
     }
 
@@ -135,7 +135,7 @@ class RegexParser {
             for (int i = 0;  i < this.references.size();  i ++) {
                 ReferencePosition position = (ReferencePosition)this.references.elementAt(i);
                 if (this.parennumber <= position.refNumber)
-                    throw ex("parser.parse.2", position.position);
+                    throw ex("parser.parse.2", position.offset);
             }
             this.references.removeAllElements();
         }
