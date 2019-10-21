@@ -281,7 +281,7 @@ public final class REUtil {
      *
      * @see RegularExpression#RegularExpression(java.lang.String, java.lang.String)
      */
-    public static RegularExpression createRegex(String pattern, String options)
+    public static RegularExpression createRegex(String regex, String options)
         throws ParseException {
         RegularExpression re = null;
         int intOptions = REUtil.parseOptions(options);
@@ -293,7 +293,7 @@ public final class REUtil {
                     i = -1;
                     break;
                 }
-                if (cached.equals(pattern, intOptions)) {
+                if (cached.equals(regex, intOptions)) {
                     re = cached;
                     break;
                 }
@@ -304,7 +304,7 @@ public final class REUtil {
                     REUtil.regexCache[0] = re;
                 }
             } else {
-                re = new RegularExpression(pattern, options);
+                re = new RegularExpression(regex, options);
                 System.arraycopy(REUtil.regexCache, 0, REUtil.regexCache, 1, REUtil.CACHESIZE-1);
                 REUtil.regexCache[0] = re;
             }

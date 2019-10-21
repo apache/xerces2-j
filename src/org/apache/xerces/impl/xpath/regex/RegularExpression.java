@@ -1525,21 +1525,21 @@ public class RegularExpression implements java.io.Serializable {
                 return false;
             break;
         } // switch anchor type
-        
+
         return true;
     }
 
-    private static final int getPreviousWordType(ExpressionTarget target, int begin, int end,
+    private static final int getPreviousWordType(ExpressionTarget target, int start, int end,
                                                  int offset, int opts) {
-        int ret = getWordType(target, begin, end, --offset, opts);
+        int ret = getWordType(target, start, end, --offset, opts);
         while (ret == WT_IGNORE)
-            ret = getWordType(target, begin, end, --offset, opts);
+            ret = getWordType(target, start, end, --offset, opts);
         return ret;
     }
 
-    private static final int getWordType(ExpressionTarget target, int begin, int end,
+    private static final int getWordType(ExpressionTarget target, int start, int end,
                                          int offset, int opts) {
-        if (offset < begin || offset >= end)  return WT_OTHER;
+        if (offset < start || offset >= end)  return WT_OTHER;
         return getWordType0(target.charAt(offset) , opts);
     }
 

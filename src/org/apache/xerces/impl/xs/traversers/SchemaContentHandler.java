@@ -258,18 +258,18 @@ final class SchemaContentHandler implements ContentHandler {
             convertToSAXException(e);
         }
     }
-    
-    /* 
+
+    /*
      * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
      */
-    public void skippedEntity(String arg) throws SAXException {
+    public void skippedEntity(String name) throws SAXException {
         // do-nothing
     }
-    
+
     /*
      * Other methods
      */
-    
+
     private void fillQName(QName toFill, String uri, String localpart, String rawname) {
         if (!fStringsInternalized) {
             uri = (uri != null && uri.length() > 0) ? fSymbolTable.addSymbol(uri) : null;
