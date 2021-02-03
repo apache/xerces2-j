@@ -272,7 +272,7 @@ public class IndentPrinter
         if ( _line.length() > 0 ) {
             try {
                 
-                if ( _format.getIndenting() && ! preserveSpace ) {
+                if ( _format.isIndent() && ! preserveSpace ) {
                     // Make sure the indentation does not blow us away.
                     indent = _thisIndent;
                     if ( ( 2 * indent ) > _format.getLineWidth() && _format.getLineWidth() > 0 )
