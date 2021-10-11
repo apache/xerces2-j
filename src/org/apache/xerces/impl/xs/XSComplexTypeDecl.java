@@ -109,6 +109,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
             boolean isAbstract, XSAttributeGroupDecl attrGrp, 
             XSSimpleType simpleType, XSParticleDecl particle,
             XSObjectListImpl annotations) {
+        fName = name;
         fTargetNamespace = targetNamespace;
         fBaseType = baseType;
         fDerivedBy = derivedBy;
