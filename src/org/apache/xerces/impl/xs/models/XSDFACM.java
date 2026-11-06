@@ -137,7 +137,7 @@ public class XSDFACM
     private int fTransTable[][] = null;
     
     /**
-     * Array containing occurence information for looping states 
+     * Array containing occurrence information for looping states 
      * which use counters to check minOccurs/maxOccurs.
      */
     private Occurence [] fCountingStates = null;
